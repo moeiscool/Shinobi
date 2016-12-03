@@ -1,0 +1,27 @@
+<link rel="stylesheet" href="libs/css/bootstrap.min.css">
+<link rel="icon" type="image/png" href="/libs/img/icon/favicon.ico" />
+<script src="libs/js/jquery.min.js"></script>
+<script>jQuery.fn.serializeObject=function (){"use strict";var result={};var extend=function (i, element){var node=result[element.name];if ('undefined' !==typeof node && node !==null){if (jQuery.isArray(node)){node.push(element.value);}else{result[element.name]=[node, element.value];}}else{result[element.name]=element.value;}};jQuery.each(this.serializeArray(), extend);return result;};</script>
+<form id="loginform" method="post">
+    <input class="form-control" name="mail" type="username">
+    <input class="form-control" name="pass" type="password">
+    <button class="btn btn-block btn-success" type="submit">Login</button>
+</form>
+<script>
+    $('#loginform').submit(function(e){
+        e.preventDefault();$('input').css('border-color','')
+        e.e=$(this),e.s=e.e.serializeObject(),e.inputs=e.e.find('input,button').prop('disabled',true)
+        $.post('/auth/'+e.s.mail+'/'+e.s.pass,function(d){
+            if(d.ok===true){
+                $user={auth:d.auth_token,ke:d.ke,uid:d.uid};
+                $('body').html(d.body)
+            }else{
+                $('input').css('border-color','#b53200')
+                console.log('incorrect login details',d)
+            }
+            e.inputs.prop('disabled',false)
+        })
+        
+        return false;
+    })
+</script>

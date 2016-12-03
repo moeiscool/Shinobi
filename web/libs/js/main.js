@@ -1,0 +1,213 @@
+$.ccio={fr:$('#files_recent'),mon:{}};
+    
+    $.ccio.init=function(x,d,z,k){
+        if(!k){k={}}
+        switch(x){
+            case'ArrayBuffertoB64':
+                var reader = new FileReader();
+                reader.addEventListener("loadend",function(d){console.log(d.target.result);return z(reader.result)});
+                reader.readAsDataURL(new Blob([d], {                     
+                    type: "image/jpeg"
+                }));
+            break;
+        }
+    }
+    $.ccio.tm=function(x,d,z,k){
+        var tmp='';if(!d){d={}};
+        switch(x){
+            case 0://event
+                if(!d.filename){d.filename=moment(d.time).format('YYYY-MM-DDTHH-mm-ss')+'.webm';}
+                tmp+='<li eid="'+d.mid+'" file="'+d.filename+'"><a class="event_launch" href="/events/'+d.ke+'/'+d.mid+'/'+d.filename+'">'+d.filename+'</a></li>';
+            break;
+            case 1://monitor
+                d.src=placeholder.getData(placeholder.plcimg({bgcolor:'#b57d00',text:'...'}));
+                tmp+='<div mid="'+d.mid+'" title="'+d.mid+' : '+d.name+'" class="monitor_block col-md-4"><img monitor="watch" class="snapshot" src="'+d.src+'"><div class="icons"><a class="btn btn-xs btn-default" monitor="edit"><i class="fa fa-wrench"></i></a></div></div>';
+                delete(d.src);
+            break;
+        }
+        if(z){
+            $(z).prepend(tmp)
+        }
+        return tmp;
+    }
+    $.ccio.pm=function(x,d,z,k){
+        var tmp='';if(!d){d={}};
+        switch(x){
+            case 0:
+                console.log(d)
+                d.mon=$.ccio.mon[d.mid];
+                d.ev='.glM'+d.mid+'.events_list ul';d.fr=$.ccio.fr.find(d.ev),d.tmp='';
+                if(d.fr.length===0){$.ccio.fr.append('<div class="events_list glM'+d.mid+'"><h3 class="title">'+d.mon.name+'</h3><ul></ul></div>')}
+                if(d.events&&d.events.length>0){
+                $.each(d.events,function(n,v){
+                    tmp+=$.ccio.tm(0,v)
+                })
+                }else{
+                    $('.glM'+d.mid+'.events_list').appendTo($.ccio.fr)
+                    tmp+='<li class="notice noevents">No Events for This Monitor</li>';
+                }
+                $(d.ev).html(tmp);
+            break;
+        }
+        return tmp;
+    }
+    $.ccio.op=function(r,rr,rrr){
+        if(!rrr){rrr={};};if(typeof rrr === 'string'){rrr={n:rrr}};if(!rrr.n){rrr.n='CloudChat_'+$user.ke+'_'+$user.id}
+        ii={o:localStorage.getItem(rrr.n)};try{ii.o=JSON.parse(ii.o)}catch(e){ii.o={}}
+        if(!ii.o){ii.o={}}
+        if(r&&rr&&!rrr.x){
+            ii.o[r]=rr;
+        }
+        switch(rrr.x){
+            case 0:
+                delete(ii.o[r])
+            break;
+            case 1:
+                delete(ii.o[r][rr])
+            break;
+        }
+        localStorage.setItem(rrr.n,JSON.stringify(ii.o))
+        return ii.o
+    }
+$.ccio.ws=io(location.origin);
+$.ccio.ws.on('connect',function (d){
+    $.ccio.cx({f:'init',ke:$user.ke,auth:$user.auth,uid:$user.uid})
+})
+$.ccio.ws.on('f',function (d){
+    if(d.f!=='monitor_frame'&&d.f!=='cpu'&&d.f!=='monitor_snapshot'){console.log(d);}
+    switch(d.f){
+        case'cpu':
+            $('.cpu_load .progress-bar').css('width',d.data+'%')
+        break;
+        case'init_success':
+            $('#monitors_list').empty();
+            d.o=$.ccio.op().watch_on;
+            if(!d.o){d.o={}}
+            $.each(d.monitors,function(n,v){
+                $.ccio.mon[v.mid]=v;
+                $.ccio.tm(1,v,'#monitors_list')
+                $.ccio.cx({f:'get',ff:'events',mid:v.mid})
+                if(d.o[v.ke]&&d.o[v.ke][v.mid]===1){$.ccio.cx({f:'monitor',ff:'watch_on',id:v.mid})}
+            })
+        break;
+        case'get_events':
+            $.ccio.pm(0,d)
+        break;
+        case'event_build_success':
+            if(!d.mid){d.mid=d.id;}
+            d.e='.glM'+d.mid+'.events_list ul';$(d.e).find('.notice.noevents').remove();
+            $.ccio.tm(0,d,d.e)
+        break;
+        case'event_created':
+            
+        break;
+        case'monitor_snapshot':
+            switch(d.snapshot_format){
+                case'plc':
+                    $('[mid="'+d.id+'"].snapshot').attr('src',placeholder.getData(placeholder.plcimg(d.snapshot)))
+                break;
+                case'ab':
+                    var reader = new FileReader();
+                    reader.addEventListener("loadend",function(){$('[mid="'+d.id+'"].snapshot').attr('src',reader.result)});
+                    reader.readAsDataURL(new Blob([d.snapshot],{type:"image/jpeg"}));
+                break;
+                case'b64':
+                    $('[mid="'+d.id+'"].snapshot').attr('src','data:image/jpeg;base64,'+d.snapshot)
+                break;
+            }
+        break;
+        case'monitor_watch_off':
+            d.o=$.ccio.op().watch_on;if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=0;$.ccio.op('watch_on',d.o);
+            $.ccio.mon[d.id].watch=0;
+            $('#monitor_live_'+d.id).remove();
+        break;
+        case'monitor_watch_on':
+            d.o=$.ccio.op().watch_on;if(!d.o){d.o={}};if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=1;$.ccio.op('watch_on',d.o);
+            $.ccio.mon[d.id].watch=1;
+            d.e=$('#monitor_live_'+d.id);
+            if(d.e.length==0){
+                d.tmp='<div mid="'+d.id+'" id="monitor_live_'+d.id+'" class="monitor_item col-md-4">';
+                switch($.ccio.mon[d.id].type){
+                    case'jpeg':case'mjpeg':
+                        d.tmp+='<img>';
+                    break;
+                    case'rtsp':
+                        d.tmp+='<video><source type="video/webm"></video>';
+                    break;
+                }
+                d.tmp+='<div class="hud super-center"><div class="bottom_bar"><span class="monitor_name">'+$.ccio.mon[d.id].name+'</span><div class="pull-right"><a monitor="bigify" class="btn btn-sm btn-default"><i class="fa fa-expand"></i></a></div></div></div></div>';
+                $('#monitors_live').append(d.tmp)
+            }
+        break;
+        case'monitor_mjpeg_url':
+            $('#monitor_live_'+d.id+' iframe').attr('src',location.protocol+'//'+location.host+d.watch_url);
+        break;
+        case'monitor_frame':
+            switch(d.frame_format){
+                case'ab':
+                    var reader = new FileReader();
+                    reader.addEventListener("loadend",function(){$('[mid="'+d.id+'"] .snapshot,#monitor_live_'+d.id+' img').attr('src',reader.result);});
+                    reader.readAsDataURL(new Blob([d.frame],{type:"video/webm"}));
+                break;
+                case'b64':
+                    $('#monitor_live_'+d.id+' img').attr('src','data:image/jpeg;base64,'+d.frame) 
+                break;
+            }
+            
+        break;
+    }
+});
+$.ccio.cx=function(x){if(!x.ke){x.ke=$user.ke;};if(!x.uid){x.uid=$user.uid;};return $.ccio.ws.emit('f',x)}
+
+//add Monitor
+$.AddMon={e:$('#add_monitor')};$.AddMon.f=$.AddMon.e.find('form')
+$.AddMon.f.submit(function(e){
+    e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
+    if(e.s.mid.length>3){
+        $.ccio.cx({f:'monitor',ff:'add',mon:e.s})
+        $.each(e.s,function(n,v){$.ccio.mon[e.s.mid][n]=v;})
+        $.AddMon.e.modal('hide')
+    }
+    return false;
+});
+//dynamic bindings
+$('body')
+.on('click','.event_launch',function(e){
+    e.preventDefault();e.href=$(this).attr('href'),e.e=$('#event_viewer');
+    e.e.find('.modal-body').html('<video class="event_video" video="'+e.href+'" autoplay loop controls><source src="'+e.href+'" type="video/webm"></video>')
+    e.e.modal('show');
+})
+.on('click','[class_toggle]',function(e){
+    e.e=$(this);$(e.e.attr('data-target')).toggleClass(e.e.attr('class_toggle'))
+})
+.on('click','[monitor]',function(e){
+    e.e=$(this),e.a=e.e.attr('monitor'),e.id=e.e.parents('[mid]').attr('mid')
+    switch(e.a){
+        case'bigify':
+            e.classes='col-md-4 col-md-8 selected';
+            e.m=$('#monitors_live')
+            e.e=e.e.parents('.monitor_item');
+            if(!e.e.is(':first')){
+                e.m.find('.monitor_item').first().insertAfter(e.e.prev())
+                e.e.prependTo('#monitors_live');
+                $('#main_canvas .scrollable').animate({scrollTop: $("#monitor_live_"+e.id).position().top},1000);
+            }
+            e.m.find('.selected').toggleClass(e.classes);
+            if(!e.e.hasClass('selected')){e.e.toggleClass(e.classes)}
+        break;
+        case'watch':
+            if($.ccio.mon[e.id].watch!==1){
+                $.ccio.cx({f:'monitor',ff:'watch_on',id:e.id})
+            }else{
+                $("#monitor_live_"+e.id+' [monitor="bigify"]').click()
+            }
+        break;
+        case'edit':
+            $.each($.ccio.mon[e.id],function(n,v){
+                $.AddMon.e.find('[name="'+n+'"]').val(v).change()
+            })
+            $('#add_monitor').modal('show')
+        break;
+    }
+    e.e=$(this);$(e.e.attr('data-target')).toggleClass(e.e.attr('class_toggle'))
+})

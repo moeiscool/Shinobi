@@ -1,0 +1,172 @@
+<link rel="stylesheet" href="libs/css/vbox.css">
+<link rel="stylesheet" href="libs/css/bootstrap.min.css">
+<link rel="stylesheet" href="libs/css/font-awesome.min.css">
+<link rel="stylesheet" href="libs/css/main.css">
+
+<section class="app">
+    <section class="hbox stretch">
+    <section class="vbox">
+        <header id="main_header" class="header dker">
+            <div class="pull-right">
+            <a class="btn btn-default" data-toggle="modal" data-target="#add_monitor"><i class="fa fa-plus"></i></o></a>
+            <a class="btn btn-default" class_toggle="nav-xs" data-target="#side_menu_right"><i class="fa fa-reorder"></i></a>
+            </div>
+            <div class="pull-left">
+                <a class="btn btn-default" class_toggle="nav-xs" data-target="#side_menu"><i class="fa fa-reorder"></i></a>
+            </div>
+            <div class="pull-left">
+                <div class="cpu_load" style="width:200px;display:inline-block">
+                  <div class="progress">
+                    <div class="progress-bar progress-bar-warning" role="progressbar" style="width:70%">
+                    </div>
+                  </div>
+                </div>
+            </div>
+        </header>
+        <section>
+        <section class="hbox stretch">
+            <aside class="aside-lg vbox side-menu" id="side_menu">
+                <section class="scrollable">
+                    <div id="monitors_list" class="display-table"></div>
+                </section>
+            </aside>
+            <aside class="vbox" id="main_canvas">
+                <section class="scrollable">
+                    <div id="monitors_live"></div>
+                </section>
+            </aside>
+            <aside class="aside-lg vbox side-menu" id="side_menu_right">
+                <section class="scrollable">
+                    <div id="files_recent"></div>
+                </section>
+            </aside>
+        </section>
+        </section>
+    </section>
+    </section>
+</section>
+
+
+<!--Modal-->
+<div class="modal fade" id="event_viewer" tabindex="-1" role="dialog" aria-labelledby="event_viewerLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="event_viewerLabel">Modal title</h4>
+      </div>
+      <div class="modal-body">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="add_monitor" tabindex="-1" role="dialog" aria-labelledby="add_monitorLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="add_monitorLabel">Add Monitor</h4>
+      </div>
+      <div class="modal-body">
+          <div class="form-group">
+            <label><span>Mode</span>
+                <select class="form-control" name="mode">
+                    <option value="stop">Disabled</option>  
+                    <option value="start">Watch Only</option>  
+                    <option value="record">Record</option>  
+<!--                    <option value="mrecord">Record on Motion</option>  -->
+                </select>
+            </label>
+          </div>
+        <div class="form-group">
+            <label><span>Monitor ID</span>
+                <input class="form-control" name="mid">
+            </label>
+          </div>
+          <div class="form-group">
+            <label><span>Name</span>
+                <input class="form-control" name="name">
+            </label>
+          </div>
+          <div class="form-group">
+            <label><span>Type</span>
+                <select class="form-control" name="type">
+                    <option value="jpeg">JPEG</option>  
+                    <option value="mjpeg">MJPEG</option>  
+<!--
+                    <option value="rtsp">RTSP</option>  
+                    <option value="rtmp">RTMP</option>  
+-->
+                </select>
+            </label>
+          </div>
+          <div class="form-group">
+            <label><span>Protocol</span>
+                <select class="form-control" name="protocol">
+                    <option value="http">HTTP</option>  
+                    <option value="https">HTTPS</option>  
+<!--
+                    <option value="rtsp">RTSP</option>  
+                    <option value="rtmp">RTMP</option>  
+-->
+                </select>
+            </label>
+          </div>
+          <div class="form-group">
+            <label><span>Host</span>
+            <input class="form-control" name="host">
+            </label>
+          </div>
+          <div class="form-group">
+            <label><span>Path</span>
+            <input class="form-control" name="path" placeholder="/videostream.cgi?1">
+            </label>
+          </div>
+          <div class="form-group">
+            <label><span>Port</span>
+            <input class="form-control" name="port">
+            </label>
+          </div>
+           <div class="form-group">
+            <label><span>Record Speed (FPS)</span>
+            <input class="form-control" name="fps">
+            </label>
+          </div>
+          <div class="form-group">
+            <label><span>Image Width</span>
+            <input class="form-control" name="width">
+            </label>
+          </div>
+          <div class="form-group">
+            <label><span>Image Height</span>
+            <input class="form-control" name="height">
+            </label>
+          </div>
+          <div class="form-group" style="display:none">
+            <input class="form-control" name="details" value="{}">
+            <input class="form-control" name="shto" value="[]">
+            <input class="form-control" name="shfr" value="[]">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary">Save changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="libs/js/moment.js"></script>
+<script src="libs/js/placeholder.js"></script>
+<script src="libs/js/bootstrap.min.js"></script>
+<script src="libs/js/socket.io.js"></script>
+<script src="libs/js/main.js"></script>
