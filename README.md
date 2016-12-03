@@ -46,3 +46,7 @@ PayPal : paypal@m03.ca
 # Author
 
 Moe Alam, just a guy who needed CCTV
+
+# Credits
+
+If you wish to use this software for commercial purposes please consider donating :) If not.. including my name would be nice.
