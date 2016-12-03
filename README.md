@@ -26,6 +26,8 @@ with terminal while in the directory run `npm install` then to start `node camer
 
 to daemonize the process install pm2 with `npm install pm2 -g` then run `pm2 start camera.js`
 
+open up `localhost` in your browser.
+
 run `pm2 logs` to see the console for any errors.
 
 # To Do
