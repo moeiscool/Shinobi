@@ -10,6 +10,15 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                     type: "image/jpeg"
                 }));
             break;
+            case 'ls':
+                g={e:jQuery('.livestamp')};
+                g.e.each(function(){g.v=jQuery(this),g.t=g.v.attr('title');if(!g.t){return};g.v.toggleClass('livestamp livestamped').attr('title',$.ccio.init('t',g.t)).livestamp(g.t);})
+                return g.e
+            break;
+            case't':
+                if(!g){g=new Date();}
+                return moment(g).format('YYYY-MM-DD HH:mm:ss')
+            break;
         }
     }
     $.ccio.tm=function(x,d,z,k){
@@ -17,12 +26,26 @@ $.ccio={fr:$('#files_recent'),mon:{}};
         switch(x){
             case 0://event
                 if(!d.filename){d.filename=moment(d.time).format('YYYY-MM-DDTHH-mm-ss')+'.webm';}
-                tmp+='<li eid="'+d.mid+'" file="'+d.filename+'"><a class="event_launch" href="/events/'+d.ke+'/'+d.mid+'/'+d.filename+'">'+d.filename+'</a></li>';
+                k=[d.name+'-'+d.mid+'-'+d.filename,'href="/events/'+d.ke+'/'+d.mid+'/'+d.filename+'"'];
+                d.mom=moment(d.time),d.hr=parseInt(d.mom.format('HH')),d.per=parseInt(d.hr/24*100);
+                tmp+='<li eid="'+d.mid+'" file="'+d.filename+'" title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'"><div '+k[1]+' class="event_launch progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div><div><span title="'+d.time+'" class="livestamp"></span></div><div class="small"><b>Start</b> : '+d.time+'</div><div class="small"><b>End</b> : '+d.end+'</div><div><a class="btn btn-sm btn-danger event_launch" '+k[1]+'><i class="fa fa-play-circle"></i></a> <a download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a> <a monitor="download" host="dropbox" download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a><span class="pull-right">'+(d.mid/100000).toFixed(2)+'mb</span></div></li>';
             break;
             case 1://monitor
                 d.src=placeholder.getData(placeholder.plcimg({bgcolor:'#b57d00',text:'...'}));
                 tmp+='<div mid="'+d.mid+'" title="'+d.mid+' : '+d.name+'" class="monitor_block col-md-4"><img monitor="watch" class="snapshot" src="'+d.src+'"><div class="icons"><a class="btn btn-xs btn-default" monitor="edit"><i class="fa fa-wrench"></i></a></div></div>';
                 delete(d.src);
+            break;
+            case 2:
+                tmp+='<div mid="'+d.mid+'" id="monitor_live_'+d.mid+'" class="monitor_item col-md-4">';
+                switch(d.type){
+                    case'jpeg':case'mjpeg':
+                        tmp+='<img>';
+                    break;
+                    case'rtsp':
+                        tmp+='<video><source type="video/webm"></video>';
+                    break;
+                }
+                tmp+='<div class="hud super-center"><div class="bottom_bar"><span class="monitor_name">'+d.name+'</span><div class="pull-right"><a title="Enlarge" monitor="bigify" class="btn btn-sm btn-default"><i class="fa fa-expand"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a></div></div></div></div>';
             break;
         }
         if(z){
@@ -47,6 +70,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                     tmp+='<li class="notice noevents">No Events for This Monitor</li>';
                 }
                 $(d.ev).html(tmp);
+                $.ccio.init('ls')
             break;
         }
         return tmp;
@@ -126,16 +150,7 @@ $.ccio.ws.on('f',function (d){
             $.ccio.mon[d.id].watch=1;
             d.e=$('#monitor_live_'+d.id);
             if(d.e.length==0){
-                d.tmp='<div mid="'+d.id+'" id="monitor_live_'+d.id+'" class="monitor_item col-md-4">';
-                switch($.ccio.mon[d.id].type){
-                    case'jpeg':case'mjpeg':
-                        d.tmp+='<img>';
-                    break;
-                    case'rtsp':
-                        d.tmp+='<video><source type="video/webm"></video>';
-                    break;
-                }
-                d.tmp+='<div class="hud super-center"><div class="bottom_bar"><span class="monitor_name">'+$.ccio.mon[d.id].name+'</span><div class="pull-right"><a monitor="bigify" class="btn btn-sm btn-default"><i class="fa fa-expand"></i></a></div></div></div></div>';
+                d.tmp=$.ccio.tm(2,$.ccio.mon[d.id]);
                 $('#monitors_live').append(d.tmp)
             }
         break;
@@ -150,10 +165,9 @@ $.ccio.ws.on('f',function (d){
                     reader.readAsDataURL(new Blob([d.frame],{type:"video/webm"}));
                 break;
                 case'b64':
-                    $('#monitor_live_'+d.id+' img').attr('src','data:image/jpeg;base64,'+d.frame) 
+                    $('[mid="'+d.id+'"] .snapshot,#monitor_live_'+d.id+' img').attr('src','data:image/jpeg;base64,'+d.frame) 
                 break;
             }
-            
         break;
     }
 });
@@ -172,6 +186,9 @@ $.AddMon.f.submit(function(e){
 });
 //dynamic bindings
 $('body')
+.on('click','.list_toggle',function(e){
+    
+})
 .on('click','.event_launch',function(e){
     e.preventDefault();e.href=$(this).attr('href'),e.e=$('#event_viewer');
     e.e.find('.modal-body').html('<video class="event_video" video="'+e.href+'" autoplay loop controls><source src="'+e.href+'" type="video/webm"></video>')
@@ -183,6 +200,16 @@ $('body')
 .on('click','[monitor]',function(e){
     e.e=$(this),e.a=e.e.attr('monitor'),e.id=e.e.parents('[mid]').attr('mid')
     switch(e.a){
+        case'download':
+            e.preventDefault();
+            switch(e.e.attr('host')){
+                case'dropbox':
+                    Dropbox.save(e.e.attr('href'),e.e.attr('download'),{progress: function (progress) {console.log(progress)},success: function () {
+                        console.log("Success! Files saved to your Dropbox.");
+                    }});
+                break;
+            }
+        break;
         case'bigify':
             e.classes='col-md-4 col-md-8 selected';
             e.m=$('#monitors_live')
@@ -201,6 +228,9 @@ $('body')
             }else{
                 $("#monitor_live_"+e.id+' [monitor="bigify"]').click()
             }
+        break;
+        case'watch_off':
+            $.ccio.cx({f:'monitor',ff:'watch_off',id:e.id})
         break;
         case'edit':
             $.each($.ccio.mon[e.id],function(n,v){

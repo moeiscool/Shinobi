@@ -1,20 +1,29 @@
+@import (less) "../less/pie.less";
 *{margin:0;padding:0;};ul{list-style:none}
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
 img{max-width:100%}
 .display-table{display:table;width:100%}
+.small{font-size:80%}
 .monitor_item img,.monitor_item iframe{width:100%;height:300px;border:0;}
-.monitor_item{position:relative;margin-bottom:20px;}
-.monitor_item.selected img{height:620px}
+.monitor_item{position:relative;padding:0;}
+.monitor_item.selected img{height:600px}
 .monitor_item .hud{width:100%;height:100%;opacity:0.1;transition:0.2s}
 .monitor_item .hud:hover{opacity:1}
 .monitor_item .hud>*{position:absolute;}
-.monitor_item .hud .bottom_bar{bottom:0;left:0;right:0;margin:auto;width:calc(100% - 30px);padding:15px;background:rgba(0,0,0,0.8);color:#fff}
+.monitor_item .hud .bottom_bar{bottom:0;left:0;right:0;margin:auto;width:100%;padding:15px;background:rgba(0,0,0,0.8);color:#fff}
 
 .super-center{position:absolute;left:0;top:0;right:0;bottom:0;margin:auto;}
 
-#monitors_list li table{
-    cursor:pointer;width:100%;border:0
+#files_recent ul{list-style:none;margin:0;padding:0;}
+#files_recent li table{
+    width:100%;border:0
+}#files_recent li{
+    border-bottom:1px solid #54502d;padding:10px;
 }
-
 img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .circle-img.sm{height:25px;width:25px}
 
@@ -25,11 +34,13 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 }
 
 
-.events_list .title{font-size:12pt}
+.events_list .title{font-size:12pt;padding:0 10px}
 
-
+.side-menu .progress-circle{margin:0 10px 0 0;position:relative;height:40px;width:40px;float:left}
+.side-menu .progress-circle span:after{content:''}
 .side-menu{background:#2b2a2a;color:#fff;transition:0.2s}
 .side-menu *{transition:0.2s}
+.side-menu a:not(.btn){color:#fff}
 .side-menu.nav-xs{overflow:hidden}
 .side-menu.nav-xs table td:not(:first-child){opacity:0}
 .side-menu.nav-xs .launch_monitor .name{display:none}
@@ -41,10 +52,10 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 
 #side_menu_right.nav-xs{width:0!important;overflow:hidden}
 .side-menu table{color:#fff;}
-#main_canvas>.scrollable{background:#333;color:#fff;padding-top:20px}
+#main_canvas>.scrollable{background:#333;color:#fff}
 #main_header{background:#b59f00;color:#fff;}
 
-#files_recent{padding-left:30px}
+#files_recent{}
 [class_toggle]{cursor:pointer}
 
 .form-group label{width:100%}
