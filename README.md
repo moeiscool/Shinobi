@@ -47,12 +47,28 @@ PayPal : paypal@m03.ca
 
 Moe Alam, just a guy who needed CCTV
 
+# Want me to Host an Instance for you?
+email me at : shinobi@m03.ca
+
+    You would get:
+    +50GB SSD
+    +2GB RAM
+    +Quad Core ARM Processor
+    +200Mbps Default Throughput, Soft-Max 800Mbps Throughput per Server
+    +Static IP
+    +Location : Italy
+    ----------
+    $55/month
+
+    Optional
+    +1000GB = $75/month
+
 # Credits
 
 If you wish to use this software for commercial purposes please consider donating :) If not.. including my name would be nice.
 
     Shinobi
-    Copyright (C) 2016-2025 Moe Alam
+    Copyright (C) 2016-2025 Moe Alam, moeiscool
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License

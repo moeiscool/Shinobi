@@ -1,6 +1,6 @@
 //
 // Shinobi
-// Copyright (C) 2016-2025 Moe Alam
+// Copyright (C) 2016-2025 Moe Alam, moeiscool
 // Please Donate if you consider this platform for commercial purposes :)
 // 
 // This program is free software; you can redistribute it and/or
