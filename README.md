@@ -36,7 +36,13 @@ This method puts serious strain on the client browser. zm has caused countless b
 
 # How to Install and Run
 
-Setup `conf.json` with your SQL details. Then open the directory where `camera.js` is located then go to `sql` and install the SQL files in your database. `Framework` then `Default Data`. Return to main directory.
+`For a Test deployment enviroment I suggest grabbing an old MacBook (what I did) and installing Node.JS on there. Open up Terminal to get started.`
+
+Open `Terminal`.
+
+Select directory `cd /your/directory/for/shinobi`. Where `camera.js` is located.
+
+Setup `conf.json` with your SQL details. then go to `sql` and install the SQL files in your database. `Framework` then `Default Data`. Return to main directory.
 
 with terminal while in the directory run `npm install` then to start `node camera.js`
 
