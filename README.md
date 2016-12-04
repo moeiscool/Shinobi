@@ -20,19 +20,18 @@ This method puts serious strain on the client browser. zm has caused countless b
 
 - Written in a simple structure. `camera.js` and `web` folder.
 - Easy Install. (not as easy as apt-get install zoneminder yet though. See below)
-- 
 - Streams are `img` tags, but not MJPEG. Images are transferred through `WebSocket`.
 - Any websocket enabled browser can support the image stream (including mobile)
 - Interface is nicer to look at and works better in mobile.
--- Client Side Tested on : 
---- iPad Mini 2 - Safari and Chrome
---- iPhone 5 - Safari and Chrome
---- Windows 7 - Chrome
---- Mac OS - Safari and Chrome
+    -- Client Side Tested on : 
+    --- iPad Mini 2 - Safari and Chrome
+    --- iPhone 5 - Safari and Chrome
+    --- Windows 7 - Chrome
+    --- Mac OS - Safari and Chrome
 
-- Server-Side Tested Successfully on:
--- Ubuntu 16.04 (should work on any linux)
--- Mac OS Sierra
+    - Server-Side Tested Successfully on:
+    -- Ubuntu 16.04 (should work on any linux)
+    -- Mac OS Sierra
 
 # How to Install and Run
 
