@@ -13,6 +13,14 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 // 
+//# Donate
+//
+//If you like what I am doing here and want me to continue please consider donating :)
+//
+//PayPal : paypal@m03.ca
+//Patreon : https://patreon.com/moeiscool
+
+
 var fs = require('fs');
 var mysql = require('mysql');
 var moment = require('moment');

@@ -49,6 +49,7 @@ run `pm2 logs` to see the console for any errors.
 If you like what I am doing here and want me to continue please consider donating :)
 
 PayPal : paypal@m03.ca
+Patreon : https://patreon.com/moeiscool
 
 # Author
 
@@ -68,7 +69,7 @@ email me at : shinobi@m03.ca
     $55/month
 
     Optional
-    +1000GB = $75/month
+    +1000GB = +$75/month
 
 # Credits
 
