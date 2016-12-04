@@ -49,6 +49,7 @@ run `pm2 logs` to see the console for any errors.
 If you like what I am doing here and want me to continue please consider donating :)
 
 PayPal : paypal@m03.ca
+
 Patreon : https://patreon.com/moeiscool
 
 # Author
