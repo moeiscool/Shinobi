@@ -5,6 +5,7 @@
 *:after {
   box-sizing: border-box;
 }
+.truncate{width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 img{max-width:100%}
 .display-table{display:table;width:100%}
 .small{font-size:80%}
@@ -12,16 +13,17 @@ img{max-width:100%}
 .monitor_item{position:relative;padding:0;}
 .monitor_item.selected img{height:600px}
 .monitor_item .hud{width:100%;height:100%;opacity:0.1;transition:0.2s}
+.monitor_item.col-md-4 .hud .side-menu{display:none}
+.monitor_item.col-md-8 .hud .side-menu{opacity:0.1}
+.monitor_item.col-md-8 .hud:hover .side-menu{opacity:1}
 .monitor_item .hud:hover{opacity:1}
 .monitor_item .hud>*{position:absolute;}
 .monitor_item .hud .bottom_bar{bottom:0;left:0;right:0;margin:auto;width:100%;padding:15px;background:rgba(0,0,0,0.8);color:#fff}
-
+.monitor_item .hud .top_bar{top:0;left:0;right:0;margin:auto;width:100%;padding:15px;}
 .super-center{position:absolute;left:0;top:0;right:0;bottom:0;margin:auto;}
 
-#files_recent ul{list-style:none;margin:0;padding:0;}
-#files_recent li table{
-    width:100%;border:0
-}#files_recent li{
+.side-menu ul{list-style:none;margin:0;padding:0;}
+.side-menu li{
     border-bottom:1px solid #54502d;padding:10px;
 }
 img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
@@ -35,7 +37,8 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 
 
 .events_list .title{font-size:12pt;padding:0 10px}
-
+.signal.red{background:#c9302c}
+.signal.green{background:#5cb85c}
 .side-menu .progress-circle{margin:0 10px 0 0;position:relative;height:40px;width:40px;float:left}
 .side-menu .progress-circle span:after{content:''}
 .side-menu{background:#2b2a2a;color:#fff;transition:0.2s}
@@ -46,9 +49,12 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .side-menu.nav-xs .launch_monitor .name{display:none}
 
 .side-menu .monitor_block{padding:0;position:relative}
-.side-menu .monitor_block img{width:100%;height:90px}
+.side-menu .monitor_block img{width:100%;height:90px;cursor:pointer}
 .side-menu .monitor_block:hover .icons{opacity:1}
-.side-menu .monitor_block .icons{opacity:0;width:100%;bottom:0;left:0;background:rgba(0,0,0,0.6);position:absolute;padding:2.5px;z-index:11}
+.side-menu .monitor_block:hover .title{opacity:1}
+.side-menu .monitor_block .icons,.side-menu .monitor_block .title{opacity:0;width:100%;bottom:0;left:0;background:rgba(0,0,0,0.6);position:absolute;padding:2.5px;z-index:11}
+.side-menu .monitor_block .title{bottom:auto;top:0;color:#fff}
+.monitor_item .hud .side-menu{top:0;right:0;margin:auto;width:40%;height:100%;padding:15px;background:rgba(0,0,0,0.6);padding-bottom:60px;}
 
 #side_menu_right.nav-xs{width:0!important;overflow:hidden}
 .side-menu table{color:#fff;}
