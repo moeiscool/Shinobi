@@ -130,9 +130,9 @@ $.ccio.ws.on('f',function (d){
                     $('[mid="'+d.mid+'"].snapshot').attr('src',placeholder.getData(placeholder.plcimg(d.snapshot)))
                 break;
                 case'ab':
-                    var reader = new FileReader();
-                    reader.addEventListener("loadend",function(){$('[mid="'+d.mid+'"].snapshot').attr('src',reader.result)});
-                    reader.readAsDataURL(new Blob([d.snapshot],{type:"image/jpeg"}));
+                    d.reader = new FileReader();
+                    d.reader.addEventListener("loadend",function(){$('[mid="'+d.mid+'"].snapshot').attr('src',d.reader.result)});
+                    d.reader.readAsDataURL(new Blob([d.snapshot],{type:"image/jpeg"}));
                 break;
                 case'b64':
                     $('[mid="'+d.mid+'"].snapshot').attr('src','data:image/jpeg;base64,'+d.snapshot)
@@ -145,6 +145,7 @@ $.ccio.ws.on('f',function (d){
             $.each(d.mon,function(n,v){
                 $.ccio.mon[d.mid][n]=v;
             });
+            if(d.new===true){$.ccio.tm(1,d.mon,'#monitors_list')}
             switch(d.mon.mode){
                 case'stop':$('#monitor_live_'+d.mid).remove();break;
                 case'start':case'record':
