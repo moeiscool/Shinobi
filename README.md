@@ -67,6 +67,13 @@ run `pm2 logs` to see the console for any errors.
 
 If you like what I am doing here and want me to continue please consider donating :)
 
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" style="display:inline-block">
+<input type="hidden" name="cmd" value="_s-xclick">
+<input type="hidden" name="hosted_button_id" value="5QAV64Z57TYVJ">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+
 PayPal : paypal@m03.ca
 
 Patreon : https://patreon.com/moeiscool
