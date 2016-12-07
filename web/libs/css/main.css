@@ -5,6 +5,12 @@
 *:after {
   box-sizing: border-box;
 }
+.m-r{margin-right:10px}
+.m-b{margin-bottom:10px}
+.m-t{margin-top:10px}
+.m-l{margin-left:10px}
+.list-inline{list-style:none}
+.list-inline li{display:inline-block;vertical-align: top;margin:0;}
 .truncate{width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 img{max-width:100%}
 .display-table{display:table;width:100%}

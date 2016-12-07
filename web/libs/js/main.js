@@ -121,9 +121,6 @@ $.ccio.ws.on('f',function (d){
             d.e='.glM'+d.mid+'.events_list ul';$(d.e).find('.notice.noevents').remove();
             $.ccio.tm(0,d,d.e)
         break;
-        case'event_created':
-            
-        break;
         case'monitor_snapshot':
             switch(d.snapshot_format){
                 case'plc':
@@ -153,7 +150,7 @@ $.ccio.ws.on('f',function (d){
                 break;
             }
         break;
-        case'monitor_watch_off':
+        case'monitor_watch_off':case'monitor_stopping':
             d.o=$.ccio.op().watch_on;if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=0;$.ccio.op('watch_on',d.o);
             $.ccio.mon[d.id].watch=0;
             if(d.cnid===$.ccio.ws.id){
