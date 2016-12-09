@@ -69,9 +69,13 @@ If you like what I am doing here and want me to continue please consider donatin
 
 Quick Links on the site page : https://moeiscool.github.io/Shinobi/
 
+<a href='https://pledgie.com/campaigns/33051'><img alt='Click here to lend your support to: Shinobi, Open Source CCTV written in Node.js and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/33051.png?skin_name=chrome' border='0' ></a>
+
 PayPal : paypal@m03.ca
 
 Patreon : https://patreon.com/moeiscool
+
+Please note : donating directly through paypal will show more support :)
 
 # Author
 

@@ -51,6 +51,11 @@ $.ccio={fr:$('#files_recent'),mon:{}};
         if(z){
             $(z).prepend(tmp)
         }
+        switch(x){
+            case 0:
+                $.ccio.init('ls');
+            break;
+        }
         return tmp;
     }
     $.ccio.pm=function(x,d,z,k){
@@ -69,7 +74,6 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                     tmp+='<li class="notice noevents">No Events for This Monitor</li>';
                 }
                 $(d.ev).html(tmp);
-                $.ccio.init('ls')
             break;
         }
         return tmp;
@@ -109,7 +113,7 @@ $.ccio.ws.on('f',function (d){
             $.each(d.monitors,function(n,v){
                 $.ccio.mon[v.mid]=v;
                 $.ccio.tm(1,v,'#monitors_list')
-                $.ccio.cx({f:'get',ff:'events',mid:v.mid})
+                $.ccio.cx({f:'get',ff:'events',limit:10,mid:v.mid})
                 if(d.o[v.ke]&&d.o[v.ke][v.mid]===1){$.ccio.cx({f:'monitor',ff:'watch_on',id:v.mid})}
             })
         break;

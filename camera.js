@@ -36,23 +36,21 @@ var crypto = require('crypto');
 var bodyParser = require('body-parser');
 var connectionTester = require('connection-tester');
 var spawn = require('child_process').spawn;
-
+var mjpeg2jpegs = require("mjpeg2jpegs");
+ 
 server.listen(80);
 
 exec("ps aux | grep -ie ffmpeg | awk '{print $2}' | xargs kill -9");//kill any ffmpeg running
+
+process.on('uncaughtException', function (err) {
+    console.error('uncaughtException',err);
+});
 
 var db_config=JSON.parse(fs.readFileSync('conf.json','UTF8'));
 var sql=mysql.createConnection(db_config);
 s={running:{},tmp:{},mjpeg:{},build:{},dir:{events:__dirname+'/events/',frames:__dirname+'/frames/'},users:{}};
 s.build_at=100;
 s.interval=1000;
-s.deleteRoute=function(xx,ar){
-    ar=[];
-    Object.keys(app._router.stack).forEach(function(n){
-        if(app._router.stack[n].path&&app._router.stack[n].path!==xx){ar.push(app._router.stack[n])}
-    })
-    app._router.stack=ar;
-}
 s.md5=function(x){return crypto.createHash('md5').update(x).digest("hex");}
 s.base64=function(file,err){try{var bitmap = fs.readFileSync(file);return new Buffer(bitmap).toString('base64');}catch(er){return err;}}
 s.tx=function(z,y,x){if(x){return x.broadcast.to(y).emit('f',z)};io.to(y).emit('f',z);}
@@ -74,7 +72,7 @@ s.kill=function(x,e,p){
         clearTimeout(s.users[e.ke].mon[e.id].record.capturing);
         if(s.users[e.ke].mon[e.id].record.request){s.users[e.ke].mon[e.id].record.request.abort();delete(s.users[e.ke].mon[e.id].record.request);}
     };
-    if(!x||x===1){return};p=x.pid;x.stdin.pause();    setTimeout(function(){x.kill();setTimeout(function(){exec('kill -9 '+p)},1000)},1000)}
+    if(!x||x===1){return};p=x.pid;x.stdin.pause();    setTimeout(function(){x.kill();delete(x);setTimeout(function(){exec('kill -9 '+p)},1000)},1000)}
 
 s.com = spawn('dstat', ['-c', '--nocolor']);
 s.com.stdout.on('data', function(data,txt){
@@ -104,6 +102,35 @@ s.init=function(x,e){
         break;
     }
     if(typeof e.callback==='function'){setTimeout(function(){e.callback()},5000);}
+}
+s.event=function(x,e){
+    switch(x){
+        case'save':
+            e.dir=s.dir.events+e.ke+'/'+e.id+'/';
+            if(fs.existsSync(e.dir+e.filename+'.webm')){
+                e.filesize=fs.statSync(e.dir+e.filename+'.webm')["size"];
+                if((e.filesize/100000).toFixed(2)>0.25){
+            e.save=[e.id,e.ke,s.users[e.ke].mon[e.id].record.time.format('YYYY-MM-DD HH:mm:ss'),e.filesize];
+
+
+               sql.query('INSERT INTO Videos (mid,ke,time,size) VALUES (?,?,?,?)',e.save)
+               s.tx({f:'event_build_success',filename:s.moment(s.users[e.ke].mon[e.id].record.time)+'.webm',mid:e.id,ke:e.ke,time:s.users[e.ke].mon[e.id].record.time,end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
+
+
+    //                        exec('ffprobe -loglevel quiet -print_format json -show_format -show_streams -count_frames '+s.dir.events+e.ke+'/'+e.id+'/'+s.users[e.ke].mon[e.id].record.time.format('YYYY-MM-DDTHH-mm-ss')+'.webm',function(err,p){
+    //                           if(err){console.log('PROBE:',err)}else{
+    //                           p=JSON.parse(p);e.save[3]=p.format.duration,e.save[4]=p.format.size,e.save[5]=p.streams.nb_read_frames;
+    //                               sql.query('INSERT INTO Videos (mid,ke,time,duration,size,frames) VALUES (?,?,?,?,?,?)',e.save)
+    //                               s.tx({f:'event_build_success',filename:s.moment(s.users[e.ke].mon[e.id].record.time)+'.webm',mid:e.id,ke:e.ke},'GRP_'+e.ke);
+    //                           }
+    //                        });
+            s.users[e.ke].mon[e.id].record.time=e.time;
+                }
+                delete(s.users[e.ke].mon[e.id].open);
+                    
+            }
+        break;
+    }
 }
 s.camera=function(e,cn,tx){
     if(!e){e={}};if(cn&&cn.ke){e.ke=cn.ke};
@@ -217,7 +244,6 @@ s.camera=function(e,cn,tx){
                 if(e.ob===0){
                    if(s.users[e.ke].mon.type==='mjpeg'){
     //                   s.camera({mode:'frame_emitter',id:e.id,ke:e.ke})
-    //                   s.deleteRoute(s.users[e.ke].mon[e.id].livestream);
                    }
                    delete(s.users[e.ke].mon[e.id].livestream)
                    delete(s.users[e.ke].mon[e.id].watch)
@@ -228,7 +254,9 @@ s.camera=function(e,cn,tx){
             s.tx({f:'monitor_watch_off',viewers:e.ob,id:e.id,cnid:cn.id},'MON_'+e.id);
         break;
         case'stop'://stop monitor
-            if(!s.users[e.ke]||!s.users[e.ke].mon[e.id]||s.users[e.ke].mon[e.id].started===0){return}
+            if(!s.users[e.ke]||!s.users[e.ke].mon[e.id]){return}
+            if(s.users[e.ke].mon[e.id].open){e.filename=s.users[e.ke].mon[e.id].open;s.event('save',e)}
+            if(s.users[e.ke].mon[e.id].started===0){return}
             s.kill(s.users[e.ke].mon[e.id].spawn,e);
             clearInterval(s.users[e.ke].mon[e.id].running);delete(s.users[e.ke].mon[e.id].running);
             s.users[e.ke].mon[e.id].started=0;
@@ -266,30 +294,21 @@ s.camera=function(e,cn,tx){
             e.error_count=0;
 //                e.error=0;
 //            e.frame_count=0;
+                e.set=function(){
+                    clearInterval(s.users[e.ke].mon[e.id].running);
+                    s.users[e.ke].mon[e.id].running=setInterval(function(){//start loop
+                         e.fn()
+                    },60000*15);//every 15 minutes start a new file.
+                }
                 e.fn=function(time){//this function loops to create new files
                     try{
                     if(time){e.time=time}else{e.time=moment()};
                     e.time=e.time.utcOffset('-0800');
                     if(e.filename&&s.users[e.ke].mon[e.id].record.yes===1){
-                        if(fs.existsSync(e.dir+e.filename+'.webm')){
-                        e.save=[e.id,e.ke,s.users[e.ke].mon[e.id].record.time.format('YYYY-MM-DD HH:mm:ss'),fs.statSync(e.dir+e.filename+'.webm')["size"]];
-
-                        
-                           sql.query('INSERT INTO Videos (mid,ke,time,size) VALUES (?,?,?,?)',e.save)
-                           s.tx({f:'event_build_success',filename:s.moment(s.users[e.ke].mon[e.id].record.time)+'.webm',mid:e.id,ke:e.ke,time:s.users[e.ke].mon[e.id].record.time,end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
-                        
-                        
-//                        exec('ffprobe -loglevel quiet -print_format json -show_format -show_streams -count_frames '+s.dir.events+e.ke+'/'+e.id+'/'+s.users[e.ke].mon[e.id].record.time.format('YYYY-MM-DDTHH-mm-ss')+'.webm',function(err,p){
-//                           if(err){console.log('PROBE:',err)}else{
-//                           p=JSON.parse(p);e.save[3]=p.format.duration,e.save[4]=p.format.size,e.save[5]=p.streams.nb_read_frames;
-//                               sql.query('INSERT INTO Videos (mid,ke,time,duration,size,frames) VALUES (?,?,?,?,?,?)',e.save)
-//                               s.tx({f:'event_build_success',filename:s.moment(s.users[e.ke].mon[e.id].record.time)+'.webm',mid:e.id,ke:e.ke},'GRP_'+e.ke);
-//                           }
-//                        });
-                        s.users[e.ke].mon[e.id].record.time=e.time;
-                        }
+                        s.event('save',e)
                     }
                     e.filename=e.time.format('YYYY-MM-DDTHH-mm-ss');
+                    s.users[e.ke].mon[e.id].open=e.filename;
                     s.kill(s.users[e.ke].mon[e.id].spawn,e);
                         
                         
@@ -310,28 +329,34 @@ s.camera=function(e,cn,tx){
                                         e.args = '-loglevel quiet -f image2pipe -framerate 1 -vcodec mjpeg -i - -f webm -framerate 2 -q:v 1 '+e.dir+e.filename+'.webm';
                                         s.users[e.ke].mon[e.id].spawn = spawn('ffmpeg',e.args.split(' '));
                                         e.captureOne=function(f){
-
                                             s.users[e.ke].mon[e.id].record.request=request({url:e.url,method:'GET',encoding: null,timeout:3000},function(er,data){
+                                                if(s.users[e.ke].mon[e.id].spawn&&s.users[e.ke].mon[e.id].spawn.stdin){
                                                 if(er){++e.error_count;
                                                 if(e.error_count>4){s.camera({mode:'stop',id:e.id,ke:e.ke})}
                                                        e.captureOne();
                                                        return;
                                                 }
+                                               
                                                 if(s.users[e.ke].mon[e.id].spawn&&s.users[e.ke].mon[e.id].spawn.stdin){
-                                               s.users[e.ke].mon[e.id].spawn.stdin.write(data.body);
-                                                };
+                                                        s.users[e.ke].mon[e.id].spawn.stdin.write(data.body);
+                                                }
                                                 if(s.users[e.ke].mon[e.id].watch&&Object.keys(s.users[e.ke].mon[e.id].watch).length>0){
                                                     s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:data.body,frame_format:'ab'},'MON_'+e.id);
                                                 }
                                                 s.users[e.ke].mon[e.id].record.capturing=setTimeout(function(){e.captureOne()},500);
                                                 clearTimeout(e.timeOut),e.timeOut=setTimeout(function(){e.error_count=0;},3000)
-                                            }).on('error', function(err){console.log('PIPE WRITE '+e.id,err)});
-                                        }
-                                        e.captureOne()
+                                                }
+                                            }).on('error', function(err){
+                                                s.users[e.ke].mon[e.id].record.request.abort();
+                                                clearTimeout(s.users[e.ke].mon[e.id].record.capturing);
+                                                e.captureOne();
+                                            });
+                                      }
+                                      e.captureOne()
                                     break;
                                     case'mjpeg':
-                                           e.args='-loglevel warning -reconnect 1 -f mjpeg -r 5 -i '+e.url+' -vcodec libvpx -r '+e.fps+' -q:v 1 '+e.dir+e.filename+'.webm -vf fps=1 -s '+e.ratio+' -f image2pipe pipe:1';
-                                           s.users[e.ke].mon[e.id].spawn=spawn('avconv',e.args.split(' '));
+                                           e.args='-loglevel warning -reconnect 1 -f mjpeg -i '+e.url+' -vcodec libvpx -r '+e.fps+' -q:v 1 '+e.dir+e.filename+'.webm -vf fps=1 -s '+e.ratio+' -f mjpeg pipe:1';
+                                           s.users[e.ke].mon[e.id].spawn=spawn('ffmpeg',e.args.split(' '));
                                         s.users[e.ke].mon[e.id].spawn.on('error',function(er){++e.error_count;if(e.error_count>4){console.log('Camera Error, Stopping');s.camera({mode:'stop',id:e.id,ke:e.ke})}})
                                         s.users[e.ke].mon[e.id].spawn.stdout.on('data',function(d){
                                             if(s.users[e.ke].mon[e.id].watch&&Object.keys(s.users[e.ke].mon[e.id].watch).length>0){
@@ -344,6 +369,7 @@ s.camera=function(e,cn,tx){
                                             e.chk=function(x){return d.indexOf(x)>-1;}
                                             switch(true){
                                                 case e.chk('No such file or directory'):
+                                                case e.chk('Invalid data found when processing input'):
                                                     e.fn();
                                                 break;
                                                 case e.chk('Immediate exit requested'):
@@ -362,9 +388,7 @@ s.camera=function(e,cn,tx){
                     }catch(err){++e.error_count;console.log(err);s.tx({f:'error',data:err},'GRP_2Df5hBE');}
                 }
                 s.users[e.ke].mon[e.id].record.time=moment();//initial time.
-                s.users[e.ke].mon[e.id].running=setInterval(function(){//start loop
-                     e.fn()
-                },60000*15);//every 15 minutes start a new file.
+                e.set();
                 e.fn(s.users[e.ke].mon[e.id].record.time)//start drawing files
             }});
         break;
@@ -406,7 +430,7 @@ function tx(z){if(!z.ke){z.ke=cn.ke;};cn.emit('f',z);}
                     sql.query('SELECT * FROM Monitors WHERE ke=?',[d.ke],function(err,rr) {
                         if(rr&&rr[0]){
                             rr.forEach(function(t){
-                                s.camera({mode:'snapshot',id:t.mid,ke:t.ke,mon:t})
+//                                s.camera({mode:'snapshot',id:t.mid,ke:t.ke,mon:t})
                             })
                         }
                         tx({f:'init_success',monitors:rr,users:s.users[d.ke].vid})
@@ -434,7 +458,8 @@ function tx(z){if(!z.ke){z.ke=cn.ke;};cn.emit('f',z);}
                         case'events':
                             d.cx={f:'get_'+d.ff,mid:d.mid};
                             d.sql="SELECT * FROM Videos WHERE ke=?";d.ar=[d.ke];
-                            if(d.mid){d.sql+='AND mid=?';d.ar.push(d.mid)}
+                            if(d.mid){d.sql+=' AND mid=?';d.ar.push(d.mid)}
+                            if(d.limit){d.sql+=' LIMIT '+d.limit;}
                             sql.query(d.sql,d.ar,function(err,r){
                                 d.cx[d.ff]=r,tx(d.cx);
                             });
@@ -513,6 +538,9 @@ s.tx({f:'monitor_watch_on',viewers:Object.keys(s.users[d.ke].mon[d.id].watch).le
 app.use(express.static(__dirname+'/events'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
+app.get('/info', function (req,res){
+    res.sendFile(__dirname+'/index.html');
+});
 app.get('/', function (req,res){
     res.sendFile(__dirname+'/web/index.html');
 });
