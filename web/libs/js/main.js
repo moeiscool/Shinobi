@@ -210,8 +210,15 @@ $('body')
     
 })
 .on('click','.event_launch',function(e){
-    e.preventDefault();e.href=$(this).attr('href'),e.e=$('#event_viewer');
+    e.preventDefault();e.t=$(this).parents('[eid]');e.id=e.t.attr('eid'),e.file=e.t.attr('file'),e.href=$(this).attr('href'),e.e=$('#event_viewer');
+    console.log(e.file,e.href,e.id)
+    e.mon=$.ccio.mon[e.id];
+    e.e.find('.modal-title span').html(e.mon.name+' - '+e.file)
     e.e.find('.modal-body').html('<video class="event_video" video="'+e.href+'" autoplay loop controls><source src="'+e.href+'" type="video/webm"></video>')
+    e.e.attr('eid',e.id);
+    e.f=e.e.find('.modal-footer');
+    e.f.find('.download_link').attr('href',e.href).attr('download',e.file);
+    e.f.find('[monitor="download"][host="dropbox"]').attr('href',e.href);
     e.e.modal('show');
 })
 .on('click','[class_toggle]',function(e){

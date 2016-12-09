@@ -35,12 +35,11 @@ img{max-width:100%}
 img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .circle-img.sm{height:25px;width:25px}
 
-.event_video{margin:auto;max-width:100%}
+.event_video{margin:auto;max-width:100%;max-height:600px;}
 @media (min-width: 768px){
     .modal{padding-left:0!important;}
     .modal .modal-dialog{width:calc(100% - 10px)!important;margin: 30px auto;}
 }
-
 
 .events_list .title{font-size:12pt;padding:0 10px}
 .signal.red{background:#c9302c}
@@ -71,3 +70,9 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 [class_toggle]{cursor:pointer}
 
 .form-group label{width:100%}
+
+.dark.modal .modal-header,.dark.modal .modal-footer{background:#333;border-color:#444;}
+.dark.modal .modal-header{color:#fff;}
+.dark.modal .modal-footer>*:not(.btn){color:#fff;}
+.dark.modal .modal-body{background:#333;}
+.dark.modal .close{color:#fff;}
