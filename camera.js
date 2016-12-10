@@ -20,7 +20,6 @@
 //PayPal : paypal@m03.ca
 //Patreon : https://patreon.com/moeiscool
 
-
 var fs = require('fs');
 var mysql = require('mysql');
 var moment = require('moment');
@@ -36,8 +35,8 @@ var crypto = require('crypto');
 var bodyParser = require('body-parser');
 var connectionTester = require('connection-tester');
 var spawn = require('child_process').spawn;
-var mjpeg2jpegs = require("mjpeg2jpegs");
- 
+var db_config=JSON.parse(fs.readFileSync('conf.json','UTF8'));
+var sql=mysql.createConnection(db_config);
 server.listen(80);
 
 exec("ps aux | grep -ie ffmpeg | awk '{print $2}' | xargs kill -9");//kill any ffmpeg running
@@ -45,14 +44,23 @@ exec("ps aux | grep -ie ffmpeg | awk '{print $2}' | xargs kill -9");//kill any f
 process.on('uncaughtException', function (err) {
     console.error('uncaughtException',err);
 });
+////close open events
+//sql.query('SELECT * FROM Videos WHERE status=?',[0],function(err,r){
+//    if(r&&r[0]){
+//        r.forEach(function(v){
+//            s.init(0,v);
+//            s.users[v.ke].mon[v.mid].open=v.time;
+//            s.event('close',v);
+//            delete(s.users[v.ke].mon[v.mid]);
+//        })
+//    }
+//})
 
-var db_config=JSON.parse(fs.readFileSync('conf.json','UTF8'));
-var sql=mysql.createConnection(db_config);
 s={running:{},tmp:{},mjpeg:{},build:{},dir:{events:__dirname+'/events/',frames:__dirname+'/frames/'},users:{}};
 s.build_at=100;
 s.interval=1000;
 s.md5=function(x){return crypto.createHash('md5').update(x).digest("hex");}
-s.base64=function(file,err){try{var bitmap = fs.readFileSync(file);return new Buffer(bitmap).toString('base64');}catch(er){return err;}}
+s.nameToTime=function(x){x=x.replace('.webm','').split('T'),x[1]=x[1].replace(/-/g,':');x=x.join(' ');return x;}
 s.tx=function(z,y,x){if(x){return x.broadcast.to(y).emit('f',z)};io.to(y).emit('f',z);}
 s.getDirs=function(srcpath) {
   return fs.readdirSync(srcpath).filter(function(file) {
@@ -72,7 +80,7 @@ s.kill=function(x,e,p){
         clearTimeout(s.users[e.ke].mon[e.id].record.capturing);
         if(s.users[e.ke].mon[e.id].record.request){s.users[e.ke].mon[e.id].record.request.abort();delete(s.users[e.ke].mon[e.id].record.request);}
     };
-    if(!x||x===1){return};p=x.pid;x.stdin.pause();    setTimeout(function(){x.kill();delete(x);setTimeout(function(){exec('kill -9 '+p)},1000)},1000)}
+    if(!x||x===1){return};p=x.pid;x.stdin.pause();setTimeout(function(){x.kill('SIGTERM');delete(x);setTimeout(function(){exec('kill -9 '+p)},1000)},1000)}
 
 s.com = spawn('dstat', ['-c', '--nocolor']);
 s.com.stdout.on('data', function(data,txt){
@@ -105,26 +113,30 @@ s.init=function(x,e){
 }
 s.event=function(x,e){
     switch(x){
-        case'save':
+        case'delete':
             e.dir=s.dir.events+e.ke+'/'+e.id+'/';
-            if(fs.existsSync(e.dir+e.filename+'.webm')){
-                e.filesize=fs.statSync(e.dir+e.filename+'.webm')["size"];
+            e.save=[e.id,e.ke,s.nameToTime(s.users[e.ke].mon[e.id].open),0];
+            sql.query('DELETE FROM Videos WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save)
+            s.tx({f:'event_delete',reason:'Camera Error',filename:s.users[e.ke].mon[e.id].open+'.webm',mid:e.id,ke:e.ke,time:s.nameToTime(s.users[e.ke].mon[e.id].open),end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
+            if(fs.existsSync(e.dir+s.users[e.ke].mon[e.id].open+'.webm')){
+                return fs.unlinkSync(e.dir+s.users[e.ke].mon[e.id].open+'.webm');
+            }
+            delete(s.users[e.ke].mon[e.id].open);
+        break;
+        case'open':
+            e.save=[e.id,e.ke,s.nameToTime(s.users[e.ke].mon[e.id].open)];
+            sql.query('INSERT INTO Videos (mid,ke,time) VALUES (?,?,?)',e.save)
+            s.tx({f:'event_build_start',filename:s.users[e.ke].mon[e.id].open+'.webm',mid:e.id,ke:e.ke,time:s.nameToTime(s.users[e.ke].mon[e.id].open),end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
+        break;
+        case'close':
+            e.dir=s.dir.events+e.ke+'/'+e.id+'/';
+            if(fs.existsSync(e.dir+s.users[e.ke].mon[e.id].open+'.webm')){
+                e.filesize=fs.statSync(e.dir+s.users[e.ke].mon[e.id].open+'.webm')["size"];
                 if((e.filesize/100000).toFixed(2)>0.25){
-            e.save=[e.id,e.ke,s.users[e.ke].mon[e.id].record.time.format('YYYY-MM-DD HH:mm:ss'),e.filesize];
-
-
-               sql.query('INSERT INTO Videos (mid,ke,time,size) VALUES (?,?,?,?)',e.save)
-               s.tx({f:'event_build_success',filename:s.moment(s.users[e.ke].mon[e.id].record.time)+'.webm',mid:e.id,ke:e.ke,time:s.users[e.ke].mon[e.id].record.time,end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
-
-
-    //                        exec('ffprobe -loglevel quiet -print_format json -show_format -show_streams -count_frames '+s.dir.events+e.ke+'/'+e.id+'/'+s.users[e.ke].mon[e.id].record.time.format('YYYY-MM-DDTHH-mm-ss')+'.webm',function(err,p){
-    //                           if(err){console.log('PROBE:',err)}else{
-    //                           p=JSON.parse(p);e.save[3]=p.format.duration,e.save[4]=p.format.size,e.save[5]=p.streams.nb_read_frames;
-    //                               sql.query('INSERT INTO Videos (mid,ke,time,duration,size,frames) VALUES (?,?,?,?,?,?)',e.save)
-    //                               s.tx({f:'event_build_success',filename:s.moment(s.users[e.ke].mon[e.id].record.time)+'.webm',mid:e.id,ke:e.ke},'GRP_'+e.ke);
-    //                           }
-    //                        });
-            s.users[e.ke].mon[e.id].record.time=e.time;
+                    console.log(s.nameToTime(s.users[e.ke].mon[e.id].open))
+                    e.save=[e.filesize,e.frames,1,e.id,e.ke,s.nameToTime(s.users[e.ke].mon[e.id].open)];
+                    sql.query('UPDATE Videos SET `size`=?,`frames`=?,`status`=? WHERE `mid`=? AND `ke`=? AND `time`=?',e.save)
+ s.tx({f:'event_build_success',filename:s.users[e.ke].mon[e.id].open+'.webm',mid:e.id,ke:e.ke,time:s.nameToTime(s.users[e.ke].mon[e.id].open),end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
                 }
                 delete(s.users[e.ke].mon[e.id].open);
                     
@@ -255,13 +267,14 @@ s.camera=function(e,cn,tx){
         break;
         case'stop'://stop monitor
             if(!s.users[e.ke]||!s.users[e.ke].mon[e.id]){return}
-            if(s.users[e.ke].mon[e.id].open){e.filename=s.users[e.ke].mon[e.id].open;s.event('save',e)}
+            if(s.users[e.ke].mon[e.id].open){e.filename=s.users[e.ke].mon[e.id].open;s.event('close',e)}
             if(s.users[e.ke].mon[e.id].started===0){return}
             s.kill(s.users[e.ke].mon[e.id].spawn,e);
-            clearInterval(s.users[e.ke].mon[e.id].running);delete(s.users[e.ke].mon[e.id].running);
+            clearInterval(s.users[e.ke].mon[e.id].running);
             s.users[e.ke].mon[e.id].started=0;
             if(s.users[e.ke].mon[e.id].record){clearInterval(s.users[e.ke].mon[e.id].record.purge)}
             s.tx({f:'monitor_stopping',id:e.id,time:s.moment(),reason:e.reason},'GRP_'+e.ke);
+            delete(s.users[e.ke].mon[e.id]);
         break;
         case'start':case'record'://stop or record monitor url
             s.init(0,{ke:e.ke,mid:e.id,callback:function(){
@@ -293,7 +306,6 @@ s.camera=function(e,cn,tx){
 
             e.error_count=0;
 //                e.error=0;
-//            e.frame_count=0;
                 e.set=function(){
                     clearInterval(s.users[e.ke].mon[e.id].running);
                     s.users[e.ke].mon[e.id].running=setInterval(function(){//start loop
@@ -302,90 +314,95 @@ s.camera=function(e,cn,tx){
                 }
                 e.fn=function(time){//this function loops to create new files
                     try{
-                    if(time){e.time=time}else{e.time=moment()};
-                    e.time=e.time.utcOffset('-0800');
-                    if(e.filename&&s.users[e.ke].mon[e.id].record.yes===1){
-                        s.event('save',e)
-                    }
-                    e.filename=e.time.format('YYYY-MM-DDTHH-mm-ss');
-                    s.users[e.ke].mon[e.id].open=e.filename;
-                    s.kill(s.users[e.ke].mon[e.id].spawn,e);
+                        if(time){e.time=time}else{e.time=moment()};
+                        e.time=e.time.utcOffset('-0800');
+                        if(s.users[e.ke].mon[e.id].open&&s.users[e.ke].mon[e.id].record.yes===1){
+                            s.event('close',e);
+                            s.users[e.ke].mon[e.id].record.time=e.time;
+                        }
+                        e.filename=e.time.format('YYYY-MM-DDTHH-mm-ss');
+                        s.users[e.ke].mon[e.id].open=e.filename;
+                        s.kill(s.users[e.ke].mon[e.id].spawn,e);
                         
                         
-                            e.hosty=e.host.split('@');
-                            if(e.hosty[1]){e.hosty=e.hosty[1];}else{e.hosty=e.hosty[0];}
-                            connectionTester.test(e.hosty,e.port,2000,function(err,o){
-                                if(o.success===true){
-                                    switch(s.ratio(e.width,e.height)){
-                                        case'16:9':
-                                            e.ratio='640x360';
-                                        break;
-                                        default:
-                                            e.ratio='640x480';
-                                        break;
-                                    }
-                                switch(e.type){
-                                    case'jpeg':
-                                        e.args = '-loglevel quiet -f image2pipe -framerate 1 -vcodec mjpeg -i - -f webm -framerate 2 -q:v 1 '+e.dir+e.filename+'.webm';
-                                        s.users[e.ke].mon[e.id].spawn = spawn('ffmpeg',e.args.split(' '));
-                                        e.captureOne=function(f){
-                                            s.users[e.ke].mon[e.id].record.request=request({url:e.url,method:'GET',encoding: null,timeout:3000},function(er,data){
-                                                if(s.users[e.ke].mon[e.id].spawn&&s.users[e.ke].mon[e.id].spawn.stdin){
-                                                if(er){++e.error_count;
-                                                if(e.error_count>4){s.camera({mode:'stop',id:e.id,ke:e.ke})}
-                                                       e.captureOne();
-                                                       return;
-                                                }
-                                               
-                                                if(s.users[e.ke].mon[e.id].spawn&&s.users[e.ke].mon[e.id].spawn.stdin){
-                                                        s.users[e.ke].mon[e.id].spawn.stdin.write(data.body);
-                                                }
-                                                if(s.users[e.ke].mon[e.id].watch&&Object.keys(s.users[e.ke].mon[e.id].watch).length>0){
-                                                    s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:data.body,frame_format:'ab'},'MON_'+e.id);
-                                                }
-                                                s.users[e.ke].mon[e.id].record.capturing=setTimeout(function(){e.captureOne()},500);
-                                                clearTimeout(e.timeOut),e.timeOut=setTimeout(function(){e.error_count=0;},3000)
-                                                }
-                                            }).on('error', function(err){
-                                                s.users[e.ke].mon[e.id].record.request.abort();
-                                                clearTimeout(s.users[e.ke].mon[e.id].record.capturing);
-                                                e.captureOne();
-                                            });
-                                      }
-                                      e.captureOne()
+                        e.hosty=e.host.split('@');
+                        if(e.hosty[1]){e.hosty=e.hosty[1];}else{e.hosty=e.hosty[0];}
+                        connectionTester.test(e.hosty,e.port,2000,function(err,o){
+                            if(o.success===true){
+                                s.event('open',e);
+                                e.frames=0;
+                                switch(s.ratio(e.width,e.height)){
+                                    case'16:9':
+                                        e.ratio='640x360';
                                     break;
-                                    case'mjpeg':
-                                           e.args='-loglevel warning -reconnect 1 -f mjpeg -i '+e.url+' -vcodec libvpx -r '+e.fps+' -q:v 1 '+e.dir+e.filename+'.webm -vf fps=1 -s '+e.ratio+' -f mjpeg pipe:1';
-                                           s.users[e.ke].mon[e.id].spawn=spawn('ffmpeg',e.args.split(' '));
-                                        s.users[e.ke].mon[e.id].spawn.on('error',function(er){++e.error_count;if(e.error_count>4){console.log('Camera Error, Stopping');s.camera({mode:'stop',id:e.id,ke:e.ke})}})
-                                        s.users[e.ke].mon[e.id].spawn.stdout.on('data',function(d){
-                                            if(s.users[e.ke].mon[e.id].watch&&Object.keys(s.users[e.ke].mon[e.id].watch).length>0){
-                                                s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:d,frame_format:'ab'},'MON_'+e.id);
+                                    default:
+                                        e.ratio='640x480';
+                                    break;
+                                }
+                            switch(e.type){
+                                case'jpeg':
+                                    e.args = '-loglevel quiet -f image2pipe -framerate 1 -vcodec mjpeg -i - -vf drawtext=fontfile=/usr/share/fonts/truetype/freefont/FreeSans.ttf:text=\'%{localtime}\':x=(w-tw)/2:y=0:fontcolor=white:box=1:boxcolor=0x00000000@1:fontsize=10 -f webm -framerate 2 -q:v 1 '+e.dir+e.filename+'.webm';
+                                    s.users[e.ke].mon[e.id].spawn = spawn('ffmpeg',e.args.split(' '));
+                                    e.captureOne=function(f){
+                                        s.users[e.ke].mon[e.id].record.request=request({url:e.url,method:'GET',encoding: null,timeout:3000},function(er,data){
+                                           ++e.frames; if(s.users[e.ke].mon[e.id].spawn&&s.users[e.ke].mon[e.id].spawn.stdin){
+                                            if(er){++e.error_count;
+                                            if(e.error_count>4){s.camera({mode:'stop',id:e.id,ke:e.ke})}
+                                                   e.captureOne();
+                                                   return;
+                                            }
 
+                                            if(s.users[e.ke].mon[e.id].spawn&&s.users[e.ke].mon[e.id].spawn.stdin){
+                                                    s.users[e.ke].mon[e.id].spawn.stdin.write(data.body);
                                             }
-                                        });
-                                        s.users[e.ke].mon[e.id].spawn.stderr.on('data',function(d){
-                                            d=d.toString();console.log('SPAWN ERROR '+e.id,d);
-                                            e.chk=function(x){return d.indexOf(x)>-1;}
-                                            switch(true){
-                                                case e.chk('No such file or directory'):
-                                                case e.chk('Invalid data found when processing input'):
-                                                    e.fn();
-                                                break;
-                                                case e.chk('Immediate exit requested'):
-                                                case e.chk('timed out'):
-                                                case e.chk('reset by peer'):
-                                                    e.mode_override='stop';s.camera(e);return;
-                                                break;
+                                            if(s.users[e.ke].mon[e.id].watch&&Object.keys(s.users[e.ke].mon[e.id].watch).length>0){
+                                                s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:data.body,frame_format:'ab'},'MON_'+e.id);
                                             }
+                                            s.users[e.ke].mon[e.id].record.capturing=setTimeout(function(){e.captureOne()},500);
+                                            clearTimeout(e.timeOut),e.timeOut=setTimeout(function(){e.error_count=0;},3000)
+                                            }
+                                        }).on('error', function(err){
+                                            s.users[e.ke].mon[e.id].record.request.abort();
+                                            clearTimeout(s.users[e.ke].mon[e.id].record.capturing);
+                                            e.captureOne();
+                                        }).on('uncaughtException', function(err){
+                                            console.error('PIPE '+e.id,err)
                                         });
-                                    break;
-                                }
-                                }else{
-                                    console.log('Cannot Connect, Retrying...',e.id);++e.error_count;setTimeout(function(){if(e.error_count>4){console.log('Camera Error, Stopping',e.id);s.camera({mode:'stop',id:e.id,ke:e.ke})}else{e.fn();}},5000);return;             
-                                }
-                            });
-                    }catch(err){++e.error_count;console.log(err);s.tx({f:'error',data:err},'GRP_2Df5hBE');}
+                                  }
+                                  e.captureOne()
+                                break;
+                                case'mjpeg':
+                                       e.args='-loglevel warning -reconnect 1 -r 5 -f mjpeg -i '+e.url+' -vf drawtext=fontfile=/usr/share/fonts/truetype/freefont/FreeSans.ttf:text=\'%{localtime}\':x=(w-tw)/2:y=0:fontcolor=white:box=1:boxcolor=0x00000000@1:fontsize=10 -vcodec libvpx -r '+e.fps+' -q:v 1 '+e.dir+e.filename+'.webm -f mjpeg -vf fps=1 -s '+e.ratio+' pipe:1';
+                                       s.users[e.ke].mon[e.id].spawn=spawn('ffmpeg',e.args.split(' '));
+                                    s.users[e.ke].mon[e.id].spawn.on('error',function(er){++e.error_count;if(e.error_count>4){console.log('Camera Error, Stopping');s.camera({mode:'stop',id:e.id,ke:e.ke})}})
+                                    s.users[e.ke].mon[e.id].spawn.stdout.on('data',function(d){
+                                       ++e.frames; if(s.users[e.ke].mon[e.id].watch&&Object.keys(s.users[e.ke].mon[e.id].watch).length>0){
+                                            s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:d,frame_format:'ab'},'MON_'+e.id);
+
+                                        }
+                                    });
+                                    s.users[e.ke].mon[e.id].spawn.stderr.on('data',function(d){
+                                        d=d.toString();console.log('SPAWN ERROR '+e.id,d);
+                                        e.chk=function(x){return d.indexOf(x)>-1;}
+                                        switch(true){
+                                            case e.chk('No such file or directory'):
+                                            case e.chk('Invalid data found when processing input'):
+                                                s.event('delete',e);e.fn();
+                                            break;
+                                            case e.chk('Immediate exit requested'):
+                                            case e.chk('timed out'):
+                                            case e.chk('reset by peer'):
+                                               if(e.frames===0){s.event('delete',e)} e.mode_override='stop';s.camera(e);return;
+                                            break;
+                                        }
+                                    });
+                                break;
+                            }
+                            }else{
+                                console.log('Cannot Connect, Retrying...',e.id);++e.error_count;setTimeout(function(){if(e.error_count>4){console.log('Camera Error, Stopping',e.id);s.camera({mode:'stop',id:e.id,ke:e.ke})}else{e.fn();}},5000);return;             
+                            }
+                        });
+                    }catch(err){++e.error_count;console.error(err);s.tx({f:'error',data:err},'GRP_2Df5hBE');}
                 }
                 s.users[e.ke].mon[e.id].record.time=moment();//initial time.
                 e.set();
@@ -459,6 +476,7 @@ function tx(z){if(!z.ke){z.ke=cn.ke;};cn.emit('f',z);}
                             d.cx={f:'get_'+d.ff,mid:d.mid};
                             d.sql="SELECT * FROM Videos WHERE ke=?";d.ar=[d.ke];
                             if(d.mid){d.sql+=' AND mid=?';d.ar.push(d.mid)}
+                            d.sql+=' ORDER BY `end` DESC';
                             if(d.limit){d.sql+=' LIMIT '+d.limit;}
                             sql.query(d.sql,d.ar,function(err,r){
                                 d.cx[d.ff]=r,tx(d.cx);

@@ -7,7 +7,7 @@ var db_config=JSON.parse(fs.readFileSync('conf.json','UTF8'));
 var sql=mysql.createConnection(db_config);
 s={dir:{events:__dirname+'/events/',frames:__dirname+'/frames/'}};
 s.moment=function(e,x){if(!e){e=new Date};if(!x){x='YYYY-MM-DDTHH-mm-ss'};return moment(e).utcOffset('-0800').format(x)}
-s.nameToTime=function(yy){yy.replace('.webm','').split('T'),yy[1]=yy[1].replace(/-/g,':');yy=yy.join(' ');return yy;}
+s.nameToTime=function(x){x=x.replace('.webm','').split('T'),x[1]=x[1].replace(/-/g,':');x=x.join(' ');return x;}
 //Cron Job
 s.cron=function(){
     sql.query('SELECT ke,uid,details FROM Users', function(err,r) {

@@ -26,7 +26,8 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 - Streams are `img` tags, but not MJPEG. Images are transferred through `WebSocket`.
 - Any websocket enabled browser can support the image stream (including mobile)
 - Interface is nicer to look at and works better in mobile.
-- Client Side Tested on : 
+
+- Client-side Tested on : 
     - iPad Mini 2
         - Safari
         - Chrome
@@ -36,15 +37,23 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
         - Safari
         - Chrome
 
-- Server-Side Tested Successfully on:
+
+- Server-side Tested on:
     - Macbook (some old white one)
         - Ubuntu 16.04 (should work on any linux)
     - Macbook (2013, i5, 16GB RAM)
         - Mac OS Sierra
+        
+- If you have successfully run Shinobi on a system not listed (client or server). Please send me a PM so I can add it to the list.
 
 # How to Install and Run
 
 *For a Test deployment enviroment I suggest grabbing an old MacBook (what I did) and installing Node.JS on there. Open up Terminal to get started.*
+
+
+`Dont have Node.js installed?`.
+- Instructions to install Node.js on your desired operating system can be found here.
+    - https://nodejs.org/en/download/package-manager/
 
 
 `Dont have MySQL installed?`.
