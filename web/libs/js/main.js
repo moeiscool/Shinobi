@@ -25,7 +25,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
         var tmp='';if(!d){d={}};
         switch(x){
             case 0://event
-                if(!d.filename){d.filename=moment(d.time).format('YYYY-MM-DDTHH-mm-ss')+'.webm';}
+                if(!d.filename){d.filename=moment(d.time).format('YYYY-MM-DDTHH-mm-ss')+'.'+d.ext;}
                 k=[d.mid+'-'+d.filename,'href="/events/'+d.ke+'/'+d.mid+'/'+d.filename+'"'];
                 d.mom=moment(d.time),d.hr=parseInt(d.mom.format('HH')),d.per=parseInt(d.hr/24*100);
                 tmp+='<li eid="'+d.mid+'" file="'+d.filename+'" title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'"><div '+k[1]+' class="event_launch progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div><div><span title="'+d.time+'" class="livestamp"></span></div><div class="small"><b>Start</b> : '+d.time+'</div><div class="small"><b>End</b> : '+d.end+'</div><div><div class="controls"><a class="btn btn-sm btn-danger event_launch" '+k[1]+'><i class="fa fa-play-circle"></i></a> <a download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a> <a monitor="download" host="dropbox" download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a></div><span class="pull-right">'+(d.mid/100000).toFixed(2)+'mb</span></div></li>';
@@ -38,12 +38,12 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             case 2:
                 tmp+='<div mid="'+d.mid+'" id="monitor_live_'+d.mid+'" class="monitor_item col-md-4">';
                 switch(d.type){
-                    case'jpeg':case'mjpeg':
+                    case'jpeg':case'mjpeg':case'rtsp':
                         tmp+='<img>';
                     break;
-                    case'rtsp':
-                        tmp+='<video><source type="video/webm"></video>';
-                    break;
+//                    case'rtsp':
+//                        tmp+='<video><source type="video/'+d.ext+'"></video>';
+//                    break;
                 }
                 tmp+='<div class="hud super-center"><div class="side-menu scrollable"></div><div class="top_bar"><span class="badge badge-sm badge-danger"><i class="fa fa-eye"></i> <span class="viewers"></span></span></div><div class="bottom_bar"><span class="monitor_name">'+d.name+'</span><div class="pull-right"><a class="btn btn-sm btn-primary" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Status" class="btn btn-sm btn-danger signal" monitor="watch_on"><i class="fa fa-circle"></i></a> <a title="Enlarge" monitor="bigify" class="btn btn-sm btn-default"><i class="fa fa-expand"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a></div></div></div></div>';
             break;
@@ -79,7 +79,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
         return tmp;
     }
     $.ccio.op=function(r,rr,rrr){
-        if(!rrr){rrr={};};if(typeof rrr === 'string'){rrr={n:rrr}};if(!rrr.n){rrr.n='CloudChat_'+$user.ke+'_'+$user.id}
+        if(!rrr){rrr={};};if(typeof rrr === 'string'){rrr={n:rrr}};if(!rrr.n){rrr.n='ShinobiOptions_'+location.host}
         ii={o:localStorage.getItem(rrr.n)};try{ii.o=JSON.parse(ii.o)}catch(e){ii.o={}}
         if(!ii.o){ii.o={}}
         if(r&&rr&&!rrr.x){
@@ -214,7 +214,7 @@ $('body')
     console.log(e.file,e.href,e.id)
     e.mon=$.ccio.mon[e.id];
     e.e.find('.modal-title span').html(e.mon.name+' - '+e.file)
-    e.e.find('.modal-body').html('<video class="event_video" video="'+e.href+'" autoplay loop controls><source src="'+e.href+'" type="video/webm"></video>')
+    e.e.find('.modal-body').html('<video class="event_video" video="'+e.href+'" autoplay loop controls><source src="'+e.href+'" type="video/'+e.ext+'"></video>')
     e.e.attr('eid',e.id);
     e.f=e.e.find('.modal-footer');
     e.f.find('.download_link').attr('href',e.href).attr('download',e.file);
