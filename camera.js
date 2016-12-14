@@ -402,6 +402,7 @@ s.camera=function(x,e,cn,tx){
                                       e.captureOne()
                                     break;
                                     case'mjpeg':case'rtsp':
+                                        if(!s.users[e.ke]||!s.users[e.ke].mon[e.id]){s.init(0,e)}
                                         s.users[e.ke].mon[e.id].spawn.on('error',function(er){++e.error_count;if(e.error_count>4){console.log('Camera Error, Stopping');s.camera('stop',{id:e.id,ke:e.ke})}})
                                         s.users[e.ke].mon[e.id].spawn.stdout.on('data',function(d){
                                            ++e.frames; if(s.users[e.ke].mon[e.id].watch&&Object.keys(s.users[e.ke].mon[e.id].watch).length>0){
@@ -683,7 +684,7 @@ app.get(['/monitor/:ke/:mid/:f','/monitor/:ke/:mid/:f/:ff','/monitor/:ke/:mid/:f
         if(r&&r[0]){
             r=r[0];
             if(r.mode!==req.params.f){
-            s.camera(req.params.f,r);req.ret.start_at=moment();
+            s.camera(req.params.f,r);req.ret.cmd_at=moment();
             req.ret.msg='Monitor mode changed to : '+req.params.f,req.ret.ok=true;
             if(req.params.ff&&req.params.f!=='stop'){
                 sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',[req.params.f,r.ke,r.mid]);
@@ -704,8 +705,6 @@ app.get(['/monitor/:ke/:mid/:f','/monitor/:ke/:mid/:f/:ff','/monitor/:ke/:mid/:f
                 }
                 setTimeout(function(){sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',['stop',r.ke,r.mid]);s.camera('stop')},req.timeout);
                 req.ret.end_at=moment().add(req.timeout,'milliseconds');
-            }else{
-                req.ret.keep_recording=1;
             }
             }else{
                 req.ret.msg='Monitor mode is already : '+req.params.f;
