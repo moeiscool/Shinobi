@@ -194,16 +194,37 @@ $.ccio.ws.on('f',function (d){
 $.ccio.cx=function(x){if(!x.ke){x.ke=$user.ke;};if(!x.uid){x.uid=$user.uid;};return $.ccio.ws.emit('f',x)}
 
 //add Monitor
-$.AddMon={e:$('#add_monitor')};$.AddMon.f=$.AddMon.e.find('form')
-$.AddMon.f.submit(function(e){
+$.aM={e:$('#add_monitor')};$.aM.f=$.aM.e.find('form')
+$.aM.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
-    if(e.s.mid.length>3){
+    e.er=[];
+    $.each(e.s,function(n,v){e.s[n]=v.trim()})
+    if(e.s.mid.length<3){e.er.push('Monitor ID too short')}
+    if(e.s.port==''){e.s.port=80}
+//    if(e.s.protocol=='rtsp'){e.s.ext='mp4',e.s.type='rtsp'}
+    if(e.er.length>0){return}
         $.ccio.cx({f:'monitor',ff:'add',mon:e.s})
         $.each(e.s,function(n,v){$.ccio.mon[e.s.mid][n]=v;})
-        $.AddMon.e.modal('hide')
-    }
+        $.aM.e.modal('hide')
     return false;
 });
+$.aM.f.find('[name="type"]').change(function(e){
+    e.e=$(this);
+    if(e.e.val()==='rtsp'){$.aM.f.find('[name="protocol"]').val('rtsp').change()}
+})
+$.aM.f.find('[name="protocol"]').change(function(e){
+    e.e=$(this);e.v=e.e.val(),e.t=$.aM.f.find('[name="type"]');
+    $.aM.f.find('[name="ext"],[name="type"]').prop('disabled',false)
+    switch(e.v){
+        case'rtsp':
+            $.aM.f.find('[name="ext"]').val('mp4').prop('disabled',true)
+            e.t.val('rtsp').prop('disabled',true)
+        break;
+        case'http':case'https':
+            if(e.t.val()==='rtsp'){e.t.val('jpeg')}
+        break;
+    }
+})
 //dynamic bindings
 $('body')
 .on('click','.list_toggle',function(e){
@@ -265,8 +286,15 @@ $('body')
             $.ccio.cx({f:'monitor',ff:'watch_off',id:e.id})
         break;
         case'edit':
-            $.each($.ccio.mon[e.id],function(n,v){
-                $.AddMon.e.find('[name="'+n+'"]').val(v).change()
+            e.mt=$('#add_monitor .modal-title')
+            if(!$.ccio.mon[e.id]){
+                e.mt.find('span').text('Add'),e.mt.find('i').attr('class','fa fa-plus');
+                e.values={"mode":"stop","mid":"","name":"","protocol":"http","ext":"webm","type":"jpeg","host":"","path":"","port":"","fps":"1","width":"640","height":"480","details":"{}","shto":"[]","shfr":"[]"}
+            }else{
+                e.mt.find('span').text('Edit'),e.mt.find('i').attr('class','fa fa-wrench'),e.values=$.ccio.mon[e.id];
+            }
+            $.each(e.values,function(n,v){
+                $.aM.e.find('[name="'+n+'"]').val(v).change()
             })
             $('#add_monitor').modal('show')
         break;

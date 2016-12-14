@@ -14,7 +14,7 @@
         <ul class="list-inline pull-left">
             <li><a class="btn btn-default" class_toggle="nav-xs" data-target="#side_menu"><i class="fa fa-reorder"></i></a></li>
             <li><a class="btn btn-default" class_toggle="list-blocks" data-target="#side_menu"><i class="fa fa-camera"></i></a></li>
-            <li><a class="btn btn-default" data-toggle="modal" data-target="#add_monitor"><i class="fa fa-plus"></i></o></a></li>
+            <li mid=""><a class="btn btn-default" monitor="edit"><i class="fa fa-plus"></i></o></a></li>
             <li><div class="cpu_load" style="width:200px;display:inline-block">
                   <div class="progress">
                     <div class="progress-bar progress-bar-warning" role="progressbar" style="width:70%"></div>
@@ -76,7 +76,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-        <h4 class="modal-title" id="add_monitorLabel">Add Monitor</h4>
+        <h4 class="modal-title" id="add_monitorLabel"><i class="fa fa-plus"></i> &nbsp; <span>Add</span> Monitor</h4>
       </div>
       <div class="modal-body">
           <div class="form-group">
@@ -100,32 +100,36 @@
             </label>
           </div>
           <div class="form-group">
-            <label><span>Type</span>
-                <select class="form-control" name="type">
-                    <option value="jpeg">JPEG</option>  
-                    <option value="mjpeg">MJPEG</option>  
-<!--
+            <label><span>Connection Type</span>
+                <select class="form-control" name="protocol">
+                    <option value="http">HTTP</option>  
+                    <option value="https">HTTPS</option>  
                     <option value="rtsp">RTSP</option>  
-                    <option value="rtmp">RTMP</option>  
--->
+<!--                    <option value="rtmp">RTMP</option>  -->
                 </select>
             </label>
           </div>
           <div class="form-group">
-            <label><span>Protocol</span>
-                <select class="form-control" name="protocol">
-                    <option value="http">HTTP</option>  
-                    <option value="https">HTTPS</option>  
-<!--
+            <label><span>File Type</span>
+                <select class="form-control" name="ext">
+                    <option value="webm">WebM (libvpx)</option>  
+                    <option value="mp4">MP4 (libx264)</option>  
+                </select>
+            </label>
+          </div>
+          <div class="form-group">
+            <label><span>Input Type</span>
+                <select class="form-control" name="type">
+                    <option value="jpeg">JPEG</option>  
+                    <option value="mjpeg">MJPEG</option>  
                     <option value="rtsp">RTSP</option>  
-                    <option value="rtmp">RTMP</option>  
--->
+<!--                    <option value="rtmp">RTMP</option>  -->
                 </select>
             </label>
           </div>
           <div class="form-group">
             <label><span>Host</span>
-            <input class="form-control" name="host">
+            <input class="form-control" name="host" placeholder="111.111.111.111">
             </label>
           </div>
           <div class="form-group">
@@ -135,7 +139,7 @@
           </div>
           <div class="form-group">
             <label><span>Port</span>
-            <input class="form-control" name="port">
+            <input class="form-control" name="port" placeholder="Leave blank for Port 80">
             </label>
           </div>
            <div class="form-group">

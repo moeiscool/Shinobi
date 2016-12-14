@@ -72,7 +72,7 @@ s.com.stdout.on('data', function(data,txt){
 
 
 //load camera controller vars
-s.nameToTime=function(x){x=x.replace('.webm','').split('T'),x[1]=x[1].replace(/-/g,':');x=x.join(' ');return x;}
+s.nameToTime=function(x){x=x.split('.')[0].split('T'),x[1]=x[1].replace(/-/g,':');x=x.join(' ');return x;}
 s.ratio=function(width,height,ratio){ratio = width / height;return ( Math.abs( ratio - 4 / 3 ) < Math.abs( ratio - 16 / 9 ) ) ? '4:3' : '16:9';}
 s.gid=function(x){
     if(!x){x=10};var t = "";var p = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -161,8 +161,8 @@ s.event=function(x,e){
             }
         break;
         case'open':
-            e.save=[e.id,e.ke,s.nameToTime(e.filename)];
-            sql.query('INSERT INTO Videos (mid,ke,time) VALUES (?,?,?)',e.save)
+            e.save=[e.id,e.ke,s.nameToTime(e.filename),e.ext];
+            sql.query('INSERT INTO Videos (mid,ke,time,ext) VALUES (?,?,?,?)',e.save)
             s.tx({f:'event_build_start',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
         break;
         case'close':
@@ -174,8 +174,8 @@ s.event=function(x,e){
                     if(fs.existsSync(e.dir+e.filename+'.'+e.ext)){
                         e.filesize=fs.statSync(e.dir+e.filename+'.'+e.ext)["size"];
                         if((e.filesize/100000).toFixed(2)>0.25){
-                            e.save=[e.filesize,e.frames,1,e.ext,e.id,e.ke,s.nameToTime(e.filename)];
-                            sql.query('UPDATE Videos SET `size`=?,`frames`=?,`status`=?,`ext`=? WHERE `mid`=? AND `ke`=? AND `time`=?',e.save)
+                            e.save=[e.filesize,e.frames,1,e.id,e.ke,s.nameToTime(e.filename)];
+                            sql.query('UPDATE Videos SET `size`=?,`frames`=?,`status`=? WHERE `mid`=? AND `ke`=? AND `time`=?',e.save)
          s.tx({f:'event_build_success',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
                         }else{
                             s.event('delete',e);
@@ -203,7 +203,7 @@ s.ffmpeg=function(y,e,x){
                 x.tmp='-loglevel quiet -reconnect 1 -r 5 -f mjpeg -use_wallclock_as_timestamps 1 -i '+e.url+x.time+' -f libvpx -r '+e.fps+' -q:v 1 '+e.dir+e.filename+'.'+e.ext+' -f image2pipe -vf fps=1 -s '+e.ratio+' pipe:1';
             break;
             case'rtsp':
-                x.tmp='-loglevel warning -use_wallclock_as_timestamps 1 -i '+e.url+' -r '+e.fps+' -acodec copy -vcodec copy -q:v 1 '+e.dir+e.filename+'.'+e.ext;
+                x.tmp='-loglevel warning -use_wallclock_as_timestamps 1 -i '+e.url+' -r '+e.fps+' -acodec copy -vcodec copy -q:v 1 '+e.dir+e.filename+'.'+e.ext+' -f image2pipe -vf fps=1 -s '+e.ratio+' pipe:1';
             break;
         }
         return x.tmp.split(' ');
@@ -343,7 +343,7 @@ s.camera=function(x,e,cn,tx){
                     clearInterval(s.users[e.ke].mon[e.id].running);
                     s.users[e.ke].mon[e.id].running=setInterval(function(){//start loop
                          e.fn(x)
-                    },60000*0.5);//every 15 minutes start a new file.
+                    },60000*15);//every 15 minutes start a new file.
                 }
                 e.init_event=function(){
                     e.time=moment();
