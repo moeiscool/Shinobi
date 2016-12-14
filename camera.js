@@ -145,7 +145,7 @@ s.init=function(x,e){
             e.url=e.protocol+'://'+e.host+e.porty+e.path;console.log(e.url);return e.url;
         break;
     }
-    if(typeof e.callback==='function'){setTimeout(function(){e.callback()},5000);}
+    if(typeof e.callback==='function'){setTimeout(function(){e.callback()},500);}
 }
 s.event=function(x,e){
     if(!e){e={}};
@@ -200,7 +200,7 @@ s.ffmpeg=function(y,e,x){
                 x.tmp='-loglevel quiet -f image2pipe -framerate 1 -vcodec mjpeg -i -'+x.time+' -f '+e.ext+' -framerate 2 -q:v 1 '+e.dir+e.filename+'.'+e.ext;
             break;
             case'mjpeg':
-                x.tmp='-loglevel quiet -reconnect 1 -r 5 -f mjpeg -use_wallclock_as_timestamps 1 -i '+e.url+x.time+' -f libvpx -r '+e.fps+' -q:v 1 '+e.dir+e.filename+'.'+e.ext+' -f image2pipe -vf fps=1 -s '+e.ratio+' pipe:1';
+                x.tmp='-loglevel quiet -use_wallclock_as_timestamps 1 -reconnect 1 -r 5 -f mjpeg -i '+e.url+x.time+' -f '+e.ext+' -r '+e.fps+' -q:v 1 '+e.dir+e.filename+'.'+e.ext+' -f image2pipe -vf fps=1 -s '+e.ratio+' pipe:1';
             break;
             case'rtsp':
                 x.tmp='-loglevel warning -use_wallclock_as_timestamps 1 -i '+e.url+' -r '+e.fps+' -acodec copy -vcodec copy -q:v 1 '+e.dir+e.filename+'.'+e.ext+' -f image2pipe -vf fps=1 -s '+e.ratio+' pipe:1';
@@ -211,14 +211,16 @@ s.ffmpeg=function(y,e,x){
     }
 }
 s.camera=function(x,e,cn,tx){
-    if(!e){e={}};if(cn&&cn.ke){e.ke=cn.ke};
+    if(!e){e={}};if(cn&&cn.ke&&!e.ke){e.ke=cn.ke};
     if(!e.mode){e.mode=x;}
+    if(!e.id&&e.mid){e.id=e.mid}
     switch(x){
         case'add':
             if(e.mon&&e.mon.mid&&e.mon.name){
                 e.set=[],e.ar=[];
-                sql.query('SELECT * FROM Monitors WHERE ke=? AND mid=?',[cn.ke,e.mon.mid],function(er,r){
-                    e.tx={f:'monitor_edit',mid:e.id,ke:cn.ke,mon:e.mon};
+                if(!e.mon.ke){e.mon.ke=cn.ke}
+                sql.query('SELECT * FROM Monitors WHERE ke=? AND mid=?',[e.mon.ke,e.mon.mid],function(er,r){
+                    e.tx={f:'monitor_edit',mid:e.mon.mid,ke:e.mon.ke,mon:e.mon};
                     if(r&&r[0]){
                         e.tx.new=false;
                         Object.keys(e.mon).forEach(function(v){
@@ -227,7 +229,7 @@ s.camera=function(x,e,cn,tx){
                             }
                         })
                         e.set=e.set.join(',');
-                        e.ar.push(cn.ke),e.ar.push(e.mon.mid);
+                        e.ar.push(e.mon.ke),e.ar.push(e.mon.mid);
                         sql.query('UPDATE Monitors SET '+e.set+' WHERE ke=? AND mid=?',e.ar)
                     }else{
                         e.tx.new=true;
@@ -237,19 +239,19 @@ s.camera=function(x,e,cn,tx){
                                 e.set.push(v),e.st.push('?'),e.ar.push(e.mon[v]);
                             }
                         })
-                        e.set.push('ke'),e.st.push('?'),e.ar.push(cn.ke);
+                        e.set.push('ke'),e.st.push('?'),e.ar.push(e.mon.ke);
                         e.set=e.set.join(','),e.st=e.st.join(',');
                         sql.query('INSERT INTO Monitors ('+e.set+') VALUES ('+e.st+')',e.ar)
                     }
-                    e.mon.id=e.mon.mid;e.ke=cn.ke;
-                    if(s.users[cn.ke].mon[e.mon.id]&&s.users[cn.ke].mon[e.mon.id].started===1){
+                    e.mon.id=e.mon.mid;e.mon.ke=e.mon.ke;
+                    if(s.users[e.mon.ke]&&s.users[e.mon.ke].mon[e.mon.id]&&s.users[e.mon.ke].mon[e.mon.id].started===1){
                         
-                        e.mon.callback=function(){e.mon.callback=function(){delete(e.mon.callback);s.camera(e.mon.mode,e.mon);};s.camera('init',e.mon);};
+                        e.mon.callback=function(){e.mon.callback=function(){delete(e.mon.callback);s.camera(e.mon.mode,e.mon);};s.init(0,e.mon);};
                         s.camera('stop',e.mon);
                     }else{
                         s.camera(e.mon.mode,e.mon);
                     }
-                    s.tx(e.tx,'GRP_'+cn.ke);
+                    s.tx(e.tx,'GRP_'+e.mon.ke);
                 })
             }
         break;
@@ -275,15 +277,15 @@ s.camera=function(x,e,cn,tx){
             if(!cn.monitor_watching){cn.monitor_watching={}}
             if(!cn.monitor_watching[e.id]){cn.monitor_watching[e.id]={ke:e.ke}}
             s.users[e.ke].mon[e.id].watch[cn.id]={};
-            if(Object.keys(s.users[e.ke].mon[e.id].watch).length>0){
-                sql.query('SELECT * FROM Monitors WHERE ke=? AND mid=?',[e.ke,e.id],function(err,r) {
-                    if(r&&r[0]){
-                        r=r[0];
-                        r.url=s.init('url',r);
-                        s.users[e.ke].mon.type=r.type;
-                    }
-                })
-            }
+//            if(Object.keys(s.users[e.ke].mon[e.id].watch).length>0){
+//                sql.query('SELECT * FROM Monitors WHERE ke=? AND mid=?',[e.ke,e.id],function(err,r) {
+//                    if(r&&r[0]){
+//                        r=r[0];
+//                        r.url=s.init('url',r);
+//                        s.users[e.ke].mon.type=r.type;
+//                    }
+//                })
+//            }
         break;
         case'watch_off'://live streamers - leave
            if(cn.monitor_watching){delete(cn.monitor_watching[e.id])}
