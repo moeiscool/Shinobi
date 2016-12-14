@@ -642,15 +642,18 @@ s.tx({f:'monitor_watch_on',viewers:Object.keys(s.users[d.ke].mon[d.id].watch).le
     })
 });
 ////Pages
-app.use(express.static(__dirname+'/events'));
+app.use(express.static(s.dir.events));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
+//readme
 app.get('/info', function (req,res){
     res.sendFile(__dirname+'/index.html');
 });
+//main page
 app.get('/', function (req,res){
     res.sendFile(__dirname+'/web/index.html');
 });
+//login function
 app.post('/auth/:mail/:pass',function (req,res){
     if(req.params.mail&&req.params.pass){
     sql.query('SELECT * FROM Users WHERE mail=? AND pass=?',[decodeURI(req.params.mail),s.md5(decodeURI(req.params.pass))],function(err,r) {
@@ -672,28 +675,65 @@ app.post('/auth/:mail/:pass',function (req,res){
     }
 })
 
-app.post('/add/:f', function (req,res){
-    switch(req.params.f){
-        case'user':
-            
-        break;
-    }
+//Control monitor mode via HTTP
+app.get(['/monitor/:ke/:mid/:f','/monitor/:ke/:mid/:f/:ff','/monitor/:ke/:mid/:f/:ff/:fff'], function (req,res){
+    req.ret={ok:false};
+    res.setHeader('Content-Type', 'application/json');
+    sql.query('SELECT * FROM Monitors WHERE ke=? AND mid=?',[req.params.ke,req.params.mid],function(err,r){
+        if(r&&r[0]){
+            r=r[0];
+            if(r.mode!==req.params.f){
+            s.camera(req.params.f,r);req.ret.start_at=moment();
+            req.ret.msg='Monitor mode changed to : '+req.params.f,req.ret.ok=true;
+            if(req.params.ff&&req.params.f!=='stop'){
+                sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',[req.params.f,r.ke,r.mid]);
+                req.params.ff=parseInt(req.params.ff);
+                switch(req.params.fff){
+                    case'day':case'days':
+                        req.timeout=req.params.ff*1000*60*60*24
+                    break;
+                    case'hr':case'hour':case'hours':
+                        req.timeout=req.params.ff*1000*60*60
+                    break;
+                    case'min':case'minute':case'minutes':
+                        req.timeout=req.params.ff*1000*60
+                    break;
+                    default://seconds
+                        req.timeout=req.params.ff*1000
+                    break;
+                }
+                setTimeout(function(){sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',['stop',r.ke,r.mid]);s.camera('stop')},req.timeout);
+                req.ret.end_at=moment().add(req.timeout,'milliseconds');
+            }else{
+                req.ret.keep_recording=1;
+            }
+            }else{
+                req.ret.msg='Monitor mode is already : '+req.params.f;
+            }
+        }else{
+            req.ret.msg='Monitor or Key does not exist.';
+        }
+        res.send(JSON.stringify(req.ret, null, 3));
+    })
 })
+//Get lib files
 app.get('/libs/:f/:f2', function (req,res){
     req.dir=__dirname+'/web/libs/'+req.params.f+'/'+req.params.f2;
     if (fs.existsSync(req.dir)){
         fs.createReadStream(req.dir).pipe(res);
     }
-})
+});
+//get video file
 app.get('/:suf/:ke/:id/:file', function (req,res){
     req.dir=__dirname+'/'+req.params.suf+'/'+req.params.ke+'/'+req.params.id+'/'+req.params.file;
     if (fs.existsSync(req.dir)){
-        res.setHeader('content-type','video/webm');
+        res.setHeader('content-type','video/'+req.params.file.split('.')[1]);
         res.sendFile(req.dir);
     }else{
         res.send('File Not Found')
     }
 });
+//get events
 app.get(['/events/:ke','/events/:ke/:id'], function (req,res){
     req.sql='SELECT * FROM Videos WHERE ke=?';req.ar=[req.params.ke];
     if(req.params.id){req.sql+='and mid=?';req.ar.push(req.params.id)}
@@ -705,6 +745,7 @@ app.get(['/events/:ke','/events/:ke/:id'], function (req,res){
         
         res.setHeader('Content-Type', 'application/json');
         res.send(JSON.stringify(r, null, 3));
+        res.end();
     })
 });
 
