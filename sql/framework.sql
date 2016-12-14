@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS `Monitors` (
   `shfr` text,
   `details` longtext,
   `type` enum('jpeg','mjpeg','rtmp','rtsp') DEFAULT 'jpeg',
-  `protocol` enum('http','https','rtmp','rtsp') DEFAULT 'http',
+  `ext` enum('webm','mp4') DEFAULT 'webm',
+  `protocol` enum('http','https','rtmp','rtsp','axrtsp','axrtpu','axrtsphttp','axrtpm') DEFAULT 'http',
   `host` varchar(100) DEFAULT '0.0.0.0',
   `path` varchar(100) DEFAULT '/',
   `port` int(8) DEFAULT '80',
@@ -55,12 +56,13 @@ CREATE TABLE IF NOT EXISTS `Users` (
 CREATE TABLE IF NOT EXISTS `Videos` (
   `mid` varchar(50) DEFAULT NULL,
   `ke` varchar(50) DEFAULT NULL,
+  `ext` enum('webm','mp4') DEFAULT NULL,
   `time` timestamp NULL DEFAULT NULL,
   `duration` float DEFAULT NULL,
   `size` float DEFAULT NULL,
   `frames` int(11) DEFAULT NULL,
   `end` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `status` int(1) DEFAULT '0' COMMENT '0:Complete,1:Open,2:Error,3:Unknown'
+  `status` int(1) DEFAULT '0' COMMENT '0:Open,1:Complete,2:Error,3:Unknown'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Data exporting was unselected.
