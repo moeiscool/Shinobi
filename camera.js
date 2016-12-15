@@ -155,7 +155,7 @@ s.event=function(x,e){
             e.dir=s.dir.events+e.ke+'/'+e.id+'/';
             e.save=[e.id,e.ke,s.nameToTime(e.filename),0];
             sql.query('DELETE FROM Videos WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save)
-            s.tx({f:'event_delete',reason:'Camera Error',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
+            s.tx({f:'event_delete',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
             if(fs.existsSync(e.dir+e.filename+'.'+e.ext)){
                 return fs.unlinkSync(e.dir+e.filename+'.'+e.ext);
             }
@@ -195,15 +195,30 @@ s.ffmpeg=function(y,e,x){
     switch(y){
     case'args':
             x.time=' -vf drawtext=fontfile=/usr/share/fonts/truetype/freefont/FreeSans.ttf:text=\'%{localtime}\':x=(w-tw)/2:y=0:fontcolor=white:box=1:boxcolor=0x00000000@1:fontsize=10';
+        switch(e.ext){
+            case'mp4':
+                switch(e.type){
+                    case'jpeg':case'mjpeg':
+                        x.vcodec='libx264';
+                    break;
+                    case'h264':
+                        x.acodec='copy',x.vcodec='copy';
+                    break;
+                }
+            break;
+            case'webm':
+                x.acodec='libvorbis',x.vcodec='libvpx';
+            break;
+        }
         switch(e.type){
             case'jpeg':
-                x.tmp='-loglevel quiet -f image2pipe -framerate 1 -vcodec mjpeg -i -'+x.time+' -f '+e.ext+' -framerate 2 -q:v 1 '+e.dir+e.filename+'.'+e.ext;
+                x.tmp='-loglevel quiet -f image2pipe -framerate 1 -vcodec mjpeg -i -'+x.time+' -vcodec '+x.vcodec+' -framerate 2 -q:v 1 '+e.dir+e.filename+'.'+e.ext;
             break;
             case'mjpeg':
-                x.tmp='-loglevel quiet -use_wallclock_as_timestamps 1 -reconnect 1 -r 5 -f mjpeg -i '+e.url+x.time+' -f '+e.ext+' -r '+e.fps+' -q:v 1 '+e.dir+e.filename+'.'+e.ext+' -f image2pipe -vf fps=1 -s '+e.ratio+' pipe:1';
+                x.tmp='-loglevel quiet -use_wallclock_as_timestamps 1 -reconnect 1 -r 5 -f mjpeg -i '+e.url+x.time+' -vcodec '+x.vcodec+' -r '+e.fps+' -q:v 1 '+e.dir+e.filename+'.'+e.ext+' -f image2pipe -vf fps=1 -s '+e.ratio+' pipe:1';
             break;
-            case'rtsp':
-                x.tmp='-loglevel warning -use_wallclock_as_timestamps 1 -i '+e.url+' -r '+e.fps+' -acodec copy -vcodec copy -q:v 1 '+e.dir+e.filename+'.'+e.ext+' -f image2pipe -vf fps=1 -s '+e.ratio+' pipe:1';
+            case'h264':
+                x.tmp='-loglevel fatal -use_wallclock_as_timestamps 1 -i '+e.url+' -r '+e.fps+' -acodec '+x.acodec+' -vcodec '+x.vcodec+' -q:v 1 '+e.dir+e.filename+'.'+e.ext+' -f image2pipe -vf fps=1 -s '+e.ratio+' pipe:1';
             break;
         }
         return x.tmp.split(' ');
@@ -305,12 +320,12 @@ s.camera=function(x,e,cn,tx){
         case'stop'://stop monitor
             if(!s.users[e.ke]||!s.users[e.ke].mon[e.id]){return}
             if(s.users[e.ke].mon[e.id].open){e.filename=s.users[e.ke].mon[e.id].open;s.event('close',e)}
-            if(s.users[e.ke].mon[e.id].started===0){return}
+            if(s.users[e.ke].mon[e.id].started!==1){return}
             s.kill(s.users[e.ke].mon[e.id].spawn,e);
             clearInterval(s.users[e.ke].mon[e.id].running);
             s.users[e.ke].mon[e.id].started=0;
             s.tx({f:'monitor_stopping',id:e.id,ke:e.ke,time:s.moment(),reason:e.reason},'GRP_'+e.ke);
-            delete(s.users[e.ke].mon[e.id]);
+//            delete(s.users[e.ke].mon[e.id]);
         break;
         case'start':case'record'://stop or record monitor url
             s.init(0,{ke:e.ke,mid:e.id,callback:function(){
@@ -318,7 +333,7 @@ s.camera=function(x,e,cn,tx){
             if(s.users[e.ke].mon[e.id].started===1){return}
             s.users[e.ke].mon[e.id].started=1;
             s.kill(s.users[e.ke].mon[e.id].spawn,e);
-            if(e.mode==='record'){
+            if(x==='record'){
                 s.users[e.ke].mon[e.id].record.yes=1;
                 e.dir=s.dir.events+e.ke+'/';
                 if (!fs.existsSync(e.dir)){
@@ -401,11 +416,11 @@ s.camera=function(x,e,cn,tx){
                                       }
                                       e.captureOne()
                                     break;
-                                    case'mjpeg':case'rtsp':
+                                    case'mjpeg':case'h264':
                                         if(!s.users[e.ke]||!s.users[e.ke].mon[e.id]){s.init(0,e)}
                                         s.users[e.ke].mon[e.id].spawn.on('error',function(er){++e.error_count;if(e.error_count>4){console.log('Camera Error, Stopping');s.camera('stop',{id:e.id,ke:e.ke})}})
                                         s.users[e.ke].mon[e.id].spawn.stdout.on('data',function(d){
-                                           ++e.frames; if(s.users[e.ke].mon[e.id].watch&&Object.keys(s.users[e.ke].mon[e.id].watch).length>0){
+                                           ++e.frames; if(s.users[e.ke]&&s.users[e.ke].mon[e.id]&&s.users[e.ke].mon[e.id].watch&&Object.keys(s.users[e.ke].mon[e.id].watch).length>0){
                                                 s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:d.toString('base64'),frame_format:'b64'},'MON_'+e.id);
 
                                             }
@@ -684,28 +699,28 @@ app.get(['/monitor/:ke/:mid/:f','/monitor/:ke/:mid/:f/:ff','/monitor/:ke/:mid/:f
         if(r&&r[0]){
             r=r[0];
             if(r.mode!==req.params.f){
-            s.camera(req.params.f,r);req.ret.cmd_at=moment();
-            req.ret.msg='Monitor mode changed to : '+req.params.f,req.ret.ok=true;
-            if(req.params.ff&&req.params.f!=='stop'){
+                s.camera(req.params.f,r);req.ret.cmd_at=moment();
+                req.ret.msg='Monitor mode changed to : '+req.params.f,req.ret.ok=true;
                 sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',[req.params.f,r.ke,r.mid]);
-                req.params.ff=parseInt(req.params.ff);
-                switch(req.params.fff){
-                    case'day':case'days':
-                        req.timeout=req.params.ff*1000*60*60*24
-                    break;
-                    case'hr':case'hour':case'hours':
-                        req.timeout=req.params.ff*1000*60*60
-                    break;
-                    case'min':case'minute':case'minutes':
-                        req.timeout=req.params.ff*1000*60
-                    break;
-                    default://seconds
-                        req.timeout=req.params.ff*1000
-                    break;
+                if(req.params.ff&&req.params.f!=='stop'){
+                    req.params.ff=parseInt(req.params.ff);
+                    switch(req.params.fff){
+                        case'day':case'days':
+                            req.timeout=req.params.ff*1000*60*60*24
+                        break;
+                        case'hr':case'hour':case'hours':
+                            req.timeout=req.params.ff*1000*60*60
+                        break;
+                        case'min':case'minute':case'minutes':
+                            req.timeout=req.params.ff*1000*60
+                        break;
+                        default://seconds
+                            req.timeout=req.params.ff*1000
+                        break;
+                    }
+                    setTimeout(function(){sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',['stop',r.ke,r.mid]);s.camera('stop')},req.timeout);
+                    req.ret.end_at=moment().add(req.timeout,'milliseconds');
                 }
-                setTimeout(function(){sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',['stop',r.ke,r.mid]);s.camera('stop')},req.timeout);
-                req.ret.end_at=moment().add(req.timeout,'milliseconds');
-            }
             }else{
                 req.ret.msg='Monitor mode is already : '+req.params.f;
             }

@@ -38,7 +38,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             case 2:
                 tmp+='<div mid="'+d.mid+'" id="monitor_live_'+d.mid+'" class="monitor_item col-md-4">';
                 switch(d.type){
-                    case'jpeg':case'mjpeg':case'rtsp':
+                    case'jpeg':case'mjpeg':case'h264':
                         tmp+='<img>';
                     break;
 //                    case'rtsp':
@@ -210,7 +210,7 @@ $.aM.f.submit(function(e){
 });
 $.aM.f.find('[name="type"]').change(function(e){
     e.e=$(this);
-    if(e.e.val()==='rtsp'){$.aM.f.find('[name="protocol"]').val('rtsp').change()}
+    if(e.e.val()==='h264'){$.aM.f.find('[name="protocol"]').val('rtsp').change()}
 })
 $.aM.f.find('[name="protocol"]').change(function(e){
     e.e=$(this);e.v=e.e.val(),e.t=$.aM.f.find('[name="type"]');
@@ -218,7 +218,7 @@ $.aM.f.find('[name="protocol"]').change(function(e){
     switch(e.v){
         case'rtsp':
             $.aM.f.find('[name="ext"]').val('mp4').prop('disabled',true)
-            e.t.val('rtsp').prop('disabled',true)
+            e.t.val('h264').prop('disabled',true)
         break;
         case'http':case'https':
             if(e.t.val()==='rtsp'){e.t.val('jpeg')}
