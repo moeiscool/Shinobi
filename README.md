@@ -79,14 +79,21 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 
 - Go to `sql` and install the SQL files in your database. `Framework` then `Default Data`. Return to main directory. Then setup `conf.json` with your SQL details. 
 
-- run `npm install` while in the main directory. This will install the libraries Shinobi needs.
+- Run `npm install` while in the main directory. This will install the libraries Shinobi needs.
 
 - To start `node camera.js`
 
-- open up `localhost` in your browser. Login with `Username : ccio@m03.ca , Password : password`.
+- Open up `localhost` in your browser. Login with `Username : ccio@m03.ca , Password : password`.
 
-- to daemonize the process install pm2 with `npm install pm2 -g` then run `pm2 start camera.js`
+`Optional for some OS`
+
+- To daemonize the process install pm2 with `npm install pm2 -g` then run `pm2 start camera.js`
     - run `pm2 logs` to see the console for any errors.
+
+- Install dstat `apt-get install dstat`
+    - It's the CPU indicator, the orange progress bar on the web panel.
+    - if you choose not to install or can't then it will just post an error in the log.
+    - Sadly there is no dstat for Mac OS.
 
 # To Do
 
@@ -95,6 +102,7 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 - better vieweing for saved events.
 - Save events with blank frames and force real duration instead of based on frame count.
 - better mobile support.
+- Find alternative to dstat that works on windows, mac, and linux for CPU indicator.
 
 # Donate
 
