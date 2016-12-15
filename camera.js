@@ -170,6 +170,7 @@ s.event=function(x,e){
                 if(s.users[e.ke].mon[e.id].child_node){
                     s.cx({f:'close',d:s.init('clean',e)},s.users[e.ke].mon[e.id].child_node_id);
                 }else{
+                    console.log(e.dir+e.filename+'.'+e.ext)
                     if(fs.existsSync(e.dir+e.filename+'.'+e.ext)){
                         e.filesize=fs.statSync(e.dir+e.filename+'.'+e.ext)["size"];
                         if((e.filesize/100000).toFixed(2)>0.25){
@@ -180,6 +181,7 @@ s.event=function(x,e){
                             s.event('delete',e);
                         }
                     }else{
+                        
                         s.event('delete',e);
                     }
                 }
@@ -226,6 +228,7 @@ s.ffmpeg=function(y,e,x){
     }
 }
 s.camera=function(x,e,cn,tx){
+    var ee=s.init('clean',e);
     if(!e){e={}};if(cn&&cn.ke&&!e.ke){e.ke=cn.ke};
     if(!e.mode){e.mode=x;}
     if(!e.id&&e.mid){e.id=e.mid}
@@ -279,7 +282,7 @@ s.camera=function(x,e,cn,tx){
         break;
         case'stop'://stop monitor
             if(!s.users[e.ke]||!s.users[e.ke].mon[e.id]){return}
-            if(s.users[e.ke].mon[e.id].open){e.filename=s.users[e.ke].mon[e.id].open;s.event('close',e)}
+            if(s.users[e.ke].mon[e.id].open){ee.filename=s.users[e.ke].mon[e.id].open,ee.ext=s.users[e.ke].mon[e.id].open_ext;s.event('close',ee)}
             if(s.users[e.ke].mon[e.id].started!==1){return}
             s.kill(s.users[e.ke].mon[e.id].spawn,e);
             clearInterval(s.users[e.ke].mon[e.id].running);
@@ -330,6 +333,7 @@ s.camera=function(x,e,cn,tx){
                     }
                     e.filename=e.time.format('YYYY-MM-DDTHH-mm-ss');
                     s.users[e.ke].mon[e.id].open=e.filename;
+                    s.users[e.ke].mon[e.id].open_ext=e.ext;
                     s.kill(s.users[e.ke].mon[e.id].spawn,e);
                     e.hosty=e.host.split('@');
                     if(e.hosty[1]){e.hosty=e.hosty[1];}else{e.hosty=e.hosty[0];}
