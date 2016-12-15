@@ -1,7 +1,6 @@
 //
 // Shinobi
 // Copyright (C) 2016-2025 Moe Alam, moeiscool
-// Please Donate if you consider this platform for commercial purposes :)
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -63,13 +62,6 @@ s.child_key='3123asdasdf1dtj1hjk23sdfaasd12asdasddfdbtnkkfgvesra3asdsd3123afdsfq
 s.md5=function(x){return crypto.createHash('md5').update(x).digest("hex");}
 s.tx=function(z,y,x){if(x){return x.broadcast.to(y).emit('f',z)};io.to(y).emit('f',z);}
 s.cx=function(z,y,x){if(x){return x.broadcast.to(y).emit('c',z)};io.to(y).emit('c',z);}
-
-s.com = spawn('dstat', ['-c', '--nocolor']);
-s.com.stdout.on('data', function(data,txt){
-	txt = new Buffer(data).toString('utf8', 0, data.length);
-	s.tx({f:'cpu',data:100 - parseInt(txt.split('  ')[2])},'GRP_2Df5hBE');
-});
-
 
 //load camera controller vars
 s.nameToTime=function(x){x=x.split('.')[0].split('T'),x[1]=x[1].replace(/-/g,':');x=x.join(' ');return x;}
@@ -170,13 +162,12 @@ s.event=function(x,e){
                 if(s.users[e.ke].mon[e.id].child_node){
                     s.cx({f:'close',d:s.init('clean',e)},s.users[e.ke].mon[e.id].child_node_id);
                 }else{
-                    console.log(e.dir+e.filename+'.'+e.ext)
                     if(fs.existsSync(e.dir+e.filename+'.'+e.ext)){
                         e.filesize=fs.statSync(e.dir+e.filename+'.'+e.ext)["size"];
                         if((e.filesize/100000).toFixed(2)>0.25){
                             e.save=[e.filesize,e.frames,1,e.id,e.ke,s.nameToTime(e.filename)];
                             sql.query('UPDATE Videos SET `size`=?,`frames`=?,`status`=? WHERE `mid`=? AND `ke`=? AND `time`=?',e.save)
-         s.tx({f:'event_build_success',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
+         s.tx({f:'event_build_success',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),size:e.filesize,end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
                         }else{
                             s.event('delete',e);
                         }
@@ -216,11 +207,10 @@ s.ffmpeg=function(y,e,x){
                 x.tmp='-loglevel quiet -f image2pipe -framerate 1 -vcodec mjpeg -i -'+x.time+' -vcodec '+x.vcodec+' -framerate 2 -q:v 1 '+e.dir+e.filename+'.'+e.ext;
             break;
             case'mjpeg':
-                x.tmp='-loglevel quiet -use_wallclock_as_timestamps 1 -reconnect 1 -r 5 -f mjpeg -i '+e.url+x.time+' -vcodec '+x.vcodec+' -r '+e.fps+' -q:v 1 '+e.dir+e.filename+'.'+e.ext+' -f image2pipe -vf fps=1 -s '+e.ratio+' pipe:1';
+                x.tmp='-loglevel fatal -use_wallclock_as_timestamps 1 -reconnect 1 -r 5 -f mjpeg -i '+e.url+x.time+' -vcodec '+x.vcodec+' -r '+e.fps+' -q:v 1 '+e.dir+e.filename+'.'+e.ext+' -f image2pipe -vf fps=1 -s '+e.ratio+' pipe:1';
             break;
             case'h264':
-                x.tmp='-loglevel warning -use_wallclock_as_timestamps 1 -i '+e.url+' -r '+e.fps+' -acodec '+x.acodec+' -vcodec '+x.vcodec+' -q:v 1 '+e.dir+e.filename+'.'+e.ext+' -f image2pipe -vf fps=1 -s '+e.ratio+' pipe:1';
-                console.log(x.tmp)
+                x.tmp='-loglevel warning -use_wallclock_as_timestamps 1 -i '+e.url+' -stimeout 2000 -r '+e.fps+' -acodec '+x.acodec+' -vcodec '+x.vcodec+' -q:v 1 '+e.dir+e.filename+'.'+e.ext+' -f image2pipe -vf fps=1 -s '+e.ratio+' pipe:1';
             break;
         }
         return x.tmp.split(' ');
@@ -346,6 +336,9 @@ s.camera=function(x,e,cn,tx){
                         e.ratio='640x480';
                     break;
                 }
+                e.error=function(){
+                    ++e.error_count;clearTimeout(e.err_timeout);e.err_timeout=setTimeout(function(){if(e.error_count>4){console.log('Camera Error, Stopping',e.id);s.camera('stop',{id:e.id,ke:e.ke})}else{e.fn()}},5000);
+                }
                 e.fn=function(){//this function loops to create new files
                     try{
                         e.init_event();
@@ -395,11 +388,13 @@ s.camera=function(x,e,cn,tx){
                                             switch(true){
 //                                                case e.chk('av_interleaved_write_frame'):
                                                 case e.chk('No such file or directory'):
+                                                case e.chk('Unable to open RTSP for listening'):
+                                                case e.chk('timed out'):
                                                 case e.chk('Invalid data found when processing input'):
-                                                    if(e.frames===0){s.event('delete',e)};e.fn();
+                                                    e.error();
+                                                    if(e.frames===0){s.event('delete',e)};
                                                 break;
                                                 case e.chk('Immediate exit requested'):
-                                                case e.chk('timed out'):
                                                 case e.chk('reset by peer'):
                                                    if(e.frames===0){s.event('delete',e)};s.camera('stop',e);return;
                                                 break;
@@ -408,7 +403,7 @@ s.camera=function(x,e,cn,tx){
                                     break;
                                 }
                                 }else{
-                                    console.log('Cannot Connect, Retrying...',e.id);++e.error_count;clearTimeout(e.err_timeout);e.err_timeout=setTimeout(function(){if(e.error_count>4){console.log('Camera Error, Stopping',e.id);s.camera('stop',{id:e.id,ke:e.ke})}else{}},5000);return;             
+                                    console.log('Cannot Connect, Retrying...',e.id);e.error();return;
                                 }
                         });
                     }catch(err){++e.error_count;console.error('Frame Capture Error '+e.id,err);s.tx({f:'error',data:err},'GRP_2Df5hBE');}
@@ -428,7 +423,7 @@ s.camera=function(x,e,cn,tx){
                                 s.users[e.ke].mon[e.id].child_node=n;
                                 s.cx({f:'spawn',d:s.init('clean',e),mon:s.init('clean',s.users[e.ke].mon[e.mid])},s.users[e.ke].mon[e.mid].child_node_id)
                             }else{
-                                console.log('Cannot Connect, Retrying...',e.id);++e.error_count;setTimeout(function(){if(e.error_count>4){console.log('Camera Error, Stopping',e.id);s.camera('stop',{id:e.id,ke:e.ke})}else{e.fn();}},5000);return;             
+                                console.log('Cannot Connect, Retrying...',e.id);e.error();return;             
                             }
                         })
                         }
@@ -779,3 +774,11 @@ sql.query('SELECT * FROM Monitors WHERE mode != "stop"', function(err,r) {
     }
 });
 },1500)
+
+try{
+s.com = spawn('dstat', ['-c', '--nocolor']);
+s.com.stdout.on('data', function(data,txt){
+	txt = new Buffer(data).toString('utf8', 0, data.length);
+	s.tx({f:'cpu',data:100 - parseInt(txt.split('  ')[2])},'GRP_2Df5hBE');
+});
+}catch(err){console.log('No dstat, CPU indicator will not work. Continuing...')}
