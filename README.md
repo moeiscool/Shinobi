@@ -52,7 +52,15 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 
 
 `Dont have Node.js installed?`.
-- Instructions to install Node.js on your desired operating system can be found here.
+
+- Ubuntu
+    - Open `Terminal`.
+    - Install Node.js and it's package manager `apt-get install nodejs npm`.
+        - note: apt-get install node installs something else, not Node.js.
+    - Create a symlink to use nodejs `ln -s /usr/bin/nodejs /usr/bin/node`.
+        - pm2 needs this. If you don't plan on using pm2, then ignore this step.
+
+- Not on Ubuntu? Other operating systems can be found here.
     - https://nodejs.org/en/download/package-manager/
 
 
