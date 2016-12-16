@@ -63,9 +63,9 @@
 <li>Easy Install. (not as easy as apt-get install zoneminder yet though. See below)</li>
 <li>Streams are <code>img</code> tags, but not MJPEG. Images are transferred through <code>WebSocket</code>.</li>
 <li>Any websocket enabled browser can support the image stream (including mobile)</li>
-<li>Interface is nicer to look at and works better in mobile.</li>
+<li><p>Interface is nicer to look at and works better in mobile.</p></li>
 <li>
-<p>Client Side Tested on : </p>
+<p>Client-side Tested on : </p>
 
 <ul>
 <li>iPad Mini 2
@@ -81,7 +81,7 @@
 <li>Chrome</li>
 </ul>
 </li>
-<li>Mac OS
+<li>Mac OS Sierra
 
 <ul>
 <li>Safari</li>
@@ -91,7 +91,7 @@
 </ul>
 </li>
 <li>
-<p>Server-Side Tested Successfully on:</p>
+<p>Server-side Tested on:</p>
 
 <ul>
 <li>Macbook (some old white one)
@@ -108,12 +108,44 @@
 </li>
 </ul>
 </li>
+<li><p>If you have successfully run Shinobi on a system not listed (client or server). Please send me a PM so I can add it to the list.</p></li>
 </ul>
 
 <h1 dir="auto">
 <a id="how-to-install-and-run" class="anchor" href="#how-to-install-and-run" aria-hidden="true"></a>How to Install and Run</h1>
 
 <p dir="auto"><em>For a Test deployment enviroment I suggest grabbing an old MacBook (what I did) and installing Node.JS on there. Open up Terminal to get started.</em></p>
+
+<p dir="auto"><code>Dont have Node.js installed?</code>.</p>
+
+<ul dir="auto">
+<li>
+<p>Ubuntu</p>
+
+<ul>
+<li>Open <code>Terminal</code>.</li>
+<li>Install Node.js and it's package manager <code>apt-get install nodejs npm</code>.
+
+<ul>
+<li>note: <code>apt-get install node</code> installs something else, not Node.js.</li>
+</ul>
+</li>
+<li>Create a symlink to use nodejs <code>ln -s /usr/bin/nodejs /usr/bin/node</code>.
+
+<ul>
+<li>pm2 needs this. If you don't plan on using pm2, then ignore this step.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Not on Ubuntu? Other operating systems can be found here.</p>
+
+<ul>
+<li><a href="https://nodejs.org/en/download/package-manager/" rel="nofollow noreferrer" target="_blank">https://nodejs.org/en/download/package-manager/</a></li>
+</ul>
+</li>
+</ul>
 
 <p dir="auto"><code>Dont have MySQL installed?</code>.</p>
 
@@ -133,14 +165,28 @@
 <li><p>Open <code>Terminal</code>.</p></li>
 <li><p>Select directory <code>cd /your/directory/for/shinobi</code>. Where <code>camera.js</code> is located.</p></li>
 <li><p>Go to <code>sql</code> and install the SQL files in your database. <code>Framework</code> then <code>Default Data</code>. Return to main directory. Then setup <code>conf.json</code> with your SQL details. </p></li>
-<li><p>run <code>npm install</code> while in the main directory. This will install the libraries Shinobi needs.</p></li>
+<li><p>Run <code>npm install</code> while in the main directory. This will install the libraries Shinobi needs.</p></li>
 <li><p>To start <code>node camera.js</code></p></li>
-<li><p>open up <code>localhost</code> in your browser. Login with <code>Username : ccio@m03.ca , Password : password</code>.</p></li>
+<li><p>Open up <code>localhost</code> in your browser. Login with <code>Username : ccio@m03.ca , Password : password</code>.</p></li>
+</ul>
+
+<p dir="auto"><code>Optional for some OS</code></p>
+
+<ul dir="auto">
 <li>
-<p>to daemonize the process install pm2 with <code>npm install pm2 -g</code> then run <code>pm2 start camera.js</code></p>
+<p>To daemonize the process install pm2 with <code>npm install pm2 -g</code> then run <code>pm2 start camera.js</code></p>
 
 <ul>
 <li>run <code>pm2 logs</code> to see the console for any errors.</li>
+</ul>
+</li>
+<li>
+<p>Install dstat <code>apt-get install dstat</code></p>
+
+<ul>
+<li>It's the CPU indicator, the orange progress bar on the web panel.</li>
+<li>if you choose not to install or can't then it will just post an error in the log.</li>
+<li>Sadly there is no dstat for Mac OS.</li>
 </ul>
 </li>
 </ul>
@@ -155,6 +201,7 @@
 <li>better vieweing for saved events.</li>
 <li>Save events with blank frames and force real duration instead of based on frame count.</li>
 <li>better mobile support.</li>
+<li>Find alternative to dstat that works on windows, mac, and linux for CPU indicator.</li>
 </ul>
 
 <h1 dir="auto">
@@ -217,6 +264,26 @@ This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
+
+# Libraries Used
+
+vbox.css (the framework that does the vertical panel layout) - I honestly don't know who made this, i found it in a zip.
+jQuery - http://jquery.com/
+Socket.io - http://socket.io/
+Bootstrap - http://getbootstrap.com/
+Moment.js - http://momentjs.com/
+Livestamp.js - https://mattbradley.github.io/livestampjs/
+Font Awesome - http://fontawesome.io/
+Node.js - https://nodejs.org
+MySQL - https://www.mysql.com/
+NPM: mysql - https://www.npmjs.com/package/mysql
+NPM: crypto - https://www.npmjs.com/package/crypto
+NPM: express - http://expressjs.com/
+NPM: request - https://www.npmjs.com/package/request
+NPM: connection-tester - https://www.npmjs.com/package/connection-tester
+
+
+and maybe a few others.
 </code></pre>
 </div>
     </section>  

@@ -65,7 +65,7 @@ s.cron=function(){
                         });
                     }
                     
-                    //purge files with no SQL row and reverse
+                    //purge SQL rows with no file
                     sql.query('SELECT * FROM Videos WHERE ke = ?;',[v.ke],function(err,evs){
                         if(evs&&evs[0]){
                             evs.del=[];evs.ar=[v.ke];
