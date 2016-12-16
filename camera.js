@@ -34,9 +34,14 @@ var spawn = require('child_process').spawn;
 var crypto = require('crypto');
 var connectionTester = require('connection-tester');
 var db_config=JSON.parse(fs.readFileSync('conf.json','UTF8'));
-var sql=mysql.createConnection(db_config);
 server.listen(80);
-
+s={child_help:false};
+s.disc=function(){
+    sql = mysql.createConnection(db_config); 
+    sql.connect(function(err){if(err){console.log('Error Connecting : DB',err);setTimeout(s.disc, 2000);}});
+    sql.on('error',function(err) {console.log('DB Lost.. Retrying..');console.log(err);s.disc();return;});
+}
+s.disc();
 exec("ps aux | grep -ie ffmpeg | awk '{print $2}' | xargs kill -9");//kill any ffmpeg running
 
 process.on('uncaughtException', function (err) {
@@ -54,8 +59,6 @@ sql.query('SELECT * FROM Videos WHERE status=?',[0],function(err,r){
     }
 })
 
-//init main container for easy global variables.
-s={child_help:false};
 //key for child servers
 s.child_nodes={};
 s.child_key='3123asdasdf1dtj1hjk23sdfaasd12asdasddfdbtnkkfgvesra3asdsd3123afdsfqw345';
@@ -207,10 +210,10 @@ s.ffmpeg=function(y,e,x){
                 x.tmp='-loglevel quiet -f image2pipe -framerate 1 -vcodec mjpeg -i -'+x.time+' -vcodec '+x.vcodec+' -framerate 2 -q:v 1 '+e.dir+e.filename+'.'+e.ext;
             break;
             case'mjpeg':
-                x.tmp='-loglevel fatal -use_wallclock_as_timestamps 1 -reconnect 1 -r 5 -f mjpeg -i '+e.url+x.time+' -vcodec '+x.vcodec+' -r '+e.fps+' -q:v 1 '+e.dir+e.filename+'.'+e.ext+' -f image2pipe -vf fps=1 -s '+e.ratio+' pipe:1';
+                x.tmp='-loglevel fatal -use_wallclock_as_timestamps 1 -reconnect 1 -r 5 -f mjpeg -i '+e.url+x.time+' -vcodec '+x.vcodec+' -movflags frag_keyframe+empty_moov -r '+e.fps+' -q:v 1 '+e.dir+e.filename+'.'+e.ext+' -f image2pipe -vf fps=1 -s '+e.ratio+' pipe:1';
             break;
             case'h264':
-                x.tmp='-loglevel warning -use_wallclock_as_timestamps 1 -i '+e.url+' -stimeout 2000 -r '+e.fps+' -acodec '+x.acodec+' -vcodec '+x.vcodec+' -q:v 1 '+e.dir+e.filename+'.'+e.ext+' -f image2pipe -vf fps=1 -s '+e.ratio+' pipe:1';
+                x.tmp='-loglevel warning -use_wallclock_as_timestamps 1 -i '+e.url+' -stimeout 2000 -r '+e.fps+' -acodec '+x.acodec+' -movflags frag_keyframe+empty_moov -vcodec '+x.vcodec+' -q:v 1 '+e.dir+e.filename+'.'+e.ext+' -f image2pipe -vf fps=1 -s '+e.ratio+' pipe:1';
             break;
         }
         return x.tmp.split(' ');
@@ -665,6 +668,27 @@ app.get('/', function (req,res){
     res.sendFile(__dirname+'/web/index.html');
 });
 //login function
+app.post('/register',function (req,res){
+    req.resp={ok:false};
+    res.setHeader('Content-Type', 'application/json');
+    if(req.body.mail!==''&&req.body.pass!==''){
+        if(req.body.pass===req.body.pass2){
+            sql.query('SELECT * FROM Users WHERE mail=?',[req.body.mail],function(err,r) {
+                if(r&&r[0]){//found one exist
+                    req.resp.msg='Account Already Exists';
+                }else{//create new
+                    req.resp.msg='New Account Created';req.resp.ok=true;
+                    sql.query('INSERT INTO Users (ke,uid,mail,pass,details) VALUES (?,?,?,?,?)',[s.gid(),s.gid(),req.body.mail,s.md5(req.body.pass),'{"days":"0.5"}'])
+                }
+            })
+        }else{
+            req.resp.msg='Passwords Don\'t Match';req.resp.body=req.body;
+        }
+    }else{
+        req.resp.msg='Fields cannot be empty';
+    }
+    res.send(JSON.stringify(req.resp,null,3));
+})
 app.post('/auth/:mail/:pass',function (req,res){
     if(req.params.mail&&req.params.pass){
     sql.query('SELECT * FROM Users WHERE mail=? AND pass=?',[decodeURI(req.params.mail),s.md5(decodeURI(req.params.pass))],function(err,r) {

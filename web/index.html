@@ -50,9 +50,7 @@
 									</div>
 								</form>
 								<form id="register-form" method="post" role="form" style="display: none;">
-									<div class="form-group">
-										<input type="text" name="name" id="name" tabindex="1" class="form-control" placeholder="Username" value="">
-									</div>
+                                    <div id="register-msg"></div>
 									<div class="form-group">
 										<input type="email" name="mail" id="email" tabindex="1" class="form-control" placeholder="Email Address" value="">
 									</div>
@@ -60,7 +58,7 @@
 										<input type="password" name="pass" tabindex="2" class="form-control" placeholder="Password">
 									</div>
 									<div class="form-group">
-										<input type="password" name="confirm-password" id="confirm-password" tabindex="2" class="form-control" placeholder="Confirm Password">
+										<input type="password" name="pass2" id="confirm-password" tabindex="2" class="form-control" placeholder="Confirm Password">
 									</div>
 									<div class="form-group">
 										<div class="row">
@@ -78,7 +76,16 @@
 		</div>
 	</div>
 <script>
-    $.ccio={f:$('#login-form'),ls:localStorage.getItem('ShinobiLogin_'+location.host)}
+    $.ccio={f:$('#login-form'),rf:$('#register-form'),ls:localStorage.getItem('ShinobiLogin_'+location.host)}
+    $.ccio.rf.submit(function(e){
+        e.preventDefault();$('input').css('border-color','')
+        e.e=$(this),e.s=e.e.serializeObject(),e.inputs=e.e.find('input,button').prop('disabled',true),e.h=$('#register-msg').html('')
+        $.post('/register',e.s,function(d){
+            e.h.html(d.msg)
+            e.inputs.prop('disabled',false)
+        })
+        return false;
+    });
     $.ccio.f.submit(function(e){
         e.preventDefault();$('input').css('border-color','')
         e.e=$(this),e.s=e.e.serializeObject(),e.inputs=e.e.find('input,button').prop('disabled',true)
