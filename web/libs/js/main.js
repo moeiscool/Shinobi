@@ -10,14 +10,18 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                     type: "image/jpeg"
                 }));
             break;
-            case 'ls':
+            case 'ls'://livestamp all
                 g={e:jQuery('.livestamp')};
                 g.e.each(function(){g.v=jQuery(this),g.t=g.v.attr('title');if(!g.t){return};g.v.toggleClass('livestamp livestamped').attr('title',$.ccio.init('t',g.t)).livestamp(g.t);})
                 return g.e
             break;
-            case't':
-                if(!g){g=new Date();}
-                return moment(g).format('YYYY-MM-DD HH:mm:ss')
+            case't'://format time
+                if(!d){d=new Date();}
+                return moment(d).format('YYYY-MM-DD HH:mm:ss')
+            break;
+            case'tf'://time to filename
+                if(!d){d=new Date();}
+                return moment(d).format('YYYY-MM-DDTHH-mm-ss')
             break;
         }
     }
@@ -28,15 +32,15 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 if(!d.filename){d.filename=moment(d.time).format('YYYY-MM-DDTHH-mm-ss')+'.'+d.ext;}
                 k=[d.mid+'-'+d.filename,'href="/events/'+d.ke+'/'+d.mid+'/'+d.filename+'"'];
                 d.mom=moment(d.time),d.hr=parseInt(d.mom.format('HH')),d.per=parseInt(d.hr/24*100);
-                tmp+='<li eid="'+d.mid+'" file="'+d.filename+'" title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'"><div '+k[1]+' class="event_launch progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div><div><span title="'+d.end+'" class="livestamp"></span></div><div class="small"><b>Start</b> : '+d.time+'</div><div class="small"><b>End</b> : '+d.end+'</div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls"><a class="btn btn-sm btn-danger event_launch" '+k[1]+'><i class="fa fa-play-circle"></i></a> <a download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a> <a monitor="download" host="dropbox" download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a></div></div></li>';
+                tmp+='<li mid="'+d.mid+'" ke="'+d.ke+'" file="'+d.filename+'" title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'"><div '+k[1]+' class="event_launch progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div><div><span title="'+d.end+'" class="livestamp"></span></div><div class="small"><b>Start</b> : '+d.time+'</div><div class="small"><b>End</b> : '+d.end+'</div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls"><a class="btn btn-sm btn-danger event_launch" '+k[1]+'><i class="fa fa-play-circle"></i></a> <a download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a> <a monitor="download" host="dropbox" download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a></div></div></li>';
             break;
             case 1://monitor
                 d.src=placeholder.getData(placeholder.plcimg({bgcolor:'#b57d00',text:'...'}));
-                tmp+='<div mid="'+d.mid+'" title="'+d.mid+' : '+d.name+'" class="monitor_block col-md-4"><img monitor="watch" class="snapshot" src="'+d.src+'"><div class="title truncate">'+d.name+'</div><div class="icons"><a class="btn btn-xs btn-default" monitor="edit"><i class="fa fa-wrench"></i></a></div></div>';
+                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" title="'+d.mid+' : '+d.name+'" class="monitor_block col-md-4"><img monitor="watch" class="snapshot" src="'+d.src+'"><div class="title truncate">'+d.name+'</div><div class="icons"><a class="btn btn-xs btn-default" monitor="edit"><i class="fa fa-wrench"></i></a> <a event="calendar" class="btn btn-xs btn-default"><i class="fa fa-film"></i></a></div></div>';
                 delete(d.src);
             break;
             case 2:
-                tmp+='<div mid="'+d.mid+'" id="monitor_live_'+d.mid+'" class="monitor_item col-md-4">';
+                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" class="monitor_item col-md-4">';
                 switch(d.type){
                     case'jpeg':case'mjpeg':case'h264':
                         tmp+='<img>';
@@ -45,7 +49,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
 //                        tmp+='<video><source type="video/'+d.ext+'"></video>';
 //                    break;
                 }
-                tmp+='<div class="hud super-center"><div class="side-menu scrollable"></div><div class="top_bar"><span class="badge badge-sm badge-danger"><i class="fa fa-eye"></i> <span class="viewers"></span></span></div><div class="bottom_bar"><span class="monitor_name">'+d.name+'</span><div class="pull-right"><a class="btn btn-sm btn-primary" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Status" class="btn btn-sm btn-danger signal" monitor="watch_on"><i class="fa fa-circle"></i></a> <a title="Enlarge" monitor="bigify" class="btn btn-sm btn-default"><i class="fa fa-expand"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a></div></div></div></div>';
+                tmp+='<div class="hud super-center"><div class="side-menu scrollable"></div><div class="top_bar"><span class="badge badge-sm badge-danger"><i class="fa fa-eye"></i> <span class="viewers"></span></span></div><div class="bottom_bar"><span class="monitor_name">'+d.name+'</span><div class="pull-right"><a event="calendar" class="btn btn-sm btn-default"><i class="fa fa-film"></i></a> <a class="btn btn-sm btn-default" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Status" class="btn btn-sm btn-danger signal" monitor="watch_on"><i class="fa fa-circle"></i></a> <a title="Enlarge" monitor="bigify" class="btn btn-sm btn-default"><i class="fa fa-expand"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a></div></div></div></div>';
             break;
         }
         if(z){
@@ -232,12 +236,49 @@ $('body')
 .on('click','.list_toggle',function(e){
     
 })
+.on('click','[event]',function(e){
+    e.e=$(this),e.a=e.e.attr('event'),e.p=e.e.parents('[mid]'),e.ke=e.p.attr('ke'),e.id=e.p.attr('mid');
+    switch(e.a){
+        case'calendar':
+    $.getJSON('/events/'+e.ke+'/'+e.id,function(d){
+        e.ar=[];
+        $.each(d,function(n,v){
+            if(v.status!==0){
+            var n=$.ccio.mon[v.mid];
+            if(n){v.title=n.name+' - '+moment(v.time).format('HH:mm:ss');}
+            v.start=v.time;
+            v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
+            e.ar.push(v);
+            }
+        })
+    e.v=$('#events_viewer').modal('show').find('.modal-body')
+        e.v.fullCalendar('destroy'),e.v.fullCalendar({
+        header: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'month,agendaWeek,agendaDay,listWeek'
+        },
+        defaultDate: moment().format('YYYY-MM-DD'),
+        navLinks: true,
+        eventLimit: true,
+        events:e.ar,
+        eventClick:function(f){
+            console.log(f)
+            $('#temp').empty().append('<div mid="'+f.mid+'" ke="'+f.ke+'" file="'+f.filename+'"><div class="event_launch" href="'+f.href+'"></div></div>').find('.event_launch').click();
+            $(this).css('border-color', 'red');
+        }
+    });
+        setTimeout(function(){e.v.fullCalendar( 'changeView','listWeek');},500)
+    });
+         break;
+    }
+})
 .on('click','.event_launch',function(e){
-    e.preventDefault();e.t=$(this).parents('[eid]');e.id=e.t.attr('eid'),e.file=e.t.attr('file'),e.href=$(this).attr('href'),e.e=$('#event_viewer');
+    e.preventDefault();e.t=$(this).parents('[mid]');e.id=e.t.attr('mid'),e.file=e.t.attr('file'),e.href=$(this).attr('href'),e.e=$('#event_viewer');
     e.mon=$.ccio.mon[e.id];
     e.e.find('.modal-title span').html(e.mon.name+' - '+e.file)
     e.e.find('.modal-body').html('<video class="event_video" video="'+e.href+'" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"></video>')
-    e.e.attr('eid',e.id);
+    e.e.attr('mid',e.id);
     e.f=e.e.find('.modal-footer');
     e.f.find('.download_link').attr('href',e.href).attr('download',e.file);
     e.f.find('[monitor="download"][host="dropbox"]').attr('href',e.href);

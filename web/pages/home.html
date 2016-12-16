@@ -2,6 +2,7 @@
 <link rel="stylesheet" href="libs/css/circles.css">
 <link rel="stylesheet" href="libs/css/bootstrap.min.css">
 <link rel="stylesheet" href="libs/css/font-awesome.min.css">
+<link rel="stylesheet" href="libs/css/fullcalendar.min.css">
 <link rel="stylesheet" href="libs/css/main.css">
 
 <section class="app">
@@ -48,9 +49,25 @@
     </section>
     </section>
 </section>
-
+<div class="hidden" id="temp"></div>
 
 <!--Modal-->
+<div class="modal fade" id="events_viewer" tabindex="-1" role="dialog" aria-labelledby="events_viewerLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="events_viewerLabel"><i class="fa fa-film"></i> &nbsp; Events : <span></span></h4>
+      </div>
+      <div class="modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="modal fade dark" id="event_viewer" tabindex="-1" role="dialog" aria-labelledby="event_viewerLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -58,18 +75,18 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-        <h4 class="modal-title" id="event_viewerLabel"><i class="fa fa-film"></i> &nbsp; <span></span></h4>
+        <h4 class="modal-title" id="event_viewerLabel"><i class="fa fa-play-circle"></i> &nbsp; <span></span></h4>
       </div>
       <div class="modal-body text-center"></div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">Close</button>
-        <a class="btn btn-success download_link"><i class="fa fa-download"></i> &nbsp; Save</a>
-        <a class="btn btn-success" monitor="download" host="dropbox"><i class="fa fa-dropbox"></i> &nbsp; Dropbox</a>
+        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+        <a class="btn btn-primary download_link"><i class="fa fa-download"></i> &nbsp; Save</a>
+        <a class="btn btn-primary" monitor="download" host="dropbox"><i class="fa fa-dropbox"></i> &nbsp; Dropbox</a>
       </div>
     </div>
   </div>
 </div>
-<div class="modal fade" id="add_monitor" tabindex="-1" role="dialog" aria-labelledby="add_monitorLabel" aria-hidden="true">
+<div class="modal fade dark" id="add_monitor" tabindex="-1" role="dialog" aria-labelledby="add_monitorLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <form class="modal-content">
       <div class="modal-header">
@@ -164,8 +181,8 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-primary">Save changes</button>
+        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-success">Save changes</button>
       </div>
     </form>
   </div>
@@ -176,4 +193,5 @@
 <script src="libs/js/placeholder.js"></script>
 <script src="libs/js/bootstrap.min.js"></script>
 <script src="libs/js/socket.io.js"></script>
+<script src="libs/js/fullcalendar.min.js"></script>
 <script src="libs/js/main.js"></script>

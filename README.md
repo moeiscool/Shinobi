@@ -33,7 +33,7 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
         - Chrome
     - Windows 7
         - Chrome
-    - Mac OS
+    - Mac OS Sierra
         - Safari
         - Chrome
 
@@ -152,3 +152,24 @@ If you wish to use this software for commercial purposes please consider donatin
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
+    
+    # Libraries Used
+    
+    vbox.css (the framework that does the vertical panel layout) - I honestly don't know who made this, i found it in a zip.
+    jQuery - http://jquery.com/
+    Socket.io - http://socket.io/
+    Bootstrap - http://getbootstrap.com/
+    Moment.js - http://momentjs.com/
+    Livestamp.js - https://mattbradley.github.io/livestampjs/
+    Font Awesome - http://fontawesome.io/
+    Node.js - https://nodejs.org
+    MySQL - https://www.mysql.com/
+    NPM: mysql - https://www.npmjs.com/package/mysql
+    NPM: crypto - https://www.npmjs.com/package/crypto
+    NPM: express - http://expressjs.com/
+    NPM: request - https://www.npmjs.com/package/request
+    NPM: connection-tester - https://www.npmjs.com/package/connection-tester
+    
+    
+    and maybe a few others.
+    

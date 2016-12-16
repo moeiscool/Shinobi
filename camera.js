@@ -749,12 +749,11 @@ app.get(['/events/:ke','/events/:ke/:id'], function (req,res){
     sql.query(req.sql,req.ar,function(err,r){
         
         r.forEach(function(v){
-            v.href='/events/'+v.ke+'/'+v.mid+'/'+s.moment(v.time)+'.'+e.ext;
+            v.href='/events/'+v.ke+'/'+v.mid+'/'+s.moment(v.time)+'.'+v.ext;
         })
         
         res.setHeader('Content-Type', 'application/json');
         res.send(JSON.stringify(r, null, 3));
-        res.end();
     })
 });
 
