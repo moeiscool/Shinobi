@@ -36,7 +36,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             break;
             case 1://monitor
                 d.src=placeholder.getData(placeholder.plcimg({bgcolor:'#b57d00',text:'...'}));
-                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" title="'+d.mid+' : '+d.name+'" class="monitor_block col-md-4"><img monitor="watch" class="snapshot" src="'+d.src+'"><div class="title truncate">'+d.name+'</div><div class="icons"><a class="btn btn-xs btn-default" monitor="edit"><i class="fa fa-wrench"></i></a> <a event="calendar" class="btn btn-xs btn-default"><i class="fa fa-film"></i></a></div></div>';
+                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" title="'+d.mid+' : '+d.name+'" class="monitor_block col-md-4"><img monitor="watch" class="snapshot" src="'+d.src+'"><div class="box"><div class="title truncate">'+d.name+'</div><div class="list-data"><div>'+d.mid+'</div><div><b>Save as :</b> '+d.ext+'</div><div><b>Mode :</b> '+d.mode+'</div></div><div class="icons"><a class="btn btn-xs btn-default" monitor="edit"><i class="fa fa-wrench"></i></a> <a event="calendar" class="btn btn-xs btn-default"><i class="fa fa-film"></i></a></div></div></div>';
                 delete(d.src);
             break;
             case 2:
@@ -245,7 +245,7 @@ $('body')
         $.each(d,function(n,v){
             if(v.status!==0){
             var n=$.ccio.mon[v.mid];
-            if(n){v.title=n.name+' - '+moment(v.time).format('HH:mm:ss');}
+            if(n){v.title=n.name+' - '+(parseInt(v.size)/1000000).toFixed(2)+'mb';}
             v.start=v.time;
             v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
             e.ar.push(v);

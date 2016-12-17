@@ -1,19 +1,16 @@
 # Shinobi
 
-Shinobi is an Open Source CCTV software written in Node.JS
+Shinobi is an Open Source CCTV software written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. Currently it is being crafted for IP Cameras, not local.
 
 <img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.jpg?raw=true">
-
-# What is Shinobi?
-
-Shinobi is an Open Source CCTV software written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. Currently it is being crafted for IP Cameras, not local.
 
 # Why?
 
 - MJPEG streams that are presented as a DOM element puts serious strain on the client browser when needing to be removed and added again. They cannot be terminated without a hard refresh of the page or use of popup or iframe. It essentially opens new streams everytime you recreate an image with an MJPEG url.
     - Shinobi addresses this with `WebSocket` streams.
 
-- Saving to WebM not JPEG frames or MP4 video. JPEG and MP4 are heavy. WebM is not.
+- <s>Saving to WebM not JPEG frames or MP4 video. JPEG and MP4 are heavy. WebM is not.</s>
+    - Now Saves to WebM and MP4, your choice. RTSP -> MP4 uses very little CPU power but uses a lot of storage space. MP4 is still heavy.
 
 - Written in Node.js, not PHP, Perl, and whatever languages you can remember.
 
@@ -94,6 +91,18 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
     - It's the CPU indicator, the orange progress bar on the web panel.
     - if you choose not to install or can't then it will just post an error in the log.
     - Sadly there is no dstat for Mac OS.
+    
+# How to Update
+
+- Overwrite old files.
+
+`SQL Database`
+
+- *Rare, please ensure that your structure is actually out of date before doing this.*
+
+- Backup your SQL data.
+
+- Run `framework.sql` in your mysql client.
 
 # To Do
 
@@ -108,33 +117,11 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 
 If you like what I am doing here and want me to continue please consider donating :)
 
-- Quick Links on the site page : https://moeiscool.github.io/Shinobi/
-
-<a href='https://pledgie.com/campaigns/33051'><img alt='Click here to lend your support to: Shinobi, Open Source CCTV written in Node.js and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/33051.png?skin_name=chrome' border='0' ></a>
-
-- PayPal : paypal@m03.ca
-- Patreon : https://patreon.com/moeiscool
-- Please note : donating directly through paypal will show more support :)
+<a href='https://www.bountysource.com/teams/shinobi'><img src='https://d2bbtvgnhux6eq.cloudfront.net/assets/Bountysource-green-f2f437ed727ee2cacaee3f559c1907cb.png' ></a>
 
 # Author
 
 Moe Alam, just a guy who needed CCTV
-
-# Want me to Host an Instance for you?
-email me at : shinobi@m03.ca
-
-    You would get:
-    +50GB SSD
-    +2GB RAM
-    +Quad Core ARM Processor
-    +200Mbps Default Throughput, Soft-Max 800Mbps Throughput per Server
-    +Static IP
-    +Location : Italy
-    ----------
-    $55/month
-
-    Optional
-    +1000GB = +$75/month
 
 # Credits
 

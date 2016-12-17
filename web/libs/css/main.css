@@ -59,8 +59,14 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .side-menu .monitor_block:hover .title{opacity:1}
 .side-menu .monitor_block .icons,.side-menu .monitor_block .title{opacity:0;width:100%;bottom:0;left:0;background:rgba(0,0,0,0.6);position:absolute;padding:2.5px;z-index:11}
 .side-menu .monitor_block .title{bottom:auto;top:0;color:#fff}
+.side-menu .monitor_block .list-data{display:none}
 
-.side-menu.list-blocks .monitor_block{float:none;width:100%;}
+.side-menu.list-blocks .monitor_block .icons,.side-menu.list-blocks .monitor_block .title{position:inherit;opacity:1;background:none}
+.side-menu.list-blocks .monitor_block:not(:last-child){border-bottom: 1px solid #54502d;}
+.side-menu.list-blocks .monitor_block{float:none;width:100%;padding: 10px;}
+.side-menu.list-blocks .monitor_block .list-data{display:block}
+.side-menu.list-blocks .monitor_block img{width:60px;height:60px;cursor:pointer;display:inline-block;margin-right:10px;border-radius:50%;vertical-align:top}
+.side-menu.list-blocks .monitor_block .box{width:calc(100% - 70px);display:inline-block}
 
 
 .monitor_item .hud .side-menu{top:0;right:0;margin:auto;width:40%;height:100%;padding:15px;background:rgba(0,0,0,0.6);padding-bottom:60px;}

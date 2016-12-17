@@ -89,7 +89,7 @@ body.container {
 .dker .beside>div .progress{margin-bottom:0}
 .nav-xs .dker .beside>div:not(:first-child){display:none}
 .nav-xs .active [class*="fa-caret"]{transform:rotate(180deg)}
-@media (min-width: 768px) {
+/*@media (min-width: 768px) {*/
   body.container {
     -webkit-box-shadow: 0 3px 60px rgba(0,0,0,0.3);
     box-shadow: 0 3px 60px rgba(0,0,0,0.3);
@@ -230,7 +230,7 @@ body.container {
   ::-webkit-scrollbar-track {
     background-color: rgba(50,50,50,0.05);
   }
-}
+/*}*/
 .scrollable {
   overflow-x: hidden;
   overflow-y: auto;
@@ -357,7 +357,7 @@ body.container {
 .bg-black .nav-primary > ul.nav-main > li.active > a {
   background-color: #1A8AD2;/*background-color: #1aae88;*/
 }
-@media (min-width: 768px) {
+/*@media (min-width: 768px) {*/
   .visible-nav-xs {
     display: none;
   }
@@ -371,9 +371,6 @@ body.container {
   .nav-xs .slimScrollBar,
   .nav-xs .slimScrollRail {
     display: none !important;
-  }
-  .nav-xs .scrollable {
-    overflow: visible;
   }
   .nav-xs .nav-primary > ul > li > a {
     position: relative;
@@ -485,7 +482,7 @@ body.container {
   .header-md .navbar-nav > li > a {
     padding: 20px;
   }
-}
+/*}*/
 @media (max-width: 767px) {
   .navbar-fixed-top-xs {
     position: fixed !important;
