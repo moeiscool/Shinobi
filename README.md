@@ -14,18 +14,23 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 
 - Written in Node.js, not PHP, Perl, and whatever languages you can remember.
 
-- ZoneMinder was the first choice but it proved unstable for the reasons mentioned. Also it has so many bugs and bounties many of them are just being left behind in the ocean of bugs reports.
+- ZoneMinder was the first choice but it proved unstable for the reasons mentioned. Also it has so many bugs and bounties many of them are just being left behind in the ocean of bug reports.
 
 # Info
 
 - Written in a simple structure. `camera.js` and `web` folder.
 - Easy Install. (not as easy as apt-get install zoneminder yet though. See below)
-- Streams are `img` tags, but not MJPEG. Images are transferred through `WebSocket`.
+- Streams are `img` tags transferred through `WebSocket`.
 - Any websocket enabled browser can support the image stream (including mobile)
-- Interface is nicer to look at and works better in mobile.
+- Can save to WebM or MP4
+- Calendar view for Events
+- `child.js` Child node processing to load balance ffmpeg processes across multiple nodes. *Work in Progress, needs h264 added and schema update*
 
 - Client-side Tested on : 
     - iPad Mini 2
+        - Safari
+        - Chrome
+    - iPhone 5
         - Safari
         - Chrome
     - Windows 7
@@ -53,7 +58,7 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 - Ubuntu
     - Open `Terminal`.
     - Install Node.js and it's package manager `apt-get install nodejs npm`.
-        - note: `apt-get install node` installs something else, not Node.js.
+        - note: `#apt-get install node` installs something else, not Node.js.
     - Create a symlink to use nodejs `ln -s /usr/bin/nodejs /usr/bin/node`.
         - pm2 needs this. If you don't plan on using pm2, then ignore this step.
 
@@ -74,15 +79,32 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 
 - Select directory `cd /your/directory/for/shinobi`. Where `camera.js` is located.
 
-- Go to `sql` and install the SQL files in your database. `Framework` then `Default Data`. Return to main directory. Then setup `conf.json` with your SQL details. 
+<b>Setup SQL</b>
+    
+- Go to `sql` and install the SQL files in your database.
+    - Terminal SQL can be accessed by running `mysql -u root -p`
+        - The password will have been set during the installation of MySQL.
+    - *OPTIONAL :* Create New SQL User with privileges : https://www.digitalocean.com/community/tutorials/how-to-create-a-new-user-and-grant-permissions-in-mysql
+        - Put these credentials into your `conf.json`
+    - while still in the SQL client you can paste the contents of the SQL files straight into terminal.
+        - First `framework.sql` then `default_data.sql`. Default data contains a demo user and a demo `rtsp to mp4` monitor.
+    - After importing the data. Type `exit` to leave the sql client.
+-  Type `cd ..` to go up one directory.
+
+<b>Install Libraries</b>
+
 
 - Run `npm install` while in the main directory. This will install the libraries Shinobi needs.
 
+<b>Launch Shinobi</b>
+
 - To start `node camera.js`
+    - If you did not make the symlink for nodejs then you must run `nodejs camera.js` instead.
 
-- Open up `localhost` in your browser. Login with `Username : ccio@m03.ca , Password : password`.
+- Open up `http://localhost` in your browser.
+    - If you inserted the `default_data.sql` login with `Username : ccio@m03.ca` and `Password : password`.
 
-`Optional for some OS`
+<b>Optional for some OS</b>
 
 - To daemonize the process install pm2 with `npm install pm2 -g` then run `pm2 start camera.js`
     - run `pm2 logs` to see the console for any errors.
