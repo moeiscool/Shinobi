@@ -2,7 +2,7 @@
 
 Shinobi is an Open Source CCTV software written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. Currently it is being crafted for IP Cameras, not local.
 
-<img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.jpg?raw=true">
+<img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.gif?raw=true">
 
 # Why?
 
@@ -57,9 +57,15 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 
 - Ubuntu
     - Open `Terminal`.
-    - Install Node.js and it's package manager `apt-get install nodejs npm`.
-        - note: `#apt-get install node` installs something else, not Node.js.
-    - Create a symlink to use nodejs `ln -s /usr/bin/nodejs /usr/bin/node`.
+    - Install Node.js and it's package manager
+    ```
+    apt-get install nodejs npm
+    ```
+        - *Note :* `#apt-get install node` installs something else, not Node.js.
+    - Create a symlink to use nodejs.
+    ```
+    ln -s /usr/bin/nodejs /usr/bin/node
+    ```
         - pm2 needs this. If you don't plan on using pm2, then ignore this step.
 
 - Not on Ubuntu? Other operating systems can be found here.
@@ -69,7 +75,11 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 <b>Dont have MySQL installed?</b>
 
 - Open `Terminal`.
-    - Ubuntu : `apt-get install mysql-server`.
+    - Ubuntu
+    ```
+    apt-get install mysql-server
+    ```
+        - This will prompt you to set a password for `root` user in MySQL on your first install.
     - Mac OS (will need more techiness ironically, follow this link) : https://blog.joefallon.net/2013/10/install-mysql-on-mac-osx-using-homebrew/ .
 
 
@@ -95,26 +105,43 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 
 
 - Run `npm install` while in the main directory. This will install the libraries Shinobi needs.
+    ```
+    npm install
+    ```
 
 <b>Launch Shinobi</b>
 
-- To start `node camera.js`
+- To start :
+    ```
+    node camera.js
+    ```
     - If you did not make the symlink for nodejs then you must run `nodejs camera.js` instead.
 
 - Open up `http://localhost` in your browser.
     - If you inserted the `default_data.sql` login with `Username : ccio@m03.ca` and `Password : password`.
+    - *Note :* if you are installed on a remote computer open up the IP instead `http://111.111.111.111` in your browser.
 
 <b>Optional for some OS</b>
 
-- To daemonize the process install pm2 with `npm install pm2 -g` then run `pm2 start camera.js`
-    - run `pm2 logs` to see the console for any errors.
-    - `forever` is another program to daemonize, but i've had more success with `pm2`.
-
-- Install dstat `apt-get install dstat`
+- Install dstat :
+    ```
+    apt-get install dstat
+    ```
     - It's the CPU indicator, the orange progress bar on the web panel.
     - if you choose not to install or can't then it will just post an error in the log.
     - Sadly there is no dstat for Mac OS.
-    
+
+- To daemonize the process install pm2 with 
+    ```
+    npm install pm2 -g
+    ```
+    then to start : 
+    ```
+    pm2 start camera.js
+    ```
+    - run `pm2 logs` to see the console for any errors.
+    - `forever` is another program to daemonize, but i've had more success with `pm2`.
+
 # How to Update
 
 - Overwrite old files.
