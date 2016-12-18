@@ -27,7 +27,7 @@
 
 <p dir="auto">Shinobi is an Open Source CCTV software written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. Currently it is being crafted for IP Cameras, not local.</p>
 
-<p dir="auto"></p><div class="image-container"><a class="no-attachment-icon" href="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.jpg?raw=true" target="_blank" rel="nofollow noreferrer"><img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.gif?raw=true"></a></div>
+<p dir="auto"></p><div class="image-container"><a class="no-attachment-icon" href="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.gif?raw=true" target="_blank" rel="nofollow noreferrer"><img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.gif?raw=true"></a></div>
 
 <h1 dir="auto">
 <a id="why" class="anchor" href="#why" aria-hidden="true"></a>Why?</h1>
@@ -129,19 +129,29 @@
 
 <ul>
 <li>Open <code>Terminal</code>.</li>
-<li>Install Node.js and it's package manager <code>apt-get install nodejs npm</code>.
+<li>Install Node.js and it's package manager
 
 <ul>
-<li>note: <code>#apt-get install node</code> installs something else, not Node.js.</li>
+<li>
+<em>Note :</em> <code>#apt-get install node</code> installs something else, not Node.js.</li>
 </ul>
 </li>
-<li>Create a symlink to use nodejs <code>ln -s /usr/bin/nodejs /usr/bin/node</code>.
+</ul>
+
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>apt-get install nodejs npm
+</code></pre>
+
+<ul>
+<li>Create a symlink to use nodejs.
 
 <ul>
 <li>pm2 needs this. If you don't plan on using pm2, then ignore this step.</li>
 </ul>
 </li>
 </ul>
+
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>ln -s /usr/bin/nodejs /usr/bin/node
+</code></pre>
 </li>
 <li>
 <p>Not on Ubuntu? Other operating systems can be found here.</p>
@@ -155,10 +165,22 @@
 <p dir="auto"><b>Dont have MySQL installed?</b></p>
 
 <ul dir="auto">
-<li>Open <code>Terminal</code>.
+<li>
+<p>Open <code>Terminal</code>.</p>
 
 <ul>
-<li>Ubuntu : <code>apt-get install mysql-server</code>.</li>
+<li>Ubuntu :
+
+<ul>
+<li>Installation of MySQL prompt you to set a password for <code>root</code> user in MySQL on your first install.</li>
+</ul>
+</li>
+</ul>
+
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>apt-get install mysql-server
+</code></pre>
+
+<ul>
 <li>Mac OS (will need more techiness ironically, follow this link) : <a href="https://blog.joefallon.net/2013/10/install-mysql-on-mac-osx-using-homebrew/" rel="nofollow noreferrer" target="_blank">https://blog.joefallon.net/2013/10/install-mysql-on-mac-osx-using-homebrew/</a> .</li>
 </ul>
 </li>
@@ -168,21 +190,64 @@
 
 <ul dir="auto">
 <li><p>Open <code>Terminal</code>.</p></li>
-<li><p>Select directory <code>cd /your/directory/for/shinobi</code>. Where <code>camera.js</code> is located.</p></li>
+<li>
+<p>Download Shinobi with <code>wget</code> if you don't have <code>git</code> installed.</p>
+
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>wget https://github.com/moeiscool/Shinobi/tarball/master
+</code></pre>
+
+<ul>
+<li>Do this only if you haven't already downloaded the files.</li>
+</ul>
+</li>
+<li>
+<p>Untar the downloaded file. The extracted directory is the shinobi directory.</p>
+
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>tar -xzf master
+</code></pre>
+</li>
+<li>
+<p>Rename the directory for easier access. The extracted folder name will be different. <code>moeiscool-Shinobi-XXXXXXX</code> is only an example.</p>
+
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>mv moeiscool-Shinobi-XXXXXXX shinobi
+</code></pre>
+</li>
+<li>
+<p>Set permissions on the shinobi directory. <em>Where <code>camera.js</code> is located.</em></p>
+
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>chmod -R 755 /your/directory/for/shinobi
+</code></pre>
+</li>
+<li>
+<p>Open Shinobi directory.</p>
+
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>cd /your/directory/for/shinobi
+</code></pre>
+</li>
 </ul>
 
 <p dir="auto"><b>Setup SQL</b></p>
 
 <ul dir="auto">
-<li>Go to <code>sql</code> and install the SQL files in your database.
+<li>
+<p>Go to <code>sql</code> and install the SQL files in your database.</p>
+
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>cd /your/directory/for/shinobi/sql
+</code></pre>
 
 <ul>
-<li>Terminal SQL can be accessed by running <code>mysql -u root -p</code>
+<li>Terminal SQL client can be accessed by running :
 
 <ul>
 <li>The password will have been set during the installation of MySQL.</li>
 </ul>
 </li>
+</ul>
+
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>mysql -u root -p
+</code></pre>
+
+<ul>
 <li>
 <em>OPTIONAL :</em> Create New SQL User with privileges : <a href="https://www.digitalocean.com/community/tutorials/how-to-create-a-new-user-and-grant-permissions-in-mysql" rel="nofollow noreferrer" target="_blank">https://www.digitalocean.com/community/tutorials/how-to-create-a-new-user-and-grant-permissions-in-mysql</a>
 
@@ -197,23 +262,39 @@
 <li>First <code>framework.sql</code> then <code>default_data.sql</code>. Default data contains a demo user and a demo <code>rtsp to mp4</code> monitor.</li>
 </ul>
 </li>
-<li>After importing the data. Type <code>exit</code> to leave the sql client.</li>
+<li>After importing the data. Exit the sql client.</li>
 </ul>
+
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>exit
+</code></pre>
 </li>
-<li> Type <code>cd ..</code> to go up one directory.</li>
+<li>
+<p>Go up one directory.</p>
+
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>cd ..
+</code></pre>
+</li>
 </ul>
 
 <p dir="auto"><b>Install Libraries</b></p>
 
 <ul dir="auto">
-<li>Run <code>npm install</code> while in the main directory. This will install the libraries Shinobi needs.</li>
+<li>
+<p>Run <code>npm install</code> while in the main directory. This will install the libraries Shinobi needs.</p>
+
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>npm install
+</code></pre>
+</li>
 </ul>
 
 <p dir="auto"><b>Launch Shinobi</b></p>
 
 <ul dir="auto">
 <li>
-<p>To start <code>node camera.js</code></p>
+<p>To start :</p>
+
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>node camera.js
+</code></pre>
 
 <ul>
 <li>If you did not make the symlink for nodejs then you must run <code>nodejs camera.js</code> instead.</li>
@@ -224,6 +305,8 @@
 
 <ul>
 <li>If you inserted the <code>default_data.sql</code> login with <code>Username : ccio@m03.ca</code> and <code>Password : password</code>.</li>
+<li>
+<em>Note :</em> if you are installed on a remote computer open up the IP instead <code>http://111.111.111.111</code> in your browser.</li>
 </ul>
 </li>
 </ul>
@@ -232,21 +315,32 @@
 
 <ul dir="auto">
 <li>
-<p>To daemonize the process install pm2 with <code>npm install pm2 -g</code> then run <code>pm2 start camera.js</code></p>
+<p>Install dstat :</p>
 
-<ul>
-<li>run <code>pm2 logs</code> to see the console for any errors.</li>
-<li>
-<code>forever</code> is another program to daemonize, but i've had more success with <code>pm2</code>.</li>
-</ul>
-</li>
-<li>
-<p>Install dstat <code>apt-get install dstat</code></p>
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>apt-get install dstat
+</code></pre>
 
 <ul>
 <li>It's the CPU indicator, the orange progress bar on the web panel.</li>
 <li>if you choose not to install or can't then it will just post an error in the log.</li>
 <li>Sadly there is no dstat for Mac OS.</li>
+</ul>
+</li>
+<li>
+<p>To daemonize the process install pm2 with </p>
+
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>npm install pm2 -g
+</code></pre>
+
+<p>then to start : </p>
+
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>pm2 start camera.js
+</code></pre>
+
+<ul>
+<li>run <code>pm2 logs</code> to see the console for any errors.</li>
+<li>
+<code>forever</code> is another program to daemonize, but i've had more success with <code>pm2</code>.</li>
 </ul>
 </li>
 </ul>

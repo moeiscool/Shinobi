@@ -58,15 +58,18 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 - Ubuntu
     - Open `Terminal`.
     - Install Node.js and it's package manager
+        - *Note :* `#apt-get install node` installs something else, not Node.js.
+        
     ```
     apt-get install nodejs npm
     ```
-        - *Note :* `#apt-get install node` installs something else, not Node.js.
+
     - Create a symlink to use nodejs.
+        - pm2 needs this. If you don't plan on using pm2, then ignore this step.
+
     ```
     ln -s /usr/bin/nodejs /usr/bin/node
     ```
-        - pm2 needs this. If you don't plan on using pm2, then ignore this step.
 
 - Not on Ubuntu? Other operating systems can be found here.
     - https://nodejs.org/en/download/package-manager/
@@ -75,11 +78,13 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 <b>Dont have MySQL installed?</b>
 
 - Open `Terminal`.
-    - Ubuntu
+    - Ubuntu :
+        - Installation of MySQL prompt you to set a password for `root` user in MySQL on your first install.
+
     ```
     apt-get install mysql-server
     ```
-        - This will prompt you to set a password for `root` user in MySQL on your first install.
+
     - Mac OS (will need more techiness ironically, follow this link) : https://blog.joefallon.net/2013/10/install-mysql-on-mac-osx-using-homebrew/ .
 
 
@@ -87,27 +92,78 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 
 - Open `Terminal`.
 
-- Select directory `cd /your/directory/for/shinobi`. Where `camera.js` is located.
+- Download Shinobi with `wget` if you don't have `git` installed.
+
+    ```
+    wget https://github.com/moeiscool/Shinobi/tarball/master
+    ```
+    
+    - Do this only if you haven't already downloaded the files.
+    
+- Untar the downloaded file. The extracted directory is the shinobi directory.
+
+    ```
+    tar -xzf master
+    ```
+
+- Rename the directory for easier access. The extracted folder name will be different. `moeiscool-Shinobi-XXXXXXX` is only an example.
+
+    ```
+    mv moeiscool-Shinobi-XXXXXXX shinobi
+    ```
+
+- Set permissions on the shinobi directory. *Where `camera.js` is located.*
+
+    ```
+    chmod -R 755 /your/directory/for/shinobi
+    ```
+
+- Open Shinobi directory.
+
+    ```
+    cd /your/directory/for/shinobi
+    ```
 
 <b>Setup SQL</b>
     
 - Go to `sql` and install the SQL files in your database.
-    - Terminal SQL can be accessed by running `mysql -u root -p`
+
+    ```
+    cd /your/directory/for/shinobi/sql
+    ```
+
+    - Terminal SQL client can be accessed by running :
         - The password will have been set during the installation of MySQL.
+
+    ```
+    mysql -u root -p
+    ```
+
     - *OPTIONAL :* Create New SQL User with privileges : https://www.digitalocean.com/community/tutorials/how-to-create-a-new-user-and-grant-permissions-in-mysql
         - Put these credentials into your `conf.json`
     - while still in the SQL client you can paste the contents of the SQL files straight into terminal.
         - First `framework.sql` then `default_data.sql`. Default data contains a demo user and a demo `rtsp to mp4` monitor.
-    - After importing the data. Type `exit` to leave the sql client.
--  Type `cd ..` to go up one directory.
+    - After importing the data. Exit the sql client.
+    
+    ```
+    exit
+    ```
+    
+-  Go up one directory.
+
+    ```
+    cd ..
+    ```
 
 <b>Install Libraries</b>
 
 
 - Run `npm install` while in the main directory. This will install the libraries Shinobi needs.
+
     ```
     npm install
     ```
+
 
 <b>Launch Shinobi</b>
 
