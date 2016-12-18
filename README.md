@@ -139,20 +139,41 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
     mysql -u root -p
     ```
 
-    - *OPTIONAL :* Create New SQL User with privileges : https://www.digitalocean.com/community/tutorials/how-to-create-a-new-user-and-grant-permissions-in-mysql
-        - Put these credentials into your `conf.json`
-    - while still in the SQL client you can paste the contents of the SQL files straight into terminal.
-        - First `framework.sql` then `default_data.sql`. Default data contains a demo user and a demo `rtsp to mp4` monitor.
+    - *OPTIONAL :* Create New SQL User with privileges. If you choose to use your own pre-defined credentials skip this step.
+    
+    ```
+    CREATE USER 'majesticflame'@'127.0.0.1' IDENTIFIED BY 'password';
+    GRANT ALL PRIVILEGES ON * . * TO 'majesticflame'@'127.0.0.1';
+    FLUSH PRIVILEGES;
+    ```
+        
+    - while still in the SQL client you can paste the contents of the SQL files straight into terminal. First `framework.sql` then `default_data.sql`.
+        - *Note :* `default_data.sql` contains a demo user and a demo `rtsp to mp4` monitor.
+        - `framework.sql` : https://raw.githubusercontent.com/moeiscool/Shinobi/master/sql/framework.sql
+        - `default_data.sql` : https://raw.githubusercontent.com/moeiscool/Shinobi/master/sql/default_data.sql
+
+
     - After importing the data. Exit the sql client.
     
     ```
     exit
     ```
     
--  Go up one directory.
+-  Go up one directory to enter the main directory. *Where `camera.js` is located.* 
 
     ```
     cd ..
+    ```
+
+- Edit `conf.json` to reflect your sql credentials. I don't reccommend using root.
+    
+    ```
+    nano conf.json
+    ```
+    - Contents of default `conf.json` file, located in the main directory.
+
+    ```
+    {"host":"127.0.0.1","user":"majesticflame","password":"","database":"ccio"}
     ```
 
 <b>Install Libraries</b>

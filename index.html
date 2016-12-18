@@ -249,17 +249,26 @@
 
 <ul>
 <li>
-<em>OPTIONAL :</em> Create New SQL User with privileges : <a href="https://www.digitalocean.com/community/tutorials/how-to-create-a-new-user-and-grant-permissions-in-mysql" rel="nofollow noreferrer" target="_blank">https://www.digitalocean.com/community/tutorials/how-to-create-a-new-user-and-grant-permissions-in-mysql</a>
-
-<ul>
-<li>Put these credentials into your <code>conf.json</code>
-</li>
+<em>OPTIONAL :</em> Create New SQL User with privileges. If you choose to use your own pre-defined credentials skip this step.</li>
 </ul>
-</li>
-<li>while still in the SQL client you can paste the contents of the SQL files straight into terminal.
+
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>CREATE USER 'majesticflame'@'127.0.0.1' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON * . * TO 'majesticflame'@'127.0.0.1';
+FLUSH PRIVILEGES;
+</code></pre>
 
 <ul>
-<li>First <code>framework.sql</code> then <code>default_data.sql</code>. Default data contains a demo user and a demo <code>rtsp to mp4</code> monitor.</li>
+<li>while still in the SQL client you can paste the contents of the SQL files straight into terminal. First <code>framework.sql</code> then <code>default_data.sql</code>.
+
+<ul>
+<li>
+<em>Note :</em> <code>default_data.sql</code> contains a demo user and a demo <code>rtsp to mp4</code> monitor.</li>
+<li>
+<code>framework.sql</code> : <a href="https://raw.githubusercontent.com/moeiscool/Shinobi/master/sql/framework.sql" rel="nofollow noreferrer" target="_blank">https://raw.githubusercontent.com/moeiscool/Shinobi/master/sql/framework.sql</a>
+</li>
+<li>
+<code>default_data.sql</code> : <a href="https://raw.githubusercontent.com/moeiscool/Shinobi/master/sql/default_data.sql" rel="nofollow noreferrer" target="_blank">https://raw.githubusercontent.com/moeiscool/Shinobi/master/sql/default_data.sql</a>
+</li>
 </ul>
 </li>
 <li>After importing the data. Exit the sql client.</li>
@@ -269,9 +278,22 @@
 </code></pre>
 </li>
 <li>
-<p>Go up one directory.</p>
+<p>Go up one directory to enter the main directory. <em>Where <code>camera.js</code> is located.</em> </p>
 
 <pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>cd ..
+</code></pre>
+</li>
+<li>
+<p>Edit <code>conf.json</code> to reflect your sql credentials. I don't reccommend using root.</p>
+
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>nano conf.json
+</code></pre>
+
+<ul>
+<li>Contents of default <code>conf.json</code> file, located in the main directory.</li>
+</ul>
+
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>{"host":"127.0.0.1","user":"majesticflame","password":"","database":"ccio"}
 </code></pre>
 </li>
 </ul>
