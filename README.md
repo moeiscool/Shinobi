@@ -142,7 +142,7 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
     - *OPTIONAL :* Create New SQL User with privileges. If you choose to use your own pre-defined credentials skip this step.
     
     ```
-    CREATE USER 'majesticflame'@'127.0.0.1' IDENTIFIED BY 'password';
+    CREATE USER 'majesticflame'@'127.0.0.1' IDENTIFIED BY '';
     GRANT ALL PRIVILEGES ON * . * TO 'majesticflame'@'127.0.0.1';
     FLUSH PRIVILEGES;
     ```
