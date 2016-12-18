@@ -15,6 +15,17 @@ CREATE DATABASE IF NOT EXISTS `ccio` /*!40100 DEFAULT CHARACTER SET utf8 */;
 USE `ccio`;
 
 
+-- Dumping structure for table ccio.Logs
+CREATE TABLE IF NOT EXISTS `Logs` (
+  `ke` varchar(50) DEFAULT NULL,
+  `mid` varchar(50) DEFAULT NULL,
+  `info` text,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Data exporting was unselected.
+
+
 -- Dumping structure for table ccio.Monitors
 CREATE TABLE IF NOT EXISTS `Monitors` (
   `mid` varchar(50) DEFAULT NULL,

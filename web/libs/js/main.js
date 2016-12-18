@@ -108,7 +108,7 @@ $.ccio.ws.on('connect',function (d){
     $.ccio.cx({f:'init',ke:$user.ke,auth:$user.auth,uid:$user.uid})
 })
 $.ccio.ws.on('f',function (d){
-    if(d.f!=='monitor_frame'&&d.f!=='cpu'&&d.f!=='monitor_snapshot'){console.log(d);}
+    if(d.f!=='monitor_frame'&&d.f!=='cpu'&&d.f!=='event_delete'&&d.f!=='monitor_snapshot'){console.log(d);}
     switch(d.f){
         case'cpu':
             $('.cpu_load .progress-bar').css('width',d.data+'%')
@@ -150,6 +150,7 @@ $.ccio.ws.on('f',function (d){
         case'monitor_edit':
             d.o=$.ccio.op().watch_on;
             if(!d.o){d.o={}}
+            d.mon.details=JSON.stringify(d.mon.details);
             $.each(d.mon,function(n,v){
                 $.ccio.mon[d.mid][n]=v;
             });
@@ -218,6 +219,14 @@ $.aM.f.submit(function(e){
 $.aM.f.find('[name="type"]').change(function(e){
     e.e=$(this);
     if(e.e.val()==='h264'){$.aM.f.find('[name="protocol"]').val('rtsp').change()}
+})
+$.aM.md=$.aM.f.find('#monitor_details input');
+$.aM.md.change(function(e){
+    e.ar={};
+    $.each($.aM.md,function(n,v){
+        v=$(v);e.ar[v.attr('detail')]=v.val();
+    });
+    $.aM.f.find('[name="details"]').val(JSON.stringify(e.ar));
 })
 $.aM.f.find('[name="protocol"]').change(function(e){
     e.e=$(this);e.v=e.e.val(),e.t=$.aM.f.find('[name="type"]');
@@ -337,6 +346,13 @@ $('body')
             }
             $.each(e.values,function(n,v){
                 $.aM.e.find('[name="'+n+'"]').val(v).change()
+            })
+            e.ss=JSON.parse(e.values.details);
+            $.each(['vf','svf'],function(n,v){
+                if(!e.ss[v]){e.ss[v]=''}
+            })
+            $.each(e.ss,function(n,v){
+                $.aM.e.find('[detail="'+n+'"]').val(v);
             })
             $('#add_monitor').modal('show')
         break;

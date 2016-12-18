@@ -3,8 +3,6 @@ var path = require('path');
 var mysql = require('mysql');
 var moment = require('moment');
 var request = require("request");
-const EventEmitter = require('events');
-class MyEmitter extends EventEmitter {};
 var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
 var connectionTester = require('connection-tester');

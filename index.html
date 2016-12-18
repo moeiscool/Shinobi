@@ -25,14 +25,9 @@
 <h1 dir="auto">
 <a id="shinobi" class="anchor" href="#shinobi" aria-hidden="true"></a>Shinobi</h1>
 
-<p dir="auto">Shinobi is an Open Source CCTV software written in Node.JS</p>
+<p dir="auto">Shinobi is an Open Source CCTV software written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. Currently it is being crafted for IP Cameras, not local.</p>
 
 <p dir="auto"></p><div class="image-container"><a class="no-attachment-icon" href="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.jpg?raw=true" target="_blank" rel="nofollow noreferrer"><img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.jpg?raw=true"></a></div>
-
-<h1 dir="auto">
-<a id="what-is-shinobi" class="anchor" href="#what-is-shinobi" aria-hidden="true"></a>What is Shinobi?</h1>
-
-<p dir="auto">Shinobi is an Open Source CCTV software written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. Currently it is being crafted for IP Cameras, not local.</p>
 
 <h1 dir="auto">
 <a id="why" class="anchor" href="#why" aria-hidden="true"></a>Why?</h1>
@@ -45,9 +40,15 @@
 <li>Shinobi addresses this with <code>WebSocket</code> streams.</li>
 </ul>
 </li>
-<li><p>Saving to WebM not JPEG frames or MP4 video. JPEG and MP4 are heavy. WebM is not.</p></li>
+<li>
+<p><s>Saving to WebM not JPEG frames or MP4 video. JPEG and MP4 are heavy. WebM is not.</s></p>
+
+<ul>
+<li>Now Saves to WebM and MP4, your choice. RTSP -&gt; MP4 uses very little CPU power but uses a lot of storage space. MP4 is still heavy.</li>
+</ul>
+</li>
 <li><p>Written in Node.js, not PHP, Perl, and whatever languages you can remember.</p></li>
-<li><p>ZoneMinder was the first choice but it proved unstable for the reasons mentioned. Also it has so many bugs and bounties many of them are just being left behind in the ocean of bugs reports.</p></li>
+<li><p>ZoneMinder was the first choice but it proved unstable for the reasons mentioned. Also it has so many bugs and bounties many of them are just being left behind in the ocean of bug reports.</p></li>
 </ul>
 
 <h1 dir="auto">
@@ -56,14 +57,23 @@
 <ul dir="auto">
 <li>Written in a simple structure. <code>camera.js</code> and <code>web</code> folder.</li>
 <li>Easy Install. (not as easy as apt-get install zoneminder yet though. See below)</li>
-<li>Streams are <code>img</code> tags, but not MJPEG. Images are transferred through <code>WebSocket</code>.</li>
+<li>Streams are <code>img</code> tags transferred through <code>WebSocket</code>.</li>
 <li>Any websocket enabled browser can support the image stream (including mobile)</li>
-<li><p>Interface is nicer to look at and works better in mobile.</p></li>
+<li>Can save to WebM or MP4</li>
+<li>Calendar view for Events</li>
+<li><p><code>child.js</code> Child node processing to load balance ffmpeg processes across multiple nodes. <em>Work in Progress, needs h264 added and schema update</em></p></li>
 <li>
 <p>Client-side Tested on : </p>
 
 <ul>
 <li>iPad Mini 2
+
+<ul>
+<li>Safari</li>
+<li>Chrome</li>
+</ul>
+</li>
+<li>iPhone 5
 
 <ul>
 <li>Safari</li>
@@ -111,7 +121,7 @@
 
 <p dir="auto"><em>For a Test deployment enviroment I suggest grabbing an old MacBook (what I did) and installing Node.JS on there. Open up Terminal to get started.</em></p>
 
-<p dir="auto"><code>Dont have Node.js installed?</code>.</p>
+<p dir="auto"><b>Dont have Node.js installed?</b></p>
 
 <ul dir="auto">
 <li>
@@ -122,7 +132,7 @@
 <li>Install Node.js and it's package manager <code>apt-get install nodejs npm</code>.
 
 <ul>
-<li>note: <code>apt-get install node</code> installs something else, not Node.js.</li>
+<li>note: <code>#apt-get install node</code> installs something else, not Node.js.</li>
 </ul>
 </li>
 <li>Create a symlink to use nodejs <code>ln -s /usr/bin/nodejs /usr/bin/node</code>.
@@ -142,7 +152,7 @@
 </li>
 </ul>
 
-<p dir="auto"><code>Dont have MySQL installed?</code>.</p>
+<p dir="auto"><b>Dont have MySQL installed?</b></p>
 
 <ul dir="auto">
 <li>Open <code>Terminal</code>.
@@ -154,18 +164,71 @@
 </li>
 </ul>
 
-<p dir="auto"><code>Application Install</code>.</p>
+<p dir="auto"><b>Application Install</b></p>
 
 <ul dir="auto">
 <li><p>Open <code>Terminal</code>.</p></li>
 <li><p>Select directory <code>cd /your/directory/for/shinobi</code>. Where <code>camera.js</code> is located.</p></li>
-<li><p>Go to <code>sql</code> and install the SQL files in your database. <code>Framework</code> then <code>Default Data</code>. Return to main directory. Then setup <code>conf.json</code> with your SQL details. </p></li>
-<li><p>Run <code>npm install</code> while in the main directory. This will install the libraries Shinobi needs.</p></li>
-<li><p>To start <code>node camera.js</code></p></li>
-<li><p>Open up <code>localhost</code> in your browser. Login with <code>Username : ccio@m03.ca , Password : password</code>.</p></li>
 </ul>
 
-<p dir="auto"><code>Optional for some OS</code></p>
+<p dir="auto"><b>Setup SQL</b></p>
+
+<ul dir="auto">
+<li>Go to <code>sql</code> and install the SQL files in your database.
+
+<ul>
+<li>Terminal SQL can be accessed by running <code>mysql -u root -p</code>
+
+<ul>
+<li>The password will have been set during the installation of MySQL.</li>
+</ul>
+</li>
+<li>
+<em>OPTIONAL :</em> Create New SQL User with privileges : <a href="https://www.digitalocean.com/community/tutorials/how-to-create-a-new-user-and-grant-permissions-in-mysql" rel="nofollow noreferrer" target="_blank">https://www.digitalocean.com/community/tutorials/how-to-create-a-new-user-and-grant-permissions-in-mysql</a>
+
+<ul>
+<li>Put these credentials into your <code>conf.json</code>
+</li>
+</ul>
+</li>
+<li>while still in the SQL client you can paste the contents of the SQL files straight into terminal.
+
+<ul>
+<li>First <code>framework.sql</code> then <code>default_data.sql</code>. Default data contains a demo user and a demo <code>rtsp to mp4</code> monitor.</li>
+</ul>
+</li>
+<li>After importing the data. Type <code>exit</code> to leave the sql client.</li>
+</ul>
+</li>
+<li> Type <code>cd ..</code> to go up one directory.</li>
+</ul>
+
+<p dir="auto"><b>Install Libraries</b></p>
+
+<ul dir="auto">
+<li>Run <code>npm install</code> while in the main directory. This will install the libraries Shinobi needs.</li>
+</ul>
+
+<p dir="auto"><b>Launch Shinobi</b></p>
+
+<ul dir="auto">
+<li>
+<p>To start <code>node camera.js</code></p>
+
+<ul>
+<li>If you did not make the symlink for nodejs then you must run <code>nodejs camera.js</code> instead.</li>
+</ul>
+</li>
+<li>
+<p>Open up <code>http://localhost</code> in your browser.</p>
+
+<ul>
+<li>If you inserted the <code>default_data.sql</code> login with <code>Username : ccio@m03.ca</code> and <code>Password : password</code>.</li>
+</ul>
+</li>
+</ul>
+
+<p dir="auto"><b>Optional for some OS</b></p>
 
 <ul dir="auto">
 <li>
@@ -173,6 +236,8 @@
 
 <ul>
 <li>run <code>pm2 logs</code> to see the console for any errors.</li>
+<li>
+<code>forever</code> is another program to daemonize, but i've had more success with <code>pm2</code>.</li>
 </ul>
 </li>
 <li>
@@ -184,6 +249,21 @@
 <li>Sadly there is no dstat for Mac OS.</li>
 </ul>
 </li>
+</ul>
+
+<h1 dir="auto">
+<a id="how-to-update" class="anchor" href="#how-to-update" aria-hidden="true"></a>How to Update</h1>
+
+<ul dir="auto">
+<li>Overwrite old files.</li>
+</ul>
+
+<p dir="auto"><code>SQL Database</code></p>
+
+<ul dir="auto">
+<li><p><em>Rare, please ensure that your structure is actually out of date before doing this.</em></p></li>
+<li><p>Backup your SQL data.</p></li>
+<li><p>Run <code>framework.sql</code> in your mysql client.</p></li>
 </ul>
 
 <h1 dir="auto">
@@ -204,42 +284,12 @@
 
 <p dir="auto">If you like what I am doing here and want me to continue please consider donating :)</p>
 
-<ul dir="auto">
-<li>Quick Links on the site page : <a href="https://moeiscool.github.io/Shinobi/" rel="nofollow noreferrer" target="_blank">https://moeiscool.github.io/Shinobi/</a>
-</li>
-</ul>
-
-<p dir="auto"><a href='https://www.bountysource.com/teams/shinobi'><img src='https://d2bbtvgnhux6eq.cloudfront.net/assets/Bountysource-green-f2f437ed727ee2cacaee3f559c1907cb.png' ></a></p>
-
-<ul dir="auto">
-<li>PayPal : paypal@m03.ca</li>
-<li>Patreon : <a href="https://patreon.com/moeiscool" rel="nofollow noreferrer" target="_blank">https://patreon.com/moeiscool</a>
-</li>
-</ul>
+<p dir="auto"><a href="https://www.bountysource.com/teams/shinobi" rel="nofollow noreferrer" target="_blank"><img src="https://d2bbtvgnhux6eq.cloudfront.net/assets/Bountysource-green-f2f437ed727ee2cacaee3f559c1907cb.png"></a></p>
 
 <h1 dir="auto">
 <a id="author" class="anchor" href="#author" aria-hidden="true"></a>Author</h1>
 
 <p dir="auto">Moe Alam, just a guy who needed CCTV</p>
-
-<h1 dir="auto">
-<a id="want-me-to-host-an-instance-for-you" class="anchor" href="#want-me-to-host-an-instance-for-you" aria-hidden="true"></a>Want me to Host an Instance for you?</h1>
-
-<p dir="auto">email me at : shinobi@m03.ca</p>
-
-<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>You would get:
-+50GB SSD
-+2GB RAM
-+Quad Core ARM Processor
-+200Mbps Default Throughput, Soft-Max 800Mbps Throughput per Server
-+Static IP
-+Location : Italy
-----------
-$55/month
-
-Optional
-+1000GB = +$75/month
-</code></pre>
 
 <h1 dir="auto">
 <a id="credits" class="anchor" href="#credits" aria-hidden="true"></a>Credits</h1>

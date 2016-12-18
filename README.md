@@ -53,7 +53,7 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 *For a Test deployment enviroment I suggest grabbing an old MacBook (what I did) and installing Node.JS on there. Open up Terminal to get started.*
 
 
-`Dont have Node.js installed?`.
+<b>Dont have Node.js installed?</b>
 
 - Ubuntu
     - Open `Terminal`.
@@ -66,14 +66,14 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
     - https://nodejs.org/en/download/package-manager/
 
 
-`Dont have MySQL installed?`.
+<b>Dont have MySQL installed?</b>
 
 - Open `Terminal`.
     - Ubuntu : `apt-get install mysql-server`.
     - Mac OS (will need more techiness ironically, follow this link) : https://blog.joefallon.net/2013/10/install-mysql-on-mac-osx-using-homebrew/ .
 
 
-`Application Install`.
+<b>Application Install</b>
 
 - Open `Terminal`.
 
@@ -108,6 +108,7 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 
 - To daemonize the process install pm2 with `npm install pm2 -g` then run `pm2 start camera.js`
     - run `pm2 logs` to see the console for any errors.
+    - `forever` is another program to daemonize, but i've had more success with `pm2`.
 
 - Install dstat `apt-get install dstat`
     - It's the CPU indicator, the orange progress bar on the web panel.

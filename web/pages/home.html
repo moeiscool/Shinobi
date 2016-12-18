@@ -49,7 +49,7 @@
 </section>
 <div class="hidden" id="temp"></div>
 
-<!--Modal-->
+<!--Events List Window-->
 <div class="modal fade" id="events_viewer" tabindex="-1" role="dialog" aria-labelledby="events_viewerLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -66,6 +66,7 @@
     </div>
   </div>
 </div>
+<!--Event File Window-->
 <div class="modal fade dark" id="event_viewer" tabindex="-1" role="dialog" aria-labelledby="event_viewerLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -84,6 +85,7 @@
     </div>
   </div>
 </div>
+<!--Add Monitor Window-->
 <div class="modal fade" id="add_monitor" tabindex="-1" role="dialog" aria-labelledby="add_monitorLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <form class="modal-content">
@@ -172,6 +174,18 @@
             <input class="form-control" name="height">
             </label>
           </div>
+          <div id="monitor_details">
+              <div class="form-group">
+                <label><span>Record Video Filter</span>
+                <input class="form-control" detail="vf">
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Stream Video Filter</span>
+                <input class="form-control" detail="svf" placeholder="fps=1">
+                </label>
+              </div>
+          </div>
           <div class="form-group" style="display:none">
             <input class="form-control" name="details" value="{}">
             <input class="form-control" name="shto" value="[]">
@@ -185,7 +199,9 @@
     </form>
   </div>
 </div>
+<!--Dropbox Library, Change data-app-key to your app key. -->
 <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="mwgh09b16myew4s"></script>
+<!--Dropbox End-->
 <script src="libs/js/moment.js"></script>
 <script src="libs/js/livestamp.min.js"></script>
 <script src="libs/js/placeholder.js"></script>
