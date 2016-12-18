@@ -115,13 +115,13 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 - Set permissions on the shinobi directory. *Where `camera.js` is located.*
 
     ```
-    chmod -R 755 /your/directory/for/shinobi
+    chmod -R 755 shinobi
     ```
 
 - Open Shinobi directory.
 
     ```
-    cd /your/directory/for/shinobi
+    cd shinobi
     ```
 
 <b>Setup SQL</b>
@@ -129,7 +129,7 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 - Go to `sql` and install the SQL files in your database.
 
     ```
-    cd /your/directory/for/shinobi/sql
+    cd sql
     ```
 
     - Terminal SQL client can be accessed by running :
