@@ -52,6 +52,7 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 
 *For a Test deployment enviroment I suggest grabbing an old MacBook (what I did) and installing Node.JS on there. Open up Terminal to get started.*
 
+<b>VIDEO TUTORIAL :</b> https://www.youtube.com/watch?v=jfgUNfVEEEc
 
 <b>Dont have Node.js installed?</b>
 
@@ -142,6 +143,11 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
     - *OPTIONAL :* Create New SQL User with privileges. If you choose to use your own pre-defined credentials skip this step.
     
     ```
+    source ./user.sql
+    ```
+    - or create your own
+    
+    ```
     CREATE USER 'majesticflame'@'127.0.0.1' IDENTIFIED BY '';
     GRANT ALL PRIVILEGES ON * . * TO 'majesticflame'@'127.0.0.1';
     FLUSH PRIVILEGES;
@@ -149,8 +155,11 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
         
     - while still in the SQL client you can paste the contents of the SQL files straight into terminal. First `framework.sql` then `default_data.sql`.
         - *Note :* `default_data.sql` contains a demo user and a demo `rtsp to mp4` monitor.
-        - `framework.sql` : https://raw.githubusercontent.com/moeiscool/Shinobi/master/sql/framework.sql
-        - `default_data.sql` : https://raw.githubusercontent.com/moeiscool/Shinobi/master/sql/default_data.sql
+
+    ```
+    source ./framework.sql
+    source ./default_data.sql
+    ```
 
 
     - After importing the data. Exit the sql client.

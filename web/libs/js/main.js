@@ -147,6 +147,10 @@ $.ccio.ws.on('f',function (d){
                 break;
             }
         break;
+        case'monitor_delete':
+            $('[mid="'+d.mid+'"][ke="'+d.ke+'"]:not(.modal)').remove();
+            delete($.ccio.mon[d.mid]);
+        break;
         case'monitor_edit':
             d.o=$.ccio.op().watch_on;
             if(!d.o){d.o={}}
@@ -246,10 +250,10 @@ $('body')
     
 })
 .on('click','[event]',function(e){
-    e.e=$(this),e.a=e.e.attr('event'),e.p=e.e.parents('[mid]'),e.ke=e.p.attr('ke'),e.id=e.p.attr('mid');
+    e.e=$(this),e.a=e.e.attr('event'),e.p=e.e.parents('[mid]'),e.ke=e.p.attr('ke'),e.mid=e.p.attr('mid');
     switch(e.a){
         case'calendar':
-    $.getJSON('/events/'+e.ke+'/'+e.id,function(d){
+    $.getJSON('/events/'+e.ke+'/'+e.mid,function(d){
         e.ar=[];
         $.each(d,function(n,v){
             if(v.status!==0){
@@ -283,11 +287,11 @@ $('body')
     }
 })
 .on('click','.event_launch',function(e){
-    e.preventDefault();e.t=$(this).parents('[mid]');e.id=e.t.attr('mid'),e.file=e.t.attr('file'),e.href=$(this).attr('href'),e.e=$('#event_viewer');
-    e.mon=$.ccio.mon[e.id];
+    e.preventDefault();e.t=$(this).parents('[mid]');e.mid=e.t.attr('mid'),e.file=e.t.attr('file'),e.href=$(this).attr('href'),e.e=$('#event_viewer');
+    e.mon=$.ccio.mon[e.mid];
     e.e.find('.modal-title span').html(e.mon.name+' - '+e.file)
     e.e.find('.modal-body').html('<video class="event_video" video="'+e.href+'" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"></video>')
-    e.e.attr('mid',e.id);
+    e.e.attr('mid',e.mid);
     e.f=e.e.find('.modal-footer');
     e.f.find('.download_link').attr('href',e.href).attr('download',e.file);
     e.f.find('[monitor="download"][host="dropbox"]').attr('href',e.href);
@@ -297,7 +301,7 @@ $('body')
     e.e=$(this);$(e.e.attr('data-target')).toggleClass(e.e.attr('class_toggle'))
 })
 .on('click','[monitor]',function(e){
-    e.e=$(this),e.a=e.e.attr('monitor'),e.id=e.e.parents('[mid]').attr('mid')
+    e.e=$(this),e.a=e.e.attr('monitor'),e.p=e.e.parents('[mid]'),e.ke=e.p.attr('ke'),e.mid=e.p.attr('mid')
     switch(e.a){
         case'download':
             e.preventDefault();
@@ -314,35 +318,40 @@ $('body')
             e.m=$('#monitors_live')
             $('.monitor_item .events_list').remove();
             e.e=e.e.parents('.monitor_item');
-            $('.events_list.glM'+e.id).clone().appendTo(e.e.find('.hud .side-menu')).find('h3').remove()
+            $('.events_list.glM'+e.mid).clone().appendTo(e.e.find('.hud .side-menu')).find('h3').remove()
             if(!e.e.is(':first')){
                 e.m.find('.monitor_item').first().insertAfter(e.e.prev())
                 e.e.prependTo('#monitors_live');
-                $('#main_canvas .scrollable').animate({scrollTop: $("#monitor_live_"+e.id).position().top},1000);
+                $('#main_canvas .scrollable').animate({scrollTop: $("#monitor_live_"+e.mid).position().top},1000);
             }
             e.m.find('.selected').toggleClass(e.classes);
             if(!e.e.hasClass('selected')){e.e.toggleClass(e.classes)}
         break;
         case'watch_on':
-            $.ccio.cx({f:'monitor',ff:'watch_on',id:e.id})
+            $.ccio.cx({f:'monitor',ff:'watch_on',id:e.mid})
         break;
         case'watch':
-            if($.ccio.mon[e.id].watch!==1){
-                $.ccio.cx({f:'monitor',ff:'watch_on',id:e.id})
+            if($.ccio.mon[e.mid].watch!==1){
+                $.ccio.cx({f:'monitor',ff:'watch_on',id:e.mid})
             }else{
-                $("#monitor_live_"+e.id+' [monitor="bigify"]').click()
+                $("#monitor_live_"+e.mid+' [monitor="bigify"]').click()
             }
         break;
         case'watch_off':
-            $.ccio.cx({f:'monitor',ff:'watch_off',id:e.id})
+            $.ccio.cx({f:'monitor',ff:'watch_off',id:e.mid})
+        break;
+        case'delete':
+            $.ccio.cx({f:'monitor',ff:'delete',mid:e.mid,ke:e.ke});
         break;
         case'edit':
-            e.mt=$('#add_monitor .modal-title')
-            if(!$.ccio.mon[e.id]){
+            e.p=$('#add_monitor'),e.mt=e.p.attr('mid',e.mid).attr('ke',e.ke).find('.modal-title')
+            if(!$.ccio.mon[e.mid]){
+                e.p.find('[monitor="delete"]').hide()
                 e.mt.find('span').text('Add'),e.mt.find('i').attr('class','fa fa-plus');
                 e.values={"mode":"stop","mid":"","name":"","protocol":"http","ext":"webm","type":"jpeg","host":"","path":"","port":"","fps":"1","width":"640","height":"480","details":"{}","shto":"[]","shfr":"[]"}
             }else{
-                e.mt.find('span').text('Edit'),e.mt.find('i').attr('class','fa fa-wrench'),e.values=$.ccio.mon[e.id];
+                e.p.find('[monitor="delete"]').show()
+                e.mt.find('span').text('Edit'),e.mt.find('i').attr('class','fa fa-wrench'),e.values=$.ccio.mon[e.mid];
             }
             $.each(e.values,function(n,v){
                 $.aM.e.find('[name="'+n+'"]').val(v).change()

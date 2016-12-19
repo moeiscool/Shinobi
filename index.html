@@ -121,6 +121,8 @@
 
 <p dir="auto"><em>For a Test deployment enviroment I suggest grabbing an old MacBook (what I did) and installing Node.JS on there. Open up Terminal to get started.</em></p>
 
+<p dir="auto"><b>VIDEO TUTORIAL :</b> <a href="https://www.youtube.com/watch?v=jfgUNfVEEEc" rel="nofollow noreferrer" target="_blank">https://www.youtube.com/watch?v=jfgUNfVEEEc</a></p>
+
 <p dir="auto"><b>Dont have Node.js installed?</b></p>
 
 <ul dir="auto">
@@ -252,6 +254,13 @@
 <em>OPTIONAL :</em> Create New SQL User with privileges. If you choose to use your own pre-defined credentials skip this step.</li>
 </ul>
 
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>source ./user.sql
+</code></pre>
+
+<ul>
+<li>or create your own</li>
+</ul>
+
 <pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>CREATE USER 'majesticflame'@'127.0.0.1' IDENTIFIED BY '';
 GRANT ALL PRIVILEGES ON * . * TO 'majesticflame'@'127.0.0.1';
 FLUSH PRIVILEGES;
@@ -263,14 +272,15 @@ FLUSH PRIVILEGES;
 <ul>
 <li>
 <em>Note :</em> <code>default_data.sql</code> contains a demo user and a demo <code>rtsp to mp4</code> monitor.</li>
-<li>
-<code>framework.sql</code> : <a href="https://raw.githubusercontent.com/moeiscool/Shinobi/master/sql/framework.sql" rel="nofollow noreferrer" target="_blank">https://raw.githubusercontent.com/moeiscool/Shinobi/master/sql/framework.sql</a>
-</li>
-<li>
-<code>default_data.sql</code> : <a href="https://raw.githubusercontent.com/moeiscool/Shinobi/master/sql/default_data.sql" rel="nofollow noreferrer" target="_blank">https://raw.githubusercontent.com/moeiscool/Shinobi/master/sql/default_data.sql</a>
-</li>
 </ul>
 </li>
+</ul>
+
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>source ./framework.sql
+source ./default_data.sql
+</code></pre>
+
+<ul>
 <li>After importing the data. Exit the sql client.</li>
 </ul>
 
@@ -448,17 +458,11 @@ and maybe a few others.
 </div>
 <div id="disqus_thread"></div>
 <script>
-
-/**
-*  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
-*  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
-
 var disqus_config = function () {
     this.page.url = location.origin;
     this.page.identifier = 'shinobicctv';
 };
-
-(function() { // DON'T EDIT BELOW THIS LINE
+(function() {
 var d = document, s = d.createElement('script');
 s.src = '//shinobicctv.disqus.com/embed.js';
 s.setAttribute('data-timestamp', +new Date());
