@@ -125,35 +125,29 @@
 
 <p dir="auto"><b>Dont have Node.js installed?</b></p>
 
-<ul dir="auto">
-<li>
-<p>Ubuntu</p>
-
-<ul>
+<ol dir="auto">
 <li>Open <code>Terminal</code>.</li>
-<li>Install Node.js and it's package manager
+<li>
+<p>Install Node.js and it's package manager</p>
 
 <ul>
 <li>
 <em>Note :</em> <code>#apt-get install node</code> installs something else, not Node.js.</li>
 </ul>
-</li>
-</ul>
 
 <pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>apt-get install nodejs npm
 </code></pre>
+</li>
+<li>
+<p>Create a symlink to use nodejs.</p>
 
 <ul>
-<li>Create a symlink to use nodejs.
-
-<ul>
-<li>pm2 needs this. If you don't plan on using pm2, then ignore this step.</li>
-</ul>
+<li>pm2 needs this. If you don't plan on using pm2, then ignore this step.
+<code>
+ln -s /usr/bin/nodejs /usr/bin/node
+</code>
 </li>
 </ul>
-
-<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>ln -s /usr/bin/nodejs /usr/bin/node
-</code></pre>
 </li>
 <li>
 <p>Not on Ubuntu? Other operating systems can be found here.</p>
@@ -162,45 +156,37 @@
 <li><a href="https://nodejs.org/en/download/package-manager/" rel="nofollow noreferrer" target="_blank">https://nodejs.org/en/download/package-manager/</a></li>
 </ul>
 </li>
-</ul>
+</ol>
 
 <p dir="auto"><b>Dont have MySQL installed?</b></p>
 
-<ul dir="auto">
+<ol dir="auto">
 <li>
-<p>Open <code>Terminal</code>.</p>
-
-<ul>
-<li>Ubuntu :
-
-<ul>
-<li>Installation of MySQL prompt you to set a password for <code>root</code> user in MySQL on your first install.</li>
-</ul>
-</li>
-</ul>
+<p>Open <code>Terminal</code>. Run :</p>
 
 <pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>apt-get install mysql-server
 </code></pre>
-
-<ul>
-<li>Mac OS (will need more techiness ironically, follow this link) : <a href="https://blog.joefallon.net/2013/10/install-mysql-on-mac-osx-using-homebrew/" rel="nofollow noreferrer" target="_blank">https://blog.joefallon.net/2013/10/install-mysql-on-mac-osx-using-homebrew/</a> .</li>
-</ul>
 </li>
+<li><p>Installation of MySQL prompt you to set a password for <code>root</code> user in MySQL on your first install.</p></li>
+</ol>
+
+<ul dir="auto">
+<li>Mac OS (will need more techiness ironically, follow this link) : <a href="https://blog.joefallon.net/2013/10/install-mysql-on-mac-osx-using-homebrew/" rel="nofollow noreferrer" target="_blank">https://blog.joefallon.net/2013/10/install-mysql-on-mac-osx-using-homebrew/</a> .</li>
 </ul>
 
 <p dir="auto"><b>Application Install</b></p>
 
-<ul dir="auto">
+<ol dir="auto">
 <li><p>Open <code>Terminal</code>.</p></li>
 <li>
 <p>Download Shinobi with <code>wget</code> if you don't have <code>git</code> installed.</p>
 
-<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>wget https://github.com/moeiscool/Shinobi/tarball/master
-</code></pre>
-
 <ul>
 <li>Do this only if you haven't already downloaded the files.</li>
 </ul>
+
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>wget https://github.com/moeiscool/Shinobi/tarball/master
+</code></pre>
 </li>
 <li>
 <p>Untar the downloaded file. The extracted directory is the shinobi directory.</p>
@@ -225,34 +211,27 @@
 
 <pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>cd shinobi
 </code></pre>
+
+<p><b>Setup SQL</b></p>
 </li>
-</ul>
-
-<p dir="auto"><b>Setup SQL</b></p>
-
-<ul dir="auto">
 <li>
 <p>Go to <code>sql</code> and install the SQL files in your database.</p>
 
 <pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>cd sql
 </code></pre>
-
-<ul>
-<li>Terminal SQL client can be accessed by running :
+</li>
+<li>
+<p>Terminal SQL client can be accessed by running :</p>
 
 <ul>
 <li>The password will have been set during the installation of MySQL.</li>
 </ul>
-</li>
-</ul>
 
 <pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>mysql -u root -p
 </code></pre>
-
-<ul>
+</li>
 <li>
-<em>OPTIONAL :</em> Create New SQL User with privileges. If you choose to use your own pre-defined credentials skip this step.</li>
-</ul>
+<p><em>OPTIONAL :</em> Create New SQL User with privileges. If you choose to use your own pre-defined credentials skip this step.</p>
 
 <pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>source ./user.sql
 </code></pre>
@@ -265,24 +244,21 @@
 GRANT ALL PRIVILEGES ON * . * TO 'majesticflame'@'127.0.0.1';
 FLUSH PRIVILEGES;
 </code></pre>
-
-<ul>
-<li>while still in the SQL client you can paste the contents of the SQL files straight into terminal. First <code>framework.sql</code> then <code>default_data.sql</code>.
-
-<ul>
-<li>
-<em>Note :</em> <code>default_data.sql</code> contains a demo user and a demo <code>rtsp to mp4</code> monitor.</li>
-</ul>
 </li>
-</ul>
+<li>
+<p>while still in the SQL client. Install the Shinobi database. It will create a database called <code>ccio</code>.</p>
 
 <pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>source ./framework.sql
-source ./default_data.sql
 </code></pre>
+</li>
+<li>
+<p><em>OPTIONAL :</em> <code>default_data.sql</code> contains a demo user and a demo <code>rtsp to mp4</code> monitor.</p>
 
-<ul>
-<li>After importing the data. Exit the sql client.</li>
-</ul>
+<pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>source ./default_data.sql
+</code></pre>
+</li>
+<li>
+<p>After importing the data. Exit the sql client.</p>
 
 <pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>exit
 </code></pre>
@@ -305,23 +281,17 @@ source ./default_data.sql
 
 <pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>{"host":"127.0.0.1","user":"majesticflame","password":"","database":"ccio"}
 </code></pre>
+
+<p><b>Install Libraries</b></p>
 </li>
-</ul>
-
-<p dir="auto"><b>Install Libraries</b></p>
-
-<ul dir="auto">
 <li>
 <p>Run <code>npm install</code> while in the main directory. This will install the libraries Shinobi needs.</p>
 
 <pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>npm install
 </code></pre>
+
+<p><b>Launch Shinobi</b></p>
 </li>
-</ul>
-
-<p dir="auto"><b>Launch Shinobi</b></p>
-
-<ul dir="auto">
 <li>
 <p>To start :</p>
 
@@ -341,7 +311,7 @@ source ./default_data.sql
 <em>Note :</em> if you are installed on a remote computer open up the IP instead <code>http://111.111.111.111</code> in your browser.</li>
 </ul>
 </li>
-</ul>
+</ol>
 
 <p dir="auto"><b>Optional for some OS</b></p>
 

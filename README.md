@@ -56,125 +56,120 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 
 <b>Dont have Node.js installed?</b>
 
-- Ubuntu
-    - Open `Terminal`.
-    - Install Node.js and it's package manager
-        - *Note :* `#apt-get install node` installs something else, not Node.js.
-        
+1. Open `Terminal`.
+2. Install Node.js and it's package manager
+    - *Note :* `#apt-get install node` installs something else, not Node.js.
+
     ```
     apt-get install nodejs npm
     ```
-
-    - Create a symlink to use nodejs.
-        - pm2 needs this. If you don't plan on using pm2, then ignore this step.
-
+3. Create a symlink to use nodejs.
+    - pm2 needs this. If you don't plan on using pm2, then ignore this step.
     ```
     ln -s /usr/bin/nodejs /usr/bin/node
     ```
-
-- Not on Ubuntu? Other operating systems can be found here.
+4. Not on Ubuntu? Other operating systems can be found here.
     - https://nodejs.org/en/download/package-manager/
 
 
 <b>Dont have MySQL installed?</b>
 
-- Open `Terminal`.
-    - Ubuntu :
-        - Installation of MySQL prompt you to set a password for `root` user in MySQL on your first install.
+1. Open `Terminal`. Run :
 
     ```
     apt-get install mysql-server
     ```
+2. Installation of MySQL prompt you to set a password for `root` user in MySQL on your first install.
 
-    - Mac OS (will need more techiness ironically, follow this link) : https://blog.joefallon.net/2013/10/install-mysql-on-mac-osx-using-homebrew/ .
+
+- Mac OS (will need more techiness ironically, follow this link) : https://blog.joefallon.net/2013/10/install-mysql-on-mac-osx-using-homebrew/ .
 
 
 <b>Application Install</b>
 
-- Open `Terminal`.
+1. Open `Terminal`.
 
-- Download Shinobi with `wget` if you don't have `git` installed.
+2. Download Shinobi with `wget` if you don't have `git` installed.
+    - Do this only if you haven't already downloaded the files.
 
     ```
     wget https://github.com/moeiscool/Shinobi/tarball/master
     ```
-    
-    - Do this only if you haven't already downloaded the files.
-    
-- Untar the downloaded file. The extracted directory is the shinobi directory.
+
+3. Untar the downloaded file. The extracted directory is the shinobi directory.
 
     ```
     tar -xzf master
     ```
 
-- Rename the directory for easier access. The extracted folder name will be different. `moeiscool-Shinobi-XXXXXXX` is only an example.
+4. Rename the directory for easier access. The extracted folder name will be different. `moeiscool-Shinobi-XXXXXXX` is only an example.
 
     ```
     mv moeiscool-Shinobi-XXXXXXX shinobi
     ```
 
-- Set permissions on the shinobi directory. *Where `camera.js` is located.*
+5. Set permissions on the shinobi directory. *Where `camera.js` is located.*
 
     ```
     chmod -R 755 shinobi
     ```
 
-- Open Shinobi directory.
+6. Open Shinobi directory.
 
     ```
     cd shinobi
     ```
-
 <b>Setup SQL</b>
     
-- Go to `sql` and install the SQL files in your database.
+7. Go to `sql` and install the SQL files in your database.
 
     ```
     cd sql
     ```
 
-    - Terminal SQL client can be accessed by running :
-        - The password will have been set during the installation of MySQL.
+8. Terminal SQL client can be accessed by running :
+    - The password will have been set during the installation of MySQL.
 
     ```
     mysql -u root -p
     ```
 
-    - *OPTIONAL :* Create New SQL User with privileges. If you choose to use your own pre-defined credentials skip this step.
-    
+9. *OPTIONAL :* Create New SQL User with privileges. If you choose to use your own pre-defined credentials skip this step.
+
     ```
     source ./user.sql
     ```
     - or create your own
-    
+
     ```
     CREATE USER 'majesticflame'@'127.0.0.1' IDENTIFIED BY '';
     GRANT ALL PRIVILEGES ON * . * TO 'majesticflame'@'127.0.0.1';
     FLUSH PRIVILEGES;
     ```
         
-    - while still in the SQL client you can paste the contents of the SQL files straight into terminal. First `framework.sql` then `default_data.sql`.
-        - *Note :* `default_data.sql` contains a demo user and a demo `rtsp to mp4` monitor.
-
+10. while still in the SQL client. Install the Shinobi database. It will create a database called `ccio`.
     ```
     source ./framework.sql
+    ```
+11. *OPTIONAL :* `default_data.sql` contains a demo user and a demo `rtsp to mp4` monitor.
+
+    ```
     source ./default_data.sql
     ```
 
+12. After importing the data. Exit the sql client.
 
-    - After importing the data. Exit the sql client.
-    
     ```
     exit
     ```
     
--  Go up one directory to enter the main directory. *Where `camera.js` is located.* 
+13.  Go up one directory to enter the main directory. *Where `camera.js` is located.* 
 
     ```
     cd ..
     ```
 
-- Edit `conf.json` to reflect your sql credentials. I don't reccommend using root.
+14. Edit `conf.json` to reflect your sql credentials. I don't reccommend using root.
     
     ```
     nano conf.json
@@ -184,26 +179,22 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
     ```
     {"host":"127.0.0.1","user":"majesticflame","password":"","database":"ccio"}
     ```
-
 <b>Install Libraries</b>
 
-
-- Run `npm install` while in the main directory. This will install the libraries Shinobi needs.
+15. Run `npm install` while in the main directory. This will install the libraries Shinobi needs.
 
     ```
     npm install
     ```
-
-
 <b>Launch Shinobi</b>
 
-- To start :
+16. To start :
     ```
     node camera.js
     ```
     - If you did not make the symlink for nodejs then you must run `nodejs camera.js` instead.
 
-- Open up `http://localhost` in your browser.
+17. Open up `http://localhost` in your browser.
     - If you inserted the `default_data.sql` login with `Username : ccio@m03.ca` and `Password : password`.
     - *Note :* if you are installed on a remote computer open up the IP instead `http://111.111.111.111` in your browser.
 
