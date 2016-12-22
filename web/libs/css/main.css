@@ -54,7 +54,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .side-menu.nav-xs .launch_monitor .name{display:none}
 
 .side-menu .monitor_block{padding:0;position:relative}
-.side-menu .monitor_block img{width:100%;height:90px;cursor:pointer}
+.side-menu .monitor_block img{width:100%;height:90px;cursor:pointer;border: 0.5px inset #333;}
 .side-menu .monitor_block:hover .icons{opacity:1}
 .side-menu .monitor_block:hover .title{opacity:1}
 .side-menu .monitor_block .icons,.side-menu .monitor_block .title{opacity:0;width:100%;bottom:0;left:0;background:rgba(0,0,0,0.6);position:absolute;padding:2.5px;z-index:11}
@@ -66,7 +66,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .side-menu.list-blocks .monitor_block:not(:last-child){border-bottom: 1px solid #54502d;}
 .side-menu.list-blocks .monitor_block{float:none;width:100%;padding: 10px;}
 .side-menu.list-blocks .monitor_block .list-data{display:block}
-.side-menu.list-blocks .monitor_block img{width:60px;height:60px;cursor:pointer;display:inline-block;margin-right:10px;border-radius:50%;vertical-align:top}
+.side-menu.list-blocks .monitor_block img{width:60px;height:60px;cursor:pointer;display:inline-block;margin-right:10px;border-radius:50%;vertical-align:top;border:0}
 .side-menu.list-blocks .monitor_block .box{width:calc(100% - 70px);display:inline-block}
 .nav-xs.side-menu.list-blocks .monitor_block .list-data{display:none}
 
@@ -265,7 +265,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
   width: 44px;
   height: 44px;
   background: white;
-  border-radius: 0.25em;
+  border-radius:50%;
   box-shadow: 0 0 10px rgba(232, 74, 100, 0.4);
   /* image replacement */
   overflow: hidden;
