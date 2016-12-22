@@ -71,21 +71,22 @@ s.cron=function(){
 //                })
                 
                 //check for old events
-                sql.query('SELECT * FROM Videos WHERE ke = ? AND end < DATE_SUB(NOW(), INTERVAL '+v.d.days+' DAY);',[v.ke],function(err,evs,es){
+                sql.query('SELECT * FROM Videos WHERE ke = ? AND end < DATE_SUB(NOW(), INTERVAL ? DAY);',[v.ke,v.d.days],function(err,evs,es){
                     if(evs&&evs[0]){
+                        es={};
                         es.del=[];
                         es.ar=[v.ke];
                         es.qu=[];
                         evs.forEach(function(ev){
                             es.qu.push('(mid=? AND time=?)');es.ar.push(ev.mid),es.ar.push(ev.time);
                             es.del.push(s.dir.events+v.ke+'/'+ev.mid+'/'+s.moment(ev.time)+'.'+ev.ext);
-                        })
+                        });
                         if(es.del.length){
-                            sql.query('DELETE FROM Videos WHERE ke =? AND ('+es.qu+')',es.ar)
-                            del(es.del).then(paths => {
-                                s.cx({f:'end',msg:es.del.length+' old events deleted',ke:v.ke,time:moment()})
-                                console.log('Deleted files and folders:\n', paths.join('\n'));
-                            });
+                            sql.query('DELETE FROM Videos WHERE ke =? AND ('+es.qu+')',es.ar,function(){
+                                del(es.del).then(paths => {
+                                    s.cx({f:'end',msg:es.del.length+' old events deleted',ke:v.ke,time:moment()})
+                                });
+                            })
                         }else{
                             s.cx({f:'end',msg:'0 old events deleted',time:moment()})
                         }

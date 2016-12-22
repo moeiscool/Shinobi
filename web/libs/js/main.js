@@ -5,7 +5,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
         switch(x){
             case'ArrayBuffertoB64':
                 var reader = new FileReader();
-                reader.addEventListener("loadend",function(d){console.log(d.target.result);return z(reader.result)});
+                reader.addEventListener("loadend",function(d){return z(reader.result)});
                 reader.readAsDataURL(new Blob([d], {                     
                     type: "image/jpeg"
                 }));
@@ -135,7 +135,6 @@ $.ccio.ws.on('f',function (d){
         case'monitor_snapshot':
             switch(d.snapshot_format){
                 case'plc':
-                    console.log($('[mid="'+d.mid+'"] .snapshot'))
                     $('[mid="'+d.mid+'"] .snapshot').attr('src',placeholder.getData(placeholder.plcimg(d.snapshot)))
                 break;
                 case'ab':
@@ -279,7 +278,6 @@ $('body')
         eventLimit: true,
         events:e.ar,
         eventClick:function(f){
-            console.log(f)
             $('#temp').empty().append('<div mid="'+f.mid+'" ke="'+f.ke+'" file="'+f.filename+'"><div class="event_launch" href="'+f.href+'"></div></div>').find('.event_launch').click();
             $(this).css('border-color', 'red');
         }
