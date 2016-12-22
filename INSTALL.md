@@ -43,6 +43,12 @@
 
 9. Then the installer will ask you for the credentials created. The default username is usually `root`.
 
+10. After installtion is complete
+
+    ```
+    pm2 start camera.js
+    ```
+
 
 # The Harder Way
 
