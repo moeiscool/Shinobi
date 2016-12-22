@@ -108,7 +108,7 @@ $.ccio.ws.on('connect',function (d){
     $.ccio.cx({f:'init',ke:$user.ke,auth:$user.auth,uid:$user.uid})
 })
 $.ccio.ws.on('f',function (d){
-    if(d.f!=='monitor_frame'&&d.f!=='cpu'&&d.f!=='event_delete'&&d.f!=='monitor_snapshot'){console.log(d);}
+    if(d.f!=='monitor_frame'&&d.f!=='cpu'&&d.f!=='event_delete'){console.log(d);}
     switch(d.f){
         case'cpu':
             $('.cpu_load .progress-bar').css('width',d.data+'%')
@@ -135,15 +135,16 @@ $.ccio.ws.on('f',function (d){
         case'monitor_snapshot':
             switch(d.snapshot_format){
                 case'plc':
-                    $('[mid="'+d.mid+'"].snapshot').attr('src',placeholder.getData(placeholder.plcimg(d.snapshot)))
+                    console.log($('[mid="'+d.mid+'"] .snapshot'))
+                    $('[mid="'+d.mid+'"] .snapshot').attr('src',placeholder.getData(placeholder.plcimg(d.snapshot)))
                 break;
                 case'ab':
                     d.reader = new FileReader();
-                    d.reader.addEventListener("loadend",function(){$('[mid="'+d.mid+'"].snapshot').attr('src',d.reader.result)});
+                    d.reader.addEventListener("loadend",function(){$('[mid="'+d.mid+'"] .snapshot').attr('src',d.reader.result)});
                     d.reader.readAsDataURL(new Blob([d.snapshot],{type:"image/jpeg"}));
                 break;
                 case'b64':
-                    $('[mid="'+d.mid+'"].snapshot').attr('src','data:image/jpeg;base64,'+d.snapshot)
+                    $('[mid="'+d.mid+'"][ke="'+d.ke+'"] .snapshot').attr('src','data:image/jpeg;base64,'+d.snapshot)
                 break;
             }
         break;
@@ -155,6 +156,7 @@ $.ccio.ws.on('f',function (d){
             d.o=$.ccio.op().watch_on;
             if(!d.o){d.o={}}
             d.mon.details=JSON.stringify(d.mon.details);
+            if(!$.ccio.mon[d.mid]){$.ccio.mon[d.mid]={}}
             $.each(d.mon,function(n,v){
                 $.ccio.mon[d.mid][n]=v;
             });
@@ -191,11 +193,11 @@ $.ccio.ws.on('f',function (d){
             switch(d.frame_format){
                 case'ab':
                     var reader = new FileReader();
-                    reader.addEventListener("loadend",function(){$('[mid="'+d.id+'"] .snapshot,#monitor_live_'+d.id+' img').attr('src',reader.result);});
+                    reader.addEventListener("loadend",function(){$('[mid="'+d.id+'"][ke="'+d.ke+'"] .snapshot,#monitor_live_'+d.id+' img').attr('src',reader.result);});
                     reader.readAsDataURL(new Blob([d.frame],{type:"image/jpeg"}));
                 break;
                 case'b64':
-                    $('[mid="'+d.id+'"] .snapshot,#monitor_live_'+d.id+' img').attr('src','data:image/jpeg;base64,'+d.frame)
+                    $('[mid="'+d.id+'"][ke="'+d.ke+'"] .snapshot,#monitor_live_'+d.id+' img').attr('src','data:image/jpeg;base64,'+d.frame)
                 break;
             }
             d.e=$('#monitor_live_'+d.id+' .signal').addClass('btn-success').removeClass('btn-danger');
@@ -216,6 +218,7 @@ $.aM.f.submit(function(e){
 //    if(e.s.protocol=='rtsp'){e.s.ext='mp4',e.s.type='rtsp'}
     if(e.er.length>0){return}
         $.ccio.cx({f:'monitor',ff:'add',mon:e.s})
+        if(!$.ccio.mon[e.s.mid]){$.ccio.mon[e.s.mid]={}}
         $.each(e.s,function(n,v){$.ccio.mon[e.s.mid][n]=v;})
         $.aM.e.modal('hide')
     return false;
@@ -246,8 +249,8 @@ $.aM.f.find('[name="protocol"]').change(function(e){
 })
 //dynamic bindings
 $('body')
-.on('click','.list_toggle',function(e){
-    
+.on('click','.logout',function(e){
+    localStorage.removeItem('ShinobiLogin_'+location.host);location.reload();
 })
 .on('click','[event]',function(e){
     e.e=$(this),e.a=e.e.attr('event'),e.p=e.e.parents('[mid]'),e.ke=e.p.attr('ke'),e.mid=e.p.attr('mid');
@@ -269,7 +272,7 @@ $('body')
         header: {
             left: 'prev,next today',
             center: 'title',
-            right: 'month,agendaWeek,agendaDay,listWeek'
+            right: 'month,agendaWeek,agendaDay,listWeek,listDay'
         },
         defaultDate: moment().format('YYYY-MM-DD'),
         navLinks: true,
@@ -281,7 +284,7 @@ $('body')
             $(this).css('border-color', 'red');
         }
     });
-        setTimeout(function(){e.v.fullCalendar( 'changeView','listWeek');},500)
+        setTimeout(function(){e.v.fullCalendar( 'changeView','listDay');},500)
     });
          break;
     }
@@ -371,4 +374,10 @@ $('body')
 
 $('#event_viewer').on('hidden.bs.modal',function(){
     $(this).find('video').remove();
+});
+
+$(document).ready(function() {
+    $( '#dl-menu' ).dlmenu({
+        animationClasses : { classin : 'dl-animate-in-5', classout : 'dl-animate-out-5' }
+    });
 });

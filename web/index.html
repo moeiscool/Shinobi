@@ -20,6 +20,7 @@
 <script src="libs/js/jquery.min.js"></script>
 <script>jQuery.fn.serializeObject=function (){"use strict";var result={};var extend=function (i, element){var node=result[element.name];if ('undefined' !==typeof node && node !==null){if (jQuery.isArray(node)){node.push(element.value);}else{result[element.name]=[node, element.value];}}else{result[element.name]=element.value;}};jQuery.each(this.serializeArray(), extend);return result;};</script>
 </head>
+<div class="shinobi-bg display-table" style="height:100%">
 <div class="container">
     	<div class="row">
 			<div class="col-md-6 col-md-offset-3">
@@ -89,6 +90,7 @@
 			</div>
 		</div>
 	</div>
+</div>
 <script>
     $.ccio={f:$('#login-form'),rf:$('#register-form'),ls:localStorage.getItem('ShinobiLogin_'+location.host)}
     $.ccio.rf.submit(function(e){

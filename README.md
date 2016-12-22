@@ -54,6 +54,20 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 
 <b>VIDEO TUTORIAL :</b> https://www.youtube.com/watch?v=jfgUNfVEEEc
 
+<b>Dont have FFMPEG installed?</b>
+
+1. Open `Terminal`.
+2. To install :
+
+    ```
+    apt-get install ffmpeg
+    ```
+    - If that doesn't work try :
+
+    ```
+    apt-get install libav-tools
+    ```
+
 <b>Dont have Node.js installed?</b>
 
 1. Open `Terminal`.
@@ -65,6 +79,7 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
     ```
 3. Create a symlink to use nodejs.
     - pm2 needs this. If you don't plan on using pm2, then ignore this step.
+    
     ```
     ln -s /usr/bin/nodejs /usr/bin/node
     ```
@@ -186,6 +201,10 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
     ```
     npm install
     ```
+    
+    - Can't get `npm install` to work? Try downloading this, the required node libraries already built. Place the `node_modules` folder in the same directory as `camera.js`.
+        - https://mega.nz/#!upRRnRhD!RZSqKMnXYyvpeo_pg5loNpxBz3yFNXqQAo8bvKaqy1Y
+        
 <b>Launch Shinobi</b>
 
 16. To start :
@@ -242,9 +261,11 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 
 # Donate
 
-If you like what I am doing here and want me to continue please consider donating :)
+If you like Shinobi please consider donating.
 
-<a href='https://www.bountysource.com/teams/shinobi'><img src='https://d2bbtvgnhux6eq.cloudfront.net/assets/Bountysource-green-f2f437ed727ee2cacaee3f559c1907cb.png' ></a>
+<a title="USD,XBT..." href='https://www.bountysource.com/teams/shinobi'><img src='https://d2bbtvgnhux6eq.cloudfront.net/assets/Bountysource-green-f2f437ed727ee2cacaee3f559c1907cb.png' ></a>
+
+<a title="CAD" href='https://pledgie.com/campaigns/33051'><img alt='Click here to lend your support to: Shinobi, Open Source CCTV written in Node.js and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/33051.png?skin_name=chrome' border='0' ></a>
 
 # Author
 

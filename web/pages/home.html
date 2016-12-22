@@ -4,7 +4,19 @@
 <link rel="stylesheet" href="libs/css/font-awesome.min.css">
 <link rel="stylesheet" href="libs/css/fullcalendar.min.css">
 <link rel="stylesheet" href="libs/css/main.css">
+<div id="cd-nav">
+    <a href="#0" class="cd-nav-trigger">Menu<span></span></a>
 
+    <nav id="cd-main-nav">
+        <ul>
+            <li mid="" ke=""><a monitor="edit"><i class="fa fa-plus"></i> &nbsp; Add Camera</a></li>
+            <li><a class_toggle="nav-xs" data-target="#side_menu_right"><i class="fa fa-film"></i> &nbsp; Event Pane <small>Toggle</small></a></li>
+            <li><a class_toggle="list-blocks" data-target="#side_menu"><i class="fa fa-camera"></i> &nbsp; Monitor List <small>Toggle</small></a></li>
+            <li><a class_toggle="nav-xs" data-target="#side_menu"><i class="fa fa-bars"></i> &nbsp; Monitor Pane <small>Toggle</small></a></li>
+            <li><a class="logout"><i class="fa fa-sign-out"></i> &nbsp; Logout</a></li>
+        </ul>
+    </nav>
+</div>
 <section class="app">
     <section class="hbox stretch">
     <section class="vbox">
@@ -13,7 +25,7 @@
             <a class="btn btn-default" class_toggle="nav-xs" data-target="#side_menu_right"><i class="fa fa-reorder"></i></a>
             </div>
         <ul class="list-inline pull-left">
-            <li><div class="btn-group" mid="" ke=""><a class="btn btn-default" class_toggle="nav-xs" data-target="#side_menu"><i class="fa fa-reorder"></i></a><a class="btn btn-default" class_toggle="list-blocks" data-target="#side_menu"><i class="fa fa-camera"></i></a><a class="btn btn-default" monitor="edit"><i class="fa fa-plus"></i></o></a></div></li>
+            <li class="hidden-xs"><div class="btn-group" mid="" ke=""><a class="btn btn-default" class_toggle="nav-xs" data-target="#side_menu"><i class="fa fa-reorder"></i></a><a class="btn btn-default" class_toggle="list-blocks" data-target="#side_menu"><i class="fa fa-camera"></i></a><a class="btn btn-default" monitor="edit"><i class="fa fa-plus"></i></o></a></div></li>
             <li><div class="cpu_load" style="width:200px;display:inline-block">
                   <div class="progress">
                     <div class="progress-bar progress-bar-warning" role="progressbar" style="width:70%"></div>
@@ -38,9 +50,10 @@
                 </section>
             </aside>
             <aside class="aside-lg vbox side-menu" id="side_menu_right">
-                <section class="scrollable">
+                <section class="scrollable w-f">
                     <div id="files_recent"></div>
                 </section>
+                <footer class="footer dker"></footer>
             </aside>
         </section>
         </section>
@@ -209,4 +222,5 @@
 <script src="libs/js/bootstrap.min.js"></script>
 <script src="libs/js/socket.io.js"></script>
 <script src="libs/js/fullcalendar.min.js"></script>
+<script src="libs/js/menu.js"></script>
 <script src="libs/js/main.js"></script>

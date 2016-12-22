@@ -1,4 +1,5 @@
 #register-msg:empty{display:none}
+.shinobi-bg{background:url(/libs/img/shinobi.jpg);background-size:100%}
 .panel-login {
     margin-top:90px;
 	border-color: #ccc;
@@ -22,8 +23,7 @@
 	transition: all 0.1s linear;
 }
 .panel-login>.panel-heading a.active{
-	color: #029f5b;
-	font-size: 18px;
+	color: #3b75b4;
 }
 .panel-login>.panel-heading hr{
 	margin-top: 10px;
