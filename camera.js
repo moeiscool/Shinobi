@@ -31,7 +31,7 @@ var io = require('socket.io')(server);
 var exec = require('child_process').exec;
 var spawn = require('child_process').spawn;
 var crypto = require('crypto');
-var MotionStream = require("motion-detect").Stream;
+//var MotionStream = require("motion-detect").Stream;
 var connectionTester = require('connection-tester');
 var db_config=JSON.parse(fs.readFileSync('conf.json','UTF8'));
 server.listen(80);
