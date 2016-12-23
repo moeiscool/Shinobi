@@ -1,15 +1,11 @@
-FROM node:argon
+FROM ubuntu:xenial
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y ffmpeg nodejs npm dstat 
+RUN ln -s /usr/bin/nodejs /usr/bin/node && mkdir /opt/shinobi
+WORKDIR /opt/shinobi
+ADD . .
+RUN npm install \
+    && chmod +x ./docker-entrypoint.sh
+ENTRYPOINT ./docker-entrypoint.sh
 
-# Create app directory
-RUN mkdir -p /home/shinobi
-WORKDIR /home/shinobi
-
-# Install app dependencies
-COPY package.json /home/shinobi/
-RUN npm install
-
-# Bundle app source
-COPY . /home/shinobi
-
-EXPOSE 80
-CMD [ "npm", "start" ]
