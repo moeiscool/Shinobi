@@ -374,9 +374,3 @@ $('body')
 $('#event_viewer').on('hidden.bs.modal',function(){
     $(this).find('video').remove();
 });
-
-$(document).ready(function() {
-    $( '#dl-menu' ).dlmenu({
-        animationClasses : { classin : 'dl-animate-in-5', classout : 'dl-animate-out-5' }
-    });
-});
