@@ -1,17 +1,17 @@
 //
 // Shinobi
 // Copyright (C) 2016-2025 Moe Alam, moeiscool
-// 
+//
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // # Donate
 //
 // If you like what I am doing here and want me to continue please consider donating :)
@@ -33,11 +33,15 @@ var spawn = require('child_process').spawn;
 var crypto = require('crypto');
 //var MotionStream = require("motion-detect").Stream;
 var connectionTester = require('connection-tester');
-var db_config=JSON.parse(fs.readFileSync('conf.json','UTF8'));
-server.listen(80);
+
+var config = require('./conf.json');
+
+server.listen(config.port);
+console.log('Server listening on port: ', config.port);
+
 s={child_help:false};
 s.disc=function(){
-    sql = mysql.createConnection(db_config); 
+    sql = mysql.createConnection(config.db);
     sql.connect(function(err){if(err){console.log('Error Connecting : DB',err);setTimeout(s.disc, 2000);}});
     sql.on('error',function(err) {console.log('DB Lost.. Retrying..');console.log(err);s.disc();return;});
 }
@@ -175,7 +179,7 @@ s.event=function(x,e){
                             s.event('delete',e);
                         }
                     }else{
-                        
+
                         s.event('delete',e);
                     }
                 }
@@ -391,7 +395,7 @@ s.camera=function(x,e,cn,tx){
                                     s.users[e.ke].mon[e.id].spawn = spawn('ffmpeg',s.ffmpeg('args',e));
                                 }
                                 if(!s.users[e.ke].mon[e.id].record){s.users[e.ke].mon[e.id].record={yes:1}};
-                                
+
                                 switch(e.type){
                                     case'jpeg':
                                         e.captureOne=function(f){
@@ -469,7 +473,7 @@ s.camera=function(x,e,cn,tx){
                                 s.users[e.ke].mon[e.id].child_node=n;
                                 s.cx({f:'spawn',d:s.init('clean',e),mon:s.init('clean',s.users[e.ke].mon[e.mid])},s.users[e.ke].mon[e.mid].child_node_id)
                             }else{
-                                console.log('Cannot Connect, Retrying...',e.id);e.error();return;             
+                                console.log('Cannot Connect, Retrying...',e.id);e.error();return;
                             }
                         })
                         }
@@ -492,7 +496,7 @@ s.camera=function(x,e,cn,tx){
                 }
         break;
     }
-    
+
     if(typeof cn==='function'){console.log(cn);setTimeout(function(){cn()},1000);}
 //    s.init('sync',e)
 }
@@ -611,7 +615,7 @@ var tx;
                         if(r&&r[0]){r=r[0]
                             if(d.ff==='record_on'){d.mode='record'}else{d.mode='start'};d.type=r.type;
                             sql.query("UPDATE Monitors SET mode=? WHERE mid=? AND ke=?",[d.mode,d.id,d.ke],function(){
-                                
+
                                 d.callback=function(){delete(d.callback);s.camera(d.mode,d)};s.camera('stop',d);
                                 tx({f:d.ff,id:d.id})
                             })
@@ -624,7 +628,7 @@ var tx;
                             s.camera(d.ff,d,cn,tx)
                             cn.join('MON_'+d.id);
                             if(s.users[d.ke]&&s.users[d.ke].mon&&s.users[d.ke].mon[d.id]&&s.users[d.ke].mon[d.id].watch){
-                                
+
 s.tx({f:'monitor_watch_on',viewers:Object.keys(s.users[d.ke].mon[d.id].watch).length,id:d.id,ke:d.ke},'MON_'+d.id)
                            }
                         break;
@@ -644,7 +648,7 @@ s.tx({f:'monitor_watch_on',viewers:Object.keys(s.users[d.ke].mon[d.id].watch).le
                 case'event':
                     switch(d.ff){
                         case'delete':
-                            
+
                         break;
                     }
                 break;
@@ -658,10 +662,10 @@ s.tx({f:'monitor_watch_on',viewers:Object.keys(s.users[d.ke].mon[d.id].watch).le
         switch(d.f){
             case'init':
                 s.cron={started:moment(),last_run:moment()};
-                
+
             break;
             case'msg':
-                
+
             break;
             case'start':case'end':
                 d.mid='_cron';s.log(d,{type:'cron',msg:d.msg})
@@ -769,7 +773,7 @@ app.post('/auth/:mail/:pass',function (req,res){
             sql.query("UPDATE Users SET auth=? WHERE ke=? AND uid=?",[r.auth,r.ke,r.uid])
             req.resp={ok:true,auth_token:r.auth,ke:r.ke,uid:r.uid,body:fs.readFileSync(__dirname+'/web/pages/home.html','utf8')};
         }else{
-            
+
         }
         res.send(JSON.stringify(req.resp))
         res.end();
@@ -842,11 +846,11 @@ app.get(['/events/:ke','/events/:ke/:id'], function (req,res){
     req.sql='SELECT * FROM Videos WHERE ke=?';req.ar=[req.params.ke];
     if(req.params.id){req.sql+='and mid=?';req.ar.push(req.params.id)}
     sql.query(req.sql,req.ar,function(err,r){
-        
+
         r.forEach(function(v){
             v.href='/events/'+v.ke+'/'+v.mid+'/'+s.moment(v.time)+'.'+v.ext;
         })
-        
+
         res.setHeader('Content-Type', 'application/json');
         res.send(JSON.stringify(r, null, 3));
     })
