@@ -1,11 +1,35 @@
 *For a Test deployment enviroment I suggest grabbing an old MacBook (what I did) and installing Node.JS on there. Open up Terminal to get started.*
 
 # VirtualBox
+
 - You know what to do with this if you know what VirtualBox is.
     - Shinobi-12-22-2016.ova
     https://mega.nz/#!CtogQQia!Neg23RWo1mEYe2iQdz4GqlaXTCXy60VHqwV04dV3Dvs
         - `Username : shinobi`
         - `Password : night`
+
+1. Once logged in 
+
+    ```
+    cd shinobi
+    ```
+
+2. Start server.
+    
+    ```
+    pm2 start camera.js
+    ```
+    
+3. Open up `http://localhost:8080` in your browser.
+    - *Note :* if you are installed on a remote computer open up the IP in your web browser.
+        - `Username : ccio@m03.ca`
+        - `Password : password`
+
+- To get your IP you can run the following command.
+
+    ```
+    ifconfig
+    ```
 
 # The Easier Way
 
@@ -60,7 +84,7 @@
     pm2 start camera.js
     ```
 
-17. Open up `http://localhost` in your browser.
+17. Open up `http://localhost:8080` in your browser.
     - *Note :* if you are installed on a remote computer open up the IP in your web browser.
         - `Username : ccio@m03.ca`
         - `Password : password`
@@ -235,9 +259,16 @@
     ```
     - If you did not make the symlink for nodejs then you must run `nodejs camera.js` instead.
 
-17. Open up `http://localhost` in your browser.
-    - If you inserted the `default_data.sql` login with `Username : ccio@m03.ca` and `Password : password`.
-    - *Note :* if you are installed on a remote computer open up the IP instead `http://111.111.111.111` in your browser.
+17. Open up `http://localhost:8080` in your browser.
+    - *Note :* if you are installed on a remote computer open up the IP in your web browser.
+        - `Username : ccio@m03.ca`
+        - `Password : password`
+
+- To get your IP you can run the following command.
+
+    ```
+    ifconfig
+    ```
 
 <b>Optional for some OS</b>
 
