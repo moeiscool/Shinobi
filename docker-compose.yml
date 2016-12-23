@@ -1,0 +1,25 @@
+version: '2'
+services:
+   shinobi-db:
+     image: mysql:5.7
+     container_name: shinobi-db
+     env_file: ./docker.env
+     volumes:
+       - shinobi-db:/var/lib/mysql
+       - ./sql/framework.sql:/docker-entrypoint-initdb.d/framework.sql 
+       - ./sql/default_data.sql:/docker-entrypoint-initdb.d/zz_default_data.sql
+     restart: always
+
+   shinobi:
+     container_name: shinobi
+     build: 
+       context: .
+     env_file: ./docker.env
+     depends_on: 
+       - shinobi-db
+     restart: always
+     ports:
+       - "8080:8080"
+volumes:
+    shinobi-db:
+
