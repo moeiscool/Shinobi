@@ -1,5 +1,14 @@
 # Shinobi
 
+<center>
+<a href="https://gitter.im/Shinobi-CCTV/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link">Gitter</a> - 
+<a href="https://twitter.com/ShinobiCCTV">Twitter</a> - 
+<a href="https://www.facebook.com/Shinobi-1223193167773738/?ref=bookmarks">Facebook</a> - 
+<a href="https://www.reddit.com/r/ShinobiCCTV/">Reddit</a> - 
+<a href="https://www.bountysource.com/teams/shinobi">Bountysource</a> - 
+<a href="https://pledgie.com/campaigns/33051">Pledgie</a>
+</center>
+
 Shinobi is an Open Source CCTV software written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. Currently it is being crafted for IP Cameras, not local.
 
 <img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.gif?raw=true">
@@ -20,7 +29,7 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 
 - Written in a simple structure. `camera.js` and `web` folder.
 - Easy Install. (not as easy as apt-get install zoneminder yet though. See below)
-- Streams are `img` tags transferred through `WebSocket`.
+- Streams are transferred through `WebSocket`. DOM element is an `img` tag.
 - Any websocket enabled browser can support the image stream (including mobile)
 - Can save to WebM or MP4
 - Calendar view for Events
@@ -106,7 +115,7 @@ If you wish to use this software for commercial purposes please consider donatin
     NPM: express - http://expressjs.com/
     NPM: request - https://www.npmjs.com/package/request
     NPM: connection-tester - https://www.npmjs.com/package/connection-tester
-    
+    image : shinobi.jpg - the background image on the front page is not mine, there were no credits where i found it. it just looks cool :D
     
     and maybe a few others.
     
