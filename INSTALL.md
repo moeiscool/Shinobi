@@ -4,6 +4,8 @@
 - You know what to do with this if you know what VirtualBox is.
     - Shinobi-12-22-2016.ova
     https://mega.nz/#!CtogQQia!Neg23RWo1mEYe2iQdz4GqlaXTCXy60VHqwV04dV3Dvs
+        - `Username : shinobi`
+        - `Password : night`
 
 # The Easier Way
 
@@ -59,8 +61,9 @@
     ```
 
 17. Open up `http://localhost` in your browser.
-    - login with `Username : ccio@m03.ca` and `Password : password`.
     - *Note :* if you are installed on a remote computer open up the IP in your web browser.
+        - `Username : ccio@m03.ca`
+        - `Password : password`
 
 - To get your IP you can run the following command.
 
