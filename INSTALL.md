@@ -1,5 +1,10 @@
 *For a Test deployment enviroment I suggest grabbing an old MacBook (what I did) and installing Node.JS on there. Open up Terminal to get started.*
 
+# VirtualBox
+- You know what to do with this if you know what VirtualBox is.
+    - Shinobi-12-22-2016.ova
+    https://mega.nz/#!CtogQQia!Neg23RWo1mEYe2iQdz4GqlaXTCXy60VHqwV04dV3Dvs
+
 # The Easier Way
 
 <b>VIDEO TUTORIAL :</b> https://www.youtube.com/watch?v=CZSKV5gRd90
