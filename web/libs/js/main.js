@@ -192,13 +192,14 @@ $.ccio.ws.on('f',function (d){
             switch(d.frame_format){
                 case'ab':
                     var reader = new FileReader();
-                    reader.addEventListener("loadend",function(){$('[mid="'+d.id+'"][ke="'+d.ke+'"] .snapshot,#monitor_live_'+d.id+' img').attr('src',reader.result);});
+                    reader.addEventListener("loadend",function(){$('[mid="'+d.id+'"][ke="'+d.ke+'"] .snapshot,#monitor_live_'+d.id+' img').attr('src',reader.result);delete(reader);});
                     reader.readAsDataURL(new Blob([d.frame],{type:"image/jpeg"}));
                 break;
                 case'b64':
-                    $('[mid="'+d.id+'"][ke="'+d.ke+'"] .snapshot,#monitor_live_'+d.id+' img').attr('src','data:image/jpeg;base64,'+d.frame)
+                    $('[mid="'+d.id+'"][ke="'+d.ke+'"] .snapshot,#monitor_live_'+d.id+' img').attr('src','data:image/jpeg;base64,'+d.frame);
                 break;
             }
+            delete(d.frame);
             d.e=$('#monitor_live_'+d.id+' .signal').addClass('btn-success').removeClass('btn-danger');
             clearTimeout($.ccio.mon[d.id]._signal);$.ccio.mon[d.id]._signal=setTimeout(function(){d.e.addClass('btn-danger').removeClass('btn-success');},10000)
         break;
