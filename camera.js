@@ -97,7 +97,7 @@ s.log=function(e,x){
     if(!x||!e.mid){return}
     ////commented out for now because need to iron out what it actually gets put in there.
 //    sql.query('INSERT INTO Logs (ke,mid,info) VALUES (?,?,?)',[e.ke,e.mid,JSON.stringify(x)]);
-    s.tx({f:'log',ke:e.ke,mid:e.mid,log:x},'GRP_'+e.ke);
+    s.tx({f:'log',ke:e.ke,mid:e.mid,log:x,time:moment()},'GRP_'+e.ke);
 }
 //directories
 s.users={};
@@ -335,6 +335,7 @@ s.camera=function(x,e,cn,tx){
             s.init(0,{ke:e.ke,mid:e.id})
             e.url=s.init('url',e);
             if(s.users[e.ke].mon[e.id].started===1){return}
+            if(!e.details.cutoff||e.details.cutoff===''){e.details.cutoff=60000*15;}//every 15 minutes start a new file.
             s.users[e.ke].mon[e.id].started=1;
             s.kill(s.users[e.ke].mon[e.id].spawn,e);
             if(x==='record'){
@@ -354,9 +355,10 @@ s.camera=function(x,e,cn,tx){
                     clearInterval(s.users[e.ke].mon[e.id].running);
                     s.users[e.ke].mon[e.id].running=setInterval(function(){//start loop
                          e.fn(x)
-                    },60000*15);//every 15 minutes start a new file.
+                    },e.details.cutoff);
                 }
                 e.init_event=function(){
+                    s.kill(s.users[e.ke].mon[e.id].spawn,e);
                     e.time=moment();
                     e.time=e.time.utcOffset('-0800');
                     if(s.users[e.ke].mon[e.id].open&&s.users[e.ke].mon[e.id].record.yes===1){
@@ -365,7 +367,6 @@ s.camera=function(x,e,cn,tx){
                     e.filename=e.time.format('YYYY-MM-DDTHH-mm-ss');
                     s.users[e.ke].mon[e.id].open=e.filename;
                     s.users[e.ke].mon[e.id].open_ext=e.ext;
-                    s.kill(s.users[e.ke].mon[e.id].spawn,e);
                     e.hosty=e.host.split('@');
                     if(e.hosty[1]){e.hosty=e.hosty[1];}else{e.hosty=e.hosty[0];}
                 }
@@ -378,9 +379,9 @@ s.camera=function(x,e,cn,tx){
                     break;
                 }
                 e.error=function(x){
-                    ++e.error_count;
                     clearTimeout(e.err_timeout);
                     e.err_timeout=setTimeout(function(){
+                        ++e.error_count;
                         if(e.error_count>10){if(x){x.stop=1;s.log(e,x)};s.camera('stop',{id:e.id,ke:e.ke})}else{e.fn()};//stop after 4 errors
                     },5000);
                 }
@@ -389,7 +390,9 @@ s.camera=function(x,e,cn,tx){
                         e.init_event();
                         connectionTester.test(e.hosty,e.port,2000,function(err,o){
                             if(o.success===true){
-                                s.event('open',e);
+                                if(x==='record'){
+                                    s.event('open',e);
+                                }
                                 e.frames=0;
                                 if(e.type==='mjpeg'||e.type==='h264'||x==='record'){
                                     s.users[e.ke].mon[e.id].spawn = spawn('ffmpeg',s.ffmpeg('args',e));
@@ -440,12 +443,12 @@ s.camera=function(x,e,cn,tx){
                                                 case e.chk('Unable to open RTSP for listening'):
                                                 case e.chk('timed out'):
                                                 case e.chk('Invalid data found when processing input'):
+                                                    if(e.frames===0&&x==='record'){s.event('delete',e)};
                                                     e.error({type:'stderr out',msg:d});
-                                                    if(e.frames===0){s.event('delete',e)};
                                                 break;
                                                 case e.chk('Immediate exit requested'):
                                                 case e.chk('reset by peer'):
-                                                   if(e.frames===0){s.event('delete',e)};
+                                                   if(e.frames===0&&x==='record'){s.event('delete',e)};
                                                     e.error({type:'stderr out',msg:d});
                                                 break;
                                             }
