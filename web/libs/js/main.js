@@ -113,32 +113,31 @@ $.ccio.ws.on('f',function (d){
         case'log':
             d.l=$('#logs')
             d.fn=function(x){
-                d.tmp+='<li>';
+                d.tmp+='<div>';
                 if(x instanceof Object){
-                    d.tmp+='<ul>'
+                    d.tmp+='<div style="margin-left:5px">'
                     $.each(x,function(n,v){
                         d.tmp+=n+' : ';d.fn(v)
                     })
-                    d.tmp+='</ul>'
+                    d.tmp+='</div>'
                 }else{
                     d.tmp+=x;
                 }
-                d.tmp+='</li>';
+                d.tmp+='</div>';
             }
             d.tmp='';
             d.tmp+='<li class="log-item">'
-            d.tmp+='<a>'
             d.tmp+='<span>'
+            d.tmp+='<div>'+d.ke+' : <b>'+d.mid+'</b></div>'
             d.tmp+='<span>'+d.log.type+'</span>'
-            d.tmp+='<span class="time">'+d.time+'</span>'
+            d.tmp+='<span class="time livestamp" titel="'+d.time+'"></span>'
             d.tmp+='</span>'
             d.tmp+='<span class="message">'
             d.fn(d.log.msg);
             d.tmp+='</span>'
-            d.tmp+='</a>'
             d.tmp+='</li>';
             if(d.l.find('.log-item').length>4){d.l.find('.log-item:last').remove()}
-            $('#logs').prepend(d.tmp)
+            $('#logs').prepend(d.tmp);$.ccio.init('ls');
         break;
         case'cpu':
             $('.cpu_load .progress-bar').css('width',d.data+'%')
