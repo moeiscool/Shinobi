@@ -110,6 +110,36 @@ $.ccio.ws.on('connect',function (d){
 $.ccio.ws.on('f',function (d){
     if(d.f!=='monitor_frame'&&d.f!=='cpu'&&d.f!=='event_delete'){console.log(d);}
     switch(d.f){
+        case'log':
+            d.l=$('#logs')
+            d.fn=function(x){
+                d.tmp+='<li>';
+                if(x instanceof Object){
+                    d.tmp+='<ul>'
+                    $.each(x,function(n,v){
+                        d.tmp+=n+' : ';d.fn(v)
+                    })
+                    d.tmp+='</ul>'
+                }else{
+                    d.tmp+=x;
+                }
+                d.tmp+='</li>';
+            }
+            d.tmp='';
+            d.tmp+='<li class="log-item">'
+            d.tmp+='<a>'
+            d.tmp+='<span>'
+            d.tmp+='<span>'+d.log.type+'</span>'
+            d.tmp+='<span class="time">'+d.time+'</span>'
+            d.tmp+='</span>'
+            d.tmp+='<span class="message">'
+            d.fn(d.log.msg);
+            d.tmp+='</span>'
+            d.tmp+='</a>'
+            d.tmp+='</li>';
+            if(d.l.find('.log-item').length>4){d.l.find('.log-item:last').remove()}
+            $('#logs').prepend(d.tmp)
+        break;
         case'cpu':
             $('.cpu_load .progress-bar').css('width',d.data+'%')
         break;
@@ -204,6 +234,7 @@ $.ccio.ws.on('f',function (d){
             clearTimeout($.ccio.mon[d.id]._signal);$.ccio.mon[d.id]._signal=setTimeout(function(){d.e.addClass('btn-danger').removeClass('btn-success');},10000)
         break;
     }
+    delete(d);
 });
 $.ccio.cx=function(x){if(!x.ke){x.ke=$user.ke;};if(!x.uid){x.uid=$user.uid;};return $.ccio.ws.emit('f',x)}
 

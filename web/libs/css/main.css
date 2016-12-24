@@ -5,6 +5,7 @@
 *:after {
   box-sizing: border-box;
 }
+a{cursor:pointer}
 .m-r{margin-right:10px}
 .m-b{margin-bottom:10px}
 .m-t{margin-top:10px}
@@ -76,7 +77,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 #side_menu_right.nav-xs{width:0!important;overflow:hidden}
 .side-menu table{color:#fff;}
 #main_canvas>.scrollable{background:#333;color:#fff}
-#main_header{background:#b59f00;color:#fff;}
+#main_header{background:#b59f00;color:#fff;padding-left:0;}
 
 #files_recent{}
 [class_toggle]{cursor:pointer}
@@ -89,8 +90,88 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .dark.modal .modal-body{background:#333;}
 .dark.modal .close{color:#fff;}
 
+/*cool dropdown thing*/
+ul.msg_list li {
+    background: #f7f7f7;
+    padding: 5px;
+    display: -ms-flexbox;
+    display: flex;
+    margin: 6px 6px 0;
+    width: 96% !important
+}
 
+ul.msg_list li:last-child {
+    margin-bottom: 6px;
+    padding: 10px
+}
 
+ul.msg_list li a {
+    padding: 3px 5px !important
+}
+
+ul.msg_list li a .image img {
+    border-radius: 2px 2px 2px 2px;
+    -webkit-border-radius: 2px 2px 2px 2px;
+    float: left;
+    margin-right: 10px;
+    width: 11%
+}
+
+ul.msg_list li a .time {
+    font-size: 11px;
+    font-style: italic;
+    font-weight: bold;
+    position: absolute;
+    right: 35px
+}
+
+ul.msg_list li a .message {
+    display: block !important;
+    font-size: 11px
+}
+
+.dropdown-menu.msg_list span {
+    white-space: normal
+}
+
+.dropdown-menu {
+    border: medium none;
+    box-shadow: none;
+    display: none;
+    float: left;
+    font-size: 12px;
+    left: 0;
+    list-style: none outside none;
+    padding: 0;
+    position: absolute;
+    text-shadow: none;
+    top: 100%;
+    z-index: 9998;
+    border: 1px solid #D9DEE4;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0
+}
+
+.dropdown-menu>li>a {
+    color: #5A738E
+}
+
+.navbar-nav .open .dropdown-menu {
+    position: absolute;
+    background: #fff;
+    margin-top: 0;
+    border: 1px solid #D9DEE4;
+    -webkit-box-shadow: none;
+    right: 0;
+    left: auto;
+    width: 220px
+}
+
+.navbar-nav .open .dropdown-menu.msg_list {
+    width: 300px
+}
+.nav>li>a{color:#fff}
+.nav>li>a:focus, .nav>li>a:hover,.nav .open>a, .nav .open>a:focus, .nav .open>a:hover{background:#867560}
 /*cool corner menu thing*/
 #cd-nav ul {
   /* mobile first */
