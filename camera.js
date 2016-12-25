@@ -37,7 +37,7 @@ var connectionTester = require('connection-tester');
 var config = require('./conf.json');
 
 server.listen(config.port);
-console.log('Server listening on port: ', config.port);
+console.log('Shinobi is listening :',config.port);
 
 s={child_help:false};
 s.disc=function(){
@@ -143,16 +143,21 @@ s.init=function(x,e){
 }
 s.event=function(x,e){
     if(!e){e={}};
-    if(e.mid){e.id=e.mid};
+    if(e.mid&&!e.id){e.id=e.mid};
     switch(x){
         case'delete':
             e.dir=s.dir.events+e.ke+'/'+e.id+'/';
-            e.save=[e.id,e.ke,s.nameToTime(e.filename),0];
-            sql.query('DELETE FROM Videos WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save)
-            s.tx({f:'event_delete',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
-            if(fs.existsSync(e.dir+e.filename+'.'+e.ext)){
-                return fs.unlinkSync(e.dir+e.filename+'.'+e.ext);
-            }
+            if(!e.status){e.status=0}
+            e.save=[e.id,e.ke,s.nameToTime(e.filename),e.status];
+            sql.query('DELETE FROM Videos WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save,function(err,r){
+                if(r&&r.affectedRows>0){
+                    s.tx({f:'event_delete',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
+                    if(fs.existsSync(e.dir+e.filename+'.'+e.ext)){
+                        return fs.unlinkSync(e.dir+e.filename+'.'+e.ext);
+                    }
+                }
+            })
+            
         break;
         case'open':
             if(e.details&&e.details.motion===1){
@@ -335,7 +340,7 @@ s.camera=function(x,e,cn,tx){
             s.init(0,{ke:e.ke,mid:e.id})
             e.url=s.init('url',e);
             if(s.users[e.ke].mon[e.id].started===1){return}
-            if(!e.details.cutoff||e.details.cutoff===''){e.details.cutoff=60000*15;}//every 15 minutes start a new file.
+            if(!e.details.cutoff||e.details.cutoff===''){e.details.cutoff=60000*15;}else{e.details.cutoff=parseInt(e.details.cutoff)*60000}//every 15 minutes start a new file.
             s.users[e.ke].mon[e.id].started=1;
             s.kill(s.users[e.ke].mon[e.id].spawn,e);
             if(x==='record'){
@@ -456,7 +461,7 @@ s.camera=function(x,e,cn,tx){
                                     break;
                                 }
                                 }else{
-                                    console.log('Cannot Connect, Retrying...',e.id);e.error();return;
+                                    s.log(e,{type:"Can't Connect",msg:'Retrying...'});e.error();return;
                                 }
                         });
                     }catch(err){++e.error_count;console.error('Frame Capture Error '+e.id,err);s.tx({f:'error',data:err},'GRP_2Df5hBE');}
@@ -512,7 +517,7 @@ var tx;
         if(!cn.ke&&d.f==='init'){
             cn.ip=cn.request.connection.remoteAddress;
             tx=function(z){if(!z.ke){z.ke=cn.ke;};cn.emit('f',z);}
-            sql.query('SELECT * FROM Users WHERE ke=? AND auth=? AND uid=?',[d.ke,d.auth,d.uid],function(err,r) {
+            sql.query('SELECT ke,uid,auth,mail,details FROM Users WHERE ke=? AND auth=? AND uid=?',[d.ke,d.auth,d.uid],function(err,r) {
                 if(r&&r[0]){
                     r=r[0];cn.join('GRP_'+d.ke);
                     cn.ke=d.ke,cn.uid=d.uid;
@@ -524,7 +529,7 @@ var tx;
                         if(!s.users[d.ke].mon){s.users[d.ke].mon={}}
                     }
                     sql.query('SELECT * FROM Monitors WHERE ke=?',[d.ke],function(err,rr) {
-                        tx({f:'init_success',monitors:rr,users:s.users[d.ke].vid})
+                        tx({f:'init_success',monitors:rr,users:s.users[d.ke].vid,user:r})
                         setTimeout(function(){
                             if(rr&&rr[0]){
                                 rr.forEach(function(t){
@@ -555,6 +560,19 @@ var tx;
                             sql.query(d.sql,d.ar,function(err,r){
                                 d.cx[d.ff]=r,tx(d.cx);
                             });
+                        break;
+                    }
+                break;
+                case'settings':
+                    switch(d.ff){
+                        case'edit':
+                            d.set=[],d.ar=[],d.for=Object.keys(d.form);d.n=0;
+                            d.for.forEach(function(v){
+                                d.set.push(d.for[d.n]+'=?'),d.ar.push(d.form[d.for[d.n]]);++d.n;
+                            });
+                            d.ar.push(d.ke),d.ar.push(d.uid);
+                            sql.query('UPDATE Users SET '+d.set.join(',')+' WHERE ke=? AND uid=?',d.ar);
+                            s.tx({f:'user_settings_change',uid:d.uid,ke:d.ke,form:e.s},'GRP_A_'+d.ke);
                         break;
                     }
                 break;
@@ -651,7 +669,11 @@ s.tx({f:'monitor_watch_on',viewers:Object.keys(s.users[d.ke].mon[d.id].watch).le
                 case'event':
                     switch(d.ff){
                         case'delete':
-
+                        if (fs.existsSync(s.dir.events+d.ke+'/'+d.mid+'/'+d.filename)){
+                            s.event('delete',d)
+                        }else{
+                            tx({f:'event_not_exist',query:d});
+                        }
                         break;
                     }
                 break;
@@ -836,7 +858,7 @@ app.get(['/libs/:f/:f2','/libs/:f/:f2/:f3'], function (req,res){
 });
 // Get video file
 app.get('/events/:ke/:id/:file', function (req,res){
-    req.dir=__dirname+'/events/'+req.params.ke+'/'+req.params.id+'/'+req.params.file;
+    req.dir=s.dir.events+req.params.ke+'/'+req.params.id+'/'+req.params.file;
     if (fs.existsSync(req.dir)){
         res.setHeader('content-type','video/'+req.params.file.split('.')[1]);
         res.sendFile(req.dir);
@@ -880,6 +902,6 @@ try{
 s.com = spawn('dstat', ['-c', '--nocolor']);
 s.com.stdout.on('data', function(data,txt){
 	txt = new Buffer(data).toString('utf8', 0, data.length);
-	s.tx({f:'cpu',data:100 - parseInt(txt.split('  ')[2])},'GRP_2Df5hBE');
+	io.emit('f',{f:'cpu',data:100 - parseInt(txt.split('  ')[2])});
 });
 }catch(err){console.log('No dstat, CPU indicator will not work. Continuing...')}

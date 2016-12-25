@@ -4,6 +4,7 @@
     "host": "127.0.0.1",
     "user": "majesticflame",
     "password": "",
-    "database": "ccio"
+    "database": "ccio",
+    "port":3306
   }
 }

@@ -38,8 +38,8 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 
 .event_video{margin:auto;max-width:100%;max-height:600px;}
 @media (min-width: 768px){
-    .modal{padding-left:0!important;}
-    .modal .modal-dialog{width:calc(100% - 10px)!important;margin: 30px auto;}
+    .modal.full{padding-left:0!important;}
+    .modal.full .modal-dialog{width:calc(100% - 10px)!important;margin: 30px auto;}
 }
 
 .events_list .title{font-size:12pt;padding:0 10px}
@@ -92,7 +92,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 
 /*cool dropdown thing*/
 ul.msg_list li {
-    background: #f7f7f7;
+    background: #f7f7f7;color:#333;
     padding: 5px;
     display: -ms-flexbox;
     display: flex;
@@ -109,7 +109,7 @@ ul.msg_list li a {
     padding: 3px 5px !important
 }
 
-ul.msg_list li a .image img {
+ul.msg_list li .image img {
     border-radius: 2px 2px 2px 2px;
     -webkit-border-radius: 2px 2px 2px 2px;
     float: left;
@@ -117,7 +117,7 @@ ul.msg_list li a .image img {
     width: 11%
 }
 
-ul.msg_list li a .time {
+ul.msg_list li .time {
     font-size: 11px;
     font-style: italic;
     font-weight: bold;
@@ -125,7 +125,7 @@ ul.msg_list li a .time {
     right: 35px
 }
 
-ul.msg_list li a .message {
+ul.msg_list li .message {
     display: block !important;
     font-size: 11px
 }
@@ -166,7 +166,7 @@ ul.msg_list li a .message {
     left: auto;
     width: 220px
 }
-
+.navbar-nav .open .dropdown-menu li a{padding:7px 15px}
 .navbar-nav .open .dropdown-menu.msg_list {
     width: 300px
 }
@@ -305,8 +305,9 @@ ul.msg_list li a .message {
     display: block;
   }
   #cd-nav.is-fixed ul li a {
-    padding: 1.6em;
-    margin-left: 0;
+      padding: 1.6em;
+      margin-left: 0;
+      border-bottom: 1px solid #eee;
   }
   #cd-nav ul.has-transitions {
     /* this class is used to bring back transitions when the navigation moves at the bottom right */

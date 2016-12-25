@@ -23,6 +23,12 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 if(!d){d=new Date();}
                 return moment(d).format('YYYY-MM-DDTHH-mm-ss')
             break;
+            case'id':
+                $('.usermail').html(d.mail)
+                k.d=JSON.parse(d.details);
+                $.sM.e.find('[name="details"]').val(d.details)
+                $.sM.e.find('[detail="days"]').val(k.d.days)
+            break;
         }
     }
     $.ccio.tm=function(x,d,z,k){
@@ -145,7 +151,9 @@ $.ccio.ws.on('f',function (d){
         case'init_success':
             $('#monitors_list').empty();
             d.o=$.ccio.op().watch_on;
-            if(!d.o){d.o={}}
+            if(!d.o){d.o={}};
+            $user=d.user;
+            $.ccio.init('id',$user);
             $.each(d.monitors,function(n,v){
                 $.ccio.mon[v.mid]=v;
                 $.ccio.tm(1,v,'#monitors_list')
@@ -237,6 +245,15 @@ $.ccio.ws.on('f',function (d){
 });
 $.ccio.cx=function(x){if(!x.ke){x.ke=$user.ke;};if(!x.uid){x.uid=$user.uid;};return $.ccio.ws.emit('f',x)}
 
+//global form functions
+$.ccio.form={};
+$.ccio.form.details=function(e){
+    e.ar={};
+    $.each($.aM.md,function(n,v){
+        v=$(v);e.ar[v.attr('detail')]=v.val();
+    });
+    $.aM.f.find('[name="details"]').val(JSON.stringify(e.ar));
+};
 //add Monitor
 $.aM={e:$('#add_monitor')};$.aM.f=$.aM.e.find('form')
 $.aM.f.submit(function(e){
@@ -257,14 +274,8 @@ $.aM.f.find('[name="type"]').change(function(e){
     e.e=$(this);
     if(e.e.val()==='h264'){$.aM.f.find('[name="protocol"]').val('rtsp').change()}
 })
-$.aM.md=$.aM.f.find('#monitor_details input');
-$.aM.md.change(function(e){
-    e.ar={};
-    $.each($.aM.md,function(n,v){
-        v=$(v);e.ar[v.attr('detail')]=v.val();
-    });
-    $.aM.f.find('[name="details"]').val(JSON.stringify(e.ar));
-})
+$.aM.md=$.aM.f.find('[detail]');
+$.aM.md.change($.ccio.form.details)
 $.aM.f.find('[name="protocol"]').change(function(e){
     e.e=$(this);e.v=e.e.val(),e.t=$.aM.f.find('[name="type"]');
 //    $.aM.f.find('[name="ext"],[name="type"]').prop('disabled',false)
@@ -277,6 +288,17 @@ $.aM.f.find('[name="protocol"]').change(function(e){
         break;
     }
 })
+//settings window
+$.sM={e:$('#settings')};$.sM.f=$.sM.e.find('form');
+$.sM.md=$.sM.f.find('[detail]');
+$.sM.md.change($.ccio.form.details);
+$.sM.f.submit(function(e){
+    e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
+    e.er=[];
+    $.each(e.s,function(n,v){e.s[n]=v.trim()})
+    $.ccio.cx({f:'settings',ff:'edit',form:e.s})
+    $.sM.e.modal('hide')
+});
 //dynamic bindings
 $('body')
 .on('click','.logout',function(e){

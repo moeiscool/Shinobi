@@ -13,7 +13,6 @@
             <li><a class_toggle="list-blocks" data-target="#side_menu"><i class="fa fa-camera"></i> &nbsp; Monitor List <small>Toggle</small></a></li>
             <li><a class_toggle="nav-xs" data-target="#side_menu_right"><i class="fa fa-film"></i> &nbsp; Event Pane <small>Toggle</small></a></li>
             <li><a class_toggle="nav-xs" data-target="#side_menu"><i class="fa fa-bars"></i> &nbsp; Monitor Pane <small>Toggle</small></a></li>
-            <li><a class="logout"><i class="fa fa-sign-out"></i> &nbsp; Logout</a></li>
         </ul>
     </nav>
 </div>
@@ -41,25 +40,16 @@
                 <li role="presentation" class="dropdown">
                     <a class="info-number" class_toggle="nav-xs" data-target="#side_menu_right">&nbsp;<i class="fa fa-reorder"></i>&nbsp;</a>
                 </li>
-<!--
                 <li class="">
                   <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                    <img src="images/img.jpg" alt="">John Doe
+                    <span class="usermail"></span>
                     <span class=" fa fa-angle-down"></span>
                   </a>
                   <ul class="dropdown-menu dropdown-usermenu pull-right">
-                    <li><a href="javascript:;"> Profile</a></li>
-                    <li>
-                      <a href="javascript:;">
-                        <span class="badge bg-red pull-right">50%</span>
-                        <span>Settings</span>
-                      </a>
-                    </li>
-                    <li><a href="javascript:;">Help</a></li>
-                    <li><a href="login.html"><i class="fa fa-sign-out pull-right"></i> Log Out</a></li>
+                    <li><a data-toggle="modal" data-target="#settings"><i class="fa fa-gears pull-right"></i> Settings</a></li>
+                    <li><a class="logout"><i class="fa fa-sign-out pull-right"></i> Log Out</a></li>
                   </ul>
                 </li>
--->
               </ul>
 <!--
                 <div class="btn-group" mid="" ke="">
@@ -107,8 +97,33 @@
 </section>
 <div class="hidden" id="temp"></div>
 
+<!--Settings Window-->
+<div class="modal fade" id="settings" tabindex="-1" role="dialog" aria-labelledby="settingsLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="settingsLabel"><i class="fa fa-gears"></i> &nbsp; Settings</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+            <label><span>Number of Days to keep Events</span>
+                <input class="form-control" detail="days">
+            </label>
+        </div>
+        <input type="hidden" name="details">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-success">Save changes</button>
+      </div>
+    </form>
+  </div>
+</div>
 <!--Events List Window-->
-<div class="modal fade" id="events_viewer" tabindex="-1" role="dialog" aria-labelledby="events_viewerLabel" aria-hidden="true">
+<div class="modal full fade" id="events_viewer" tabindex="-1" role="dialog" aria-labelledby="events_viewerLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -125,7 +140,7 @@
   </div>
 </div>
 <!--Event File Window-->
-<div class="modal fade dark" id="event_viewer" tabindex="-1" role="dialog" aria-labelledby="event_viewerLabel" aria-hidden="true">
+<div class="modal full fade dark" id="event_viewer" tabindex="-1" role="dialog" aria-labelledby="event_viewerLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -241,6 +256,11 @@
               <div class="form-group">
                 <label><span>Stream Video Filter</span>
                 <input class="form-control" detail="svf" placeholder="fps=1">
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Recording Segment Interval <small>in minutes</small></span>
+                <input class="form-control" detail="cutoff" placeholder="15">
                 </label>
               </div>
           </div>

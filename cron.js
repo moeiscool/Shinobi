@@ -5,8 +5,8 @@ var moment = require('moment');
 var exec = require('child_process').exec;
 var spawn = require('child_process').spawn;
 const del = require('del');
-var db_config=JSON.parse(fs.readFileSync('conf.json','UTF8'));
-var sql=mysql.createConnection(db_config);
+var config=require('./conf.json');
+var sql=mysql.createConnection(config.db);
 s={dir:{events:__dirname+'/events/',frames:__dirname+'/frames/'}};
 s.moment=function(e,x){if(!e){e=new Date};if(!x){x='YYYY-MM-DDTHH-mm-ss'};return moment(e).utcOffset('-0800').format(x)}
 s.nameToTime=function(x){x=x.replace('.webm','').replace('.mp4','').split('T'),x[1]=x[1].replace(/-/g,':');x=x.join(' ');return x;}

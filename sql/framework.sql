@@ -49,6 +49,17 @@ CREATE TABLE IF NOT EXISTS `Monitors` (
 -- Data exporting was unselected.
 
 
+-- Dumping structure for table ccio.Presets
+CREATE TABLE IF NOT EXISTS `Presets` (
+  `ke` varchar(50) DEFAULT NULL,
+  `name` text,
+  `details` text,
+  `type` enum('monitor','event','user') DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Data exporting was unselected.
+
+
 -- Dumping structure for table ccio.Users
 CREATE TABLE IF NOT EXISTS `Users` (
   `ke` varchar(50) DEFAULT NULL,
