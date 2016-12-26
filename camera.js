@@ -284,7 +284,7 @@ s.camera=function(x,e,cn,tx){
                         })
                     break;
                     default:
-                        s.tx({f:'monitor_snapshot',snapshot:'No Image',snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
+                        s.tx({f:'monitor_snapshot',snapshot:'...',snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
                     break;
                 }
             }else{
