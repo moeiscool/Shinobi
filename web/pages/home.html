@@ -232,12 +232,6 @@
             <input class="form-control" name="port" placeholder="Leave blank for Port 80">
             </label>
           </div>
-          </div>
-           <div class="form-group">
-            <label><span>Record Speed (FPS)</span>
-            <input class="form-control" name="fps">
-            </label>
-          </div>
           <div class="form-group">
             <label><span>Image Width</span>
             <input class="form-control" name="width">
@@ -248,22 +242,31 @@
             <input class="form-control" name="height">
             </label>
           </div>
-          <div id="monitor_details">
-              <div class="form-group">
-                <label><span>Record Video Filter</span>
-                <input class="form-control" detail="vf">
-                </label>
-              </div>
-              <div class="form-group">
-                <label><span>Stream Video Filter</span>
-                <input class="form-control" detail="svf" placeholder="fps=1">
-                </label>
-              </div>
-              <div class="form-group">
-                <label><span>Recording Segment Interval <small>in minutes</small></span>
-                <input class="form-control" detail="cutoff" placeholder="15">
-                </label>
-              </div>
+          </div>
+           <div class="form-group">
+            <label><span>Record Speed (FPS)</span>
+            <input class="form-control" name="fps">
+            </label>
+          </div>
+          <div class="form-group">
+            <label><span>Streamer Capture Rate</span>
+            <input class="form-control" detail="sfps">
+            </label>
+          </div>
+          <div class="form-group">
+            <label><span>Record Video Filter</span>
+            <input class="form-control" detail="vf">
+            </label>
+          </div>
+          <div class="form-group">
+            <label><span>Stream Video Filter</span>
+            <input class="form-control" detail="svf" placeholder="fps=1">
+            </label>
+          </div>
+          <div class="form-group">
+            <label><span>Recording Segment Interval <small>in minutes</small></span>
+            <input class="form-control" detail="cutoff" placeholder="15">
+            </label>
           </div>
           <div class="form-group" style="display:none">
             <input class="form-control" name="details" value="{}">

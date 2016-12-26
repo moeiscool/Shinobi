@@ -80,6 +80,7 @@ window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
     if($user.mons&&$user.mons.length>0){
         $.ccio.mon={};
         $.each($user.mons,function(n,v){
+            v.details=JSON.parse(v.details);
             $.ccio.mon[v.mid]=v;
             tmp+='<li><a monitor="'+v.mid+'">'+v.name+'</a></li>';
         })
@@ -93,7 +94,7 @@ window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
     $('body').on('click','[monitor]',function(e){
         e.e=$(this);e.a=e.e.attr('monitor');
         $.ccio.selected=e.a;$('#selected').html(e.a);
-        $.ccio.framerate=1000*$.ccio.mon[e.a].fps;
+        if(v.details.sfps&&v.details.sfps!==''){$.ccio.framerate=v.details.sfps}else{$.ccio.framerate=1000;}
         $.ls.setItem('Shinobi_selected_socket_camera',e.a)
     })
     

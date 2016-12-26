@@ -20,6 +20,10 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 
 - ZoneMinder was the first choice but it proved unstable for the reasons mentioned. Also it has so many bugs and bounties many of them are just being left behind in the ocean of bug reports.
 
+# Supported Cameras
+
+- https://github.com/moeiscool/Shinobi/wiki/Supported-Cameras
+
 # Info
 
 - Written in a simple structure. `camera.js` and `web` folder.

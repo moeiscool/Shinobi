@@ -202,11 +202,11 @@ s.ffmpeg=function(y,e,x){
         switch(e.ext){
             case'mp4':
                 switch(e.type){
-                    case'jpeg':case'mjpeg':
-                        x.vcodec='libx264';
-                    break;
                     case'h264':
                         x.acodec='copy',x.vcodec='copy';
+                    break;
+                    default:
+                        x.vcodec='libx264';
                     break;
                 };
             break;
@@ -219,10 +219,10 @@ s.ffmpeg=function(y,e,x){
 //        if(e.details.svf){'-vf "rotate=45*(PI/180)'}
         switch(e.type){
             case'socket':
-                x.tmp='-loglevel warning -f image2pipe -framerate 1 -vcodec mjpeg -i -'+x.time+' -vcodec '+x.vcodec+' -framerate 2 -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext;
+                x.tmp='-loglevel warning -pattern_type glob -f image2pipe -vcodec mjpeg -i -'+x.time+' -vcodec '+x.vcodec+' -r '+e.fps+' -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext;
             break;
             case'jpeg':
-                x.tmp='-loglevel quiet -f image2pipe -framerate 1 -vcodec mjpeg -i -'+x.time+' -vcodec '+x.vcodec+' -framerate 2 -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext;
+                x.tmp='-loglevel quiet -pattern_type glob -f image2pipe -vcodec mjpeg -i -'+x.time+' -vcodec '+x.vcodec+' -r '+e.fps+' -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext;
             break;
             case'mjpeg':
                 if(e.mode=='record'){
@@ -230,7 +230,7 @@ s.ffmpeg=function(y,e,x){
                 }else{
                     x.watch='';
                 };
-                x.tmp='-loglevel quiet -reconnect 1 -r 5 -f mjpeg -i '+e.url+x.time+''+x.watch+' -f image2pipe -vf '+x.svf+' -s '+e.ratio+' pipe:1';
+                x.tmp='-loglevel quiet -reconnect 1 -f mjpeg -i '+e.url+x.time+''+x.watch+' -f image2pipe -vf '+x.svf+' -s '+e.ratio+' pipe:1';
             break;
             case'h264':
                 if(e.mode=='record'){
@@ -403,9 +403,9 @@ s.camera=function(x,e,cn,tx){
                                 }
                                 e.frames=0;
                                 if(!s.users[e.ke].mon[e.id].record){s.users[e.ke].mon[e.id].record={yes:1}};
+                                if(x==='record'||e.type==='mjpeg'||e.type==='h264'){s.users[e.ke].mon[e.id].spawn = spawn('ffmpeg',s.ffmpeg('args',e));}
                                 switch(e.type){
                                     case'jpeg':
-                                        if(x==='record'){s.users[e.ke].mon[e.id].spawn = spawn('ffmpeg',s.ffmpeg('args',e));}
                                         e.captureOne=function(f){
                                             s.users[e.ke].mon[e.id].record.request=request({url:e.url,method:'GET',encoding: null,timeout:3000},function(er,data){
                                                ++e.frames; if(s.users[e.ke].mon[e.id].spawn&&s.users[e.ke].mon[e.id].spawn.stdin){
@@ -431,34 +431,35 @@ s.camera=function(x,e,cn,tx){
                                       e.captureOne()
                                     break;
                                     case'mjpeg':case'h264':case'socket':
-                                        s.users[e.ke].mon[e.id].spawn = spawn('ffmpeg',s.ffmpeg('args',e));
                                         if(!s.users[e.ke]||!s.users[e.ke].mon[e.id]){s.init(0,e)}
-                                        s.users[e.ke].mon[e.id].spawn.on('error',function(er){e.error({type:'Spawn Error',msg:er})})
-                                        s.users[e.ke].mon[e.id].spawn.stdout.on('data',function(d){
-                                           ++e.frames; if(s.users[e.ke]&&s.users[e.ke].mon[e.id]&&s.users[e.ke].mon[e.id].watch&&Object.keys(s.users[e.ke].mon[e.id].watch).length>0){
-                                                s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:d.toString('base64'),frame_format:'b64'},'MON_'+e.id);
+                                        if(s.users[e.ke].mon[e.id].spawn){
+                                            s.users[e.ke].mon[e.id].spawn.on('error',function(er){e.error({type:'Spawn Error',msg:er})})
+                                            s.users[e.ke].mon[e.id].spawn.stdout.on('data',function(d){
+                                               ++e.frames; if(s.users[e.ke]&&s.users[e.ke].mon[e.id]&&s.users[e.ke].mon[e.id].watch&&Object.keys(s.users[e.ke].mon[e.id].watch).length>0){
+                                                    s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:d.toString('base64'),frame_format:'b64'},'MON_'+e.id);
 
-                                            }
-                                        });
-                                        s.users[e.ke].mon[e.id].spawn.stderr.on('data',function(d){
-                                            d=d.toString();
-                                            e.chk=function(x){return d.indexOf(x)>-1;}
-                                            switch(true){
-//                                                case e.chk('av_interleaved_write_frame'):
-                                                case e.chk('No such file or directory'):
-                                                case e.chk('Unable to open RTSP for listening'):
-                                                case e.chk('timed out'):
-                                                case e.chk('Invalid data found when processing input'):
-                                                    if(e.frames===0&&x==='record'){s.event('delete',e)};
-                                                    e.error({type:'stderr out',msg:d});
-                                                break;
-                                                case e.chk('Immediate exit requested'):
-                                                case e.chk('reset by peer'):
-                                                   if(e.frames===0&&x==='record'){s.event('delete',e)};
-                                                    e.error({type:'stderr out',msg:d});
-                                                break;
-                                            }
-                                        });
+                                                }
+                                            });
+                                            s.users[e.ke].mon[e.id].spawn.stderr.on('data',function(d){
+                                                d=d.toString();
+                                                e.chk=function(x){return d.indexOf(x)>-1;}
+                                                switch(true){
+    //                                                case e.chk('av_interleaved_write_frame'):
+                                                    case e.chk('No such file or directory'):
+                                                    case e.chk('Unable to open RTSP for listening'):
+                                                    case e.chk('timed out'):
+                                                    case e.chk('Invalid data found when processing input'):
+                                                        if(e.frames===0&&x==='record'){s.event('delete',e)};
+                                                        e.error({type:'stderr out',msg:d});
+                                                    break;
+                                                    case e.chk('Immediate exit requested'):
+                                                    case e.chk('reset by peer'):
+                                                       if(e.frames===0&&x==='record'){s.event('delete',e)};
+                                                        e.error({type:'stderr out',msg:d});
+                                                    break;
+                                                }
+                                            });
+                                        }
                                     break;
                                 }
                                 }else{
@@ -705,12 +706,12 @@ s.tx({f:'monitor_watch_on',viewers:Object.keys(s.users[d.ke].mon[d.id].watch).le
     cn.on('r',function(d){//functions for webcam recorder
         switch(d.f){
             case'monitor_frame':
-                if(s.users[d.ke].mon[d.mid].started===1&&s.users[d.ke].mon[d.mid].record.yes===1){
-                    s.users[d.ke].mon[d.mid].spawn.stdin.write(d.frame);
-                    if(s.users[d.ke]&&s.users[d.ke].mon[d.mid]&&s.users[d.ke].mon[d.mid].watch&&Object.keys(s.users[d.ke].mon[d.mid].watch).length>0){
+               if(s.users[d.ke].mon[d.mid].started!==1){s.tx({error:'Not Started'},cn.id);return false} if(s.users[d.ke]&&s.users[d.ke].mon[d.mid]&&s.users[d.ke].mon[d.mid].watch&&Object.keys(s.users[d.ke].mon[d.mid].watch).length>0){
                         s.tx({f:'monitor_frame',ke:d.ke,id:d.mid,time:s.moment(),frame:d.frame.toString('base64'),frame_format:'b64'},'MON_'+d.mid);
 
                     }
+                if(s.users[d.ke].mon[d.mid].record.yes===1){
+                    s.users[d.ke].mon[d.mid].spawn.stdin.write(d.frame);
                 }else{
 //                    sql.query('SELECT * FROM Monitors WHERE mid=? AND ke=?',[d.mid,d.ke],function(err,r){
 //                        if(r&&r[0]){r=r[0];
