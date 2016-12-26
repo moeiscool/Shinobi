@@ -1,12 +1,4 @@
 <link rel="stylesheet" href="libs/css/bootstrap.min.css">
-<link rel="stylesheet" href="libs/css/main.css">
-<div id="cd-nav">
-    <a href="#0" class="cd-nav-trigger">Menu<span></span></a>
-    <nav id="cd-main-nav">
-        <ul id="monitors">
-        </ul>
-    </nav>
-</div>
 <div id="main" class="container">
     <a class="btn btn-danger btn-lg" record>Stream</a>
     <div>
@@ -14,6 +6,9 @@
     </div>
     <div id="msg">Monitor to Save under <span id="selected"></span></div>
 requires https or firefox
+    <div style="margin-top:30px;">
+        <div id="monitors" class="list-group"></div>
+    </div>
 </div>
 <video id="video"><source></video>
 <canvas id="canvas"></canvas>
@@ -82,7 +77,7 @@ window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
         $.each($user.mons,function(n,v){
             v.details=JSON.parse(v.details);
             $.ccio.mon[v.mid]=v;
-            tmp+='<li><a monitor="'+v.mid+'">'+v.name+'</a></li>';
+            tmp+='<a class="list-group-item" monitor="'+v.mid+'">'+v.name+'</a>';
         })
         $('#monitors').html(tmp)
     }else{
@@ -92,20 +87,21 @@ window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
     }
     delete(tmp);
     $('body').on('click','[monitor]',function(e){
-        e.e=$(this);e.a=e.e.attr('monitor');
+        e.e=$(this);e.a=e.e.attr('monitor'),e.m=$.ccio.mon[e.a];
         $.ccio.selected=e.a;$('#selected').html(e.a);
-        if(v.details.sfps&&v.details.sfps!==''){$.ccio.framerate=v.details.sfps}else{$.ccio.framerate=1000;}
-        $.ls.setItem('Shinobi_selected_socket_camera',e.a)
+        if(e.m.details.sfps&&e.m.details.sfps!==''){$.ccio.framerate=e.m.details.sfps}else{$.ccio.framerate=1000;}
+        $.ls.setItem('Shinobi_socket_camera',e.a)
+        $('[monitor]').removeClass('active'),e.e.addClass('active');
     })
     
     
-if($user.mons.length>0&&$.ls.getItem('Shinobi_selected_socket_camera')){$.ccio.selected=$.ls.getItem('Shinobi_selected_socket_camera');$('#selected').html($.ccio.selected)}else{$.ccio.selected=null;}
+if($user.mons.length>0&&$.ls.getItem('Shinobi_socket_camera')){$('[monitor="'+$.ls.getItem('Shinobi_socket_camera')+'"]').click()}else{$.ccio.selected=null;}
 </script>
 <style>
-    body{color:#fff;background:#333;padding-top:30px}
-    .recording [record].btn{color: #fff;
-    background-color: #5cb85c;
-    border-color: #4cae4c;}
+    a{cursor:pointer}
+    body{color:#fff;background:#333;padding-top:30px;position:relative}
+    .recording [record].btn{color: #fff;background-color: #5cb85c;border-color: #4cae4c;}
+    #monitors{max-width:250px;width:100%;display:inline-block}
     #main{text-align:center}
     #msg h2{margin-top:0}
     #img{border-radius:5px;overflow:hidden;max-width:100%;display:inline-block;margin-top: 30px}
