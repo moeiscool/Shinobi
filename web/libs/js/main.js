@@ -37,7 +37,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             case 0://event
                 if(!d.filename){d.filename=moment(d.time).format('YYYY-MM-DDTHH-mm-ss')+'.'+d.ext;}
                 k=[d.mid+'-'+d.filename,'href="/events/'+d.ke+'/'+d.mid+'/'+d.filename+'"'];
-                d.mom=moment(d.time),d.hr=parseInt(d.mom.format('HH')),d.per=parseInt(d.hr/24*100);
+                d.mom=moment(d.time),d.hr=parseInt(d.mom.format('HH'))+1,d.per=parseInt(d.hr/24*100);
                 tmp+='<li mid="'+d.mid+'" ke="'+d.ke+'" file="'+d.filename+'" title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'"><div '+k[1]+' class="event_launch progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div><div><span title="'+d.end+'" class="livestamp"></span></div><div class="small"><b>Start</b> : '+d.time+'</div><div class="small"><b>End</b> : '+d.end+'</div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls"><a class="btn btn-sm btn-danger event_launch" '+k[1]+'><i class="fa fa-play-circle"></i></a> <a download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a> <a monitor="download" host="dropbox" download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a></div></div></li>';
             break;
             case 1://monitor
@@ -46,15 +46,12 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 delete(d.src);
             break;
             case 2:
-                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" class="monitor_item col-md-4">';
-                switch(d.type){
-                    case'jpeg':case'mjpeg':case'h264':
-                        tmp+='<img>';
-                    break;
-//                    case'rtsp':
-//                        tmp+='<video><source type="video/'+d.ext+'"></video>';
+                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" class="monitor_item col-md-4"><img>';
+//                switch(d.type){
+//                    case'jpeg':case'mjpeg':case'h264':
+//                        tmp+='<img>';
 //                    break;
-                }
+//                }
                 tmp+='<div class="hud super-center"><div class="side-menu scrollable"></div><div class="top_bar"><span class="badge badge-sm badge-danger"><i class="fa fa-eye"></i> <span class="viewers"></span></span></div><div class="bottom_bar"><span class="monitor_name">'+d.name+'</span><div class="pull-right"><a event="calendar" class="btn btn-sm btn-default"><i class="fa fa-film"></i></a> <a class="btn btn-sm btn-default" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Status" class="btn btn-sm btn-danger signal" monitor="watch_on"><i class="fa fa-circle"></i></a> <a title="Enlarge" monitor="bigify" class="btn btn-sm btn-default"><i class="fa fa-expand"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a></div></div></div></div>';
             break;
         }
@@ -111,7 +108,8 @@ $.ccio={fr:$('#files_recent'),mon:{}};
     }
 $.ccio.ws=io(location.origin);
 $.ccio.ws.on('connect',function (d){
-    $.ccio.cx({f:'init',ke:$user.ke,auth:$user.auth,uid:$user.uid})
+    $.ccio.init('id',$user);
+    $.ccio.cx({f:'init',ke:$user.ke,auth:$user.auth_token,uid:$user.uid})
 })
 $.ccio.ws.on('f',function (d){
     if(d.f!=='monitor_frame'&&d.f!=='cpu'&&d.f!=='event_delete'){console.log(d);}
@@ -152,8 +150,6 @@ $.ccio.ws.on('f',function (d){
             $('#monitors_list').empty();
             d.o=$.ccio.op().watch_on;
             if(!d.o){d.o={}};
-            $user=d.user;
-            $.ccio.init('id',$user);
             $.each(d.monitors,function(n,v){
                 $.ccio.mon[v.mid]=v;
                 $.ccio.tm(1,v,'#monitors_list')
@@ -276,6 +272,10 @@ $.aM.f.find('[name="type"]').change(function(e){
 })
 $.aM.md=$.aM.f.find('[detail]');
 $.aM.md.change($.ccio.form.details)
+$.aM.f.find('[name="type"]').change(function(e){
+    e.e=$.aM.f.find('.not-socket');
+    if($(this).val()==='socket'){e.e.hide()}else{e.e.show()}
+})
 $.aM.f.find('[name="protocol"]').change(function(e){
     e.e=$(this);e.v=e.e.val(),e.t=$.aM.f.find('[name="type"]');
 //    $.aM.f.find('[name="ext"],[name="type"]').prop('disabled',false)

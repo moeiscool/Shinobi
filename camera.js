@@ -117,7 +117,7 @@ s.init=function(x,e){
             if(e.type==='record'){e.record=1}else{e.record=0}
             if(!s.users[e.ke].mon[e.mid].record){s.users[e.ke].mon[e.mid].record={yes:e.record}};
             if(!s.users[e.ke].mon[e.mid].started){s.users[e.ke].mon[e.mid].started=0};
-            if(s.users[e.ke].mon[e.mid].delete){clearTimeout(s.users[e.ke].mon[e.id].delete)}
+            if(s.users[e.ke].mon[e.mid].delete){clearTimeout(s.users[e.ke].mon[e.mid].delete)}
         break;
         case'sync':
             e.cn=Object.keys(s.child_nodes);
@@ -218,6 +218,9 @@ s.ffmpeg=function(y,e,x){
         if(e.details.svf&&e.details.svf!==''){x.svf=e.details.svf;}else{x.svf='fps=1';}
 //        if(e.details.svf){'-vf "rotate=45*(PI/180)'}
         switch(e.type){
+            case'socket':
+                x.tmp='-loglevel warning -f image2pipe -framerate 1 -vcodec mjpeg -i -'+x.time+' -vcodec '+x.vcodec+' -framerate 2 -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext;
+            break;
             case'jpeg':
                 x.tmp='-loglevel quiet -f image2pipe -framerate 1 -vcodec mjpeg -i -'+x.time+' -vcodec '+x.vcodec+' -framerate 2 -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext;
             break;
@@ -227,7 +230,7 @@ s.ffmpeg=function(y,e,x){
                 }else{
                     x.watch='';
                 };
-                x.tmp='-loglevel debug -reconnect 1 -r 5 -f mjpeg -i '+e.url+x.time+''+x.watch+' -f image2pipe -vf '+x.svf+' -s '+e.ratio+' pipe:1';
+                x.tmp='-loglevel quiet -reconnect 1 -r 5 -f mjpeg -i '+e.url+x.time+''+x.watch+' -f image2pipe -vf '+x.svf+' -s '+e.ratio+' pipe:1';
             break;
             case'h264':
                 if(e.mode=='record'){
@@ -235,7 +238,7 @@ s.ffmpeg=function(y,e,x){
                 }else{
                     x.watch='';
                 };
-                x.tmp='-loglevel debug -i '+e.url+' -stimeout 2000'+x.watch+' -f image2pipe -vf '+x.svf+' -s '+e.ratio+' pipe:1';
+                x.tmp='-loglevel quiet -i '+e.url+' -stimeout 2000'+x.watch+' -f image2pipe -vf '+x.svf+' -s '+e.ratio+' pipe:1';
             break;
         }
         return x.tmp.split(' ');
@@ -354,7 +357,7 @@ s.camera=function(x,e,cn,tx){
                     fs.mkdirSync(e.dir);
                 }
             }
-            s.tx({f:'monitor_starting',id:e.id,time:s.moment()});
+            s.tx({f:'monitor_starting',id:e.id,time:s.moment()},'GRP_'+e.ke);
             e.error_count=0;
                 e.set=function(x){
                     clearInterval(s.users[e.ke].mon[e.id].running);
@@ -393,26 +396,23 @@ s.camera=function(x,e,cn,tx){
                 e.fn=function(){//this function loops to create new files
                     try{
                         e.init_event();
-                        connectionTester.test(e.hosty,e.port,2000,function(err,o){
+                        e.draw=function(err,o){
                             if(o.success===true){
                                 if(x==='record'){
                                     s.event('open',e);
                                 }
                                 e.frames=0;
-                                if(e.type==='mjpeg'||e.type==='h264'||x==='record'){
-                                    s.users[e.ke].mon[e.id].spawn = spawn('ffmpeg',s.ffmpeg('args',e));
-                                }
                                 if(!s.users[e.ke].mon[e.id].record){s.users[e.ke].mon[e.id].record={yes:1}};
-
                                 switch(e.type){
                                     case'jpeg':
+                                        if(x==='record'){s.users[e.ke].mon[e.id].spawn = spawn('ffmpeg',s.ffmpeg('args',e));}
                                         e.captureOne=function(f){
                                             s.users[e.ke].mon[e.id].record.request=request({url:e.url,method:'GET',encoding: null,timeout:3000},function(er,data){
                                                ++e.frames; if(s.users[e.ke].mon[e.id].spawn&&s.users[e.ke].mon[e.id].spawn.stdin){
                                                 if(er){++e.error_count;s.log(e,{type:'Snapshot Error',msg:er});
                                                           return;
                                                 }
-                                               if(x==='record'){
+                                               if(x==='record'&&s.users[e.ke].mon[e.id].spawn&&s.users[e.ke].mon[e.id].spawn.stdin){
                                                    s.users[e.ke].mon[e.id].spawn.stdin.write(data.body);
                                                }
                                                 if(s.users[e.ke].mon[e.id].watch&&Object.keys(s.users[e.ke].mon[e.id].watch).length>0){
@@ -430,7 +430,8 @@ s.camera=function(x,e,cn,tx){
                                       }
                                       e.captureOne()
                                     break;
-                                    case'mjpeg':case'h264':
+                                    case'mjpeg':case'h264':case'socket':
+                                        s.users[e.ke].mon[e.id].spawn = spawn('ffmpeg',s.ffmpeg('args',e));
                                         if(!s.users[e.ke]||!s.users[e.ke].mon[e.id]){s.init(0,e)}
                                         s.users[e.ke].mon[e.id].spawn.on('error',function(er){e.error({type:'Spawn Error',msg:er})})
                                         s.users[e.ke].mon[e.id].spawn.stdout.on('data',function(d){
@@ -463,7 +464,12 @@ s.camera=function(x,e,cn,tx){
                                 }else{
                                     s.log(e,{type:"Can't Connect",msg:'Retrying...'});e.error();return;
                                 }
-                        });
+                        }
+                        if(e.type!=='socket'){
+                            connectionTester.test(e.hosty,e.port,2000,e.draw);
+                        }else{
+                            e.draw(null,{success:true})
+                        }
                     }catch(err){++e.error_count;console.error('Frame Capture Error '+e.id,err);s.tx({f:'error',data:err},'GRP_2Df5hBE');}
                 }
                 //start drawing files
@@ -529,7 +535,7 @@ var tx;
                         if(!s.users[d.ke].mon){s.users[d.ke].mon={}}
                     }
                     sql.query('SELECT * FROM Monitors WHERE ke=?',[d.ke],function(err,rr) {
-                        tx({f:'init_success',monitors:rr,users:s.users[d.ke].vid,user:r})
+                        tx({f:'init_success',monitors:rr,users:s.users[d.ke].vid})
                         setTimeout(function(){
                             if(rr&&rr[0]){
                                 rr.forEach(function(t){
@@ -539,9 +545,7 @@ var tx;
                         },2000)
                     })
                 }else{
-                    tx({ok:false,msg:'Not Authorized',token_used:d.auth,ke:d.ke
-                       });
-                    cn.disconnect();
+                    tx({ok:false,msg:'Not Authorized',token_used:d.auth,ke:d.ke});cn.disconnect();
                 }
             })
             return;
@@ -698,6 +702,27 @@ s.tx({f:'monitor_watch_on',viewers:Object.keys(s.users[d.ke].mon[d.id].watch).le
         }
         console.log('CRON : ',d)
     })
+    cn.on('r',function(d){//functions for webcam recorder
+        switch(d.f){
+            case'monitor_frame':
+                if(s.users[d.ke].mon[d.mid].started===1&&s.users[d.ke].mon[d.mid].record.yes===1){
+                    s.users[d.ke].mon[d.mid].spawn.stdin.write(d.frame);
+                    if(s.users[d.ke]&&s.users[d.ke].mon[d.mid]&&s.users[d.ke].mon[d.mid].watch&&Object.keys(s.users[d.ke].mon[d.mid].watch).length>0){
+                        s.tx({f:'monitor_frame',ke:d.ke,id:d.mid,time:s.moment(),frame:d.frame.toString('base64'),frame_format:'b64'},'MON_'+d.mid);
+
+                    }
+                }else{
+//                    sql.query('SELECT * FROM Monitors WHERE mid=? AND ke=?',[d.mid,d.ke],function(err,r){
+//                        if(r&&r[0]){r=r[0];
+//                            s.camera(r.mode,r);
+//                        }else{
+                            cn.disconnect()
+//                        }
+//                    })
+                }
+            break;
+        }
+    })
     cn.on('c',function(d){//functions for dispersing work to child servers;
 //        if(!cn.ke&&d.socket_key===s.child_key){
             if(!cn.shinobi_child&&d.f=='init'){
@@ -766,7 +791,7 @@ app.get('/info', function (req,res){
 app.get('/', function (req,res){
     res.sendFile(__dirname+'/web/index.html');
 });
-//login function
+//register function
 app.post('/register',function (req,res){
     req.resp={ok:false};
     res.setHeader('Content-Type', 'application/json');
@@ -788,20 +813,31 @@ app.post('/register',function (req,res){
     }
     res.send(JSON.stringify(req.resp,null,3));
 })
-app.post('/auth/:mail/:pass',function (req,res){
-    if(req.params.mail&&req.params.pass){
-    sql.query('SELECT * FROM Users WHERE mail=? AND pass=?',[decodeURI(req.params.mail),s.md5(decodeURI(req.params.pass))],function(err,r) {
+//login function
+app.post('/auth',function (req,res){
+    if(req.body.mail&&req.body.pass){
+    sql.query('SELECT * FROM Users WHERE mail=? AND pass=?',[req.body.mail,s.md5(req.body.pass)],function(err,r) {
         req.resp={ok:false};
         res.setHeader('Content-Type', 'application/json');
         if(r&&r[0]){
             r=r[0];r.auth=s.md5(s.gid());
             sql.query("UPDATE Users SET auth=? WHERE ke=? AND uid=?",[r.auth,r.ke,r.uid])
-            req.resp={ok:true,auth_token:r.auth,ke:r.ke,uid:r.uid,body:fs.readFileSync(__dirname+'/web/pages/home.html','utf8')};
-        }else{
-
+            req.resp={ok:true,auth_token:r.auth,ke:r.ke,uid:r.uid,mail:r.mail,details:r.details};
+            if(!req.body.recorder){
+                //regular home page
+                req.resp.body=fs.readFileSync(__dirname+'/web/pages/home.html','utf8')
+                res.send(JSON.stringify(req.resp))
+                res.end();
+            }else{
+                sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
+                    req.resp.mons=rr;
+                    req.resp.body=fs.readFileSync(__dirname+'/web/pages/streamer.html','utf8')
+                    res.send(JSON.stringify(req.resp))
+                    res.end();
+                })
+                //webcam recorder
+            }
         }
-        res.send(JSON.stringify(req.resp))
-        res.end();
     })
     }else{
         res.send(req.params)
@@ -880,7 +916,6 @@ app.get(['/events/:ke','/events/:ke/:id'], function (req,res){
         res.send(JSON.stringify(r, null, 3));
     })
 });
-
 //preliminary monitor start
 setTimeout(function(){
 sql.query('SELECT * FROM Monitors WHERE mode != "stop"', function(err,r) {

@@ -27,12 +27,14 @@
 				<div class="panel panel-login">
 					<div class="panel-heading">
 						<div class="row">
-							<div class="col-xs-6">
+							<div class="col-xs-12">
 								<a href="#" class="active" id="login-form-link">Login</a>
 							</div>
+<!--
 							<div class="col-xs-6">
 								<a href="#" id="register-form-link">Register</a>
 							</div>
+-->
 						</div>
 						<hr>
 					</div>
@@ -47,8 +49,13 @@
 										<input type="password" name="pass" tabindex="2" class="form-control" placeholder="Password">
 									</div>
 									<div class="form-group text-center">
-										<input type="checkbox" tabindex="3" class="" name="remember" id="remember">
-										<label for="remember"> Remember Me</label>
+                                        <label>
+                                            <input type="checkbox" tabindex="3" class="" name="remember">
+                                            <span> Remember Me</span>
+                                        </label> &nbsp; <label>
+                                            <input type="checkbox" tabindex="3" class="" value="1" name="recorder">
+                                            <span> Shinobi Streamer</span>
+                                        </label>
 									</div>
 									<div class="form-group">
 										<div class="row">
@@ -57,13 +64,8 @@
 											</div>
 										</div>
 									</div>
-									<div class="form-group">
-										<div class="row">
-											<div class="col-lg-12">
-											</div>
-										</div>
-									</div>
 								</form>
+<!--
 								<form id="register-form" method="post" role="form" style="display: none;">
                                     <div id="register-msg text-center" style="margin:10px"></div>
 									<div class="form-group">
@@ -83,6 +85,7 @@
 										</div>
 									</div>
 								</form>
+-->
 							</div>
 						</div>
 					</div>
@@ -106,10 +109,12 @@
         e.preventDefault();$('input').css('border-color','')
         e.e=$(this),e.s=e.e.serializeObject(),e.inputs=e.e.find('input,button').prop('disabled',true)
         if(e.s.remember){localStorage.setItem('ShinobiLogin_'+location.host,JSON.stringify({mail:e.s.mail,pass:e.s.pass}))}else{localStorage.removeItem('ShinobiLogin_'+location.host)}
-        $.post('/auth/'+e.s.mail+'/'+e.s.pass,function(d){
+        $.post('/auth',e.s,function(d){
             if(d.ok===true){
-                $user={auth:d.auth_token,ke:d.ke,uid:d.uid};
-                $('body').html(d.body)
+                $user=d;
+                $('body').html(d.body);
+                delete(d.ok);delete(d.body);
+                delete($user.ok);delete($user.body);
             }else{
                 $('input').css('border-color','#b53200')
                 console.log('incorrect login details',d)
@@ -136,6 +141,7 @@ $(function() {
 		$(this).addClass('active');
 		e.preventDefault();
 	});
+    $('[disabled]').prop('disabled',false)
 });
 
 </script>

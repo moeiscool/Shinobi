@@ -1,12 +1,7 @@
 # Shinobi
 
 <center>
-<a href="https://gitter.im/Shinobi-CCTV/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link">Gitter</a> - 
-<a href="https://twitter.com/ShinobiCCTV">Twitter</a> - 
-<a href="https://www.facebook.com/Shinobi-1223193167773738/?ref=bookmarks">Facebook</a> - 
-<a href="https://www.reddit.com/r/ShinobiCCTV/">Reddit</a> - 
-<a href="https://www.bountysource.com/teams/shinobi">Bountysource</a> - 
-<a href="https://pledgie.com/campaigns/33051">Pledgie</a>
+<a href="https://gitter.im/Shinobi-CCTV/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link">Gitter</a> - <a href="https://twitter.com/ShinobiCCTV">Twitter</a> - <a href="https://www.facebook.com/Shinobi-1223193167773738/?ref=bookmarks">Facebook</a> - <a href="https://www.reddit.com/r/ShinobiCCTV/">Reddit</a> - <a href="https://www.bountysource.com/teams/shinobi">Bountysource</a> - <a href="https://pledgie.com/campaigns/33051">Pledgie</a> - <a href="https://www.gofundme.com/help-me-fund-my-program">GoFundMe</a>
 </center>
 
 Shinobi is an Open Source CCTV software written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. Currently it is being crafted for IP Cameras, not local.
@@ -32,6 +27,7 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 - Streams are transferred through `WebSocket`. DOM element is an `img` tag.
 - Any websocket enabled browser can support the image stream (including mobile)
 - Can save to WebM or MP4
+- No Mootools (yes, you can shake my hand later)
 - Calendar view for Events
 - `child.js` Child node processing to load balance ffmpeg processes across multiple nodes. *Work in Progress, needs h264 added and schema update*
 

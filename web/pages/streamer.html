@@ -1,0 +1,112 @@
+<link rel="stylesheet" href="libs/css/bootstrap.min.css">
+<link rel="stylesheet" href="libs/css/main.css">
+<div id="cd-nav">
+    <a href="#0" class="cd-nav-trigger">Menu<span></span></a>
+    <nav id="cd-main-nav">
+        <ul id="monitors">
+        </ul>
+    </nav>
+</div>
+<div id="main" class="container">
+    <a class="btn btn-danger btn-lg" record>Stream</a>
+    <div>
+        <img id="img">
+    </div>
+    <div id="msg">Monitor to Save under <span id="selected"></span></div>
+requires https or firefox
+</div>
+<video id="video"><source></video>
+<canvas id="canvas"></canvas>
+<script src="libs/js/jquery.min.js"></script>
+<script src="libs/js/socket.io.js"></script>
+<script src="libs/js/menu.js"></script>
+<script>
+$.ccio={};$.ls=localStorage;
+$.ccio.ws=io(location.origin);
+$.ccio.cx=function(x){if(!x.ke){x.ke=$user.ke;};if(!x.uid){x.uid=$user.uid;};return $.ccio.ws.emit('r',x)}
+$.ccio.ws.on('f',function(d){
+    if(d.f!=='monitor_frame'&&d.f!=='cpu'&&d.f!=='event_delete'){console.log(d);}
+    switch(d.f){
+        case'monitor_edit':
+            if(!$.ccio.mon[d.mid]){$.ccio.mon[d.mid]={}}
+            $.each(d.mon,function(n,v){
+                $.ccio.mon[d.mid][n]=v;
+            });
+        break;
+    }
+})
+function _base64ToArrayBuffer(base64) {
+    var binary_string =  window.atob(base64.replace(/\s/g, "").replace("data:image/jpeg;base64,", ""));
+    var len = binary_string.length;
+    var bytes = new Uint8Array( len );
+    for (var i = 0; i < len; i++)        {
+        bytes[i] = binary_string.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
+$.ccio.framerate=200;
+$.ccio.end=function(){$('#main').removeClass('recording');clearInterval($.ccio.interval);$('[record]').unbind('click').click($.ccio.start)}
+$.ccio.start=function(){
+    if($.ccio.selected===null){return false;}
+    $('#main').addClass('recording');
+    $.ccio.interval=setInterval(function(){
+        var ctx = $.ccio.vid.c[0].getContext('2d');
+        ctx.drawImage($.ccio.vid.e[0],0,0);
+        ctx=$.ccio.vid.c[0].toDataURL('image/jpeg');$('#img')[0].src=ctx;
+        ctx=_base64ToArrayBuffer(ctx);
+        $.ccio.cx({f:'monitor_frame',frame:ctx,mid:$.ccio.selected});
+        delete(ctx);
+    },$.ccio.framerate);
+$('[record]').unbind('click').click($.ccio.end)
+};
+$.ccio.vid = {e:$('#video'),c:$('#canvas')};
+    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia||navigator.mediaDevices.getUserMedia;
+window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
+    navigator.getUserMedia({video: true},function(stream,fn) {
+   if ($.ccio.vid.e[0].mozSrcObject !== undefined) {
+        $.ccio.vid.e[0].mozSrcObject = stream;
+    } else {
+        $.ccio.vid.e[0].src = (window.URL && window.URL.createObjectURL(stream)) || stream;
+    };
+    $.ccio.vid.e[0].play();
+    $.ccio.vid.e[0].addEventListener('loadeddata', function(){
+        $.ccio.vid.c[0].width = $.ccio.vid.e.width();
+        $.ccio.vid.c[0].height = $.ccio.vid.e.height();
+        $('[record]').click($.ccio.start)
+    })
+}, function(err){console.error('getUserMedia',err)});
+    //draw selectable mons
+    var tmp='';
+    if($user.mons&&$user.mons.length>0){
+        $.ccio.mon={};
+        $.each($user.mons,function(n,v){
+            $.ccio.mon[v.mid]=v;
+            tmp+='<li><a monitor="'+v.mid+'">'+v.name+'</a></li>';
+        })
+        $('#monitors').html(tmp)
+    }else{
+        tmp+="<h2>No Streamer Monitors Setup</h2>"
+        tmp+="<small>Login to the Dashboard and add one. Set it to record or watch only.</small>"
+        $('#msg').html(tmp)
+    }
+    delete(tmp);
+    $('body').on('click','[monitor]',function(e){
+        e.e=$(this);e.a=e.e.attr('monitor');
+        $.ccio.selected=e.a;$('#selected').html(e.a);
+        $.ccio.framerate=$.ccio.mon[e.a].fps;
+        $.ls.setItem('Shinobi_selected_socket_camera',e.a)
+    })
+    
+    
+if($user.mons.length>0&&$.ls.getItem('Shinobi_selected_socket_camera')){$.ccio.selected=$.ls.getItem('Shinobi_selected_socket_camera');$('#selected').html($.ccio.selected)}else{$.ccio.selected=null;}
+</script>
+<style>
+    body{color:#fff;background:#333;padding-top:30px}
+    .recording [record].btn{color: #fff;
+    background-color: #5cb85c;
+    border-color: #4cae4c;}
+    #main{text-align:center}
+    #msg h2{margin-top:0}
+    #img{border-radius:5px;overflow:hidden;max-width:100%;display:inline-block;margin-top: 30px}
+    #video,#canvas{position: absolute;display:none}
+</style>

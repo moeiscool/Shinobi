@@ -1,5 +1,5 @@
 #register-msg:empty{display:none}
-.shinobi-bg{background:url(/libs/img/shinobi.jpg);background-size:100%}
+.shinobi-bg{background:url(/libs/img/shinobi.jpg);background-size:cover}
 .panel-login {
     margin-top:90px;
 	border-color: #ccc;
