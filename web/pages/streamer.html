@@ -93,7 +93,7 @@ window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
     $('body').on('click','[monitor]',function(e){
         e.e=$(this);e.a=e.e.attr('monitor');
         $.ccio.selected=e.a;$('#selected').html(e.a);
-        $.ccio.framerate=$.ccio.mon[e.a].fps;
+        $.ccio.framerate=1000*$.ccio.mon[e.a].fps;
         $.ls.setItem('Shinobi_selected_socket_camera',e.a)
     })
     
