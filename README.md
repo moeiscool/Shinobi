@@ -4,7 +4,12 @@
 <a href="https://gitter.im/Shinobi-CCTV/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link">Gitter</a> - <a href="https://twitter.com/ShinobiCCTV">Twitter</a> - <a href="https://www.facebook.com/Shinobi-1223193167773738/?ref=bookmarks">Facebook</a> - <a href="https://www.reddit.com/r/ShinobiCCTV/">Reddit</a> - <a href="https://www.bountysource.com/teams/shinobi">Bountysource</a> - <a href="https://pledgie.com/campaigns/33051">Pledgie</a> - <a href="https://www.gofundme.com/help-me-fund-my-program">GoFundMe</a>
 </center>
 
-Shinobi is an Open Source CCTV software written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. Currently it is being crafted for IP Cameras, not local.
+Shinobi is an Open Source CCTV software written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. <s>Currently it is being crafted for IP Cameras, not local</s>.
+Shinobi can record IP Cameras and Local Cameras.
+
+# Supported Cameras
+
+- https://github.com/moeiscool/Shinobi/wiki/Supported-Cameras
 
 <img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.gif?raw=true">
 
@@ -19,10 +24,6 @@ Shinobi is an Open Source CCTV software written in Node.JS. Designed with multip
 - Written in Node.js, not PHP, Perl, and whatever languages you can remember.
 
 - ZoneMinder was the first choice but it proved unstable for the reasons mentioned. Also it has so many bugs and bounties many of them are just being left behind in the ocean of bug reports.
-
-# Supported Cameras
-
-- https://github.com/moeiscool/Shinobi/wiki/Supported-Cameras
 
 # Info
 
@@ -77,6 +78,8 @@ If you like Shinobi please consider donating.
 <a title="USD,XBT..." href='https://www.bountysource.com/teams/shinobi'><img src='https://d2bbtvgnhux6eq.cloudfront.net/assets/Bountysource-green-f2f437ed727ee2cacaee3f559c1907cb.png' ></a>
 
 <a title="CAD" href='https://pledgie.com/campaigns/33051'><img alt='Click here to lend your support to: Shinobi, Open Source CCTV written in Node.js and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/33051.png?skin_name=chrome' border='0' ></a>
+
+<a target="_blank" class="badge-widget" style="border: none; background-image: url(&quot;https://funds.gofundme.com/css/3.0_donate/green/widget.png&quot;);" href="//www.gofundme.com/help-me-fund-my-program?utm_medium=wdgt" title="Visit this page now.">Click to Donate Now!</a>
 
 # Author
 
