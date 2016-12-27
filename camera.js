@@ -201,7 +201,7 @@ s.ffmpeg=function(y,e,x){
             x.time=' -vf drawtext=fontfile=/usr/share/fonts/truetype/freefont/FreeSans.ttf:text=\'%{localtime}\':x=(w-tw)/2:y=0:fontcolor=white:box=1:boxcolor=0x00000000@1:fontsize=10';
         switch(e.ext){
             case'mp4':
-                x.vcodec='libx265';x.acodec='aac';
+                x.vcodec='libx265';x.acodec='libfaac';
                 if(e.details.vcodec&&e.details.vcodec!==''){x.vcodec=e.details.vcodec}
                 if(e.details.acodec&&e.details.acodec!==''){x.acodec=e.details.acodec}
             break;
