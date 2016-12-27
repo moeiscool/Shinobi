@@ -272,10 +272,25 @@ $.aM.f.find('[name="type"]').change(function(e){
 })
 $.aM.md=$.aM.f.find('[detail]');
 $.aM.md.change($.ccio.form.details)
+$.aM.f.find('[name="ext"]').change(function(e){
+    e.v=$(this).val();
+    $.aM.f.find('.h_f_input').hide()
+    $.aM.f.find('.h_f_'+e.v).show();
+});
 $.aM.f.find('[name="type"]').change(function(e){
-    e.e=$.aM.f.find('.not-socket');
-    if($(this).val()==='socket'){e.e.hide()}else{e.e.show()}
-})
+    e.v=$(this).val();
+    $.aM.f.find('.h_t_input').hide()
+    $.aM.f.find('.h_t_'+e.v).show();
+    e.h=$.aM.f.find('[name="path"]');
+    switch(e.v){
+        case'local':
+            e.h.attr('placeholder','/dev/video0')
+        break;
+        default:
+            e.h.attr('placeholder','/videostream.cgi?1')
+        break;
+    }
+});
 $.aM.f.find('[name="protocol"]').change(function(e){
     e.e=$(this);e.v=e.e.val(),e.t=$.aM.f.find('[name="type"]');
 //    $.aM.f.find('[name="ext"],[name="type"]').prop('disabled',false)

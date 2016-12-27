@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS `Monitors` (
   `shto` text,
   `shfr` text,
   `details` longtext,
-  `type` enum('jpeg','mjpeg','h264','socket') DEFAULT 'jpeg',
+  `type` varchar(50) DEFAULT 'jpeg',
   `ext` enum('webm','mp4') DEFAULT 'webm',
   `protocol` enum('http','https','rtmp','rtsp','axrtsp','axrtpu','axrtsphttp','axrtpm') DEFAULT 'http',
   `host` varchar(100) DEFAULT '0.0.0.0',

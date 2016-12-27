@@ -54,10 +54,18 @@ $.ccio.start=function(){
     },$.ccio.framerate);
 $('[record]').unbind('click').click($.ccio.end)
 };
+    
+    
+    
+    
+    
+    
+    
 $.ccio.vid = {e:$('#video'),c:$('#canvas')};
     navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia||navigator.mediaDevices.getUserMedia;
 window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
     navigator.getUserMedia({video: true},function(stream,fn) {
+        //set video element
    if ($.ccio.vid.e[0].mozSrcObject !== undefined) {
         $.ccio.vid.e[0].mozSrcObject = stream;
     } else {
@@ -70,6 +78,16 @@ window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
         $('[record]').click($.ccio.start)
     })
 }, function(err){console.error('getUserMedia',err)});
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     //draw selectable mons
     var tmp='';
     if($user.mons&&$user.mons.length>0){

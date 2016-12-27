@@ -196,6 +196,7 @@
                     <option value="mjpeg">MJPEG</option>  
                     <option value="h264">H.264</option>  
                     <option value="socket">Shinobi Streamer</option>  
+                    <option value="local">Local</option>  
                 </select>
             </label>
           </div>
@@ -203,12 +204,29 @@
             <label><span>File Type</span>
                 <select class="form-control" name="ext">
                     <option value="webm">WebM (libvpx)</option>  
-                    <option value="mp4">MP4 (libx264)</option>  
+                    <option value="mp4">MP4 (copy, libx264, libx265)</option>  
                 </select>
             </label>
           </div>
-          <div class="not-socket">
-          <div class="form-group">
+          <div class="form-group h_f_input h_f_mp4">
+            <label><span>Video Codec</span>
+                <select class="form-control" detail="vcodec">
+                    <option value="">Auto</option>  
+                    <option value="libx264">libx264</option>  
+                    <option value="libx265">libx265</option>  
+                </select>
+            </label>
+          </div>
+          <div class="form-group h_f_input h_f_mp4">
+            <label><span>Audio Codec</span>
+                <select class="form-control" detail="acodec">
+                    <option value="">Auto</option>  
+                    <option value="libfaac">libfaac</option>  
+                    <option value="aac">aac</option>  
+                </select>
+            </label>
+          </div>
+          <div class="form-group h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
             <label><span>Connection Type</span>
                 <select class="form-control" name="protocol">
                     <option value="http">HTTP</option>  
@@ -217,38 +235,37 @@
                 </select>
             </label>
           </div>
-          <div class="form-group">
+          <div class="form-group h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
             <label><span>Host</span>
             <input class="form-control" name="host" placeholder="111.111.111.111">
             </label>
           </div>
-          <div class="form-group">
+          <div class="form-group h_t_input h_t_h264 h_t_jpeg h_t_mjpeg h_t_local">
             <label><span>Path</span>
             <input class="form-control" name="path" placeholder="/videostream.cgi?1">
             </label>
           </div>
-          <div class="form-group">
+          <div class="form-group h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
             <label><span>Port</span>
             <input class="form-control" name="port" placeholder="Leave blank for Port 80">
             </label>
           </div>
-          <div class="form-group">
+          <div class="form-group h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
             <label><span>Image Width</span>
             <input class="form-control" name="width">
             </label>
           </div>
-          <div class="form-group">
+          <div class="form-group h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
             <label><span>Image Height</span>
             <input class="form-control" name="height">
             </label>
-          </div>
           </div>
            <div class="form-group">
             <label><span>Record Speed (FPS)</span>
             <input class="form-control" name="fps">
             </label>
           </div>
-          <div class="form-group">
+          <div class="form-group h_t_input h_t_socket">
             <label><span>Streamer Capture Rate <small>in Milliseconds</small></span>
             <input class="form-control" detail="sfps">
             </label>
