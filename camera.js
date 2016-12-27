@@ -704,22 +704,15 @@ s.tx({f:'monitor_watch_on',viewers:Object.keys(s.users[d.ke].mon[d.id].watch).le
         console.log('CRON : ',d)
     })
     cn.on('r',function(d){//functions for webcam recorder
+        if(!s.users[d.ke]||!s.users[d.ke].mon[d.mid]){return}
         switch(d.f){
             case'monitor_frame':
-               if(s.users[d.ke].mon[d.mid].started!==1){s.tx({error:'Not Started'},cn.id);return false} if(s.users[d.ke]&&s.users[d.ke].mon[d.mid]&&s.users[d.ke].mon[d.mid].watch&&Object.keys(s.users[d.ke].mon[d.mid].watch).length>0){
-                        s.tx({f:'monitor_frame',ke:d.ke,id:d.mid,time:s.moment(),frame:d.frame.toString('base64'),frame_format:'b64'},'MON_'+d.mid);
+               if(s.users[d.ke].mon[d.mid].started!==1){s.tx({error:'Not Started'},cn.id);return false};if(s.users[d.ke]&&s.users[d.ke].mon[d.mid]&&s.users[d.ke].mon[d.mid].watch&&Object.keys(s.users[d.ke].mon[d.mid].watch).length>0){
+                        s.tx({f:'monitor_frame',ke:d.ke,id:d.mid,time:s.moment(),frame:d.frame,frame_format:'ab'},'MON_'+d.mid);
 
                     }
                 if(s.users[d.ke].mon[d.mid].record.yes===1){
                     s.users[d.ke].mon[d.mid].spawn.stdin.write(d.frame);
-                }else{
-//                    sql.query('SELECT * FROM Monitors WHERE mid=? AND ke=?',[d.mid,d.ke],function(err,r){
-//                        if(r&&r[0]){r=r[0];
-//                            s.camera(r.mode,r);
-//                        }else{
-                            cn.disconnect()
-//                        }
-//                    })
                 }
             break;
         }
