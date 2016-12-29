@@ -31,9 +31,8 @@ var io = require('socket.io')(server);
 var exec = require('child_process').exec;
 var spawn = require('child_process').spawn;
 var crypto = require('crypto');
-//var MotionStream = require("motion-detect").Stream;
 var connectionTester = require('connection-tester');
-
+var df = require('node-df');
 var config = require('./conf.json');
 
 server.listen(config.port);
@@ -98,6 +97,7 @@ s.log=function(e,x){
     ////commented out for now because need to iron out what it actually gets put in there.
 //    sql.query('INSERT INTO Logs (ke,mid,info) VALUES (?,?,?)',[e.ke,e.mid,JSON.stringify(x)]);
     s.tx({f:'log',ke:e.ke,mid:e.mid,log:x,time:moment()},'GRP_'+e.ke);
+//    console.log('s.log : ',{f:'log',ke:e.ke,mid:e.mid,log:x,time:moment()},'GRP_'+e.ke)
 }
 //directories
 s.users={};
@@ -153,24 +153,21 @@ s.event=function(x,e){
                 if(r&&r.affectedRows>0){
                     s.tx({f:'event_delete',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
                     if(fs.existsSync(e.dir+e.filename+'.'+e.ext)){
-                        return fs.unlinkSync(e.dir+e.filename+'.'+e.ext);
+                        s.file('delete',e.dir+e.filename+'.'+e.ext)
                     }
                 }
             })
-            
         break;
         case'open':
-            if(e.details&&e.details.motion===1){
-                e.motion=[];
-            }
             e.save=[e.id,e.ke,s.nameToTime(e.filename),e.ext];
-            sql.query('INSERT INTO Videos (mid,ke,time,ext) VALUES (?,?,?,?)',e.save)
+            if(!e.status){e.save.push(0)}else{e.save.push(e.status)}
+            sql.query('INSERT INTO Videos (mid,ke,time,ext,status) VALUES (?,?,?,?,?)',e.save)
             s.tx({f:'event_build_start',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
         break;
         case'close':
             e.dir=s.dir.events+e.ke+'/'+e.id+'/';
             if(s.users[e.ke]&&s.users[e.ke].mon[e.id]){
-                if(s.users[e.ke].mon[e.id].open&&!e.filename){e.filename=s.users[e.ke].mon[e.id].open;}
+                if(s.users[e.ke].mon[e.id].open&&!e.filename){e.filename=s.users[e.ke].mon[e.id].open;e.ext=s.users[d.d.ke].mon[d.d.mid].open_ext}
                 if(s.users[e.ke].mon[e.id].child_node){
                     s.cx({f:'close',d:s.init('clean',e)},s.users[e.ke].mon[e.id].child_node_id);
                 }else{
@@ -178,7 +175,8 @@ s.event=function(x,e){
                         e.filesize=fs.statSync(e.dir+e.filename+'.'+e.ext)["size"];
                         if((e.filesize/100000).toFixed(2)>0.25){
                             e.save=[e.filesize,e.frames,1,e.id,e.ke,s.nameToTime(e.filename)];
-                            sql.query('UPDATE Videos SET `size`=?,`frames`=?,`status`=? WHERE `mid`=? AND `ke`=? AND `time`=?',e.save)
+                            if(!e.status){e.save.push(0)}else{e.save.push(e.status)}
+                            sql.query('UPDATE Videos SET `size`=?,`frames`=?,`status`=? WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save)
          s.tx({f:'event_build_success',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),size:e.filesize,end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
                         }else{
                             s.event('delete',e);
@@ -198,6 +196,8 @@ s.ffmpeg=function(y,e,x){
     if(!x){x={tmp:''}}
     switch(y){
     case'args':
+//            if(!e.details.cutoff||e.details.cutoff===''){x.cutoff=15}else{x.cutoff=parseFloat(e.details.cutoff)};if(isNaN(x.cutoff)===true){x.cutoff=15}
+//            x.segment=' -f segment -strftime 1 -segment_time '+(60*x.cutoff)+' -segment_format '+e.ext
             x.time=' -vf drawtext=fontfile=/usr/share/fonts/truetype/freefont/FreeSans.ttf:text=\'%{localtime}\':x=(w-tw)/2:y=0:fontcolor=white:box=1:boxcolor=0x00000000@1:fontsize=10';
         switch(e.ext){
             case'mp4':
@@ -211,13 +211,10 @@ s.ffmpeg=function(y,e,x){
         }
         if(e.fps&&e.fps!==''){e.framerate=' -r '+e.fps}else{e.framerate=''}
         if(e.details.vf){x.vf=' -vf '+e.details.vf+'';}else{x.vf='';}
-        if(e.details.svf&&e.details.svf!==''){x.svf=e.details.svf;}else{x.svf='fps=1';}
+        if(e.details.svf&&e.details.svf!==''){x.svf=' -vf '+e.details.svf;}else{x.svf='';}
 //        if(e.details.svf){'-vf "rotate=45*(PI/180)'}
         switch(e.type){
-            case'socket':
-                x.tmp='-loglevel quiet -pattern_type glob -f image2pipe -vcodec mjpeg -i -'+x.time+' -vcodec '+x.vcodec+e.framerate+' -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext;
-            break;
-            case'jpeg':
+            case'socket':case'jpeg':case'pipe':
                 x.tmp='-loglevel quiet -pattern_type glob -f image2pipe -vcodec mjpeg -i -'+x.time+' -vcodec '+x.vcodec+e.framerate+' -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext;
             break;
             case'mjpeg':
@@ -226,7 +223,7 @@ s.ffmpeg=function(y,e,x){
                 }else{
                     x.watch='';
                 };
-                x.tmp='-loglevel quiet -reconnect 1 -f mjpeg -i '+e.url+''+x.watch+' -f image2pipe -vf '+x.svf+' -s '+e.ratio+' pipe:1';
+                x.tmp='-loglevel quiet -reconnect 1 -f mjpeg -i '+e.url+''+x.watch+' -f image2pipe'+x.svf+' -s '+e.ratio+' pipe:1';
             break;
             case'h264':
                 if(e.mode=='record'){
@@ -234,7 +231,7 @@ s.ffmpeg=function(y,e,x){
                 }else{
                     x.watch='';
                 };
-                x.tmp='-loglevel quiet -i '+e.url+' -stimeout 2000'+x.watch+' -f image2pipe -vf '+x.svf+' -s '+e.ratio+' pipe:1';
+                x.tmp='-loglevel quiet -i '+e.url+' -stimeout 2000'+x.watch+' -f image2pipe'+x.svf+' -s '+e.ratio+' pipe:1';
             break;
             case'local':
                 if(e.mode=='record'){
@@ -242,10 +239,10 @@ s.ffmpeg=function(y,e,x){
                 }else{
                     x.watch='';
                 };
-                x.tmp='-loglevel warning -i '+e.path+''+x.watch+' -f image2pipe -vf '+x.svf+' -s '+e.ratio+' pipe:1';
+                x.tmp='-loglevel warning -i '+e.path+''+x.watch+' -f image2pipe'+x.svf+' -s '+e.ratio+' pipe:1';
             break;
         }
-        return x.tmp.split(' ');
+        return spawn('ffmpeg',x.tmp.split(' '));
     break;
     }
 }
@@ -254,6 +251,10 @@ s.file=function(x,e){
     switch(x){
         case'size':
              return fs.statSync(e.filename)["size"];
+        break;
+        case'delete':
+            if(!e){return false;}
+            return exec('rm -rf '+e);
         break;
         case'delete_files':
             if(!e.age_type){e.age_type='min'};if(!e.age){e.age='1'};
@@ -275,10 +276,10 @@ s.camera=function(x,e,cn,tx){
                 e.url=s.init('url',e.mon);
                 switch(e.mon.type){
 //                    case'mjpeg':case'h264':
-//                       ee.pic=s.dir.events+e.ke+'/'+e.mid+'/snap.jpg';
-//                        exec('ffmpeg -loglevel quiet -i "'+e.url+'" -f mjpeg -vframes 1 -updatefirst 1 -pix_fmt yuvj420p '+ee.pic,function(err,data){
+//                       e.pic=s.dir.events+e.ke+'/'+e.mid+'/snap.jpg';
+//                        exec('ffmpeg -loglevel quiet -i "'+e.url+'" -f mjpeg -vframes 1 -updatefirst 1 -pix_fmt yuvj420p '+e.pic,function(err,data){
 //                           if(err){console.log(err);return};
-//                           fs.writeFileSync(ee.pic,data); s.tx({f:'monitor_snapshot',snapshot:data.toString('base64'),snapshot_format:'b64',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
+//                           fs.writeFileSync(e.pic,data); s.tx({f:'monitor_snapshot',snapshot:data.toString('base64'),snapshot_format:'b64',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
 //                        });
 //                    break;
                     case'jpeg':
@@ -347,7 +348,7 @@ s.camera=function(x,e,cn,tx){
             s.init(0,{ke:e.ke,mid:e.id})
             e.url=s.init('url',e);
             if(s.users[e.ke].mon[e.id].started===1){return}
-            if(!e.details.cutoff||e.details.cutoff===''){e.details.cutoff=60000*15;}else{e.details.cutoff=parseInt(e.details.cutoff)*60000}//every 15 minutes start a new file.
+            if(!e.details.cutoff||e.details.cutoff===''){e.details.cutoff=60000*15;}else{e.details.cutoff=parseFloat(e.details.cutoff)*60000}//every 15 minutes start a new file.
             s.users[e.ke].mon[e.id].started=1;
             s.kill(s.users[e.ke].mon[e.id].spawn,e);
             if(x==='record'){
@@ -366,13 +367,12 @@ s.camera=function(x,e,cn,tx){
                 e.set=function(x){
                     clearInterval(s.users[e.ke].mon[e.id].running);
                     s.users[e.ke].mon[e.id].running=setInterval(function(){//start loop
-                         e.fn(x)
+                        e.fn(x)
                     },e.details.cutoff);
                 }
-                e.init_event=function(){
+                e.init_event=function(k){
                     s.kill(s.users[e.ke].mon[e.id].spawn,e);
-                    e.time=moment();
-                    e.time=e.time.utcOffset('-0800');
+                    e.time=moment().utcOffset('-0800');
                     if(s.users[e.ke].mon[e.id].open&&s.users[e.ke].mon[e.id].record.yes===1){
                         s.event('close',e);
                     }
@@ -407,7 +407,7 @@ s.camera=function(x,e,cn,tx){
                                 }
                                 e.frames=0;
                                 if(!s.users[e.ke].mon[e.id].record){s.users[e.ke].mon[e.id].record={yes:1}};
-                                if(x==='record'||e.type==='mjpeg'||e.type==='h264'||e.type==='local'){s.users[e.ke].mon[e.id].spawn = spawn('ffmpeg',s.ffmpeg('args',e));}
+                                if(x==='record'||e.type==='mjpeg'||e.type==='h264'||e.type==='local'){s.users[e.ke].mon[e.id].spawn = s.ffmpeg('args',e);}
                                 switch(e.type){
                                     case'jpeg':
                                         e.captureOne=function(f){
@@ -541,6 +541,7 @@ var tx;
                     }
                     sql.query('SELECT * FROM Monitors WHERE ke=?',[d.ke],function(err,rr) {
                         tx({f:'init_success',monitors:rr,users:s.users[d.ke].vid})
+                        s.disk(cn.id);
                         setTimeout(function(){
                             if(rr&&rr[0]){
                                 rr.forEach(function(t){
@@ -626,7 +627,6 @@ var tx;
                                         s.log(d,{type:'Monitor Added',msg:'by user : '+cn.uid});
                                         sql.query('INSERT INTO Monitors ('+d.set+') VALUES ('+d.st+')',d.ar)
                                     }
-                                    d.mon.id=d.mon.mid;
                                     if(d.mon.mode==='stop'){
                                         d.mon.delete=1;
                                         s.camera('stop',d.mon);
@@ -678,7 +678,7 @@ s.tx({f:'monitor_watch_on',viewers:Object.keys(s.users[d.ke].mon[d.id].watch).le
                 case'event':
                     switch(d.ff){
                         case'delete':
-                        if (fs.existsSync(s.dir.events+d.ke+'/'+d.mid+'/'+d.filename)){
+                        if (d.status&&fs.existsSync(s.dir.events+d.ke+'/'+d.mid+'/'+d.filename)){
                             s.event('delete',d)
                         }else{
                             tx({f:'event_not_exist',query:d});
@@ -750,7 +750,7 @@ s.tx({f:'monitor_watch_on',viewers:Object.keys(s.users[d.ke].mon[d.id].watch).le
                             if (err) {
                                 return console.error('created_file'+d.d.mid,err);
                             }
-                           tx({f:'delete_file',file:d.filename,ke:d.d.ke,mid:d.d.mid}); s.tx({f:'event_build_success',filename:s.users[d.d.ke].mon[d.d.mid].open+'.'+e.ext,mid:d.d.mid,ke:d.d.ke,time:s.nameToTime(s.users[d.d.ke].mon[d.d.mid].open),end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+d.d.ke);
+                           tx({f:'delete_file',file:d.filename,ke:d.d.ke,mid:d.d.mid}); s.tx({f:'event_build_success',filename:s.users[d.d.ke].mon[d.d.mid].open+'.'+s.users[d.d.ke].mon[d.d.mid].open_ext,mid:d.d.mid,ke:d.d.ke,time:s.nameToTime(s.users[d.d.ke].mon[d.d.mid].open),end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+d.d.ke);
                         });
                     break;
                 }
@@ -855,7 +855,7 @@ app.get(['/monitor/:ke/:mid/:f','/monitor/:ke/:mid/:f/:ff','/monitor/:ke/:mid/:f
                 req.ret.msg='Monitor mode changed to : '+req.params.f,req.ret.ok=true;
                 sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',[req.params.f,r.ke,r.mid]);
                 if(req.params.ff&&req.params.f!=='stop'){
-                    req.params.ff=parseInt(req.params.ff);
+                    req.params.ff=parseFloat(req.params.ff);
                     switch(req.params.fff){
                         case'day':case'days':
                             req.timeout=req.params.ff*1000*60*60*24
@@ -932,9 +932,18 @@ sql.query('SELECT * FROM Monitors WHERE mode != "stop"', function(err,r) {
 },1500)
 
 try{
-s.com = spawn('dstat', ['-c', '--nocolor']);
-s.com.stdout.on('data', function(data,txt){
-	txt = new Buffer(data).toString('utf8', 0, data.length);
-	io.emit('f',{f:'cpu',data:100 - parseInt(txt.split('  ')[2])});
-});
+    //cpu load indicator
+    s.com = spawn('dstat', ['-c', '--nocolor']);
+    s.com.stdout.on('data', function(data,txt){
+        txt = new Buffer(data).toString('utf8', 0, data.length);
+        io.emit('f',{f:'cpu',data:100 - parseInt(txt.split('  ')[2])});
+    });
 }catch(err){console.log('No dstat, CPU indicator will not work. Continuing...')}
+//check disk space every 20 minutes
+s.disk=function(x){
+    df(function (er,d) {
+        if (er) { clearInterval(s.disk_check); }else{er={f:'disk',data:d}}
+        if(x){s.tx(er,x)}else{io.emit('f',er);}
+    });
+}
+s.disk_check=setInterval(function(){s.disk()},60000*20);

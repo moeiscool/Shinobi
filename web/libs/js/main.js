@@ -1,7 +1,7 @@
 $.ccio={fr:$('#files_recent'),mon:{}};
     
     $.ccio.init=function(x,d,z,k){
-        if(!k){k={}}
+        if(!k){k={}};k.tmp='';
         switch(x){
             case'ArrayBuffertoB64':
                 var reader = new FileReader();
@@ -29,7 +29,21 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 $.sM.e.find('[name="details"]').val(d.details)
                 $.sM.e.find('[detail="days"]').val(k.d.days)
             break;
+            case'jsontoblock'://draw json as block
+                if(d instanceof Object){
+                    $.each(d,function(n,v){
+                        k.tmp+='<div>';
+                        k.tmp+='<b>'+n+'</b> : '+$.ccio.init('jsontoblock',v);
+                        k.tmp+='</div>';
+                    })
+                }else{
+                    k.tmp+='<span>';
+                    k.tmp+=d;
+                    k.tmp+='</span>';
+                }
+            break;
         }
+        return k.tmp;
     }
     $.ccio.tm=function(x,d,z,k){
         var tmp='';if(!d){d={}};
@@ -38,7 +52,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 if(!d.filename){d.filename=moment(d.time).format('YYYY-MM-DDTHH-mm-ss')+'.'+d.ext;}
                 k=[d.mid+'-'+d.filename,'href="/events/'+d.ke+'/'+d.mid+'/'+d.filename+'"'];
                 d.mom=moment(d.time),d.hr=parseInt(d.mom.format('HH'))+1,d.per=parseInt(d.hr/24*100);
-                tmp+='<li mid="'+d.mid+'" ke="'+d.ke+'" file="'+d.filename+'" title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'"><div '+k[1]+' class="event_launch progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div><div><span title="'+d.end+'" class="livestamp"></span></div><div class="small"><b>Start</b> : '+d.time+'</div><div class="small"><b>End</b> : '+d.end+'</div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls"><a class="btn btn-sm btn-danger event_launch" '+k[1]+'><i class="fa fa-play-circle"></i></a> <a download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a> <a monitor="download" host="dropbox" download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a></div></div></li>';
+                tmp+='<li mid="'+d.mid+'" ke="'+d.ke+'" file="'+d.filename+'"><div title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'" '+k[1]+' event="launch" class="progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div><div><span title="'+d.end+'" class="livestamp"></span></div><div class="small"><b>Start</b> : '+d.time+'</div><div class="small"><b>End</b> : '+d.end+'</div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls"><a class="btn btn-sm btn-success" event="launch" '+k[1]+'><i class="fa fa-play-circle"></i></a> <a download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a> <a event="download" host="dropbox" download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a> <a title="Delete Event" event="delete" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></a></div></div></li>';
             break;
             case 1://monitor
                 d.src=placeholder.getData(placeholder.plcimg({bgcolor:'#b57d00',text:'...'}));
@@ -116,19 +130,6 @@ $.ccio.ws.on('f',function (d){
     switch(d.f){
         case'log':
             d.l=$('#logs')
-            d.fn=function(x){
-                d.tmp+='<div>';
-                if(x instanceof Object){
-                    d.tmp+='<div style="margin-left:5px">'
-                    $.each(x,function(n,v){
-                        d.tmp+=n+' : ';d.fn(v)
-                    })
-                    d.tmp+='</div>'
-                }else{
-                    d.tmp+=x;
-                }
-                d.tmp+='</div>';
-            }
             d.tmp='';
             d.tmp+='<li class="log-item">'
             d.tmp+='<span>'
@@ -137,7 +138,7 @@ $.ccio.ws.on('f',function (d){
             d.tmp+='<span class="time livestamp" titel="'+d.time+'"></span>'
             d.tmp+='</span>'
             d.tmp+='<span class="message">'
-            d.fn(d.log.msg);
+            d.tmp+=$.ccio.init('jsontoblock',d.log.msg);
             d.tmp+='</span>'
             d.tmp+='</li>';
             if(d.l.find('.log-item').length>4){d.l.find('.log-item:last').remove()}
@@ -145,6 +146,18 @@ $.ccio.ws.on('f',function (d){
         break;
         case'cpu':
             $('.cpu_load .progress-bar').css('width',d.data+'%')
+        break;
+        case'disk':
+            d.tmp='';
+            $.each(d.data,function(n,v){
+                if(v.capacity!==0){
+                    d.tmp+='<li class="log-item">'
+                    d.tmp+=$.ccio.init('jsontoblock',v);
+                    d.tmp+='<div class="progress"><div class="progress-bar progress-bar-primary" role="progressbar" style="width:'+v.capacity*100+'%;"></div></div>'
+                    d.tmp+='</li>'
+                }
+            })
+            $('#disk').html(d.tmp)
         break;
         case'init_success':
             $('#monitors_list').empty();
@@ -159,6 +172,10 @@ $.ccio.ws.on('f',function (d){
         break;
         case'get_events':
             $.ccio.pm(0,d)
+        break;
+        case'event_delete':
+            if($('.modal[mid="'+d.mid+'"]').length>0){$('.modal[mid="'+d.mid+'"]').modal('hide')}
+            $('[file="'+d.filename+'"][mid="'+d.mid+'"][ke="'+d.ke+'"]').remove();
         break;
         case'event_build_success':
             if(!d.mid){d.mid=d.id;}
@@ -272,6 +289,11 @@ $.aM.f.find('[name="type"]').change(function(e){
 })
 $.aM.md=$.aM.f.find('[detail]');
 $.aM.md.change($.ccio.form.details)
+$.aM.f.find('[name="mode"]').change(function(e){
+    e.v=$(this).val();
+    $.aM.f.find('.h_m_input').hide()
+    $.aM.f.find('.h_m_'+e.v).show();
+});
 $.aM.f.find('[name="ext"]').change(function(e){
     e.v=$(this).val();
     $.aM.f.find('.h_f_input').hide()
@@ -314,13 +336,65 @@ $.sM.f.submit(function(e){
     $.ccio.cx({f:'settings',ff:'edit',form:e.s})
     $.sM.e.modal('hide')
 });
+//confirm windows
+$.confirm={e:$('#confirm_window')};
+$.confirm.title=$.confirm.e.find('.modal-title span')
+$.confirm.body=$.confirm.e.find('.modal-body')
+$.confirm.click=function(x,e){
+    if(!x.class){x.class='btn-success'}
+    if(!x.title){x.title='Save changes'}
+    x.e=$.confirm.e.find('.confirmaction').removeClass('btn-danger btn-warning btn-primary btn-success').addClass(x.class).text(x.title);
+    x.e.click(function(){
+        x.e.unbind('click');$.confirm.e.modal('hide');e();
+    })
+}
 //dynamic bindings
 $('body')
 .on('click','.logout',function(e){
     localStorage.removeItem('ShinobiLogin_'+location.host);location.reload();
 })
 .on('click','[event]',function(e){
-    e.e=$(this),e.a=e.e.attr('event'),e.p=e.e.parents('[mid]'),e.ke=e.p.attr('ke'),e.mid=e.p.attr('mid');
+    e.e=$(this),e.a=e.e.attr('event'),e.p=e.e.parents('[mid]'),e.ke=e.p.attr('ke'),e.mid=e.p.attr('mid'),e.file=e.p.attr('file'),e.mon=$.ccio.mon[e.mid];
+    switch(e.a){
+        case'launch':
+            e.preventDefault();
+            e.href=$(this).attr('href'),e.e=$('#event_viewer');
+            e.mon=$.ccio.mon[e.mid];
+            e.e.find('.modal-title span').html(e.mon.name+' - '+e.file)
+            e.e.find('.modal-body').html('<video class="event_video" video="'+e.href+'" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"></video>')
+            e.e.attr('mid',e.mid);
+            e.f=e.e.find('.modal-footer');
+            e.f.find('.download_link').attr('href',e.href).attr('download',e.file);
+            e.f.find('[monitor="download"][host="dropbox"]').attr('href',e.href);
+            e.e.modal('show');
+        break;
+        case'delete':
+            e.m=$('#confirm_window').modal('show');
+            $.confirm.title.text('Delete Event : '+e.file)
+            e.html='Do you want to delete this event? You cannot recover it.'
+            e.html+='<video class="event_video" autoplay loop controls><source src="'+e.p.find('[download]').attr('href')+'" type="video/'+e.mon.ext+'"></video>';
+            $.confirm.body.html(e.html)
+            $.confirm.click({title:'Delete Event',class:'btn-danger'},function(){
+                $.ccio.cx({f:'event',ff:'delete',status:1,filename:e.file,ke:e.ke,mid:e.mid});
+            });
+        break;
+        case'download':
+            e.preventDefault();
+            switch(e.e.attr('host')){
+                case'dropbox':
+                    Dropbox.save(e.e.attr('href'),e.e.attr('download'),{progress: function (progress) {console.log(progress)},success: function () {
+                        console.log("Success! Files saved to your Dropbox.");
+                    }});
+                break;
+            }
+        break;
+    }
+})
+.on('click','[class_toggle]',function(e){
+    e.e=$(this);$(e.e.attr('data-target')).toggleClass(e.e.attr('class_toggle'))
+})
+.on('click','[monitor]',function(e){
+    e.e=$(this),e.a=e.e.attr('monitor'),e.p=e.e.parents('[mid]'),e.ke=e.p.attr('ke'),e.mid=e.p.attr('mid'),e.mon=$.ccio.mon[e.mid]
     switch(e.a){
         case'calendar':
     $.getJSON('/events/'+e.ke+'/'+e.mid,function(d){
@@ -346,42 +420,13 @@ $('body')
         eventLimit: true,
         events:e.ar,
         eventClick:function(f){
-            $('#temp').empty().append('<div mid="'+f.mid+'" ke="'+f.ke+'" file="'+f.filename+'"><div class="event_launch" href="'+f.href+'"></div></div>').find('.event_launch').click();
+            $('#temp').empty().append('<div mid="'+f.mid+'" ke="'+f.ke+'" file="'+f.filename+'"><div event="launch" href="'+f.href+'"></div></div>').find('[event="launch"]').click();
             $(this).css('border-color', 'red');
         }
     });
         setTimeout(function(){e.v.fullCalendar( 'changeView','listDay');},500)
     });
          break;
-    }
-})
-.on('click','.event_launch',function(e){
-    e.preventDefault();e.t=$(this).parents('[mid]');e.mid=e.t.attr('mid'),e.file=e.t.attr('file'),e.href=$(this).attr('href'),e.e=$('#event_viewer');
-    e.mon=$.ccio.mon[e.mid];
-    e.e.find('.modal-title span').html(e.mon.name+' - '+e.file)
-    e.e.find('.modal-body').html('<video class="event_video" video="'+e.href+'" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"></video>')
-    e.e.attr('mid',e.mid);
-    e.f=e.e.find('.modal-footer');
-    e.f.find('.download_link').attr('href',e.href).attr('download',e.file);
-    e.f.find('[monitor="download"][host="dropbox"]').attr('href',e.href);
-    e.e.modal('show');
-})
-.on('click','[class_toggle]',function(e){
-    e.e=$(this);$(e.e.attr('data-target')).toggleClass(e.e.attr('class_toggle'))
-})
-.on('click','[monitor]',function(e){
-    e.e=$(this),e.a=e.e.attr('monitor'),e.p=e.e.parents('[mid]'),e.ke=e.p.attr('ke'),e.mid=e.p.attr('mid')
-    switch(e.a){
-        case'download':
-            e.preventDefault();
-            switch(e.e.attr('host')){
-                case'dropbox':
-                    Dropbox.save(e.e.attr('href'),e.e.attr('download'),{progress: function (progress) {console.log(progress)},success: function () {
-                        console.log("Success! Files saved to your Dropbox.");
-                    }});
-                break;
-            }
-        break;
         case'bigify':
             e.classes='col-md-4 col-md-8 selected';
             e.m=$('#monitors_live')
@@ -410,14 +455,27 @@ $('body')
             $.ccio.cx({f:'monitor',ff:'watch_off',id:e.mid})
         break;
         case'delete':
-            $.ccio.cx({f:'monitor',ff:'delete',mid:e.mid,ke:e.ke});
+            e.m=$('#confirm_window').modal('show');e.f=e.e.attr('file');
+            $.confirm.title.text('Delete Monitor : '+e.mon.name)
+            e.html='Do you want to delete this monitor? You cannot recover it.'
+            e.html+='<table class="info-table"><tr>';
+            $.each(e.mon,function(n,v,g){
+                if(n==='host'&&v.indexOf('@')>-1){g=v.split('@')[1]}else{g=v};
+                try{JSON.parse(g);return}catch(err){}
+                e.html+='<tr><td>'+n+'</td><td>'+g+'</td></tr>';
+            })
+            e.html+='</tr></table>';
+            $.confirm.body.html(e.html)
+            $.confirm.click({title:'Delete Monitor',class:'btn-danger'},function(){
+                $.ccio.cx({f:'monitor',ff:'delete',mid:e.mid,ke:e.ke});
+            });
         break;
         case'edit':
             e.p=$('#add_monitor'),e.mt=e.p.attr('mid',e.mid).attr('ke',e.ke).find('.modal-title')
             if(!$.ccio.mon[e.mid]){
                 e.p.find('[monitor="delete"]').hide()
                 e.mt.find('span').text('Add'),e.mt.find('i').attr('class','fa fa-plus');
-                e.values={"mode":"stop","mid":"","name":"","protocol":"http","ext":"webm","type":"jpeg","host":"","path":"","port":"","fps":"1","width":"640","height":"480","details":"{}","shto":"[]","shfr":"[]"}
+                e.values={"mode":"stop","mid":"","name":"","protocol":"http","ext":"webm","type":"jpeg","host":"","path":"","port":"","fps":"1","width":"640","height":"480","details":JSON.stringify({"vf":"","svf":"fps=1","sfps":"1000","cutoff":"15","vcodec":"copy","acodec":"copy","motion":"0"}),"shto":"[]","shfr":"[]"}
             }else{
                 e.p.find('[monitor="delete"]').show()
                 e.mt.find('span').text('Edit'),e.mt.find('i').attr('class','fa fa-wrench'),e.values=$.ccio.mon[e.mid];
@@ -426,8 +484,8 @@ $('body')
                 $.aM.e.find('[name="'+n+'"]').val(v).change()
             })
             e.ss=JSON.parse(e.values.details);
-            $.each(['vf','svf'],function(n,v){
-                if(!e.ss[v]){e.ss[v]=''}
+            e.p.find('[detail]').each(function(n,v){
+                v=$(v).attr('detail');if(!e.ss[v]){e.ss[v]=''}
             })
             $.each(e.ss,function(n,v){
                 $.aM.e.find('[detail="'+n+'"]').val(v);
@@ -438,6 +496,6 @@ $('body')
     e.e=$(this);$(e.e.attr('data-target')).toggleClass(e.e.attr('class_toggle'))
 })
 
-$('#event_viewer').on('hidden.bs.modal',function(){
+$('#event_viewer,#confirm_window').on('hidden.bs.modal',function(){
     $(this).find('video').remove();
 });

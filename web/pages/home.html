@@ -23,6 +23,10 @@
             <div class="pull-right">
 <ul class="nav navbar-nav navbar-right">
                 <li role="presentation" class="dropdown">
+                  <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown" aria-expanded="true">&nbsp;<i class="fa fa-hdd-o"></i>&nbsp;</a>
+                  <ul id="disk" class="dropdown-menu list-unstyled msg_list" role="menu"></ul>
+                </li>
+                <li role="presentation" class="dropdown">
                   <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown" aria-expanded="true">&nbsp;<i class="fa fa-exclamation-triangle"></i>&nbsp;</a>
                   <ul id="logs" class="dropdown-menu list-unstyled msg_list" role="menu">
 <!--
@@ -96,7 +100,6 @@
     </section>
 </section>
 <div class="hidden" id="temp"></div>
-
 <!--Settings Window-->
 <div class="modal fade" id="settings" tabindex="-1" role="dialog" aria-labelledby="settingsLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
@@ -179,6 +182,16 @@
                 </select>
             </label>
           </div>
+<!--
+          <div class="form-group h_m_input h_m_start">
+            <label><span>Record on Motion</span>
+                <select class="form-control" detail="motion">
+                    <option value="1">Yes</option>  
+                    <option value="0">No</option>  
+                </select>
+            </label>
+          </div>
+-->
         <div class="form-group">
             <label><span>Monitor ID</span>
                 <input class="form-control" name="mid">
@@ -260,7 +273,7 @@
             <input class="form-control" name="height">
             </label>
           </div>
-           <div class="form-group">
+           <div class="form-group h_m_input h_m_record">
             <label><span>Record Speed (FPS)</span>
             <input class="form-control" name="fps">
             </label>
@@ -270,7 +283,7 @@
             <input class="form-control" detail="sfps">
             </label>
           </div>
-          <div class="form-group">
+          <div class="form-group h_m_input h_m_record">
             <label><span>Record Video Filter</span>
             <input class="form-control" detail="vf">
             </label>
@@ -280,7 +293,7 @@
             <input class="form-control" detail="svf" placeholder="fps=1">
             </label>
           </div>
-          <div class="form-group">
+          <div class="form-group h_m_input h_m_record">
             <label><span>Recording Segment Interval <small>in minutes</small></span>
             <input class="form-control" detail="cutoff" placeholder="15">
             </label>
@@ -297,6 +310,24 @@
         <button type="submit" class="btn btn-success">Save changes</button>
       </div>
     </form>
+  </div>
+</div>
+<!--Confirmation Window-->
+<div class="modal fade" id="confirm_window" tabindex="-1" role="dialog" aria-labelledby="confirm_windowLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="confirm_windowLabel"><i class="fa fa-exclamation-circle"></i> &nbsp; <span>Confirmation</span></h4>
+      </div>
+      <div class="modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success confirmaction">Save changes</button>
+      </div>
+    </div>
   </div>
 </div>
 <!--Dropbox Library, Change data-app-key to your app key. -->

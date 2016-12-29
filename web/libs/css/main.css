@@ -37,6 +37,8 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .circle-img.sm{height:25px;width:25px}
 
 .event_video{margin:auto;max-width:100%;max-height:600px;}
+#confirm_window .event_video{margin-top:15px}
+#confirm_window .info-table{margin-top:15px}
 @media (min-width: 768px){
     .modal.full{padding-left:0!important;}
     .modal.full .modal-dialog{width:calc(100% - 10px)!important;margin: 30px auto;}
@@ -94,11 +96,12 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 ul.msg_list li {
     background: #f7f7f7;color:#333;
     padding: 5px;
-    display: -ms-flexbox;
-    display: flex;
+    display: list-item;
     margin: 6px 6px 0;
     width: 96% !important
 }
+
+ul.msg_list li div{display:block}
 
 ul.msg_list li:last-child {
     margin-bottom: 6px;
@@ -107,6 +110,9 @@ ul.msg_list li:last-child {
 
 ul.msg_list li a {
     padding: 3px 5px !important
+}
+ul.msg_list li .progress {
+    height:10px;margin:10px 0 0 0;
 }
 
 ul.msg_list li .image img {
