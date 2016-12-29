@@ -272,14 +272,6 @@
 
 <b>Optional for some OS</b>
 
-- Install dstat :
-    ```
-    apt-get install dstat
-    ```
-    - It's the CPU indicator, the orange progress bar on the web panel.
-    - if you choose not to install or can't then it will just post an error in the log.
-    - Sadly there is no dstat for Mac OS.
-
 - To daemonize the process install pm2 with 
     ```
     npm install pm2 -g

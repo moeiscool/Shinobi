@@ -18,6 +18,7 @@
 // https://www.bountysource.com/teams/shinobi
 //
 var fs = require('fs');
+var os = require('os-utils');
 var path = require('path');
 var mysql = require('mysql');
 var moment = require('moment');
@@ -151,10 +152,8 @@ s.event=function(x,e){
             e.save=[e.id,e.ke,s.nameToTime(e.filename),e.status];
             sql.query('DELETE FROM Videos WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save,function(err,r){
                 if(r&&r.affectedRows>0){
-                    s.tx({f:'event_delete',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
-                    if(fs.existsSync(e.dir+e.filename+'.'+e.ext)){
-                        s.file('delete',e.dir+e.filename+'.'+e.ext)
-                    }
+                    s.tx({f:'event_delete',filename:e.filename+'.'+e.ext,mid:e.mid,ke:e.ke,time:s.nameToTime(e.filename),end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
+                    s.file('delete',e.dir+e.filename+'.'+e.ext)
                 }
             })
         break;
@@ -192,59 +191,55 @@ s.event=function(x,e){
         break;
     }
 }
-s.ffmpeg=function(y,e,x){
+s.ffmpeg=function(e,x){
     if(!x){x={tmp:''}}
-    switch(y){
-    case'args':
 //            if(!e.details.cutoff||e.details.cutoff===''){x.cutoff=15}else{x.cutoff=parseFloat(e.details.cutoff)};if(isNaN(x.cutoff)===true){x.cutoff=15}
 //            x.segment=' -f segment -strftime 1 -segment_time '+(60*x.cutoff)+' -segment_format '+e.ext
-            x.time=' -vf drawtext=fontfile=/usr/share/fonts/truetype/freefont/FreeSans.ttf:text=\'%{localtime}\':x=(w-tw)/2:y=0:fontcolor=white:box=1:boxcolor=0x00000000@1:fontsize=10';
-        switch(e.ext){
-            case'mp4':
-                x.vcodec='libx265';x.acodec='libfaac';
-                if(e.details.vcodec&&e.details.vcodec!==''){x.vcodec=e.details.vcodec}
-                if(e.details.acodec&&e.details.acodec!==''){x.acodec=e.details.acodec}
-            break;
-            case'webm':
-                x.acodec='libvorbis',x.vcodec='libvpx';
-            break;
-        }
-        if(e.fps&&e.fps!==''){e.framerate=' -r '+e.fps}else{e.framerate=''}
-        if(e.details.vf){x.vf=' -vf '+e.details.vf+'';}else{x.vf='';}
-        if(e.details.svf&&e.details.svf!==''){x.svf=' -vf '+e.details.svf;}else{x.svf='';}
-//        if(e.details.svf){'-vf "rotate=45*(PI/180)'}
-        switch(e.type){
-            case'socket':case'jpeg':case'pipe':
-                x.tmp='-loglevel quiet -pattern_type glob -f image2pipe -vcodec mjpeg -i -'+x.time+' -vcodec '+x.vcodec+e.framerate+' -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext;
-            break;
-            case'mjpeg':
-                if(e.mode=='record'){
-                    x.watch=x.time+' -vcodec '+x.vcodec+e.framerate+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext+''
-                }else{
-                    x.watch='';
-                };
-                x.tmp='-loglevel quiet -reconnect 1 -f mjpeg -i '+e.url+''+x.watch+' -f image2pipe'+x.svf+' -s '+e.ratio+' pipe:1';
-            break;
-            case'h264':
-                if(e.mode=='record'){
-                    x.watch=x.time+e.framerate+' -acodec '+x.acodec+' -movflags frag_keyframe+empty_moov -vcodec '+x.vcodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext
-                }else{
-                    x.watch='';
-                };
-                x.tmp='-loglevel quiet -i '+e.url+' -stimeout 2000'+x.watch+' -f image2pipe'+x.svf+' -s '+e.ratio+' pipe:1';
-            break;
-            case'local':
-                if(e.mode=='record'){
-                    x.watch=x.time+e.framerate+' -acodec '+x.acodec+' -movflags frag_keyframe+empty_moov -vcodec '+x.vcodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext
-                }else{
-                    x.watch='';
-                };
-                x.tmp='-loglevel warning -i '+e.path+''+x.watch+' -f image2pipe'+x.svf+' -s '+e.ratio+' pipe:1';
-            break;
-        }
-        return spawn('ffmpeg',x.tmp.split(' '));
-    break;
+        if(!e.details.timestamp||e.details.timestamp==1){x.time=' -vf drawtext=fontfile=/usr/share/fonts/truetype/freefont/FreeSans.ttf:text=\'%{localtime}\':x=(w-tw)/2:y=0:fontcolor=white:box=1:boxcolor=0x00000000@1:fontsize=10';}else{x.time=''}
+    switch(e.ext){
+        case'mp4':
+            x.vcodec='libx265';x.acodec='libfaac';
+            if(e.details.vcodec&&e.details.vcodec!==''){x.vcodec=e.details.vcodec}
+            if(e.details.acodec&&e.details.acodec!==''){x.acodec=e.details.acodec}
+        break;
+        case'webm':
+            x.acodec='libvorbis',x.vcodec='libvpx';
+        break;
     }
+    if(e.fps&&e.fps!==''){e.framerate=' -r '+e.fps}else{e.framerate=''}
+    if(e.details.vf){x.vf=' -vf '+e.details.vf+'';}else{x.vf='';}
+    if(e.details.svf&&e.details.svf!==''){x.svf=' -vf '+e.details.svf;}else{x.svf='';}
+//        if(e.details.svf){'-vf "rotate=45*(PI/180)'}
+    switch(e.type){
+        case'socket':case'jpeg':case'pipe':
+            x.tmp='-loglevel quiet -pattern_type glob -f image2pipe -vcodec mjpeg -i -'+x.time+' -vcodec '+x.vcodec+e.framerate+' -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext;
+        break;
+        case'mjpeg':
+            if(e.mode=='record'){
+                x.watch=x.time+' -vcodec '+x.vcodec+e.framerate+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext+''
+            }else{
+                x.watch='';
+            };
+            x.tmp='-loglevel quiet -reconnect 1 -f mjpeg -i '+e.url+''+x.watch+' -f image2pipe'+x.svf+' -s '+e.ratio+' pipe:1';
+        break;
+        case'h264':
+            if(e.mode=='record'){
+                x.watch=x.time+e.framerate+' -acodec '+x.acodec+' -movflags frag_keyframe+empty_moov -vcodec '+x.vcodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext
+            }else{
+                x.watch='';
+            };
+            x.tmp='-loglevel quiet -i '+e.url+' -stimeout 2000'+x.watch+' -f image2pipe'+x.svf+' -s '+e.ratio+' pipe:1';
+        break;
+        case'local':
+            if(e.mode=='record'){
+                x.watch=x.time+e.framerate+' -acodec '+x.acodec+' -movflags frag_keyframe+empty_moov -vcodec '+x.vcodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext
+            }else{
+                x.watch='';
+            };
+            x.tmp='-loglevel warning -i '+e.path+''+x.watch+' -f image2pipe'+x.svf+' -s '+e.ratio+' pipe:1';
+        break;
+    }
+    return spawn('ffmpeg',x.tmp.split(' '));
 }
 s.file=function(x,e){
     if(!e){e={}};
@@ -339,6 +334,7 @@ s.camera=function(x,e,cn,tx){
             s.kill(s.users[e.ke].mon[e.id].spawn,e);
             clearInterval(s.users[e.ke].mon[e.id].running);
             s.users[e.ke].mon[e.id].started=0;
+            if(s.users[e.ke].mon[e.mid].record){s.users[e.ke].mon[e.mid].record.yes=0}
             s.tx({f:'monitor_stopping',id:e.id,ke:e.ke,time:s.moment(),reason:e.reason},'GRP_'+e.ke);
             if(e.delete===1){
                 s.users[e.ke].mon[e.id].delete=setTimeout(function(){delete(s.users[e.ke].mon[e.id]);},60000*60);
@@ -361,14 +357,18 @@ s.camera=function(x,e,cn,tx){
                 if (!fs.existsSync(e.dir)){
                     fs.mkdirSync(e.dir);
                 }
+            }else{
+                s.users[e.ke].mon[e.mid].record.yes=0;
             }
             s.tx({f:'monitor_starting',id:e.id,time:s.moment()},'GRP_'+e.ke);
             e.error_count=0;
-                e.set=function(x){
+                e.set=function(y){
                     clearInterval(s.users[e.ke].mon[e.id].running);
+                    if(x==='record'){
                     s.users[e.ke].mon[e.id].running=setInterval(function(){//start loop
-                        e.fn(x)
+                        e.fn(y)
                     },e.details.cutoff);
+                    }
                 }
                 e.init_event=function(k){
                     s.kill(s.users[e.ke].mon[e.id].spawn,e);
@@ -407,7 +407,7 @@ s.camera=function(x,e,cn,tx){
                                 }
                                 e.frames=0;
                                 if(!s.users[e.ke].mon[e.id].record){s.users[e.ke].mon[e.id].record={yes:1}};
-                                if(x==='record'||e.type==='mjpeg'||e.type==='h264'||e.type==='local'){s.users[e.ke].mon[e.id].spawn = s.ffmpeg('args',e);}
+                                if(x==='record'||e.type==='mjpeg'||e.type==='h264'||e.type==='local'){s.users[e.ke].mon[e.id].spawn = s.ffmpeg(e);}
                                 switch(e.type){
                                     case'jpeg':
                                         e.captureOne=function(f){
@@ -678,11 +678,7 @@ s.tx({f:'monitor_watch_on',viewers:Object.keys(s.users[d.ke].mon[d.id].watch).le
                 case'event':
                     switch(d.ff){
                         case'delete':
-                        if (d.status&&fs.existsSync(s.dir.events+d.ke+'/'+d.mid+'/'+d.filename)){
                             s.event('delete',d)
-                        }else{
-                            tx({f:'event_not_exist',query:d});
-                        }
                         break;
                     }
                 break;
@@ -932,13 +928,12 @@ sql.query('SELECT * FROM Monitors WHERE mode != "stop"', function(err,r) {
 },1500)
 
 try{
-    //cpu load indicator
-    s.com = spawn('dstat', ['-c', '--nocolor']);
-    s.com.stdout.on('data', function(data,txt){
-        txt = new Buffer(data).toString('utf8', 0, data.length);
-        io.emit('f',{f:'cpu',data:100 - parseInt(txt.split('  ')[2])});
-    });
-}catch(err){console.log('No dstat, CPU indicator will not work. Continuing...')}
+    setInterval(function(){
+        os.cpuUsage(function(cpu){
+            io.emit('f',{f:'cpu',data:cpu});
+        });
+    },2000);
+}catch(err){console.log('CPU indicator will not work. Continuing...')}
 //check disk space every 20 minutes
 s.disk=function(x){
     df(function (er,d) {

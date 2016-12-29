@@ -2,7 +2,6 @@
 echo "Shinobi - Get dependencies"
 #apt-get install ffmpeg
 apt-get install libav-tools nodejs npm mysql-server -y
-apt-get install dstat -y
 echo "Shinobi - Linking node to nodejs"
 ln -s /usr/bin/nodejs /usr/bin/node
 

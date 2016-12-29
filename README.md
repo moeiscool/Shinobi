@@ -53,8 +53,12 @@ Shinobi can record IP Cameras and Local Cameras.
 - Server-side Tested on:
     - Macbook (some old white one)
         - Ubuntu 16.04 (should work on any linux)
+        
     - Macbook (2013, i5, 16GB RAM)
         - Mac OS Sierra
+
+    -Odroid XU4 (Samsung Exynos5 Octa ARM, 2GB RAM)
+        - Ubuntu 16.04
         
 - If you have successfully run Shinobi on a system not listed (client or server). Please send me a PM so I can add it to the list.
 

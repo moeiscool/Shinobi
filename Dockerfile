@@ -1,7 +1,7 @@
 FROM ubuntu:xenial
 RUN apt-get update \
     && apt-get upgrade -y \
-    && apt-get install -y ffmpeg nodejs npm dstat 
+    && apt-get install -y ffmpeg nodejs npm
 RUN ln -s /usr/bin/nodejs /usr/bin/node && mkdir /opt/shinobi
 WORKDIR /opt/shinobi
 ADD . .
