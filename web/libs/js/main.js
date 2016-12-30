@@ -52,7 +52,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 if(!d.filename){d.filename=moment(d.time).format('YYYY-MM-DDTHH-mm-ss')+'.'+d.ext;}
                 k=[d.mid+'-'+d.filename,'href="/events/'+d.ke+'/'+d.mid+'/'+d.filename+'"'];
                 d.mom=moment(d.time),d.hr=parseInt(d.mom.format('HH'))+1,d.per=parseInt(d.hr/24*100);
-                tmp+='<li mid="'+d.mid+'" ke="'+d.ke+'" file="'+d.filename+'"><div title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'" '+k[1]+' event="launch" class="progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div><div><span title="'+d.end+'" class="livestamp"></span></div><div class="small"><b>Start</b> : '+d.time+'</div><div class="small"><b>End</b> : '+d.end+'</div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls"><a class="btn btn-sm btn-success" event="launch" '+k[1]+'><i class="fa fa-play-circle"></i></a> <a download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a> <a event="download" host="dropbox" download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a> <a title="Delete Event" event="delete" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></a></div></div></li>';
+                tmp+='<li mid="'+d.mid+'" ke="'+d.ke+'" file="'+d.filename+'"><div title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'" '+k[1]+' event="launch" class="progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div><div><span title="'+d.end+'" class="livestamp"></span></div><div class="small"><b>Start</b> : '+d.time+'</div><div class="small"><b>End</b> : '+d.end+'</div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls"><a class="btn btn-sm btn-primary" event="launch" '+k[1]+'><i class="fa fa-play-circle"></i></a> <a download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a> <a event="download" host="dropbox" download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a> <a title="Delete Event" event="delete" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></a></div></div></li>';
             break;
             case 1://monitor
                 d.src=placeholder.getData(placeholder.plcimg({bgcolor:'#b57d00',text:'...'}));
@@ -175,7 +175,7 @@ $.ccio.ws.on('f',function (d){
             $.ccio.pm(0,d)
         break;
         case'event_delete':
-            if($('.modal[mid="'+d.mid+'"]').length>0){$('.modal[mid="'+d.mid+'"]').modal('hide')}
+            if($('.modal[mid="'+d.mid+'"]').length>0){$('.modal[mid="'+d.mid+'"]').attr('file',null).attr('ke',null).attr('mid',null).modal('hide')}
             $('[file="'+d.filename+'"][mid="'+d.mid+'"][ke="'+d.ke+'"]').remove();
         break;
         case'event_build_success':
@@ -367,7 +367,7 @@ $('body')
             e.f=e.e.find('.modal-footer');
             e.f.find('.download_link').attr('href',e.href).attr('download',e.file);
             e.f.find('[monitor="download"][host="dropbox"]').attr('href',e.href);
-            e.e.modal('show');
+            e.e.modal('show').attr('ke',e.ke).attr('mid',e.mid).attr('file',e.file);
         break;
         case'delete':
             e.m=$('#confirm_window').modal('show');
@@ -376,9 +376,8 @@ $('body')
             e.html+='<video class="event_video" autoplay loop controls><source src="'+e.p.find('[download]').attr('href')+'" type="video/'+e.mon.ext+'"></video>';
             $.confirm.body.html(e.html)
             $.confirm.click({title:'Delete Event',class:'btn-danger'},function(){
-                $.ccio.cx({f:'event',ff:'delete',status:1,filename:e.file,ke:e.ke,mid:e.mid});
-                if($('.modal[mid="'+e.mid+'"]').length>0){$('.modal[mid="'+e.mid+'"]').modal('hide')}
-                $('[file="'+e.file+'"][mid="'+e.mid+'"][ke="'+e.ke+'"]').remove();
+                e.file=e.file.split('.')
+                $.ccio.cx({f:'event',ff:'delete',status:1,filename:e.file[0],ext:e.file[1],ke:e.ke,mid:e.mid});
             });
         break;
         case'download':
@@ -423,7 +422,7 @@ $('body')
         eventLimit: true,
         events:e.ar,
         eventClick:function(f){
-            $('#temp').empty().append('<div mid="'+f.mid+'" ke="'+f.ke+'" file="'+f.filename+'"><div event="launch" href="'+f.href+'"></div></div>').find('[event="launch"]').click();
+            $('#temp').html('<div mid="'+f.mid+'" ke="'+f.ke+'" file="'+f.filename+'"><div event="launch" href="'+f.href+'"></div></div>').find('[event="launch"]').click();
             $(this).css('border-color', 'red');
         }
     });

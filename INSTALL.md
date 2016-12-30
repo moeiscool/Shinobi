@@ -1,10 +1,10 @@
-*For a Test deployment enviroment I suggest grabbing an old MacBook (what I did) and installing Node.JS on there. Open up Terminal to get started.*
+Find videos about Shinobi on YouTube : https://www.youtube.com/user/MrMoea92
 
-# VirtualBox
+# Windows, Linux, Mac OS : VirtualBox
 
 - You know what to do with this if you know what VirtualBox is.
     - Shinobi-12-24-2016.ova
-    https://mega.nz/#!Xxo2BRZY!K5bIpRKlEusVJnR2tpBGX_EX_rmt9Uk48qRBXAM1nJk
+    https://mega.nz/#!rkZQHQBT!9gTBRwUU5UGpOvtBUAMUUVAJhEaW5zrDMs8MgaN1JNo
         - `Username : shinobi`
         - `Password : night`
 
@@ -31,7 +31,7 @@
     ifconfig
     ```
 
-# The Easier Way
+# Ubuntu 16.04 : The Easier Way
 
 <b>VIDEO TUTORIAL :</b> https://www.youtube.com/watch?v=CZSKV5gRd90
 
@@ -96,7 +96,7 @@
     ```
 
 
-# The Harder Way
+# Ubuntu 16.04 : The Harder Way
 
 <b>VIDEO TUTORIAL :</b> https://www.youtube.com/watch?v=jfgUNfVEEEc
 

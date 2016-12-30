@@ -10,6 +10,7 @@
     <nav id="cd-main-nav">
         <ul>
             <li mid="" ke=""><a monitor="edit"><i class="fa fa-plus"></i> &nbsp; Add Camera</a></li>
+            <li><a data-toggle="modal" data-target="#settings"><i class="fa fa-gears"></i> &nbsp; Settings</a></li>
             <li><a class_toggle="list-blocks" data-target="#side_menu"><i class="fa fa-camera"></i> &nbsp; Monitor List <small>Toggle</small></a></li>
             <li><a class_toggle="nav-xs" data-target="#side_menu_right"><i class="fa fa-film"></i> &nbsp; Event Pane <small>Toggle</small></a></li>
             <li><a class_toggle="nav-xs" data-target="#side_menu"><i class="fa fa-bars"></i> &nbsp; Monitor Pane <small>Toggle</small></a></li>
@@ -119,7 +120,7 @@
         <input type="hidden" name="details">
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
         <button type="submit" class="btn btn-success">Save changes</button>
       </div>
     </form>
@@ -154,7 +155,8 @@
       </div>
       <div class="modal-body text-center"></div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+        <a class="btn btn-danger pull-left" event="delete" data-dismiss="modal">Delete</a>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         <a class="btn btn-primary download_link"><i class="fa fa-download"></i> &nbsp; Save</a>
         <a class="btn btn-primary" monitor="download" host="dropbox"><i class="fa fa-dropbox"></i> &nbsp; Dropbox</a>
       </div>
@@ -314,7 +316,7 @@
       </div>
       <div class="modal-footer">
         <a class="btn btn-danger pull-left" monitor="delete" data-dismiss="modal">Delete</a>
-        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
         <button type="submit" class="btn btn-success">Save changes</button>
       </div>
     </form>
@@ -332,7 +334,7 @@
       </div>
       <div class="modal-body"></div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
         <button type="button" class="btn btn-success confirmaction">Save changes</button>
       </div>
     </div>

@@ -1,7 +1,7 @@
 # Shinobi
 
 <center>
-<a href="https://gitter.im/Shinobi-CCTV/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link">Gitter</a> - <a href="https://twitter.com/ShinobiCCTV">Twitter</a> - <a href="https://www.facebook.com/Shinobi-1223193167773738/?ref=bookmarks">Facebook</a> - <a href="https://www.reddit.com/r/ShinobiCCTV/">Reddit</a> - <a href="https://www.bountysource.com/teams/shinobi">Bountysource</a> - <a href="https://pledgie.com/campaigns/33051">Pledgie</a> - <a href="https://www.gofundme.com/help-me-fund-my-program">GoFundMe</a>
+<a href="http://shinobicctv.freeforums.net/">Forum</a> - <a href="https://www.youtube.com/user/MrMoea92">YouTube</a> - <a href="https://gitter.im/Shinobi-CCTV/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link">Gitter</a> - <a href="https://twitter.com/ShinobiCCTV">Twitter</a> - <a href="https://www.facebook.com/Shinobi-1223193167773738/?ref=bookmarks">Facebook</a> - <a href="https://www.reddit.com/r/ShinobiCCTV/">Reddit</a> - <a href="https://www.bountysource.com/teams/shinobi">Bountysource</a> - <a href="https://pledgie.com/campaigns/33051">Pledgie</a> - <a href="https://www.gofundme.com/help-me-fund-my-program">GoFundMe</a>
 </center>
 
 Shinobi is an Open Source CCTV software written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. <s>Currently it is being crafted for IP Cameras, not local</s>.
@@ -57,7 +57,7 @@ Shinobi can record IP Cameras and Local Cameras.
     - Macbook (2013, i5, 16GB RAM)
         - Mac OS Sierra
 
-    -Odroid XU4 (Samsung Exynos5 Octa ARM, 2GB RAM)
+    - Odroid XU4 (Samsung Exynos5 Octa ARM, 2GB RAM)
         - Ubuntu 16.04
         
 - If you have successfully run Shinobi on a system not listed (client or server). Please send me a PM so I can add it to the list.
