@@ -252,7 +252,7 @@
           </div>
           <div class="form-group h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
             <label><span>Host</span>
-            <input class="form-control" name="host" placeholder="111.111.111.111">
+            <input class="form-control" name="host" placeholder="">
             </label>
           </div>
           <div class="form-group h_t_input h_t_h264 h_t_jpeg h_t_mjpeg h_t_local">
@@ -307,6 +307,74 @@
             <label><span>Recording Segment Interval <small>in minutes</small></span>
             <input class="form-control" detail="cutoff" placeholder="15">
             </label>
+          </div>
+          <div class="form-group">
+            <label><span>Controllable</span>
+                <select class="form-control" detail="control">
+                    <option value="0">No</option>  
+                    <option value="1">Yes</option>  
+                </select>
+            </label>
+          </div>
+          <div class="h_c_input h_c_1">
+              <div class="form-group">
+                <label><span>Control <small>Camera Need a Stop URL?</small></span>
+                    <select class="form-control" detail="control_stop">
+                        <option value="0">No</option>  
+                        <option value="1">Yes</option>
+                    </select>
+                </label>
+              </div>
+              <div class="form-group h_cs_input h_cs_1">
+                <label><span>Control URL Stop Timeout <small>Run stop URL after X milliseconds</small></span>
+                <input class="form-control" detail="control_url_stop_timeout" placeholder="1000">
+                </label>
+              </div>
+              <div class="form-group h_c_input h_c_1">
+                <label><span>Control Center <small>URL Address</small></span>
+                <input class="form-control" detail="control_url_center" placeholder="">
+                </label>
+              </div>
+              <div class="form-group h_c_input h_c_1">
+                <label><span>Control Left <small>URL Address</small></span>
+                <input class="form-control" detail="control_url_left" placeholder="">
+                </label>
+              </div>
+              <div class="form-group h_cs_input h_cs_1">
+                <label><span>Control Left Stop <small>URL Address</small></span>
+                <input class="form-control" detail="control_url_left_stop" placeholder="">
+                </label>
+              </div>
+              <div class="form-group h_c_input h_c_1">
+                <label><span>Control Right <small>URL Address</small></span>
+                <input class="form-control" detail="control_url_right" placeholder="">
+                </label>
+              </div>
+              <div class="form-group h_cs_input h_cs_1">
+                <label><span>Control Right Stop <small>URL Address</small></span>
+                <input class="form-control" detail="control_url_right_stop" placeholder="">
+                </label>
+              </div>
+              <div class="form-group h_c_input h_c_1">
+                <label><span>Control Up <small>URL Address</small></span>
+                <input class="form-control" detail="control_url_up" placeholder="">
+                </label>
+              </div>
+              <div class="form-group h_cs_input h_cs_1">
+                <label><span>Control Up Stop <small>URL Address</small></span>
+                <input class="form-control" detail="control_url_up_stop" placeholder="">
+                </label>
+              </div>
+              <div class="form-group h_c_input h_c_1">
+                <label><span>Control Down <small>URL Address</small></span>
+                <input class="form-control" detail="control_url_down" placeholder="">
+                </label>
+              </div>
+              <div class="form-group h_cs_input h_cs_1">
+                <label><span>Control Down Stop <small>URL Address</small></span>
+                <input class="form-control" detail="control_url_down_stop" placeholder="">
+                </label>
+              </div>
           </div>
           <div class="form-group" style="display:none">
             <input class="form-control" name="details" value="{}">

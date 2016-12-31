@@ -19,6 +19,7 @@ img{max-width:100%}
 .monitor_item img,.monitor_item iframe{width:100%;height:300px;border:0;}
 .monitor_item{position:relative;padding:0;}
 .monitor_item.selected img{height:600px}
+.monitor_item.selected .fa-expand:before{content:"\f066"}
 .monitor_item .hud{width:100%;height:100%;opacity:0.1;transition:0.2s}
 .monitor_item.col-md-4 .hud .side-menu{display:none}
 .monitor_item.col-md-8 .hud .side-menu{opacity:0.1}
@@ -28,7 +29,6 @@ img{max-width:100%}
 .monitor_item .hud .bottom_bar{bottom:0;left:0;right:0;margin:auto;width:100%;padding:15px;background:rgba(0,0,0,0.8);color:#fff}
 .monitor_item .hud .top_bar{top:0;left:0;right:0;margin:auto;width:100%;padding:15px;}
 .super-center{position:absolute;left:0;top:0;right:0;bottom:0;margin:auto;}
-
 .side-menu ul{list-style:none;margin:0;padding:0;}
 .side-menu li{
     border-bottom:1px solid #54502d;padding:10px;
@@ -178,6 +178,74 @@ ul.msg_list li .message {
 }
 .nav>li>a{color:#fff}
 .nav>li>a:focus, .nav>li>a:hover,.nav .open>a, .nav .open>a:focus, .nav .open>a:hover{background:#867560}
+
+
+
+/*Control Pad*/
+.pad {
+  position: absolute;
+  height: 120px;
+  width: 120px;
+  left: 10px;
+  top: 10px;
+  margin:0;
+  background: #b7b7b7;
+  border-radius: 50%;
+  box-shadow: inset 0 0 1px rgba(120, 120, 120, 0.6), inset 0 2px 2px rgba(0, 0, 0, 0.1), 0 2px 2px rgba(240, 240, 240, 0.4);
+}
+.pad .control {
+  position: absolute;
+  height: 30px;
+  width: 30px;
+  background: #636363;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.6), 0 0 0 3px rgba(60, 60, 60, 0.2), 0 0 0 4px rgba(60, 60, 60, 0.2);
+  border-radius: 2px;
+}
+.pad .top {
+  top: 15px;
+  left: 50%;
+  margin: 0 0 0 -15px;
+}
+.pad .left {
+  top: 45px;
+  left: 15px;
+}
+.pad .right {
+  top: 45px;
+  right: 15px;
+}
+.pad .control.right:before {
+  transform: rotate(90deg) translate(-3px, -5px);
+}
+.pad .bottom {
+  bottom: 15px;
+  left: 50%;
+  margin: 0 0 0 -15px;
+}
+/* Overlap the other controls to hide box-shadow */
+.pad .middle {
+  height: 34px;
+  width: 34px;
+  z-index: 5;
+  top: 43px;
+  left: 50%;
+  margin: 0 0 0 -17px;
+  box-shadow: none;
+  border-radius: 3px;
+}
+.pad .middle:after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -35% 0 0 -35%;
+  content: '';
+  background: #636363;
+  height: 70%;
+  width: 70%;
+  border-radius: 100%;
+  box-shadow: inset 0 0 2px rgba(120, 120, 120, 0.6), inset 0 2px 8px rgba(0, 0, 0, 0.1), 0 2px 2px rgba(240, 240, 240, 0.2);
+}
+
 /*cool corner menu thing*/
 #cd-nav ul {
   /* mobile first */

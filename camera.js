@@ -139,6 +139,10 @@ s.init=function(x,e){
             if(e.port==80){e.porty=''}else{e.porty=':'+e.port}
             e.url=e.protocol+'://'+e.host+e.porty+e.path;return e.url;
         break;
+        case'url_no_path':
+            if(e.port==80){e.porty=''}else{e.porty=':'+e.port}
+            e.url=e.protocol+'://'+e.host+e.porty;return e.url;
+        break;
     }
     if(typeof e.callback==='function'){setTimeout(function(){e.callback()},500);}
 }
@@ -152,7 +156,7 @@ s.event=function(x,e){
             e.save=[e.id,e.ke,s.nameToTime(e.filename),e.status];
             sql.query('DELETE FROM Videos WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save,function(err,r){
                 if(r&&r.affectedRows>0){
-                    s.tx({f:'event_delete',filename:e.filename+'.'+e.ext,mid:e.mid,ke:e.ke,time:s.nameToTime(e.filename),end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
+                    s.tx({f:'event_delete',filename:e.filename+'.'+e.ext,mid:e.mid,ke:e.ke,time:s.nameToTime(e.filename),end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
                     s.file('delete',e.dir+e.filename+'.'+e.ext)
                 }
             })
@@ -161,7 +165,7 @@ s.event=function(x,e){
             e.save=[e.id,e.ke,s.nameToTime(e.filename),e.ext];
             if(!e.status){e.save.push(0)}else{e.save.push(e.status)}
             sql.query('INSERT INTO Videos (mid,ke,time,ext,status) VALUES (?,?,?,?,?)',e.save)
-            s.tx({f:'event_build_start',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
+            s.tx({f:'event_build_start',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
         break;
         case'close':
             e.dir=s.dir.events+e.ke+'/'+e.id+'/';
@@ -176,7 +180,7 @@ s.event=function(x,e){
                             e.save=[e.filesize,e.frames,1,e.id,e.ke,s.nameToTime(e.filename)];
                             if(!e.status){e.save.push(0)}else{e.save.push(e.status)}
                             sql.query('UPDATE Videos SET `size`=?,`frames`=?,`status`=? WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save)
-         s.tx({f:'event_build_success',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),size:e.filesize,end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
+         s.tx({f:'event_build_success',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),size:e.filesize,end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
                         }else{
                             s.event('delete',e);
                         }
@@ -207,16 +211,20 @@ s.ffmpeg=function(e,x){
         break;
     }
     if(e.fps&&e.fps!==''){e.framerate=' -r '+e.fps}else{e.framerate=''}
-    if(e.details.vf){x.vf=' -vf '+e.details.vf+'';}else{x.vf='';}
+    if(e.details.vf&&e.details.vf!==''){
+        if(x.time===''){x.vf=' -vf '}else{x.vf=','}
+        x.vf+=e.details.vf;
+        x.time+=x.vf;
+    }
     if(e.details.svf&&e.details.svf!==''){x.svf=' -vf '+e.details.svf;}else{x.svf='';}
 //        if(e.details.svf){'-vf "rotate=45*(PI/180)'}
     switch(e.type){
         case'socket':case'jpeg':case'pipe':
-            x.tmp='-loglevel quiet -pattern_type glob -f image2pipe -vcodec mjpeg -i -'+x.time+' -vcodec '+x.vcodec+e.framerate+' -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext;
+            x.tmp='-loglevel quiet -pattern_type glob -f image2pipe -vcodec mjpeg -i -'+x.time+' -vcodec '+x.vcodec+e.framerate+' -use_wallclock_as_timestamps 1 -q:v 1 '+e.dir+e.filename+'.'+e.ext;
         break;
         case'mjpeg':
             if(e.mode=='record'){
-                x.watch=x.time+' -vcodec '+x.vcodec+e.framerate+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext+''
+                x.watch=x.time+' -vcodec '+x.vcodec+e.framerate+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1 '+e.dir+e.filename+'.'+e.ext+''
             }else{
                 x.watch='';
             };
@@ -224,7 +232,7 @@ s.ffmpeg=function(e,x){
         break;
         case'h264':
             if(e.mode=='record'){
-                x.watch=x.time+e.framerate+' -acodec '+x.acodec+' -movflags frag_keyframe+empty_moov -vcodec '+x.vcodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext
+                x.watch=x.time+e.framerate+' -acodec '+x.acodec+' -movflags frag_keyframe+empty_moov -vcodec '+x.vcodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1 '+e.dir+e.filename+'.'+e.ext
             }else{
                 x.watch='';
             };
@@ -232,7 +240,7 @@ s.ffmpeg=function(e,x){
         break;
         case'local':
             if(e.mode=='record'){
-                x.watch=x.time+e.framerate+' -acodec '+x.acodec+' -movflags frag_keyframe+empty_moov -vcodec '+x.vcodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext
+                x.watch=x.time+e.framerate+' -acodec '+x.acodec+' -movflags frag_keyframe+empty_moov -vcodec '+x.vcodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1 '+e.dir+e.filename+'.'+e.ext
             }else{
                 x.watch='';
             };
@@ -342,6 +350,8 @@ s.camera=function(x,e,cn,tx){
         break;
         case'start':case'record'://watch or record monitor url
             s.init(0,{ke:e.ke,mid:e.id})
+            if(!s.users[e.ke].mon_conf){s.users[e.ke].mon_conf={}}
+            if(!s.users[e.ke].mon_conf[e.id]){s.users[e.ke].mon_conf[e.id]=s.init('clean',e);}
             e.url=s.init('url',e);
             if(s.users[e.ke].mon[e.id].started===1){return}
             if(!e.details.cutoff||e.details.cutoff===''){e.details.cutoff=60000*15;}else{e.details.cutoff=parseFloat(e.details.cutoff)*60000}//every 15 minutes start a new file.
@@ -588,6 +598,25 @@ var tx;
                 break;
                 case'monitor':
                     switch(d.ff){
+                        case'control':
+                            if(!s.users[d.ke]||!s.users[d.ke].mon[d.mid]){return}
+                            d.m=s.users[d.ke].mon_conf[d.mid];
+                            if(!d.m.control=="1"){s.log(d,{type:'Control Error',msg:'Control is not enabled'});return}
+                            d.base=s.init('url_no_path',d.m);
+                           if(!d.m.details.control_url_stop_timeout||d.m.details.control_url_stop_timeout===''){d.m.details.control_url_stop_timeout=1000} request({url:d.base+d.m.details['control_url_'+d.direction],method:'GET'},function(err,data){
+                                if(err){s.log(d,{type:'Control Error',msg:err});return false}
+                                if(d.m.details.control_stop=='1'&&d.direction!=='center'){
+                                   setTimeout(function(){
+                                       request({url:d.base+d.m.details['control_url_'+d.direction+'_stop'],method:'GET'},function(er,dat){
+                                           if(err){s.log(d,{type:'Control Error',msg:err});return false}
+                                           s.tx({f:'control',ok:data,mid:d.mid,ke:d.ke,direction:d.direction,url_stop:true});
+                                    })
+                                   },d.m.details.control_url_stop_timeout) 
+                                }else{
+                                    s.tx({f:'control',ok:data,mid:d.mid,ke:d.ke,direction:d.direction,url_stop:false});
+                                }
+                            });
+                        break;
                         case'delete':
                             if(!d.ke){d.ke=cn.ke};
                             if(d.mid){
@@ -627,6 +656,7 @@ var tx;
                                         s.log(d,{type:'Monitor Added',msg:'by user : '+cn.uid});
                                         sql.query('INSERT INTO Monitors ('+d.set+') VALUES ('+d.st+')',d.ar)
                                     }
+                                    s.users[d.mon.ke].mon_conf[d.mon.mid]=d.mon;
                                     if(d.mon.mode==='stop'){
                                         d.mon.delete=1;
                                         s.camera('stop',d.mon);
@@ -746,7 +776,7 @@ s.tx({f:'monitor_watch_on',viewers:Object.keys(s.users[d.ke].mon[d.id].watch).le
                             if (err) {
                                 return console.error('created_file'+d.d.mid,err);
                             }
-                           tx({f:'delete_file',file:d.filename,ke:d.d.ke,mid:d.d.mid}); s.tx({f:'event_build_success',filename:s.users[d.d.ke].mon[d.d.mid].open+'.'+s.users[d.d.ke].mon[d.d.mid].open_ext,mid:d.d.mid,ke:d.d.ke,time:s.nameToTime(s.users[d.d.ke].mon[d.d.mid].open),end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+d.d.ke);
+                           tx({f:'delete_file',file:d.filename,ke:d.d.ke,mid:d.d.mid}); s.tx({f:'event_build_success',filename:s.users[d.d.ke].mon[d.d.mid].open+'.'+s.users[d.d.ke].mon[d.d.mid].open_ext,mid:d.d.mid,ke:d.d.ke,time:s.nameToTime(s.users[d.d.ke].mon[d.d.mid].open),end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+d.d.ke);
                         });
                     break;
                 }
