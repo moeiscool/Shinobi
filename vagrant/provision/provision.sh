@@ -138,30 +138,30 @@ network_check() {
 }
 
 noroot() {
-  sudo -EH -u "vagrant" "$@";
+  sudo -EH -u "ubuntu" "$@";
 }
 
 profile_setup() {
-  # Copy custom dotfiles and bin file for the vagrant user from local
-  cp "/srv/config/bash_profile" "/home/vagrant/.bash_profile"
-  cp "/srv/config/bash_aliases" "/home/vagrant/.bash_aliases"
-  cp "/srv/config/vimrc" "/home/vagrant/.vimrc"
+  # Copy custom dotfiles and bin file for the ubuntu user from local
+  cp "/srv/config/bash_profile" "/home/ubuntu/.bash_profile"
+  cp "/srv/config/bash_aliases" "/home/ubuntu/.bash_aliases"
+  cp "/srv/config/vimrc" "/home/ubuntu/.vimrc"
 
-  if [[ ! -d "/home/vagrant/bin" ]]; then
-    mkdir -p "/home/vagrant/bin"
+  if [[ ! -d "/home/ubuntu/bin" ]]; then
+    mkdir -p "/home/ubuntu/bin"
   fi
 
-  rsync -rvzh --delete "/srv/config/homebin/" "/home/vagrant/bin/"
+  rsync -rvzh --delete "/srv/config/homebin/" "/home/ubuntu/bin/"
 
-  echo " * Copied /srv/config/bash_profile                      to /home/vagrant/.bash_profile"
-  echo " * Copied /srv/config/bash_aliases                      to /home/vagrant/.bash_aliases"
-  echo " * Copied /srv/config/vimrc                             to /home/vagrant/.vimrc"
-  echo " * rsync'd /srv/config/homebin                          to /home/vagrant/bin"
+  echo " * Copied /srv/config/bash_profile                      to /home/ubuntu/.bash_profile"
+  echo " * Copied /srv/config/bash_aliases                      to /home/ubuntu/.bash_aliases"
+  echo " * Copied /srv/config/vimrc                             to /home/ubuntu/.vimrc"
+  echo " * rsync'd /srv/config/homebin                          to /home/ubuntu/bin"
 
   # If a bash_prompt file exists in the VVV config/ directory, copy to the VM.
   if [[ -f "/srv/config/bash_prompt" ]]; then
-    cp "/srv/config/bash_prompt" "/home/vagrant/.bash_prompt"
-    echo " * Copied /srv/config/bash_prompt to /home/vagrant/.bash_prompt"
+    cp "/srv/config/bash_prompt" "/home/ubuntu/.bash_prompt"
+    echo " * Copied /srv/config/bash_prompt to /home/ubuntu/.bash_prompt"
   fi
 }
 
@@ -407,10 +407,10 @@ mysql_setup() {
 
     # Copy mysql configuration from local
     cp "/srv/config/mysql-config/my.cnf" "/etc/mysql/my.cnf"
-    cp "/srv/config/mysql-config/root-my.cnf" "/home/vagrant/.my.cnf"
+    cp "/srv/config/mysql-config/root-my.cnf" "/home/ubuntu/.my.cnf"
 
     echo " * Copied /srv/config/mysql-config/my.cnf               to /etc/mysql/my.cnf"
-    echo " * Copied /srv/config/mysql-config/root-my.cnf          to /home/vagrant/.my.cnf"
+    echo " * Copied /srv/config/mysql-config/root-my.cnf          to /home/ubuntu/.my.cnf"
 
     # MySQL gives us an error if we restart a non running service, which
     # happens after a `vagrant halt`. Check to see if it's running before
@@ -457,10 +457,10 @@ mongo_setup() {
 
     # Copy mysql configuration from local
     #cp "/srv/config/mongo-config/my.cnf" "/etc/mysql/my.cnf"
-    #cp "/srv/config/mongo-config/root-my.cnf" "/home/vagrant/.my.cnf"
+    #cp "/srv/config/mongo-config/root-my.cnf" "/home/ubuntu/.my.cnf"
 
     #echo " * Copied /srv/config/mysql-config/my.cnf               to /etc/mysql/my.cnf"
-    #echo " * Copied /srv/config/mysql-config/root-my.cnf          to /home/vagrant/.my.cnf"
+    #echo " * Copied /srv/config/mysql-config/root-my.cnf          to /home/ubuntu/.my.cnf"
 
     # MySQL gives us an error if we restart a non running service, which
     # happens after a `vagrant halt`. Check to see if it's running before
@@ -553,7 +553,7 @@ services_restart() {
 
   # Add the vagrant user to the www-data group so that it has better access
   # to PHP and Nginx related files.
-  usermod -a -G www-data vagrant
+  usermod -a -G www-data ubuntu
 }
 
 memcached_admin() {
