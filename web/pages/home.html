@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="libs/css/pnotify.custom.min.css">
 <link rel="stylesheet" href="libs/css/vbox.css">
 <link rel="stylesheet" href="libs/css/circles.css">
 <link rel="stylesheet" href="libs/css/bootstrap.min.css">
@@ -52,6 +53,7 @@
                   </a>
                   <ul class="dropdown-menu dropdown-usermenu pull-right">
                     <li><a data-toggle="modal" data-target="#settings"><i class="fa fa-gears pull-right"></i> Settings</a></li>
+                    <li><a data-toggle="modal" data-target="#apis"><i class="fa fa-code pull-right"></i> API</a></li>
                     <li><a class="logout"><i class="fa fa-sign-out pull-right"></i> Log Out</a></li>
                   </ul>
                 </li>
@@ -101,6 +103,39 @@
     </section>
 </section>
 <div class="hidden" id="temp"></div>
+<!--API Window-->
+<div class="modal fade" id="apis" tabindex="-1" role="dialog" aria-labelledby="apisLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="apisLabel"><i class="fa fa-gears"></i> &nbsp; API Keys</h4>
+      </div>
+      <div class="modal-body">
+          <div class="text-center msg"></div>
+        <div class="form-group">
+            <label><span>Allowed IPs <small>Separate with commas, no spaces</small></span>
+                <div class="input-group">
+                    <input class="form-control" name="ip">
+                    <div class="input-group-btn">
+                        <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> &nbsp; Add</button>
+                    </div>
+                </div>
+            </label>
+        </div>
+        <div class="form-group">
+            <table class="table table-striped" id="api_list"></table>
+          </div>
+        <input type="hidden" name="details">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </form>
+  </div>
+</div>
 <!--Settings Window-->
 <div class="modal fade" id="settings" tabindex="-1" role="dialog" aria-labelledby="settingsLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
@@ -112,6 +147,22 @@
         <h4 class="modal-title" id="settingsLabel"><i class="fa fa-gears"></i> &nbsp; Settings</h4>
       </div>
       <div class="modal-body">
+          <div class="text-center msg"></div>
+        <div class="form-group">
+            <label><span>eMail</span>
+                <input class="form-control" type="email" name="mail">
+            </label>
+        </div>
+        <div class="form-group">
+            <label><span>Password <small>Leave blank to keep same password</small></span>
+                <input class="form-control" type="password" name="pass">
+            </label>
+        </div>
+        <div class="form-group">
+            <label><span>Password Again</span>
+                <input class="form-control" type="password" name="password_again">
+            </label>
+        </div>
         <div class="form-group">
             <label><span>Number of Days to keep Events</span>
                 <input class="form-control" detail="days">
@@ -174,6 +225,7 @@
         <h4 class="modal-title" id="add_monitorLabel"><i class="fa fa-plus"></i> &nbsp; <span>Add</span> Monitor</h4>
       </div>
       <div class="modal-body">
+          <div class="text-center msg"></div>
           <div class="form-group">
             <label><span>Mode</span>
                 <select class="form-control" name="mode">
@@ -220,6 +272,7 @@
                 <select class="form-control" name="ext">
                     <option value="webm">WebM (libvpx)</option>  
                     <option value="mp4">MP4 (copy, libx264, libx265)</option>  
+<!--                    <option value="mkv">MKV</option>  -->
                 </select>
             </label>
           </div>
@@ -413,6 +466,7 @@
 <!--Dropbox Library, Change data-app-key to your app key. -->
 <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="mwgh09b16myew4s"></script>
 <!--Dropbox End-->
+<script src="libs/js/pnotify.custom.min.js"></script>
 <script src="libs/js/moment.js"></script>
 <script src="libs/js/livestamp.min.js"></script>
 <script src="libs/js/placeholder.js"></script>

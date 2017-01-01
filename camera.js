@@ -346,7 +346,7 @@ s.camera=function(x,e,cn,tx){
             clearInterval(s.users[e.ke].mon[e.id].running);
             s.users[e.ke].mon[e.id].started=0;
             if(s.users[e.ke].mon[e.mid].record){s.users[e.ke].mon[e.mid].record.yes=0}
-            s.tx({f:'monitor_stopping',id:e.id,ke:e.ke,time:s.moment(),reason:e.reason},'GRP_'+e.ke);
+            s.tx({f:'monitor_stopping',mid:e.id,ke:e.ke,time:s.moment(),reason:e.reason},'GRP_'+e.ke);
             if(e.delete===1){
                 s.users[e.ke].mon[e.id].delete=setTimeout(function(){delete(s.users[e.ke].mon[e.id]);},60000*60);
             }
@@ -373,7 +373,7 @@ s.camera=function(x,e,cn,tx){
             }else{
                 s.users[e.ke].mon[e.mid].record.yes=0;
             }
-            s.tx({f:'monitor_starting',id:e.id,time:s.moment()},'GRP_'+e.ke);
+            s.tx({f:'monitor_starting',mode:x,mid:e.id,time:s.moment()},'GRP_'+e.ke);
             e.error_count=0;
                 e.set=function(y){
                     clearInterval(s.users[e.ke].mon[e.id].running);
@@ -462,6 +462,9 @@ s.camera=function(x,e,cn,tx){
                                                 e.chk=function(x){return d.indexOf(x)>-1;}
                                                 switch(true){
     //                                                case e.chk('av_interleaved_write_frame'):
+                                                    case e.chk('Connection timed out'):
+                                                        setTimeout(function(){e.fn();},1000)//restart
+                                                    break;
                                                     case e.chk('No pixel format specified'):
                                                         s.log(e,{type:"FFMPEG STDERR",msg:{ffmpeg:s.users[e.ke].mon[e.id].ffmpeg,msg:d}})
                                                     break;
@@ -560,8 +563,9 @@ var tx;
                         s.users[d.ke].mon={}
                         if(!s.users[d.ke].mon){s.users[d.ke].mon={}}
                     }
+                    sql.query('SELECT * FROM API WHERE ke=? && uid=?',[d.ke,d.uid],function(err,rrr) {
                     sql.query('SELECT * FROM Monitors WHERE ke=?',[d.ke],function(err,rr) {
-                        tx({f:'init_success',monitors:rr,users:s.users[d.ke].vid})
+                        tx({f:'init_success',monitors:rr,users:s.users[d.ke].vid,apis:rrr})
                         s.disk(cn.id);
                         setTimeout(function(){
                             if(rr&&rr[0]){
@@ -570,6 +574,7 @@ var tx;
                                 })
                             }
                         },2000)
+                    })
                     })
                 }else{
                     tx({ok:false,msg:'Not Authorized',token_used:d.auth,ke:d.ke});cn.disconnect();
@@ -594,16 +599,49 @@ var tx;
                         break;
                     }
                 break;
+                case'api':
+                    switch(d.ff){
+                        case'delete':
+                            d.set=[],d.ar=[];
+                            d.form.ke=cn.ke;d.form.uid=cn.uid;delete(d.form.ip);
+                            if(!d.form.code){tx({f:'form_incomplete',form:'APIs'});return}
+                            d.for=Object.keys(d.form);
+                            d.for.forEach(function(v){
+                                d.set.push(v+'=?'),d.ar.push(d.form[v]);
+                            });
+                            sql.query('DELETE FROM API WHERE '+d.set.join(' AND '),d.ar,function(err,r){
+                                if(!err){tx({f:'api_key_deleted',form:d.form});}else{console.log(err)}
+                            })
+                        break;
+                        case'add':
+                            d.set=[],d.qu=[],d.ar=[];
+                            d.form.ke=cn.ke,d.form.uid=cn.uid,d.form.code=s.gid(30),d.form.details='{}';
+                            d.for=Object.keys(d.form);
+                            d.for.forEach(function(v){
+                                d.set.push(v),d.qu.push('?'),d.ar.push(d.form[v]);
+                            });
+                            d.ar.push(cn.ke);
+                            sql.query('INSERT INTO API ('+d.set.join(',')+') VALUES ('+d.qu.join(',')+')',d.ar,function(err,r){
+                                d.form.time=s.moment(new Date,'YYYY-DD-MM HH:mm:ss');
+                                if(!err){tx({f:'api_key_added',form:d.form});}else{console.log(err)}
+                            });
+                        break;
+                    }
+                break;
                 case'settings':
                     switch(d.ff){
                         case'edit':
-                            d.set=[],d.ar=[],d.for=Object.keys(d.form);d.n=0;
+                            d.set=[],d.ar=[];
+                            if(d.form.pass&&d.form.pass!==''){d.form.pass=s.md5(d.form.pass);}else{delete(d.form.pass)};
+                            delete(d.form.password_again);
+                            d.for=Object.keys(d.form);
                             d.for.forEach(function(v){
-                                d.set.push(d.for[d.n]+'=?'),d.ar.push(d.form[d.for[d.n]]);++d.n;
+                                d.set.push(v+'=?'),d.ar.push(d.form[v]);
                             });
                             d.ar.push(d.ke),d.ar.push(d.uid);
-                            sql.query('UPDATE Users SET '+d.set.join(',')+' WHERE ke=? AND uid=?',d.ar);
-                            s.tx({f:'user_settings_change',uid:d.uid,ke:d.ke,form:e.s},'GRP_A_'+d.ke);
+                            sql.query('UPDATE Users SET '+d.set.join(',')+' WHERE ke=? AND uid=?',d.ar,function(err,r){
+                                tx({f:'user_settings_change',uid:d.uid,ke:d.ke,form:d.form});
+                            });
                         break;
                     }
                 break;
