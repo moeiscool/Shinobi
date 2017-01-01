@@ -4,3 +4,4 @@ frames
 web.old
 .DS_Store
 .vagrant
+conf.json

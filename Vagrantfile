@@ -411,7 +411,8 @@ Vagrant.configure("2") do |config|
   if vagrant_version >= "1.6.0"
     config.vm.provision :shell, inline: "sudo service mysql restart", run: "always"
     #config.vm.provision :shell, inline: "sudo service mongodb restart", run: "always"
-    config.vm.provision :shell, inline: "sudo service apache2 restart", run: "always"
+    #config.vm.provision :shell, inline: "sudo service apache2 restart", run: "always"
+    config.vm.provision :shell, inline: "pm2 start /home/shinobi/camera.js", run: "always"
   end
 
   # Vagrant Triggers

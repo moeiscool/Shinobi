@@ -539,7 +539,6 @@ services_restart() {
   #
   # Make sure the services we expect to be running are running.
   echo -e "\nRestart services..."
-  service apache2 restart
   #service memcached restart
   service mailcatcher restart
 
@@ -549,8 +548,9 @@ services_restart() {
   # Enable PHP mailcatcher sendmail settings by default
   phpenmod mailcatcher
 
-  service apache2 restart
-
+  # restart webserver
+  #service apache2 restart
+  
   # Add the vagrant user to the www-data group so that it has better access
   # to PHP and Nginx related files.
   usermod -a -G www-data ubuntu
@@ -674,6 +674,9 @@ shinobi_install(){
 
     echo "Default Data..."
     mysql -u "root" -p"root" ccio < "/home/shinobi/sql/default_data.sql"
+
+    # Start Shinobi
+    pm2 start /home/shinobi/camera.js
     
   fi
 }
@@ -725,4 +728,4 @@ echo " "
 end_seconds="$(date +%s)"
 echo "-----------------------------"
 echo "Provisioning complete in "$((${end_seconds} - ${start_seconds}))" seconds"
-echo "For further setup instructions, visit http://shinobi.dashboard"
+echo "Visit http://shinobi.dev:8080/ to start"
