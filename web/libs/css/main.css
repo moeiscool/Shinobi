@@ -50,6 +50,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .side-menu .progress-circle{margin:0 10px 0 0;position:relative;height:40px;width:40px;float:left}
 .side-menu .progress-circle span:after{content:''}
 .side-menu{background:#2b2a2a;color:#fff;transition:0.2s}
+.side-menu{background:#2b2a2a;color:#fff;transition:0.2s}
 .side-menu *{transition:0.2s}
 .side-menu a:not(.btn){color:#fff}
 .side-menu.nav-xs{overflow:hidden}
@@ -75,6 +76,10 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 
 
 .monitor_item .hud .side-menu{top:0;right:0;margin:auto;width:40%;height:100%;padding:15px;background:rgba(0,0,0,0.6);padding-bottom:60px;}
+.monitor_item .hud .side-menu.logs{right:auto;left:0;list-style:none}
+.monitor_item .hud .side-menu.logs{display:none}
+.monitor_item.show_logs .hud .side-menu.logs{display:block}
+.monitor_item.show_logs .hud .side-menu.logs{display:block}
 
 #side_menu_right.nav-xs{width:0!important;overflow:hidden}
 .side-menu table{color:#fff;}

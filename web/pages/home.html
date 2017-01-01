@@ -228,17 +228,18 @@
                 <select class="form-control" detail="vcodec">
                     <option value="libx265">libx265</option>
                     <option value="libx264">libx264</option>
-                    <option value="copy">copy</option>
+                    <option value="copy" selected>copy</option>
                 </select>
             </label>
           </div>
-          <div class="form-group h_f_input h_f_mp4">
+          <div class="form-group">
             <label><span>Audio Codec</span>
                 <select class="form-control" detail="acodec">
-                    <option value="libfaac">libfaac</option>
+                    <option value="libvorbis">libvorbis (Good for WebM)</option>
+                    <option value="libfaac">libfaac (Good for MP4)</option>
                     <option value="aac">aac</option>
-                    <option value="copy">copy</option>
-                    <option value="none">none</option>
+                    <option value="copy" selected>copy (Good for MP4)</option>
+                    <option value="none" selected>No Audio</option>
                 </select>
             </label>
           </div>
@@ -287,10 +288,10 @@
             </label>
           </div>
           <div class="form-group h_m_input h_m_record">
-              <label><span>Timestamp</span>
+              <label><span>Timestamp <small>Sometimes crashes MP4 output</small></span>
                 <select class="form-control" detail="timestamp">
                     <option value="1">Yes</option>  
-                    <option value="0">No</option>  
+                    <option value="0" selected>No</option>  
                 </select>
               </label>
           </div>

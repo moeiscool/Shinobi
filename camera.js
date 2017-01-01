@@ -183,10 +183,11 @@ s.event=function(x,e){
          s.tx({f:'event_build_success',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),size:e.filesize,end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
                         }else{
                             s.event('delete',e);
+                            s.log(e,{type:'File Corrupt',msg:{ffmpeg:s.users[e.ke].mon[e.mid].ffmpeg,filesize:(e.filesize/100000).toFixed(2)}})
                         }
                     }else{
-
                         s.event('delete',e);
+                        s.log(e,{type:'File Not Exist',msg:'Cannot save non existant file. Something went wrong.'})
                     }
                 }
             }
@@ -204,12 +205,13 @@ s.ffmpeg=function(e,x){
         case'mp4':
             x.vcodec='libx265';x.acodec='libfaac';
             if(e.details.vcodec&&e.details.vcodec!==''){x.vcodec=e.details.vcodec}
-            if(e.details.acodec&&e.details.acodec!==''){x.acodec=e.details.acodec}
         break;
         case'webm':
             x.acodec='libvorbis',x.vcodec='libvpx';
         break;
     }
+    if(e.details.acodec&&e.details.acodec!==''){x.acodec=e.details.acodec}
+    if(x.acodec==='none'){x.acodec=''}else{x.acodec=' -acodec '+x.acodec}
     if(e.fps&&e.fps!==''){e.framerate=' -r '+e.fps}else{e.framerate=''}
     if(e.details.vf&&e.details.vf!==''){
         if(x.time===''){x.vf=' -vf '}else{x.vf=','}
@@ -220,7 +222,7 @@ s.ffmpeg=function(e,x){
 //        if(e.details.svf){'-vf "rotate=45*(PI/180)'}
     switch(e.type){
         case'socket':case'jpeg':case'pipe':
-            x.tmp='-loglevel quiet -pattern_type glob -f image2pipe -vcodec mjpeg -i -'+x.time+' -vcodec '+x.vcodec+e.framerate+' -use_wallclock_as_timestamps 1 -q:v 1 '+e.dir+e.filename+'.'+e.ext;
+            x.tmp='-loglevel warning -pattern_type glob -f image2pipe -vcodec mjpeg -i -'+x.time+' -vcodec '+x.vcodec+e.framerate+' -use_wallclock_as_timestamps 1 -q:v 1 '+e.dir+e.filename+'.'+e.ext;
         break;
         case'mjpeg':
             if(e.mode=='record'){
@@ -228,33 +230,26 @@ s.ffmpeg=function(e,x){
             }else{
                 x.watch='';
             };
-            x.tmp='-loglevel quiet -reconnect 1 -f mjpeg -i '+e.url+''+x.watch+' -f image2pipe'+x.svf+' -s '+e.ratio+' pipe:1';
+            x.tmp='-loglevel warning -reconnect 1 -f mjpeg -i '+e.url+''+x.watch+' -f image2pipe'+x.svf+' -s '+e.ratio+' pipe:1';
         break;
         case'h264':
             if(e.mode=='record'){
-                if (e.details.acodec=='none'){
-                    x.watch=x.time+e.framerate+' -an -movflags frag_keyframe+empty_moov -vcodec '+x.vcodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1 '+e.dir+e.filename+'.'+e.ext
-                }else{
-                    x.watch=x.time+e.framerate+' -acodec '+x.acodec+' -movflags frag_keyframe+empty_moov -vcodec '+x.vcodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1 '+e.dir+e.filename+'.'+e.ext
-                }
+                x.watch=x.time+e.framerate+x.acodec+' -vcodec '+x.vcodec+' -use_wallclock_as_timestamps 1 '+e.dir+e.filename+'.'+e.ext
             }else{
                 x.watch='';
             };
-            x.tmp='-loglevel quiet -i '+e.url+' -stimeout 2000'+x.watch+' -f image2pipe'+x.svf+' -s '+e.ratio+' pipe:1';
+            x.tmp='-loglevel warning -i '+e.url+' -stimeout 2000'+x.watch+' -f image2pipe'+x.svf+' -s '+e.ratio+' pipe:1';
         break;
         case'local':
             if(e.mode=='record'){
-                if (e.details.acodec=='none'){
-                    x.watch=x.time+e.framerate+' -an -movflags frag_keyframe+empty_moov -vcodec '+x.vcodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1 '+e.dir+e.filename+'.'+e.ext
-                }else{
-                    x.watch=x.time+e.framerate+' -acodec '+x.acodec+' -movflags frag_keyframe+empty_moov -vcodec '+x.vcodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1 '+e.dir+e.filename+'.'+e.ext
-                }
+                x.watch=x.time+e.framerate+x.acodec+' -movflags frag_keyframe+empty_moov -vcodec '+x.vcodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 '+e.dir+e.filename+'.'+e.ext
             }else{
                 x.watch='';
             };
             x.tmp='-loglevel warning -i '+e.path+''+x.watch+' -f image2pipe'+x.svf+' -s '+e.ratio+' pipe:1';
         break;
     }
+    s.users[e.ke].mon[e.mid].ffmpeg=x.tmp;
     return spawn('ffmpeg',x.tmp.split(' '));
 }
 s.file=function(x,e){
@@ -409,11 +404,11 @@ s.camera=function(x,e,cn,tx){
                     break;
                 }
                 e.error=function(x){
-                    clearTimeout(e.err_timeout);
-                    e.err_timeout=setTimeout(function(){
-                        ++e.error_count;
-                        if(e.error_count>10){if(x){x.stop=1;s.log(e,x)};s.camera('stop',{id:e.id,ke:e.ke})}else{e.fn()};//stop after 4 errors
-                    },5000);
+//                    clearTimeout(e.err_timeout);
+//                    e.err_timeout=setTimeout(function(){
+//                        ++e.error_count;
+//                        if(e.error_count>10){if(x){x.stop=1;s.log(e,x)};s.camera('stop',{id:e.id,ke:e.ke})}else{e.fn()};//stop after 4 errors
+//                    },5000);
                 }
                 e.fn=function(){//this function loops to create new files
                     try{
@@ -467,6 +462,13 @@ s.camera=function(x,e,cn,tx){
                                                 e.chk=function(x){return d.indexOf(x)>-1;}
                                                 switch(true){
     //                                                case e.chk('av_interleaved_write_frame'):
+                                                    case e.chk('No pixel format specified'):
+                                                        s.log(e,{type:"FFMPEG STDERR",msg:{ffmpeg:s.users[e.ke].mon[e.id].ffmpeg,msg:d}})
+                                                    break;
+                                                    case e.chk('RTP: missed'):
+                                                    case e.chk('deprecated pixel format used, make sure you did set range correctly'):
+                                                        return
+                                                    break;
                                                     case e.chk('No such file or directory'):
                                                     case e.chk('Unable to open RTSP for listening'):
                                                     case e.chk('timed out'):
@@ -480,6 +482,7 @@ s.camera=function(x,e,cn,tx){
                                                         e.error({type:'stderr out',msg:d});
                                                     break;
                                                 }
+                                                s.log(e,{type:"FFMPEG STDERR",msg:d})
                                             });
                                         }
                                     break;
@@ -609,7 +612,7 @@ var tx;
                         case'control':
                             if(!s.users[d.ke]||!s.users[d.ke].mon[d.mid]){return}
                             d.m=s.users[d.ke].mon_conf[d.mid];
-                            if(!d.m.control=="1"){s.log(d,{type:'Control Error',msg:'Control is not enabled'});return}
+                            if(d.m.details.control!=="1"){s.log(d,{type:'Control Error',msg:'Control is not enabled'});return}
                             d.base=s.init('url_no_path',d.m);
                            if(!d.m.details.control_url_stop_timeout||d.m.details.control_url_stop_timeout===''){d.m.details.control_url_stop_timeout=1000} request({url:d.base+d.m.details['control_url_'+d.direction],method:'GET'},function(err,data){
                                 if(err){s.log(d,{type:'Control Error',msg:err});return false}
