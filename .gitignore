@@ -3,3 +3,4 @@ events
 frames
 web.old
 .DS_Store
+.vagrant
