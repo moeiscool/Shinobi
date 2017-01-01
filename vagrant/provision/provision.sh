@@ -664,7 +664,7 @@ shinobi_install(){
     echo "Updating Shinobi settings..."
     cd /home/shinobi/
     
-    rsync -avz /srv/config/shinobi/* ./
+    rsync -avz /srv/config/shinobi-config/* --exclude=README.md ./
 
     echo "Updating npm packages..."
     noroot npm install &>/dev/null
@@ -676,7 +676,7 @@ shinobi_install(){
     mysql -u "root" -p"root" ccio < "/home/shinobi/sql/default_data.sql"
 
     # Start Shinobi
-    pm2 start /home/shinobi/camera.js
+    noroot pm2 start /home/shinobi/camera.js
     
   fi
 }

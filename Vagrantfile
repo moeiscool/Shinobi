@@ -230,11 +230,11 @@ Vagrant.configure("2") do |config|
       # inside the VM will be created that acts as the default location for nginx sites. Put all
       # of your project files here that you want to access through the web server
       if vagrant_version >= "1.3.0"
-        shinobi_web_config.vm.synced_folder File.join(vagrant_dir, "www/"), "/srv/www/", :owner => "www-data", :mount_options => [ "dmode=775", "fmode=664" ]
-        shinobi_web_config.vm.synced_folder File.expand_path(File.dirname(__FILE__)), "/home/shinobi/", :owner => "www-data", :mount_options => [ "dmode=775", "fmode=664" ]
+        shinobi_web_config.vm.synced_folder File.join(vagrant_dir, "www/"), "/srv/www/", :owner => "ubuntu", :mount_options => [ "dmode=775", "fmode=664" ]
+        shinobi_web_config.vm.synced_folder File.expand_path(File.dirname(__FILE__)), "/home/shinobi/", :owner => "ubuntu", :mount_options => [ "dmode=775", "fmode=664" ]
       else
-        shinobi_web_config.vm.synced_folder File.join(vagrant_dir, "www/"), "/srv/www/", :owner => "www-data", :extra => 'dmode=775,fmode=664'
-        shinobi_web_config.vm.synced_folder File.expand_path(File.dirname(__FILE__)), "/home/shinobi/", :owner => "www-data", :extra => 'dmode=775,fmode=664'
+        shinobi_web_config.vm.synced_folder File.join(vagrant_dir, "www/"), "/srv/www/", :owner => "ubuntu", :extra => 'dmode=775,fmode=664'
+        shinobi_web_config.vm.synced_folder File.expand_path(File.dirname(__FILE__)), "/home/shinobi/", :owner => "ubuntu", :extra => 'dmode=775,fmode=664'
       end
 
       shinobi_web_config.vm.provision "fix-no-tty", type: "shell" do |s|
@@ -328,11 +328,11 @@ Vagrant.configure("2") do |config|
   # inside the VM will be created that acts as the default location for nginx sites. Put all
   # of your project files here that you want to access through the web server
   if vagrant_version >= "1.3.0"
-    config.vm.synced_folder File.join(vagrant_dir, "www/"), "/srv/www/", :owner => "www-data", :mount_options => [ "dmode=775", "fmode=664" ]
-    config.vm.synced_folder File.expand_path(File.dirname(__FILE__)), "/home/shinobi/", :owner => "www-data", :mount_options => [ "dmode=775", "fmode=664" ]
+    config.vm.synced_folder File.join(vagrant_dir, "www/"), "/srv/www/", :owner => "ubuntu", :mount_options => [ "dmode=775", "fmode=664" ]
+    config.vm.synced_folder File.expand_path(File.dirname(__FILE__)), "/home/shinobi/", :owner => "ubuntu", :mount_options => [ "dmode=775", "fmode=664" ]
   else
-    config.vm.synced_folder File.join(vagrant_dir, "www/"), "/srv/www/", :owner => "www-data", :extra => 'dmode=775,fmode=664'
-    config.vm.synced_folder File.expand_path(File.dirname(__FILE__)), "/home/shinobi/", :owner => "www-data", :extra => 'dmode=775,fmode=664'
+    config.vm.synced_folder File.join(vagrant_dir, "www/"), "/srv/www/", :owner => "ubuntu", :extra => 'dmode=775,fmode=664'
+    config.vm.synced_folder File.expand_path(File.dirname(__FILE__)), "/home/shinobi/", :owner => "ubuntu", :extra => 'dmode=775,fmode=664'
   end
 
   config.vm.provision "fix-no-tty", type: "shell" do |s|
@@ -344,8 +344,8 @@ Vagrant.configure("2") do |config|
   # those are specific to Virtualbox. The folder is therefore overridden with one that
   # uses corresponding Parallels mount options.
   config.vm.provider :parallels do |v, override|
-    override.vm.synced_folder File.join(vagrant_dir, "www/"), "/srv/www/", :owner => "www-data", :mount_options => []
-    override.vm.synced_folder File.expand_path(File.dirname(__FILE__)), "/home/shinobi/", :owner => "www-data", :mount_options => []
+    override.vm.synced_folder File.join(vagrant_dir, "www/"), "/srv/www/", :owner => "ubuntu", :mount_options => []
+    override.vm.synced_folder File.expand_path(File.dirname(__FILE__)), "/home/shinobi/", :owner => "ubuntu", :mount_options => []
   end
 
   # The Hyper-V Provider does not understand "dmode"/"fmode" in the "mount_options" as
@@ -353,8 +353,8 @@ Vagrant.configure("2") do |config|
   # replaced with SMB shares. Here we switch all the shared folders to us SMB and then
   # override the www folder with options that make it Hyper-V compatible.
   config.vm.provider :hyperv do |v, override|
-    override.vm.synced_folder File.join(vagrant_dir, "www/"), "/srv/www/", :owner => "www-data", :mount_options => ["dir_mode=0775","file_mode=0774","forceuid","noperm","nobrl","mfsymlinks"]
-    override.vm.synced_folder File.expand_path(File.dirname(__FILE__)), "/home/shinobi/", :owner => "www-data", :mount_options => ["dir_mode=0775","file_mode=0664","forceuid","noperm","nobrl","mfsymlinks"]
+    override.vm.synced_folder File.join(vagrant_dir, "www/"), "/srv/www/", :owner => "ubuntu", :mount_options => ["dir_mode=0775","file_mode=0774","forceuid","noperm","nobrl","mfsymlinks"]
+    override.vm.synced_folder File.expand_path(File.dirname(__FILE__)), "/home/shinobi/", :owner => "ubuntu", :mount_options => ["dir_mode=0775","file_mode=0664","forceuid","noperm","nobrl","mfsymlinks"]
     # Change all the folder to use SMB instead of Virtual Box shares
     override.vm.synced_folders.each do |id, options|
       if ! options[:type]
