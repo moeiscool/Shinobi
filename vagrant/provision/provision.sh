@@ -27,42 +27,43 @@ apt_package_check_list=(
 
   # PHP5
   #
-  # Our base packages for php5. As long as php5-fpm and php5-cli are
+  # Our base packages for php5. As long as php7.0-fpm and php7.0-cli are
   # installed, there is no need to install the general php5 package, which
   # can sometimes install apache as a requirement.
-  php5-cli
+  php7.0-cli
 
   # Common and dev packages for php
-  php5-common
-  php5-dev
+  php7.0-common
+  php7.0-dev
 
   # Extra PHP modules that we find useful
-  php5-apcu
-  php5-memcache
-  php5-imagick
-  php5-mcrypt
-  php5-mysql
-  php5-imap
-  php5-curl
+  #php-apcu
+  #php-memcache
+  php-imagick
+  php7.0-mcrypt
+  php7.0-mysql
+  php7.0-imap
+  php7.0-curl
   php-pear
-  php5-gd
-  php5-mongo
-  php5-sqlite
-  php5-json
-  php5-imap
-  php5-gearman
-  php5-readline
-  php5-sasl
-  php5-xmlrpc
-  php5-xsl
-  php5-geoip
-  php5-intl
-  php5-oauth
-  php5-pspell
+  php7.0-gd
+  php-mongodb
+  php7.0-sqlite
+  php7.0-json
+  php7.0-imap
+  #php-gearman
+  php7.0-readline
+  php-auth-sasl
+  php7.0-xmlrpc
+  php7.0-xsl
+  php-geoip
+  php7.0-intl
+  php-oauth
+  php7.0-pspell
+  php7.0-mbstring
 
   # apache2 is installed as the default web server
   apache2
-  libapache2-mod-php5
+  libapache2-mod-php7.0
 
   # mysql is the default database
   mysql-server
@@ -70,7 +71,6 @@ apt_package_check_list=(
 
   # other packages that come in handy
   imagemagick
-  subversion
   git-core
   zip
   unzip
@@ -94,24 +94,22 @@ apt_package_check_list=(
   # Req'd for i18n tools
   gettext
 
-  # Req'd for Webgrind
-  graphviz
-
   # dos2unix
   # Allows conversion of DOS style line endings to something we'll have less
   # trouble with in Linux.
   dos2unix
 
-  libav-tools
-
   # nodejs
   g++
   nodejs
+  nodejs-legacy
   npm
+
+  # FFMPeg
+  libav-tools
 
   #Mailcatcher requirement
   libsqlite3-dev
-
 )
 
 ### FUNCTIONS
@@ -150,7 +148,7 @@ profile_setup() {
   cp "/srv/config/vimrc" "/home/vagrant/.vimrc"
 
   if [[ ! -d "/home/vagrant/bin" ]]; then
-    mkdir "/home/vagrant/bin"
+    mkdir -p "/home/vagrant/bin"
   fi
 
   rsync -rvzh --delete "/srv/config/homebin/" "/home/vagrant/bin/"
@@ -250,13 +248,6 @@ tools_install() {
   npm install -g npm-check-updates
   npm install -g pm2
 
-  # xdebug
-  #
-  # XDebug 2.2.3 is provided with the Ubuntu install by default. The PECL
-  # installation allows us to use a later version. Not specifying a version
-  # will load the latest stable.
-  pecl install xdebug
-
   # ack-grep
   #
   # Install ack-rep directory from the version hosted at beyondgrep.com as the
@@ -296,31 +287,6 @@ tools_install() {
     COMPOSER_HOME=/usr/local/src/composer composer -q global config bin-dir /usr/local/bin
     COMPOSER_HOME=/usr/local/src/composer composer global update
   fi
-
-  # Grunt
-  #
-  # Install or Update Grunt based on current state.  Updates are direct
-  # from NPM
-  #if [[ "$(grunt --version)" ]]; then
-  #  echo "Updating Grunt CLI"
-  #  npm update -g grunt-cli &>/dev/null
-  #  npm update -g grunt-sass &>/dev/null
-  #  npm update -g grunt-cssjanus &>/dev/null
-  #  npm update -g grunt-rtlcss &>/dev/null
-  #else
-  #  echo "Installing Grunt CLI"
-  #  npm install -g grunt-cli &>/dev/null
-  #  npm install -g grunt-sass &>/dev/null
-  #  npm install -g grunt-cssjanus &>/dev/null
-  #  npm install -g grunt-rtlcss &>/dev/null
-  #fi
-
-  # Graphviz
-  #
-  # Set up a symlink between the Graphviz path defined in the default Webgrind
-  # config and actual path.
-  echo "Adding graphviz symlink for Webgrind..."
-  ln -sf "/usr/bin/dot" "/usr/local/bin/dot"
 }
 
 nginx_setup() {
@@ -365,17 +331,11 @@ phpfpm_setup() {
   cp "/srv/config/php5-fpm-config/www.conf" "/etc/php5/fpm/pool.d/www.conf"
   cp "/srv/config/php5-fpm-config/php-custom.ini" "/etc/php5/fpm/conf.d/php-custom.ini"
   cp "/srv/config/php5-fpm-config/opcache.ini" "/etc/php5/fpm/conf.d/opcache.ini"
-  cp "/srv/config/php5-fpm-config/xdebug.ini" "/etc/php5/mods-available/xdebug.ini"
-
-  # Find the path to Xdebug and prepend it to xdebug.ini
-  XDEBUG_PATH=$( find /usr -name 'xdebug.so' | head -1 )
-  sed -i "1izend_extension=\"$XDEBUG_PATH\"" "/etc/php5/mods-available/xdebug.ini"
 
   echo " * Copied /srv/config/php5-fpm-config/php5-fpm.conf     to /etc/php5/fpm/php5-fpm.conf"
   echo " * Copied /srv/config/php5-fpm-config/www.conf          to /etc/php5/fpm/pool.d/www.conf"
   echo " * Copied /srv/config/php5-fpm-config/php-custom.ini    to /etc/php5/fpm/conf.d/php-custom.ini"
   echo " * Copied /srv/config/php5-fpm-config/opcache.ini       to /etc/php5/fpm/conf.d/opcache.ini"
-  echo " * Copied /srv/config/php5-fpm-config/xdebug.ini        to /etc/php5/mods-available/xdebug.ini"
 
   # Copy memcached configuration from local
   cp "/srv/config/memcached-config/memcached.conf" "/etc/memcached.conf"
@@ -410,14 +370,18 @@ apache_setup() {
   cp "/srv/config/apache-config/apache2.conf" "/etc/apache2/apache2.conf"
   #cp "/srv/config/apache-config/nginx-wp-common.conf" "/etc/nginx/nginx-wp-common.conf"
   if [[ ! -d "/etc/apache2/sites-available" ]]; then
-    mkdir "/etc/apache2/sites-available/"
+    mkdir -p "/etc/apache2/sites-available/"
   fi
   rsync -rvzh --delete "/srv/config/apache-config/sites-available/" "/etc/apache2/sites-available/"
-  rsync -rvzhl --delete "/srv/config/apache-config/sites-enabled/" "/etc/apache2/sites-enabled/"
+
+  if [[ ! -d "/etc/apache2/conf/sites-enabled" ]]; then
+    sudo mkdir -p "/etc/apache2/conf/sites-enabled/"
+  fi
+  sudo ln -s /etc/apache2/conf/sites-available/ /etc/apache2/conf/sites-enabled/
 
   echo " * Copied /srv/config/apache-config/apache2.conf           to /etc/apache/apache2.conf"
   echo " * Rsync'd /srv/config/apache-config/sites-available/      to /etc/apache/sites-available"
-  echo " * Rsync'd /srv/config/apache-config/sites-enabled/        to /etc/apache/sites-enabled"
+  echo " * Linked /etc/apache/sites-available        to /etc/apache/sites-enabled"
 
   a2enmod ssl expires headers rewrite
 }
@@ -427,16 +391,10 @@ phpmod_setup() {
   cp "/srv/config/php5-config/php5.conf" "/etc/apache2/mods-available/php5.conf"
   cp "/srv/config/php5-config/php-custom.ini" "/etc/php5/apache2/conf.d/php-custom.ini"
   cp "/srv/config/php5-config/opcache.ini" "/etc/php5/mods-available/opcache.ini"
-  cp "/srv/config/php5-config/xdebug.ini" "/etc/php5/mods-available/xdebug.ini"
-
-  # Find the path to Xdebug and prepend it to xdebug.ini
-  XDEBUG_PATH=$( find /usr -name 'xdebug.so' | head -1 )
-  sed -i "1izend_extension=\"$XDEBUG_PATH\"" "/etc/php5/mods-available/xdebug.ini"
 
   echo " * Copied /srv/config/php5-config/php5.conf         to /etc/apache2/mods-available/php5.conf"
   echo " * Copied /srv/config/php5-config/php-custom.ini    to /etc/php5/apache2/conf.d/php-custom.ini"
   echo " * Copied /srv/config/php5-config/opcache.ini       to /etc/php5/mods-available/opcache.ini"
-  echo " * Copied /srv/config/php5-config/xdebug.ini        to /etc/php5/mods-available/xdebug.ini"
 }
 
 mysql_setup() {
@@ -585,37 +543,17 @@ services_restart() {
   #service memcached restart
   service mailcatcher restart
 
-  # Disable PHP Xdebug module by default
-  php5enmod xdebug
-
   # Enable PHP mcrypt module by default
-  php5enmod mcrypt
+  phpenmod mcrypt
 
   # Enable PHP mailcatcher sendmail settings by default
-  php5enmod mailcatcher
+  phpenmod mailcatcher
 
   service apache2 restart
 
   # Add the vagrant user to the www-data group so that it has better access
   # to PHP and Nginx related files.
   usermod -a -G www-data vagrant
-}
-
-wp_cli() {
-  # WP-CLI Install
-  if [[ ! -d "/srv/www/wp-cli" ]]; then
-    echo -e "\nDownloading wp-cli, see http://wp-cli.org"
-    git clone "https://github.com/wp-cli/wp-cli.git" "/srv/www/wp-cli"
-    cd /srv/www/wp-cli
-    composer install
-  else
-    echo -e "\nUpdating wp-cli..."
-    cd /srv/www/wp-cli
-    git pull --rebase origin master
-    composer update
-  fi
-  # Link `wp` to the `/usr/local/bin` directory
-  ln -sf "/srv/www/wp-cli/bin/wp" "/usr/local/bin/wp"
 }
 
 memcached_admin() {
@@ -647,38 +585,6 @@ opcached_status(){
   fi
 }
 
-webgrind_install() {
-  # Webgrind install (for viewing callgrind/cachegrind files produced by
-  # xdebug profiler)
-  if [[ ! -d "/srv/www/default/webgrind" ]]; then
-    echo -e "\nDownloading webgrind, see https://github.com/michaelschiller/webgrind.git"
-    git clone "https://github.com/michaelschiller/webgrind.git" "/srv/www/default/webgrind"
-  else
-    echo -e "\nUpdating webgrind..."
-    cd /srv/www/default/webgrind
-    git pull --rebase origin master
-  fi
-}
-
-php_codesniff() {
-  # PHP_CodeSniffer (for running WordPress-Coding-Standards)
-  if [[ ! -d "/srv/www/phpcs" ]]; then
-    echo -e "\nDownloading PHP_CodeSniffer (phpcs), see https://github.com/squizlabs/PHP_CodeSniffer"
-    git clone -b master "https://github.com/squizlabs/PHP_CodeSniffer.git" "/srv/www/phpcs"
-  else
-    cd /srv/www/phpcs
-    if [[ $(git rev-parse --abbrev-ref HEAD) == 'master' ]]; then
-      echo -e "\nUpdating PHP_CodeSniffer (phpcs)..."
-      git pull --no-edit origin master
-    else
-      echo -e "\nSkipped updating PHP_CodeSniffer since not on master branch"
-    fi
-  fi
-
-  # Install the standards in PHPCS
-  /srv/www/phpcs/scripts/phpcs -i
-}
-
 phpmyadmin_setup() {
   # Download phpMyAdmin
   if [[ ! -d /srv/www/default/database-admin ]]; then
@@ -692,55 +598,6 @@ phpmyadmin_setup() {
     echo "PHPMyAdmin already installed."
   fi
   cp "/srv/config/phpmyadmin-config/config.inc.php" "/srv/www/default/database-admin/"
-}
-
-wordpress_develop(){
-  # Checkout, install and configure WordPress trunk via develop.svn
-  if [[ ! -d "/srv/www/wordpress-develop" ]]; then
-    echo "Checking out WordPress trunk from develop.svn, see https://develop.svn.wordpress.org/trunk"
-    svn checkout "https://develop.svn.wordpress.org/trunk/" "/srv/www/wordpress-develop"
-    cd /srv/www/wordpress-develop/src/
-    echo "Configuring WordPress develop..."
-    noroot wp core config --dbname=wordpress_develop --dbuser=wp --dbpass=wp --quiet --extra-php <<PHP
-// Match any requests made via xip.io.
-if ( isset( \$_SERVER['HTTP_HOST'] ) && preg_match('/^(src|build)(.wordpress-develop.)\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(.xip.io)\z/', \$_SERVER['HTTP_HOST'] ) ) {
-define( 'WP_HOME', 'http://' . \$_SERVER['HTTP_HOST'] );
-define( 'WP_SITEURL', 'http://' . \$_SERVER['HTTP_HOST'] );
-} else if ( 'build' === basename( dirname( __FILE__ ) ) ) {
-// Allow (src|build).wordpress-develop.dev to share the same Database
-define( 'WP_HOME', 'http://build.wordpress-develop.dev' );
-define( 'WP_SITEURL', 'http://build.wordpress-develop.dev' );
-}
-
-define( 'WP_DEBUG', true );
-PHP
-    echo "Installing WordPress develop..."
-    noroot wp core install --url=src.wordpress-develop.dev --quiet --title="WordPress Develop" --admin_name=admin --admin_email="admin@local.dev" --admin_password="password"
-    cp /srv/config/wordpress-config/wp-tests-config.php /srv/www/wordpress-develop/
-    cd /srv/www/wordpress-develop/
-    echo "Running npm install for the first time, this may take several minutes..."
-    noroot npm install &>/dev/null
-  else
-    echo "Updating WordPress develop..."
-    cd /srv/www/wordpress-develop/
-    if [[ -e .svn ]]; then
-      svn up
-    else
-      if [[ $(git rev-parse --abbrev-ref HEAD) == 'master' ]]; then
-        git pull --no-edit git://develop.git.wordpress.org/ master
-      else
-        echo "Skip auto git pull on develop.git.wordpress.org since not on master branch"
-      fi
-    fi
-    echo "Updating npm packages..."
-    noroot npm install &>/dev/null
-  fi
-
-  if [[ ! -d "/srv/www/wordpress-develop/build" ]]; then
-    echo "Initializing grunt in WordPress develop... This may take a few moments."
-    cd /srv/www/wordpress-develop/
-    grunt
-  fi
 }
 
 custom_vvv(){
@@ -795,9 +652,13 @@ custom_vvv(){
 }
 
 shinobi_install(){
-  # Checkout, install and configure WordPress trunk via develop.svn
+  # Checkout, install and configure
   if [[ ! -d "/home/shinobi" ]]; then
     echo "Installing Shinobi settings..."
+
+    mkdir -p /home/shinobi
+
+    shinobi_install
     
   else
     echo "Updating Shinobi settings..."
@@ -807,6 +668,13 @@ shinobi_install(){
 
     echo "Updating npm packages..."
     noroot npm install &>/dev/null
+
+    echo "Initial MySQL Database..."
+    mysql -u "root" -p"root" < "/home/shinobi/sql/framework.sql"
+
+    echo "Default Data..."
+    mysql -u "root" -p"root" ccio < "/home/shinobi/sql/default_data.sql"
+    
   fi
 }
 
@@ -837,8 +705,6 @@ echo " "
 echo "Installing/updating debugging tools"
 
 opcached_status
-webgrind_install
-php_codesniff
 phpmyadmin_setup
 
 network_check
