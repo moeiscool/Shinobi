@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+# Create individual SQL files for each database. These files
+# are imported automatically during an initial provision if
+# the databases exist per the import-sql.sh process.
+mysql -e 'show databases' | \
+grep -v -F "information_schema" | \
+grep -v -F "performance_schema" | \
+grep -v -F "mysql" | \
+grep -v -F "test" | \
+grep -v -F "Database" | \
+while read dbname; do mysqldump -uroot "$dbname" | gzip -c > /srv/database/backups/mysql/"$dbname".sql.gz && echo "Database $dbname backed up..."; done
+
+#mongodump all
+mongodump -o /srv/database/backups/mongodb/
+cd /srv/database/backups/mongodb/
+find ./* -maxdepth 0 -type d -exec echo "Archiving {}" \; -exec tar -czf "{}.tar.gz" "{}" \; -exec rm -rf "{}" \;
