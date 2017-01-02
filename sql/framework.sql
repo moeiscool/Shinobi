@@ -15,6 +15,19 @@ CREATE DATABASE IF NOT EXISTS `ccio` /*!40100 DEFAULT CHARACTER SET utf8 */;
 USE `ccio`;
 
 
+-- Dumping structure for table ccio.API
+CREATE TABLE IF NOT EXISTS `API` (
+  `ke` varchar(50) DEFAULT NULL,
+  `uid` varchar(50) DEFAULT NULL,
+  `ip` tinytext,
+  `code` varchar(100) DEFAULT NULL,
+  `details` text,
+  `time` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Data exporting was unselected.
+
+
 -- Dumping structure for table ccio.Logs
 CREATE TABLE IF NOT EXISTS `Logs` (
   `ke` varchar(50) DEFAULT NULL,
@@ -35,7 +48,7 @@ CREATE TABLE IF NOT EXISTS `Monitors` (
   `shfr` text,
   `details` longtext,
   `type` varchar(50) DEFAULT 'jpeg',
-  `ext` enum('webm','mp4') DEFAULT 'webm',
+  `ext` varchar(50) DEFAULT 'webm',
   `protocol` enum('http','https','rtmp','rtsp','axrtsp','axrtpu','axrtsphttp','axrtpm') DEFAULT 'http',
   `host` varchar(100) DEFAULT '0.0.0.0',
   `path` varchar(100) DEFAULT '/',

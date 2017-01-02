@@ -13,11 +13,11 @@
     <section class="page-header">
       <h1 class="project-name">Shinobi</h1>
       <h2 class="project-tagline">Open Source CCTV software written in Node.JS ( IP Camera Recorder )</h2>
-      <a href="https://github.com/moeiscool/Shinobi" class="btn">View on GitHub</a>
+      <a href="https://github.com/moeiscool/Shinobi" class="btn">More Information</a>
       <a href="https://github.com/moeiscool/Shinobi/zipball/master" class="btn">Download .zip</a>
       <a href="https://github.com/moeiscool/Shinobi/tarball/master" class="btn">Download .tar.gz</a>
         <div style="margin:20px 0"></div>
-<a title="USD,XBT..." href='https://www.bountysource.com/teams/shinobi'><img src='https://d2bbtvgnhux6eq.cloudfront.net/assets/Bountysource-green-f2f437ed727ee2cacaee3f559c1907cb.png' ></a> <a title="CAD" href='https://gratipay.com/Shinobi-The-Open-Source-CCTV-Solution/'><img alt='Click here to lend your support to: Shinobi, Open Source CCTV written in Node.js and make a donation!' src='https://assets.gratipay.com/gratipay.svg?etag=3tGiSB5Uw_0-oWiLLxAqpQ~~' border='0' ></a> <a href='https://pledgie.com/campaigns/33051'><img alt='Click here to lend your support to: Shinobi, Open Source CCTV written in Node.js and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/33051.png?skin_name=chrome' border='0' ></a> <a target="_blank" class="badge-widget" style="border: none;" href="//www.gofundme.com/help-me-fund-my-program?utm_medium=wdgt" title="Visit this page now."><img src="https://funds.gofundme.com/css/3.0_donate/green/widget.png"></a>
+<a title="USD,XBT..." href='https://www.bountysource.com/teams/shinobi'><img src='https://d2bbtvgnhux6eq.cloudfront.net/assets/Bountysource-green-f2f437ed727ee2cacaee3f559c1907cb.png' ></a> <a title="CAD" href='https://gratipay.com/~moe_alam/'><img alt='Click here to lend your support to: Shinobi, Open Source CCTV written in Node.js and make a donation!' src='https://assets.gratipay.com/gratipay.svg?etag=3tGiSB5Uw_0-oWiLLxAqpQ~~' border='0' ></a> <a href='https://pledgie.com/campaigns/33051'><img alt='Click here to lend your support to: Shinobi, Open Source CCTV written in Node.js and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/33051.png?skin_name=chrome' border='0' ></a> <a target="_blank" class="badge-widget" style="border: none;" href="//www.gofundme.com/help-me-fund-my-program?utm_medium=wdgt" title="Visit this page now."><img src="https://funds.gofundme.com/css/3.0_donate/green/widget.png"></a>
     </section>
 
     <section class="main-content">
@@ -28,134 +28,6 @@
 <p dir="auto">Shinobi is an Open Source CCTV software written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. Currently it is being crafted for IP Cameras, not local.</p>
 
 <p dir="auto"></p><div class="image-container"><a class="no-attachment-icon" href="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.gif?raw=true" target="_blank" rel="nofollow noreferrer"><img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.gif?raw=true"></a></div>
-
-<h1 dir="auto">
-<a id="user-content-why" class="anchor" href="#why" aria-hidden="true"></a>Why?</h1>
-
-<ul dir="auto">
-<li>
-<p>MJPEG streams that are presented as a DOM element puts serious strain on the client browser when needing to be removed and added again. They cannot be terminated without a hard refresh of the page or use of popup or iframe. It essentially opens new streams everytime you recreate an image with an MJPEG url.</p>
-
-<ul>
-<li>Shinobi addresses this with <code>WebSocket</code> streams.</li>
-</ul>
-</li>
-<li>
-<p><s>Saving to WebM not JPEG frames or MP4 video. JPEG and MP4 are heavy. WebM is not.</s></p>
-
-<ul>
-<li>Now Saves to WebM and MP4, your choice. RTSP -&gt; MP4 uses very little CPU power but uses a lot of storage space. MP4 is still heavy.</li>
-</ul>
-</li>
-<li><p>Written in Node.js, not PHP, Perl, and whatever languages you can remember.</p></li>
-<li><p>ZoneMinder was the first choice but it proved unstable for the reasons mentioned. Also it has so many bugs and bounties many of them are just being left behind in the ocean of bug reports.</p></li>
-</ul>
-
-<h1 dir="auto">
-<a id="user-content-info" class="anchor" href="#info" aria-hidden="true"></a>Info</h1>
-
-<ul dir="auto">
-<li>Written in a simple structure. <code>camera.js</code> and <code>web</code> folder.</li>
-<li>Easy Install. (not as easy as apt-get install zoneminder yet though. See below)</li>
-<li>Streams are <code>img</code> tags transferred through <code>WebSocket</code>.</li>
-<li>Any websocket enabled browser can support the image stream (including mobile)</li>
-<li>Can save to WebM or MP4</li>
-<li>Calendar view for Events</li>
-<li><p><code>child.js</code> Child node processing to load balance ffmpeg processes across multiple nodes. <em>Work in Progress, needs h264 added and schema update</em></p></li>
-<li>
-<p>Client-side Tested on : </p>
-
-<ul>
-<li>iPad Mini 2
-
-<ul>
-<li>Safari</li>
-<li>Chrome</li>
-</ul>
-</li>
-<li>iPhone 5
-
-<ul>
-<li>Safari</li>
-<li>Chrome</li>
-</ul>
-</li>
-<li>Windows 7
-
-<ul>
-<li>Chrome</li>
-</ul>
-</li>
-<li>Mac OS Sierra
-
-<ul>
-<li>Safari</li>
-<li>Chrome</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>
-<p>Server-side Tested on:</p>
-
-<ul>
-<li>Macbook (some old white one)
-
-<ul>
-<li>Ubuntu 16.04 (should work on any linux)</li>
-</ul>
-</li>
-<li>Macbook (2013, i5, 16GB RAM)
-
-<ul>
-<li>Mac OS Sierra</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>If you have successfully run Shinobi on a system not listed (client or server). Please send me a PM so I can add it to the list.</p></li>
-</ul>
-
-<h1 dir="auto">
-<a id="user-content-how-to-install-and-run" class="anchor" href="#how-to-install-and-run" aria-hidden="true"></a>How to Install and Run</h1>
-
-<ul dir="auto">
-<li><a href="https://github.com/moeiscool/Shinobi/blob/master/INSTALL.md" rel="nofollow noreferrer" target="_blank">https://github.com/moeiscool/Shinobi/blob/master/INSTALL.md</a></li>
-</ul>
-
-<h1 dir="auto">
-<a id="user-content-to-do" class="anchor" href="#to-do" aria-hidden="true"></a>To Do</h1>
-
-<ul dir="auto">
-<li>Organize this README.</li>
-<li>Fix Pipe error that occasionally occurs. <code>(appears to be caused by JPEG stream emit or pipe into ffmpeg, MJPEG is not affected)</code>
-</li>
-<li>better vieweing for saved events.</li>
-<li>Save events with blank frames and force real duration instead of based on frame count.</li>
-<li>better mobile support.</li>
-<li>Find alternative to dstat that works on windows, mac, and linux for CPU indicator.</li>
-</ul>
-
-<h1 dir="auto">
-<a id="user-content-donate" class="anchor" href="#donate" aria-hidden="true"></a>Donate</h1>
-
-<p dir="auto">If you like Shinobi please consider donating.</p>
-
-<p dir="auto"><a title="USD,XBT..." href="https://www.bountysource.com/teams/shinobi" rel="nofollow noreferrer" target="_blank"><img src="https://d2bbtvgnhux6eq.cloudfront.net/assets/Bountysource-green-f2f437ed727ee2cacaee3f559c1907cb.png"></a></p>
-
-<p dir="auto"><a title="CAD" href='https://gratipay.com/Shinobi-The-Open-Source-CCTV-Solution/'><img alt='Click here to lend your support to: Shinobi, Open Source CCTV written in Node.js and make a donation!' src='https://assets.gratipay.com/gratipay.svg?etag=3tGiSB5Uw_0-oWiLLxAqpQ~~' border='0' ></a>
-</p>
-    
-
-<h1 dir="auto">
-<a id="user-content-author" class="anchor" href="#author" aria-hidden="true"></a>Author</h1>
-
-<p dir="auto">Moe Alam, just a guy who needed CCTV</p>
-
-<h1 dir="auto">
-<a id="user-content-credits" class="anchor" href="#credits" aria-hidden="true"></a>Credits</h1>
-
-<p dir="auto">If you wish to use this software for commercial purposes please consider donating :) If not.. including my name would be nice.</p>
 
 <pre class="code highlight js-syntax-highlight plaintext monokai" v-pre="true"><code>Shinobi
 Copyright (C) 2016-2025 Moe Alam, moeiscool

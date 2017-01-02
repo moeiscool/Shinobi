@@ -26,8 +26,8 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             case'id':
                 $('.usermail').html(d.mail)
                 k.d=JSON.parse(d.details);
-                $.sM.e.find('[name="details"]').val(d.details)
-                $.sM.e.find('[detail="days"]').val(k.d.days)
+                $.each($user,function(n,v){$.sM.e.find('[name="'+n+'"]').val(v).change()})
+                $.each(k.d,function(n,v){$.sM.e.find('[detail="'+n+'"]').val(v).change()})
             break;
             case'jsontoblock'://draw json as block
                 if(d instanceof Object){
@@ -54,7 +54,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
         switch(x){
             case 0://event
                 if(!d.filename){d.filename=moment(d.time).format('YYYY-MM-DDTHH-mm-ss')+'.'+d.ext;}
-                k=[d.mid+'-'+d.filename,'href="/events/'+d.ke+'/'+d.mid+'/'+d.filename+'"'];
+                k=[d.mid+'-'+d.filename,'href="/'+$user.auth_token+'/events/'+d.ke+'/'+d.mid+'/'+d.filename+'"'];
                 d.mom=moment(d.time),d.hr=parseInt(d.mom.format('HH'))+1,d.per=parseInt(d.hr/24*100);
                 tmp+='<li mid="'+d.mid+'" ke="'+d.ke+'" file="'+d.filename+'"><div title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'" '+k[1]+' event="launch" class="progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div><div><span title="'+d.end+'" class="livestamp"></span></div><div class="small"><b>Start</b> : '+d.time+'</div><div class="small"><b>End</b> : '+d.end+'</div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls"><a class="btn btn-sm btn-primary" event="launch" '+k[1]+'><i class="fa fa-play-circle"></i></a> <a download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a> <a event="download" host="dropbox" download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a> <a title="Delete Event" event="delete" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></a></div></div></li>';
             break;
@@ -70,7 +70,10 @@ $.ccio={fr:$('#files_recent'),mon:{}};
 //                        tmp+='<img>';
 //                    break;
 //                }
-                tmp+='<div class="hud super-center"><div class="side-menu logs scrollable"></div><div class="side-menu events_tmp scrollable"></div><div class="top_bar"><span class="badge badge-sm badge-danger"><i class="fa fa-eye"></i> <span class="viewers"></span></span></div><div class="bottom_bar"><span class="monitor_name">'+d.name+'</span><div class="pull-right"><a title="Enlarge" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-sm btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="Enlarge" monitor="control_toggle" class="btn btn-sm btn-default"><i class="fa fa-arrows"></i></a> <a title="Status" class="btn btn-sm btn-danger signal" monitor="watch_on"><i class="fa fa-circle"></i></a> <div class="btn-group"><a monitor="calendar" class="btn btn-sm btn-default"><i class="fa fa-film"></i></a> <a class="btn btn-sm btn-default" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Enlarge" monitor="bigify" class="btn btn-sm btn-default"><i class="fa fa-expand"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a></div></div></div></div></div>';
+                tmp+='<div class="hud super-center"><div class="side-menu logs scrollable"></div><div class="side-menu events_monitor_list glM'+d.mid+' scrollable"><ul></ul></div><div class="top_bar"><span class="badge badge-sm badge-danger"><i class="fa fa-eye"></i> <span class="viewers"></span></span></div><div class="bottom_bar"><span class="monitor_name">'+d.name+'</span><div class="pull-right"><a title="Enlarge" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-sm btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="Enlarge" monitor="control_toggle" class="btn btn-sm btn-default"><i class="fa fa-arrows"></i></a> <a title="Status" class="btn btn-sm btn-danger signal" monitor="watch_on"><i class="fa fa-circle"></i></a> <div class="btn-group"><a monitor="calendar" class="btn btn-sm btn-default"><i class="fa fa-film"></i></a> <a class="btn btn-sm btn-default" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Enlarge" monitor="bigify" class="btn btn-sm btn-default"><i class="fa fa-expand"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a></div></div></div></div></div>';
+            break;
+            case 3:
+                tmp+='<tr api_key="'+d.code+'"><td class="code">'+d.code+'</td><td class="ip">'+d.ip+'</td><td class="time">'+d.time+'</td><td><a class="delete btn btn-xs btn-danger">&nbsp;<i class="fa fa-trash"></i>&nbsp;</a></td></tr>';
             break;
         }
         if(z){
@@ -95,7 +98,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
         switch(x){
             case 0:
                 d.mon=$.ccio.mon[d.mid];
-                d.ev='.glM'+d.mid+'.events_list ul';d.fr=$.ccio.fr.find(d.ev),d.tmp='';
+                d.ev='.glM'+d.mid+'.events_list ul,.glM'+d.mid+'.events_monitor_list ul';d.fr=$.ccio.fr.find(d.ev),d.tmp='';
                 if(d.fr.length===0){$.ccio.fr.append('<div class="events_list glM'+d.mid+'"><h3 class="title">'+d.mon.name+'</h3><ul></ul></div>')}
                 if(d.events&&d.events.length>0){
                 $.each(d.events,function(n,v){
@@ -104,12 +107,22 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                     }
                 })
                 }else{
-                    $('.glM'+d.mid+'.events_list').appendTo($.ccio.fr)
+                    $('.glM'+d.mid+'.events_list,.glM'+d.mid+'.events_monitor_list').appendTo($.ccio.fr)
                     tmp+='<li class="notice noevents">No Events for This Monitor</li>';
                 }
                 $(d.ev).html(tmp);
                 $.ccio.init('ls');
             break;
+            case 3:
+                z='#api_list';
+                $(z).empty();
+                $.each(d,function(n,v){
+                    tmp+=$.ccio.tm(3,v);
+                })
+            break;
+        }
+        if(z){
+            $(z).prepend(tmp)
         }
         return tmp;
     }
@@ -136,9 +149,22 @@ $.ccio.ws.on('connect',function (d){
     $.ccio.init('id',$user);
     $.ccio.cx({f:'init',ke:$user.ke,auth:$user.auth_token,uid:$user.uid})
 })
+PNotify.prototype.options.styling = "fontawesome";
 $.ccio.ws.on('f',function (d){
     if(d.f!=='monitor_frame'&&d.f!=='cpu'&&d.f!=='event_delete'){console.log(d);}
     switch(d.f){
+        case'api_key_deleted':
+            new PNotify({title:'API Key Deleted',text:'Key has been deleted. It will no longer work.',type:'notice'});
+            $('[api_key="'+d.form.code+'"]').remove();
+        break;
+        case'api_key_added':
+            new PNotify({title:'API Key Added',text:'You may use this key now.',type:'success'});
+            $.ccio.tm(3,d.form,'#api_list')
+        break;
+        case'user_settings_change':
+            new PNotify({title:'Settings Changed',text:'Your settings have been saved and applied.',type:'success'});
+            $.ccio.init('id',d.form);
+        break;
         case'log':
             d.l=$('#logs,.monitor_item[mid="'+d.mid+'"][ke="'+d.ke+'"] .logs')
             d.tmp='';
@@ -182,7 +208,8 @@ $.ccio.ws.on('f',function (d){
                 $.ccio.tm(1,v,'#monitors_list')
                 $.ccio.cx({f:'get',ff:'events',limit:10,mid:v.mid})
                 if(d.o[v.ke]&&d.o[v.ke][v.mid]===1){$.ccio.cx({f:'monitor',ff:'watch_on',id:v.mid})}
-            })
+            });
+            $.ccio.pm(3,d.apis);
         break;
         case'get_events':
             $.ccio.pm(0,d)
@@ -193,9 +220,16 @@ $.ccio.ws.on('f',function (d){
         break;
         case'event_build_success':
             if(!d.mid){d.mid=d.id;}
-            d.e='.glM'+d.mid+'.events_list ul';$(d.e).find('.notice.noevents').remove();
+            d.e='.glM'+d.mid+'.events_list ul,.glM'+d.mid+'.events_monitor_list ul';$(d.e).find('.notice.noevents').remove();
             $.ccio.tm(0,d,d.e)
         break;
+//        case'monitor_stopping':
+//            new PNotify({title:'Monitor Stopping',text:'Monitor <b>'+d.mid+'</b> is now off.',type:'notice'});
+//        break;
+//        case'monitor_starting':
+//            switch(d.mode){case'start':d.mode='Watch';break;case'record':d.mode='Record';break;}
+//            new PNotify({title:'Monitor Starting',text:'Monitor <b>'+d.mid+'</b> is now running in mode <b>'+d.mode+'</b>',type:'success'});
+//        break;
         case'monitor_snapshot':
             switch(d.snapshot_format){
                 case'plc':
@@ -288,11 +322,12 @@ $.aM={e:$('#add_monitor')};$.aM.f=$.aM.e.find('form')
 $.aM.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
     e.er=[];
-    $.each(e.s,function(n,v){e.s[n]=v.trim()})
+    $.each(e.s,function(n,v){e.s[n]=v.trim()});
+    e.s.mid=e.s.mid.replace(/[^\w\s]/gi,'').replace(/ /g,'')
     if(e.s.mid.length<3){e.er.push('Monitor ID too short')}
     if(e.s.port==''){e.s.port=80}
 //    if(e.s.protocol=='rtsp'){e.s.ext='mp4',e.s.type='rtsp'}
-    if(e.er.length>0){return}
+    if(e.er.length>0){$.sM.e.find('.msg').html(e.er.join('<br>'));return;}
         $.ccio.cx({f:'monitor',ff:'add',mon:e.s})
         if(!$.ccio.mon[e.s.mid]){$.ccio.mon[e.s.mid]={}}
         $.each(e.s,function(n,v){$.ccio.mon[e.s.mid][n]=v;})
@@ -351,6 +386,23 @@ $.aM.f.find('[name="protocol"]').change(function(e){
         break;
     }
 })
+//api window
+$.apM={e:$('#apis')};$.apM.f=$.apM.e.find('form');
+$.apM.md=$.apM.f.find('[detail]');
+$.apM.md.change($.ccio.form.details);
+$.apM.f.submit(function(e){
+    e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
+    e.er=[];
+    if(!e.s.ip||e.s.ip.length<7){e.er.push('Enter atleast one IP')}
+    if(e.er.length>0){$.apM.e.find('.msg').html(e.er.join('<br>'));return;}
+    $.each(e.s,function(n,v){e.s[n]=v.trim()})
+    $.ccio.cx({f:'api',ff:'add',form:e.s})
+});
+$.apM.e.on('click','.delete',function(e){
+    e.e=$(this);e.p=e.e.parents('[api_key]'),e.code=e.p.attr('api_key');
+    console.log(e.code)
+    $.ccio.cx({f:'api',ff:'delete',form:{code:e.code}})
+})
 //settings window
 $.sM={e:$('#settings')};$.sM.f=$.sM.e.find('form');
 $.sM.md=$.sM.f.find('[detail]');
@@ -358,6 +410,8 @@ $.sM.md.change($.ccio.form.details);
 $.sM.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
     e.er=[];
+    if(e.s.pass!==''&&e.password_again===e.s.pass){e.er.push('Passwords don\'t match')};
+    if(e.er.length>0){$.sM.e.find('.msg').html(e.er.join('<br>'));return;}
     $.each(e.s,function(n,v){e.s[n]=v.trim()})
     $.ccio.cx({f:'settings',ff:'edit',form:e.s})
     $.sM.e.modal('hide')
@@ -428,7 +482,7 @@ $('body')
             $.ccio.cx({f:'monitor',ff:'control',direction:e.a,mid:e.mid,ke:e.ke})
         break;
         case'calendar':
-    $.getJSON('/events/'+e.ke+'/'+e.mid,function(d){
+    $.getJSON('/'+$user.auth_token+'/events/'+e.ke+'/'+e.mid,function(d){
         e.ar=[];
         $.each(d,function(n,v){
             if(v.status!==0){
@@ -464,7 +518,7 @@ $('body')
             e.m=$('#monitors_live')
             $('.monitor_item .events_list').remove();
             e.e=e.e.parents('.monitor_item');
-            $('.events_list.glM'+e.mid).clone().appendTo(e.e.find('.hud .events_tmp')).find('h3').remove()
+            $('.events_list.glM'+e.mid).clone().appendTo(e.e.find('.hud .events_monitor_list')).find('h3').remove()
             if(!e.e.is(':first')){
                 e.m.find('.monitor_item').first().insertAfter(e.e.prev())
                 e.e.prependTo('#monitors_live');
