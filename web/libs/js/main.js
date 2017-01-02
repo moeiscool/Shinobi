@@ -220,7 +220,7 @@ $.ccio.ws.on('f',function (d){
         break;
         case'event_build_success':
             if(!d.mid){d.mid=d.id;}
-            d.e='.glM'+d.mid+'.events_list ul';$(d.e).find('.notice.noevents').remove();
+            d.e='.glM'+d.mid+'.events_list ul,.glM'+d.mid+'.events_monitor_list ul';$(d.e).find('.notice.noevents').remove();
             $.ccio.tm(0,d,d.e)
         break;
 //        case'monitor_stopping':
@@ -322,7 +322,8 @@ $.aM={e:$('#add_monitor')};$.aM.f=$.aM.e.find('form')
 $.aM.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
     e.er=[];
-    $.each(e.s,function(n,v){e.s[n]=v.trim()})
+    $.each(e.s,function(n,v){e.s[n]=v.trim()});
+    e.s.mid=e.s.mid.replace(/[^\w\s]/gi,'').replace(/ /g,'')
     if(e.s.mid.length<3){e.er.push('Monitor ID too short')}
     if(e.s.port==''){e.s.port=80}
 //    if(e.s.protocol=='rtsp'){e.s.ext='mp4',e.s.type='rtsp'}
