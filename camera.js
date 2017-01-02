@@ -930,8 +930,8 @@ app.get(['/:auth/monitor/:ke','/:auth/monitor/:ke/:id'], function (req,res){
     req.fn=function(){
         req.sql='SELECT * FROM Monitors WHERE ke=?';req.ar=[req.params.ke];
         if(req.params.id){req.sql+='and mid=?';req.ar.push(req.params.id)}
-        if(r.length===1){r=r[0];}
         sql.query(req.sql,req.ar,function(err,r){
+            if(r.length===1){r=r[0];}
             res.send(JSON.stringify(r, null, 3));
         })
     }
