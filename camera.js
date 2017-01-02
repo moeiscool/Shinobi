@@ -935,7 +935,7 @@ app.get(['/:auth/monitor/:ke','/:auth/monitor/:ke/:id'], function (req,res){
             res.send(JSON.stringify(r, null, 3));
         })
     }
-    if(s.group[req.params.ke].users[req.params.auth]){
+    if(s.group[req.params.ke]&&s.group[req.params.ke].users[req.params.auth]){
         req.fn();
     }else{
         sql.query('SELECT * FROM API WHERE code=?',[req.params.auth],function(err,r){
@@ -994,7 +994,7 @@ app.get(['/:auth/monitor/:ke/:mid/:f','/:auth/monitor/:ke/:mid/:f/:ff','/:auth/m
             res.send(JSON.stringify(req.ret, null, 3));
         })
     }
-    if(s.group[req.params.ke].users[req.params.auth]){
+    if(s.group[req.params.ke]&&s.group[req.params.ke].users[req.params.auth]){
         req.fn();
     }else{
         sql.query('SELECT * FROM API WHERE code=?',[req.params.auth],function(err,r){
@@ -1026,7 +1026,7 @@ app.get('/:auth/events/:ke/:id/:file', function (req,res){
             res.send('File Not Found')
         }
     }
-    if(s.group[req.params.ke].users[req.params.auth]){
+    if(s.group[req.params.ke]&&s.group[req.params.ke].users[req.params.auth]){
         req.fn();
     }else{
         sql.query('SELECT * FROM API WHERE code=?',[req.params.auth],function(err,r){
@@ -1050,7 +1050,7 @@ app.get(['/:auth/events/:ke','/:auth/events/:ke/:id'], function (req,res){
         res.send(JSON.stringify(r, null, 3));
     })
     }
-    if(s.group[req.params.ke].users[req.params.auth]){
+    if(s.group[req.params.ke]&&s.group[req.params.ke].users[req.params.auth]){
         req.fn();
     }else{
         sql.query('SELECT * FROM API WHERE code=?',[req.params.auth],function(err,r){
