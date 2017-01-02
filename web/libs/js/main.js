@@ -54,7 +54,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
         switch(x){
             case 0://event
                 if(!d.filename){d.filename=moment(d.time).format('YYYY-MM-DDTHH-mm-ss')+'.'+d.ext;}
-                k=[d.mid+'-'+d.filename,'href="/events/'+d.ke+'/'+d.mid+'/'+d.filename+'"'];
+                k=[d.mid+'-'+d.filename,'href="/'+$user.auth_token+'/events/'+d.ke+'/'+d.mid+'/'+d.filename+'"'];
                 d.mom=moment(d.time),d.hr=parseInt(d.mom.format('HH'))+1,d.per=parseInt(d.hr/24*100);
                 tmp+='<li mid="'+d.mid+'" ke="'+d.ke+'" file="'+d.filename+'"><div title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'" '+k[1]+' event="launch" class="progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div><div><span title="'+d.end+'" class="livestamp"></span></div><div class="small"><b>Start</b> : '+d.time+'</div><div class="small"><b>End</b> : '+d.end+'</div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls"><a class="btn btn-sm btn-primary" event="launch" '+k[1]+'><i class="fa fa-play-circle"></i></a> <a download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a> <a event="download" host="dropbox" download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a> <a title="Delete Event" event="delete" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></a></div></div></li>';
             break;
@@ -482,7 +482,7 @@ $('body')
             $.ccio.cx({f:'monitor',ff:'control',direction:e.a,mid:e.mid,ke:e.ke})
         break;
         case'calendar':
-    $.getJSON('/events/'+e.ke+'/'+e.mid,function(d){
+    $.getJSON('/'+$user.auth_token+'/events/'+e.ke+'/'+e.mid,function(d){
         e.ar=[];
         $.each(d,function(n,v){
             if(v.status!==0){
