@@ -925,13 +925,36 @@ app.post('/auth',function (req,res){
         res.end();
     }
 })
-
+// Get monitors json
+app.get(['/:auth/monitor/:ke','/:auth/monitor/:ke/:id'], function (req,res){
+    req.fn=function(){
+        req.sql='SELECT * FROM Monitors WHERE ke=?';req.ar=[req.params.ke];
+        if(req.params.id){req.sql+='and mid=?';req.ar.push(req.params.id)}
+        if(r.length===1){r=r[0];}
+        sql.query(req.sql,req.ar,function(err,r){
+            res.send(JSON.stringify(r, null, 3));
+        })
+    }
+    if(s.group[req.params.ke].users[req.params.auth]){
+        req.fn();
+    }else{
+        sql.query('SELECT * FROM API WHERE code=?',[req.params.auth],function(err,r){
+            if(r&&r[0]){
+                req.fn();
+            }else{
+                req.ret.msg='Not Authorized';
+                res.send(JSON.stringify(req.ret, null, 3));
+            }
+        })
+    }
+});
 // Control monitor mode via HTTP
 app.get(['/:auth/monitor/:ke/:mid/:f','/:auth/monitor/:ke/:mid/:f/:ff','/:auth/monitor/:ke/:mid/:f/:ff/:fff'], function (req,res){
     req.ret={ok:false};
     res.setHeader('Content-Type', 'application/json');
     req.fn=function(){
-        if(req.params.ff&&(req.params.f!=='stop'||req.params.f!=='start'||req.params.f!=='record')){
+        if(req.params.f===''){req.ret.msg='incomplete request, remove last slash in URL or put acceptable value.';res.send(JSON.stringify(req.ret, null, 3));return}
+        if(req.params.f!=='stop'&&req.params.f!=='start'&&req.params.f!=='record'){
             req.ret.msg='Mode not recognized.';
             res.send(JSON.stringify(req.ret, null, 3));
             return;
@@ -943,7 +966,7 @@ app.get(['/:auth/monitor/:ke/:mid/:f','/:auth/monitor/:ke/:mid/:f/:ff','/:auth/m
                     s.camera(req.params.f,r);req.ret.cmd_at=moment();
                     req.ret.msg='Monitor mode changed to : '+req.params.f,req.ret.ok=true;
                     sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',[req.params.f,r.ke,r.mid]);
-                    if(req.params.f!=='stop'){
+                    if(req.params.ff&&req.params.f!=='stop'){
                         req.params.ff=parseFloat(req.params.ff);
                         switch(req.params.fff){
                             case'day':case'days':
