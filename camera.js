@@ -79,7 +79,12 @@ s.gid=function(x){
         t += p.charAt(Math.floor(Math.random() * p.length));
     return t;
 };
-s.moment=function(e,x){if(!e){e=new Date};if(!x){x='YYYY-MM-DDTHH-mm-ss'};return moment(e).utcOffset('-0800').format(x)}
+if(!config.utcOffset){config.utcOffset='-0800'}
+s.moment=function(e,x){
+    if(!e){e=new Date};if(!x){x='YYYY-MM-DDTHH-mm-ss'};
+    e=moment(e);if(config.utcOffset){e=e.utcOffset(config.utcOffset)}
+    return e.format(x);
+}
 s.kill=function(x,e,p){
     if(s.group[e.ke]&&s.group[e.ke].mon[e.id]){
         if(e&&s.group[e.ke].mon[e.id].record){
@@ -777,7 +782,6 @@ s.tx({f:'monitor_watch_on',viewers:Object.keys(s.group[d.ke].mon[d.id].watch).le
         switch(d.f){
             case'init':
                 s.cron={started:moment(),last_run:moment()};
-
             break;
             case'msg':
 
