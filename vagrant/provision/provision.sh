@@ -106,7 +106,10 @@ apt_package_check_list=(
   npm
 
   # FFMPeg
+  ffmpeg
   libav-tools
+  x264
+  x265
 
   #Mailcatcher requirement
   libsqlite3-dev
@@ -226,6 +229,9 @@ package_install() {
     # Apply the nodejs assigning key
     apt-key adv --quiet --keyserver "hkp://keyserver.ubuntu.com:80" --recv-key C7917B12 2>&1 | grep "gpg:"
     apt-key export C7917B12 | apt-key add -
+
+    # Adding FFMPEG 3 Repo for Ubuntu 16.04
+    sudo add-apt-repository ppa:jonathonf/ffmpeg-3
 
     # Update all of the package references before installing anything
     echo "Running apt-get update..."
