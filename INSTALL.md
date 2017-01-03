@@ -33,6 +33,66 @@ Find videos about Shinobi on YouTube : https://www.youtube.com/user/MrMoea92
     ifconfig
     ```
 
+
+# Mac OS : Native
+
+1. Open `Terminal`.
+
+2. Install the required system packages `git nodejs npm mysql` via `brew`. If you don't have brew, download it from here: http://brew.sh/
+If you have these already on your system you can skip this step.
+    
+    ```
+    brew install git nodejs npm mysql
+    ```
+
+3. Install the `ffmpeg` package via `brew`.
+    
+    ```
+    brew install ffmpeg
+    ```
+
+4. Download the repo via GIT
+
+    ```
+    git clone git@github.com:moeiscool/Shinobi.git -o github ./Shinobi`
+    ```
+
+5. Import the `sql/framework.sql` SQL file, it will create a database called `ccio`
+
+    ```
+    cat sql/framework.sql | mysql -u root -p
+    ```
+
+6. Import the `sql/default_data.sql` SQL file, it will create a default user and camera source
+
+    ```
+    cat sql/default_data.sql | mysql -u root -p ccio
+    ```
+
+7. Run `npm install` from your `Shinobi` directory to install the required `nodejs` packages.
+
+    ```
+    npm install
+    ```
+
+8. Copy `conf.sample.json` to `conf.json` in your `Shinobi` directory and enter your database connection details
+
+    ```
+    cp conf.sample.json conf.json
+    ```
+
+9. Run `npm start` from your `Shinobi` directory to start the Shinobi App.
+
+    ```
+    npm start
+    ```
+
+10. Open up `http://localhost:8080` in your browser.
+    - *Note :* if you are installed on a remote computer open up the IP in your web browser.
+        - `Username : ccio@m03.ca`
+        - `Password : password`
+
+
 # Ubuntu 16.04 : The Easier Way
 
 <b>VIDEO TUTORIAL :</b> https://www.youtube.com/watch?v=CZSKV5gRd90
