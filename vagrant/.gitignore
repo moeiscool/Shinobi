@@ -1,0 +1,6 @@
+log/*
+!log/README.md
+database/*
+!database/.gitkeep
+.vagrant
+*
