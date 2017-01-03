@@ -142,7 +142,12 @@ s.init=function(x,e){
         break;
         case'url':
             if(e.port==80){e.porty=''}else{e.porty=':'+e.port}
-            e.url=e.protocol+'://'+e.host+e.porty+e.path;return e.url;
+            //XXX
+            auth_details='';
+            if(e.username&&e.username!==''&&e.password&&e.password!=='') {
+              auth_details=e.username+':'+e.password+'@';
+            }
+            e.url=e.protocol+'://'+auth_details+e.host+e.porty+e.path;return e.url;
         break;
         case'url_no_path':
             if(e.port==80){e.porty=''}else{e.porty=':'+e.port}

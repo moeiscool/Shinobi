@@ -51,6 +51,8 @@ CREATE TABLE IF NOT EXISTS `Monitors` (
   `ext` varchar(50) DEFAULT 'webm',
   `protocol` enum('http','https','rtmp','rtsp','axrtsp','axrtpu','axrtsphttp','axrtpm') DEFAULT 'http',
   `host` varchar(100) DEFAULT '0.0.0.0',
+  `username` varchar(128) DEFAULT NULL,
+  `password` varchar(128) DEFAULT NULL,
   `path` varchar(100) DEFAULT '/',
   `port` int(8) DEFAULT '80',
   `fps` int(8) DEFAULT '1',
