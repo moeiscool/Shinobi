@@ -141,12 +141,20 @@ s.init=function(x,e){
             return x.ar;
         break;
         case'url':
+            auth_details='';
+            if(e.details.muser&&e.details.muser!==''&&e.details.mpass&&e.details.mpass!=='') {
+                auth_details=e.details.muser+':'+e.details.mpass+'@';
+            }
             if(e.port==80){e.porty=''}else{e.porty=':'+e.port}
-            e.url=e.protocol+'://'+e.host+e.porty+e.path;return e.url;
+            e.url=e.protocol+'://'+auth_details+e.host+e.porty+e.path;return e.url;
         break;
         case'url_no_path':
+            auth_details='';
+            if(e.details.muser&&e.details.muser!==''&&e.details.mpass&&e.details.mpass!=='') {
+                auth_details=e.details.muser+':'+e.details.mpass+'@';
+            }
             if(e.port==80){e.porty=''}else{e.porty=':'+e.port}
-            e.url=e.protocol+'://'+e.host+e.porty;return e.url;
+            e.url=e.protocol+'://'+auth_details+e.host+e.porty;return e.url;
         break;
     }
     if(typeof e.callback==='function'){setTimeout(function(){e.callback()},500);}
