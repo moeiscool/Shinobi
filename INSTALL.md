@@ -1,6 +1,21 @@
 Find videos about Shinobi on YouTube : https://www.youtube.com/user/MrMoea92
 
-# Windows, Linux, Mac OS : VirtualBox
+# Windows, Linux, Mac OS : Vagrant
+
+This sets up an Ubuntu 16.04 Virtual Machine running on `VirtualBox` and uses `Vagrant` to setup and configure everything in one command.
+
+1. Open `Terminal`.
+
+2. Download the repo via GIT
+`git clone git@github.com:moeiscool/Shinobi.git -o github ./Shinobi`
+
+3. Download and Install Vagrant
+https://www.vagrantup.com/downloads.html
+
+4. Go to the `/Shinobi` directory which you created in Step 2
+Run `vagrant up` from the terminal or command line
+
+# Windows, Linux, Mac OS : Plain VirtualBox
 
 <b>VIDEO TUTORIAL :</b> https://www.youtube.com/watch?v=kENOPPTA0Xg
 
