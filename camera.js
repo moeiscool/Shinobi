@@ -225,7 +225,7 @@ s.ffmpeg=function(e,x){
     }
     if(e.details.acodec&&e.details.acodec!==''){x.acodec=e.details.acodec}
     if(x.acodec==='none'){x.acodec=''}else{x.acodec=' -acodec '+x.acodec}
-    if(x.vcodec==='none'){x.vcodec='-f '+e.ext}else{x.vcodec=' -vcodec '+x.vcodec}
+    if(x.vcodec!=='none'){x.vcodec=' -vcodec '+x.vcodec}
     if(e.fps&&e.fps!==''){x.framerate=' -r '+e.fps}else{x.framerate=''}
     if(e.details.vf&&e.details.vf!==''){
         if(x.time===''){x.vf=' -vf '}else{x.vf=','}
@@ -362,6 +362,7 @@ s.camera=function(x,e,cn,tx){
             clearInterval(s.group[e.ke].mon[e.id].running);
             s.group[e.ke].mon[e.id].started=0;
             if(s.group[e.ke].mon[e.mid].record){s.group[e.ke].mon[e.mid].record.yes=0}
+            s.log(e,{type:'Monitor Stopping',msg:'Monitor session has been ordered to stop.'});
             s.tx({f:'monitor_stopping',mid:e.id,ke:e.ke,time:s.moment(),reason:e.reason},'GRP_'+e.ke);
             if(e.delete===1){
                 s.group[e.ke].mon[e.id].delete=setTimeout(function(){delete(s.group[e.ke].mon[e.id]);},60000*60);
@@ -389,6 +390,7 @@ s.camera=function(x,e,cn,tx){
             }else{
                 s.group[e.ke].mon[e.mid].record.yes=0;
             }
+            s.log(e,{type:'Monitor Starting',msg:{mode:x}});
             s.tx({f:'monitor_starting',mode:x,mid:e.id,time:s.moment()},'GRP_'+e.ke);
             e.error_count=0;
                 e.set=function(y){
@@ -418,6 +420,13 @@ s.camera=function(x,e,cn,tx){
                     default:
                         e.ratio='640x480';
                     break;
+                }
+                e.error_fatal=function(x){
+                    clearTimeout(e.err_fatal_timeout);
+                    e.err_fatal_timeout=setTimeout(function(){
+                        ++e.error_fatal_count;
+                        if(e.error_fatal_count>10){s.camera('stop',{id:e.id,ke:e.ke})}else{e.fn()};
+                    },5000);
                 }
                 e.error=function(x){
 //                    clearTimeout(e.err_timeout);
@@ -507,7 +516,7 @@ s.camera=function(x,e,cn,tx){
                                     break;
                                 }
                                 }else{
-                                    s.log(e,{type:"Can't Connect",msg:'Retrying...'});e.error();return;
+                                    s.log(e,{type:"Can't Connect",msg:'Retrying...'});e.error_fatal();return;
                                 }
                         }
                         if(e.type!=='socket'){
@@ -532,7 +541,7 @@ s.camera=function(x,e,cn,tx){
                                 s.group[e.ke].mon[e.id].child_node=n;
                                 s.cx({f:'spawn',d:s.init('clean',e),mon:s.init('clean',s.group[e.ke].mon[e.mid])},s.group[e.ke].mon[e.mid].child_node_id)
                             }else{
-                                console.log('Cannot Connect, Retrying...',e.id);e.error();return;
+                                console.log('Cannot Connect, Retrying...',e.id);e.error_fatal();return;
                             }
                         })
                         }
@@ -1057,7 +1066,7 @@ app.get(['/:auth/events/:ke','/:auth/events/:ke/:id'], function (req,res){
     if(req.params.id){req.sql+='and mid=?';req.ar.push(req.params.id)}
     sql.query(req.sql,req.ar,function(err,r){
         r.forEach(function(v){
-            v.href='/events/'+v.ke+'/'+v.mid+'/'+s.moment(v.time)+'.'+v.ext;
+            v.href='/'+req.params.auth+'/events/'+v.ke+'/'+v.mid+'/'+s.moment(v.time)+'.'+v.ext;
         })
         res.send(JSON.stringify(r, null, 3));
     })
