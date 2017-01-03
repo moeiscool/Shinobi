@@ -31,5 +31,8 @@
     "socket.io": "^1.7.1",
     "socket.io-client": "^1.7.2"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "scripts": {
+    "start": "node camera.js"
+  }
 }
