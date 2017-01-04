@@ -1,0 +1,10 @@
+{
+  "port": 8080,
+  "db": {
+    "host": "127.0.0.1",
+    "user": "majesticflame",
+    "password": "",
+    "database": "ccio",
+    "port":3306
+  }
+}
