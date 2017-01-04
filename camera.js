@@ -183,7 +183,7 @@ s.video=function(x,e){
         case'close':
             e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
             if(s.group[e.ke]&&s.group[e.ke].mon[e.id]){
-                if(s.group[e.ke].mon[e.id].open&&!e.filename){e.filename=s.group[e.ke].mon[e.id].open;e.ext=s.group[d.d.ke].mon[d.d.mid].open_ext}
+                if(s.group[e.ke].mon[e.id].open&&!e.filename){e.filename=s.group[e.ke].mon[e.id].open;e.ext=s.group[e.ke].mon[e.id].open_ext}
                 if(s.group[e.ke].mon[e.id].child_node){
                     s.cx({f:'close',d:s.init('clean',e)},s.group[e.ke].mon[e.id].child_node_id);
                 }else{
