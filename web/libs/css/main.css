@@ -36,15 +36,15 @@ img{max-width:100%}
 img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .circle-img.sm{height:25px;width:25px}
 
-.event_video{margin:auto;max-width:100%;max-height:600px;}
-#confirm_window .event_video{margin-top:15px}
+.video_video{margin:auto;max-width:100%;max-height:600px;}
+#confirm_window .video_video{margin-top:15px}
 #confirm_window .info-table{margin-top:15px}
 @media (min-width: 768px){
     .modal.full{padding-left:0!important;}
     .modal.full .modal-dialog{width:calc(100% - 10px)!important;margin: 30px auto;}
 }
 
-.events_list .title{font-size:12pt;padding:0 10px}
+.videos_list .title{font-size:12pt;padding:0 10px}
 .signal.red{background:#c9302c}
 .signal.green{background:#5cb85c}
 .side-menu .progress-circle{margin:0 10px 0 0;position:relative;height:40px;width:40px;float:left}
