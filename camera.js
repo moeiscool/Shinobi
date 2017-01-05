@@ -592,7 +592,17 @@ var tx;
                     }
                     sql.query('SELECT * FROM API WHERE ke=? && uid=?',[d.ke,d.uid],function(err,rrr) {
                     sql.query('SELECT * FROM Monitors WHERE ke=?',[d.ke],function(err,rr) {
-                        tx({f:'init_success',monitors:rr,users:s.group[d.ke].vid,apis:rrr})
+                        tx({
+                            f:'init_success',
+                            monitors:rr,
+                            users:s.group[d.ke].vid,
+                            apis:rrr,
+                            os:{
+                                platform:os.platform(),
+                                cpuCount:os.cpuCount(),
+                                totalmem:os.totalmem()
+                            }
+                        })
                         s.disk(cn.id);
                         setTimeout(function(){
                             if(rr&&rr[0]){
@@ -1102,9 +1112,10 @@ sql.query('SELECT * FROM Monitors WHERE mode != "stop"', function(err,r) {
 },1500)
 
 try{
+    
     setInterval(function(){
         os.cpuUsage(function(cpu){
-            io.emit('f',{f:'cpu',data:cpu});
+            io.emit('f',{f:'os',cpu:cpu,ram:os.freememPercentage()});
         });
     },2000);
 }catch(err){console.log('CPU indicator will not work. Continuing...')}

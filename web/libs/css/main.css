@@ -15,6 +15,7 @@ a{cursor:pointer}
 .truncate{width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 img{max-width:100%}
 .display-table{display:table;width:100%}
+.display-table-cell{display:table-cell}
 .small{font-size:80%}
 .monitor_item img,.monitor_item iframe{width:100%;height:300px;border:0;}
 .monitor_item{position:relative;padding:0;}
@@ -96,6 +97,15 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .dark.modal .modal-footer>*:not(.btn){color:#fff;}
 .dark.modal .modal-body{background:#333;}
 .dark.modal .close{color:#fff;}
+
+.os_bars{width:300px;display:inline-block;padding:5px 0 0 10px}
+@media screen and (max-width: 600px){
+    .os_bars{width:200px;}
+    .os_bars label{padding:2.5px 0;margin:0;font-size:8pt}
+}
+.os_bars .display-table .display-table-cell{padding:5px;vertical-align:center}
+.os_bars .progress{height:5px;margin:0;}
+.os_bars label,.os_bars .percent{padding:2.5px 0;margin:0;font-size:7.5pt}
 
 /*cool dropdown thing*/
 ul.msg_list li {
@@ -660,3 +670,16 @@ ul.msg_list li .message {
     transform: scale(1);
   }
 }
+/*** custom checkboxes ***/
+
+.checkbox input[type=checkbox] { display:none; } /* to hide the checkbox itself */
+.checkbox input[type=checkbox] + label:before {
+  font-family: FontAwesome;
+  display: inline-block;
+}
+
+.checkbox input[type=checkbox] + label:before { content: "\f096"; } /* unchecked icon */
+.checkbox input[type=checkbox] + label:before { letter-spacing: 10px; } /* space between checkbox and label */
+
+.checkbox input[type=checkbox]:checked + label:before { content: "\f046"; } /* checked icon */
+.checkbox input[type=checkbox]:checked + label:before { letter-spacing: 5px; } /* allow space for check mark */

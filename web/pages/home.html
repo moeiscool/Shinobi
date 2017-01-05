@@ -66,12 +66,24 @@
             </div>
         <ul class="nav navbar-nav">
             <li class="hidden-xs"><a class="info-number" class_toggle="nav-xs" data-target="#side_menu">&nbsp;<i class="fa fa-reorder"></i>&nbsp;</a>&nbsp;</li>
-            <li><a class="info-number" class_toggle="list-blocks" data-target="#side_menu">&nbsp;<i class="fa fa-camera"></i>&nbsp;</a></li>
-            <li mid="" ke=""><a class="info-number" monitor="edit">&nbsp;<i class="fa fa-plus"></i>&nbsp;</a></li>
-            <li style="padding-top:10px"><div class="cpu_load" style="width:200px;display:inline-block">
-                  <div class="progress">
-                    <div class="progress-bar progress-bar-warning" role="progressbar" style="width:70%"></div>
-                  </div>
+            <li class="hidden-xs"><a class="info-number" class_toggle="list-blocks" data-target="#side_menu">&nbsp;<i class="fa fa-camera"></i>&nbsp;</a></li>
+            <li class="hidden-xs" mid="" ke=""><a class="info-number" monitor="edit">&nbsp;<i class="fa fa-plus"></i>&nbsp;</a></li>
+            <li class="os_bars">
+                <div class="display-table">
+                    <div class="cpu_load display-table-cell">
+                        <span class="pull-right percent"></span>
+                        <label><span class="os_cpuCount"></span> CPU<span class="os_cpuCount_trailer"></span> on <span class="os_platform" style="text-transform:capitalize"></span></label>
+                      <div class="progress">
+                        <div class="progress-bar progress-bar-warning" role="progressbar" style="width:0%"></div>
+                      </div>
+                    </div>
+                    <div class="ram_load display-table-cell">
+                        <span class="pull-right percent"></span>
+                       <label><span class="os_totalmem" style="letter-spacing:2px;font-weight:100"></span> MB RAM</label>
+                      <div class="progress">
+                        <div class="progress-bar progress-bar-warning" role="progressbar" style="width:0%"></div>
+                      </div>
+                    </div>
                 </div>
             </li>
         </ul>
@@ -180,7 +192,7 @@
 <!--Videos List Window-->
 <div class="modal full fade" id="videos_viewer" tabindex="-1" role="dialog" aria-labelledby="videos_viewerLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
-    <div class="modal-content">
+    <form class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
@@ -189,9 +201,12 @@
       </div>
       <div class="modal-body"></div>
       <div class="modal-footer">
+          <div class="pull-left">
+              <a class="btn btn-danger delete_selected"><i class="fa fa-trash-o"></i> &nbsp; Delete selected</a>
+          </div>
         <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
       </div>
-    </div>
+    </form>
   </div>
 </div>
 <!--Event File Window-->

@@ -13,54 +13,34 @@ Shinobi can record IP Cameras and Local Cameras.
 
 <img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.gif?raw=true">
 
-# Why?
+# Why make this? Other solutions already exist.
 
-- MJPEG streams that are presented as a DOM element puts serious strain on the client browser when needing to be removed and added again. They cannot be terminated without a hard refresh of the page or use of popup or iframe. It essentially opens new streams everytime you recreate an image with an MJPEG url.
-    - Shinobi addresses this with `WebSocket` streams.
+ZoneMinder was the first choice but it proved unstable. A few reasons are mentioned below. Solutions such as ispyconnect are not relevant as they have a cost for using their platform.
 
-- <s>Saving to WebM not JPEG frames or MP4 video. JPEG and MP4 are heavy. WebM is not.</s>
-    - Now Saves to WebM and MP4, your choice. RTSP -> MP4 uses very little CPU power but uses a lot of storage space. MP4 is still heavy.
+- *MJPEG streams are beyond unusable in modern applications.*
+    - Essentially with MJPEG you are opening a new stream everytime you create an image with an MJPEG url. Even if you remove this element it will continue to eat resources from the server and client. Only way to deal with it currently is through an `iframe` or `popup`. Neither of which should be considered acceptable.
+    - Shinobi addresses this with `WebSocket` streams. As frames are captured by FFMPEG they are base64 encoded and sent to the client.
+    
+- *JPEG Storage is just a terrible idea.*
+    - Saving each frame as a separate file in JPEG format can have a seriously detrmental effect on storage space and the hardware itself. Hardware is more likely to fail under the stress of continuously saving frames to storage.
+    - Shinobi saves to WebM and MP4 files. While MP4 takes a fair amount of space.. its level of CPU usage during encoding for H.264 streams is just amazing.
 
-- Written in Node.js, not PHP, Perl, and whatever languages you can remember.
-
-- ZoneMinder was the first choice but it proved unstable for the reasons mentioned. Also it has so many bugs and bounties many of them are just being left behind in the ocean of bug reports.
+- *Using languages that are not needed.*
+    - You'll find that ZoneMinder uses multiple languages to achieve very small results. This probably just because of the time it was written in... but with that said all the devs currently working on it should have addressed these issues and removed unecessary steps, languages, and files. ZoneMinder uses Perl, PHP, JavaScript, C, HTML, CSS, MySQL, and probably more.
+    - Shinobi uses JavaScript, HTML, CSS, and MySQL. Simple right? It should be.
 
 # Info
 
 - Written in a simple structure. `camera.js` and `web` folder.
-- Easy Install. (not as easy as apt-get install zoneminder yet though. See below)
 - Streams are transferred through `WebSocket`. DOM element is an `img` tag.
 - Any websocket enabled browser can support the image stream (including mobile)
-- Can save to WebM or MP4
+- Can save to WebM or MP4 *(Your version of FFMPEG must have libvpx and libx264)*
 - No Mootools (yes, you can shake my hand later)
 - Calendar view for Events
-- `child.js` Child node processing to load balance ffmpeg processes across multiple nodes. *Work in Progress, needs h264 added and schema update*
 
-- Client-side Tested on : 
-    - iPad Mini 2
-        - Safari
-        - Chrome
-    - iPhone 5
-        - Safari
-        - Chrome
-    - Windows 7
-        - Chrome
-    - Mac OS Sierra
-        - Safari
-        - Chrome
+# Supported Systems
 
-
-- Server-side Tested on:
-    - Macbook (some old white one)
-        - Ubuntu 16.04 (should work on any linux)
-        
-    - Macbook (2013, i5, 16GB RAM)
-        - Mac OS Sierra
-
-    - Odroid XU4 (Samsung Exynos5 Octa ARM, 2GB RAM)
-        - Ubuntu 16.04
-        
-- If you have successfully run Shinobi on a system not listed (client or server). Please send me a PM so I can add it to the list.
+- https://github.com/moeiscool/Shinobi/wiki/Supported-Systems
 
 # How to Install and Run
 
@@ -68,12 +48,9 @@ Shinobi can record IP Cameras and Local Cameras.
 
 # To Do
 
-- Organize this README.
-- Fix Pipe error that occasionally occurs. `(appears to be caused by JPEG stream emit or pipe into ffmpeg, MJPEG is not affected)`
-- better vieweing for saved events.
+- Fix Pipe error that occasionally occurs. `(appears to be caused by JPEG stream emit or pipe into ffmpeg, MJPEG is not affected)` - this will be addressed by segmenting feature.
 - Save events with blank frames and force real duration instead of based on frame count.
 - better mobile support.
-- Find alternative to dstat that works on windows, mac, and linux for CPU indicator.
 
 # Donate
 
@@ -83,7 +60,9 @@ If you like Shinobi please consider donating.
 
 # Author
 
-Moe Alam, just a guy who needed CCTV
+Moe Alam
+https://twitter.com/moe_alam
+Find me on <a href="https://discord.gg/mdhmvuH">Discord</a>! :) 
 
 # Credits
 
