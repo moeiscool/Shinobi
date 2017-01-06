@@ -72,6 +72,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .side-menu.list-blocks .monitor_block{float:none;width:100%;padding: 10px;}
 .side-menu.list-blocks .monitor_block .list-data{display:block}
 .side-menu.list-blocks .monitor_block img{width:60px;height:60px;cursor:pointer;display:inline-block;margin-right:10px;border-radius:50%;vertical-align:top;border:0}
+.nav-xs.side-menu.list-blocks .monitor_block img{width:40px;height:40px;}
 .side-menu.list-blocks .monitor_block .box{width:calc(100% - 70px);display:inline-block}
 .nav-xs.side-menu.list-blocks .monitor_block .list-data{display:none}
 

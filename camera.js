@@ -241,7 +241,7 @@ s.ffmpeg=function(e,x){
         break;
         case'mjpeg':
             if(e.mode=='record'){
-                x.watch=x.vcodec+x.time+x.framerate+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1 '+e.dir+e.filename+'.'+e.ext+''
+                x.watch=x.vcodec+x.time+' -r 10 -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1 '+e.dir+e.filename+'.'+e.ext+''
             }else{
                 x.watch='';
             };
