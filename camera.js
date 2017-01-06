@@ -254,7 +254,7 @@ s.ffmpeg=function(e,x){
             }else{
                 x.watch='';
             };
-            x.tmp='-loglevel error -i '+e.url+' -stimeout 2000'+x.watch+' -f image2pipe'+x.svf+' -s '+e.ratio+' pipe:1';
+            x.tmp='-loglevel warning -i '+e.url+' -stimeout 2000'+x.watch+' -f image2pipe'+x.svf+' -s '+e.ratio+' pipe:1';
         break;
         case'local':
             if(e.mode=='record'){

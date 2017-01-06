@@ -566,34 +566,34 @@ $('body')
                     case'videos_table':
                         e.t.attr('class','fa fa-film')
                         e.o.show();
-                        e.tmp='<table class="table table-striped">';
+                        e.tmp='<table class="table table-striped" style="max-height:500px">';
                         e.tmp+='<thead>';
                         e.tmp+='<tr>';
                         e.tmp+='<th><div class="checkbox"><input id="videos_select_all" type="checkbox"><label for="videos_select_all"></label></div></th>';
-                        e.tmp+='<th>Ended</th>';
-                        e.tmp+='<th>Started</th>';
-                        e.tmp+='<th>Monitor</th>';
-                        e.tmp+='<th>Filename</th>';
-                        e.tmp+='<th>Size (KB)</th>';
-                        e.tmp+='<th>Watch</th>';
-                        e.tmp+='<th>Download</th>';
-                        e.tmp+='<th>Delete</th>';
+                        e.tmp+='<th data-field="Closed" data-sortable="true">Closed</th>';
+                        e.tmp+='<th data-field="Ended" data-sortable="true">Ended</th>';
+                        e.tmp+='<th data-field="Started" data-sortable="true">Started</th>';
+                        e.tmp+='<th data-field="Monitor" data-sortable="true">Monitor</th>';
+                        e.tmp+='<th data-field="Filename" data-sortable="true">Filename</th>';
+                        e.tmp+='<th data-field="Size" data-sortable="true">Size (mb)</th>';
+                        e.tmp+='<th data-field="Watch" data-sortable="true">Watch</th>';
+                        e.tmp+='<th data-field="Download" data-sortable="true">Download</th>';
+                        e.tmp+='<th data-field="Delete" data-sortable="true">Delete</th>';
                         e.tmp+='</tr>';
                         e.tmp+='</thead>';
                         e.tmp+='<tbody>';
                         $.each(d,function(n,v){
                             if(v.status!==0){
-                                var n=$.ccio.mon[v.mid];
-                                if(n){v.title=n.name+' - '+(parseInt(v.size)/1000000).toFixed(2)+'mb';}
                                 v.start=v.time;
                                 v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
                                 e.tmp+='<tr ke="'+v.ke+'" mid="'+v.mid+'" file="'+v.filename+'">';
                                 e.tmp+='<td><div class="checkbox"><input id="'+v.ke+'_'+v.filename+'" name="'+v.filename+'" value="'+v.mid+'" type="checkbox"><label for="'+v.ke+'_'+v.filename+'"></label></div></td>';
                                 e.tmp+='<td><span class="livestamp" title="'+v.end+'"></span></td>';
+                                e.tmp+='<td>'+v.end+'</td>';
                                 e.tmp+='<td>'+v.time+'</td>';
                                 e.tmp+='<td>'+v.mid+'</td>';
                                 e.tmp+='<td>'+v.filename+'</td>';
-                                e.tmp+='<td>'+v.size+'</td>';
+                                e.tmp+='<td>'+(parseInt(v.size)/1000000).toFixed(2)+'</td>';
                                 e.tmp+='<td><a class="btn btn-sm btn-primary" video="launch" href="'+v.href+'">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a></td>';
                                 e.tmp+='<td><a class="btn btn-sm btn-success" download="'+v.mid+'-'+v.filename+'" href="'+v.href+'">&nbsp;<i class="fa fa-download"></i>&nbsp;</a></td>';
                                 e.tmp+='<td><a class="btn btn-sm btn-danger" video="delete">&nbsp;<i class="fa fa-trash"></i>&nbsp;</a></td>';
@@ -603,7 +603,8 @@ $('body')
                         e.tmp+='</tbody>';
                         e.tmp+='</table>';
                         e.b.html(e.tmp);delete(e.tmp)
-                        $.ccio.init('ls')
+                        $.ccio.init('ls');
+                        $.vidview.e.find('table').bootstrapTable();
                     break;
                 }
             })
