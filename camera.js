@@ -392,6 +392,7 @@ s.camera=function(x,e,cn,tx){
             }
             s.log(e,{type:'Monitor Starting',msg:{mode:x}});
             s.tx({f:'monitor_starting',mode:x,mid:e.id,time:s.moment()},'GRP_'+e.ke);
+            e.error_fatal_count=0;
             e.error_count=0;
                 e.set=function(y){
                     clearInterval(s.group[e.ke].mon[e.id].running);
@@ -423,9 +424,13 @@ s.camera=function(x,e,cn,tx){
                 }
                 e.error_fatal=function(x){
                     clearTimeout(e.err_fatal_timeout);
+                    ++e.error_fatal_count;
                     e.err_fatal_timeout=setTimeout(function(){
-                        ++e.error_fatal_count;
-                        if(e.error_fatal_count>10){s.camera('stop',{id:e.id,ke:e.ke})}else{e.fn()};
+                        if(e.error_fatal_count>10){
+                            s.camera('stop',{id:e.id,ke:e.ke})
+                        }else{
+                            e.fn()
+                        };
                     },5000);
                 }
                 e.error=function(x){
@@ -488,7 +493,7 @@ s.camera=function(x,e,cn,tx){
                                                 switch(true){
     //                                                case e.chk('av_interleaved_write_frame'):
                                                     case e.chk('Connection timed out'):
-                                                        setTimeout(function(){e.fn();},1000)//restart
+                                                        setTimeout(function(){s.log(e,{type:"Can't Connect",msg:'Retrying...'});e.error_fatal();},1000)//restart
                                                     break;
                                                     case e.chk('No pixel format specified'):
                                                         s.log(e,{type:"FFMPEG STDERR",msg:{ffmpeg:s.group[e.ke].mon[e.id].ffmpeg,msg:d}})
@@ -502,12 +507,10 @@ s.camera=function(x,e,cn,tx){
                                                     case e.chk('timed out'):
                                                     case e.chk('Invalid data found when processing input'):
                                                         if(e.frames===0&&x==='record'){s.video('delete',e)};
-                                                        e.error({type:'stderr out',msg:d});
                                                     break;
                                                     case e.chk('Immediate exit requested'):
                                                     case e.chk('reset by peer'):
                                                        if(e.frames===0&&x==='record'){s.video('delete',e)};
-                                                        e.error({type:'stderr out',msg:d});
                                                     break;
                                                 }
                                                 s.log(e,{type:"FFMPEG STDERR",msg:d})
