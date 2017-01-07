@@ -188,15 +188,15 @@ s.video=function(x,e){
                 }else{
                     if(fs.existsSync(e.dir+e.filename+'.'+e.ext)){
                         e.filesize=fs.statSync(e.dir+e.filename+'.'+e.ext)["size"];
-                        if((e.filesize/100000).toFixed(2)>0.25){
+//                        if((e.filesize/100000).toFixed(2)>0.25){
                             e.save=[e.filesize,e.frames,1,e.id,e.ke,s.nameToTime(e.filename)];
                             if(!e.status){e.save.push(0)}else{e.save.push(e.status)}
                             sql.query('UPDATE Videos SET `size`=?,`frames`=?,`status`=? WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save)
          s.tx({f:'video_build_success',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),size:e.filesize,end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
-                        }else{
-                            s.video('delete',e);
-                            s.log(e,{type:'File Corrupt',msg:{ffmpeg:s.group[e.ke].mon[e.mid].ffmpeg,filesize:(e.filesize/100000).toFixed(2)}})
-                        }
+//                        }else{
+//                            s.video('delete',e);
+//                            s.log(e,{type:'File Corrupt',msg:{ffmpeg:s.group[e.ke].mon[e.mid].ffmpeg,filesize:(e.filesize/100000).toFixed(2)}})
+//                        }
                     }else{
                         s.video('delete',e);
                         s.log(e,{type:'File Not Exist',msg:'Cannot save non existant file. Something went wrong.',ffmpeg:s.group[e.ke].mon[e.id].ffmpeg})
