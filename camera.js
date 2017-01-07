@@ -81,9 +81,14 @@ s.gid=function(x){
 };
 if(!config.utcOffset){config.utcOffset='-0800'}
 s.moment=function(e,x){
-    if(!e){e=new Date};if(!x){x='YYYY-MM-DDTHH-mm-ss'};
+    if(!e){e=new Date};
+    if(!x){x='YYYY-MM-DDTHH-mm-ss'};
     e=moment(e);if(config.utcOffset){e=e.utcOffset(config.utcOffset)}
-    return e.format(x);
+    if(x!==0){
+        return e.format(x);
+    }else{
+        return e;
+    }
 }
 s.kill=function(x,e,p){
     if(s.group[e.ke]&&s.group[e.ke].mon[e.id]){
@@ -994,7 +999,14 @@ app.get(['/:auth/monitor/:ke/:mid/:f','/:auth/monitor/:ke/:mid/:f/:ff','/:auth/m
             if(r&&r[0]){
                 r=r[0];
                 if(r.mode!==req.params.f){
-                    s.camera(req.params.f,r);req.ret.cmd_at=moment();
+                    r.mode=req.params.f;
+                    s.group[r.ke].mon_conf[r.mid]=r;
+                    s.tx({f:'monitor_edit',mid:r.id,ke:r.ke,mon:r},'GRP_'+r.ke);
+                    s.camera('stop',r);
+                    if(req.params.f!=='stop'){
+                        s.camera(req.params.f,r);
+                    }
+                    req.ret.cmd_at=s.moment(new Date,'YYYY-MM-DD HH:mm:ss');
                     req.ret.msg='Monitor mode changed to : '+req.params.f,req.ret.ok=true;
                     sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',[req.params.f,r.ke,r.mid]);
                     if(req.params.ff&&req.params.f!=='stop'){
@@ -1013,8 +1025,13 @@ app.get(['/:auth/monitor/:ke/:mid/:f','/:auth/monitor/:ke/:mid/:f/:ff','/:auth/m
                                 req.timeout=req.params.ff*1000
                             break;
                         }
-                        setTimeout(function(){sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',['stop',r.ke,r.mid]);s.camera('stop')},req.timeout);
-                        req.ret.end_at=moment().add(req.timeout,'milliseconds');
+                        setTimeout(function(){
+                            sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',['stop',r.ke,r.mid]);
+                            s.camera('stop',r);r.mode='stop';s.group[r.ke].mon_conf[r.mid]=r;
+                            s.tx({f:'monitor_edit',mid:r.id,ke:r.ke,mon:r},'GRP_'+r.ke);
+
+                        },req.timeout);
+                        req.ret.end_at=s.moment(new Date,'YYYY-MM-DD HH:mm:ss').add(req.timeout,'milliseconds');
                     }
                 }else{
                     req.ret.msg='Monitor mode is already : '+req.params.f;
