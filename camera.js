@@ -81,14 +81,9 @@ s.gid=function(x){
 };
 if(!config.utcOffset){config.utcOffset='-0800'}
 s.moment=function(e,x){
-    if(!e){e=new Date};
-    if(!x){x='YYYY-MM-DDTHH-mm-ss'};
+    if(!e){e=new Date};if(!x){x='YYYY-MM-DDTHH-mm-ss'};
     e=moment(e);if(config.utcOffset){e=e.utcOffset(config.utcOffset)}
-    if(x!==0){
-        return e.format(x);
-    }else{
-        return e;
-    }
+    return e.format(x);
 }
 s.kill=function(x,e,p){
     if(s.group[e.ke]&&s.group[e.ke].mon[e.id]){
@@ -1029,7 +1024,6 @@ app.get(['/:auth/monitor/:ke/:mid/:f','/:auth/monitor/:ke/:mid/:f/:ff','/:auth/m
                             sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',['stop',r.ke,r.mid]);
                             s.camera('stop',r);r.mode='stop';s.group[r.ke].mon_conf[r.mid]=r;
                             s.tx({f:'monitor_edit',mid:r.id,ke:r.ke,mon:r},'GRP_'+r.ke);
-
                         },req.timeout);
                         req.ret.end_at=s.moment(new Date,'YYYY-MM-DD HH:mm:ss').add(req.timeout,'milliseconds');
                     }
