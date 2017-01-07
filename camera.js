@@ -79,7 +79,6 @@ s.gid=function(x){
         t += p.charAt(Math.floor(Math.random() * p.length));
     return t;
 };
-if(!config.utcOffset){config.utcOffset='-0800'}
 s.moment=function(e,x){
     if(!e){e=new Date};if(!x){x='YYYY-MM-DDTHH-mm-ss'};
     e=moment(e);if(config.utcOffset){e=e.utcOffset(config.utcOffset)}
@@ -200,7 +199,7 @@ s.video=function(x,e){
                         }
                     }else{
                         s.video('delete',e);
-                        s.log(e,{type:'File Not Exist',msg:'Cannot save non existant file. Something went wrong.',ffmpeg:s.group[e.ke].mon[e.mid].ffmpeg})
+                        s.log(e,{type:'File Not Exist',msg:'Cannot save non existant file. Something went wrong.',ffmpeg:s.group[e.ke].mon[e.id].ffmpeg})
                     }
                 }
             }
@@ -506,8 +505,6 @@ s.camera=function(x,e,cn,tx){
                                                     case e.chk('Unable to open RTSP for listening'):
                                                     case e.chk('timed out'):
                                                     case e.chk('Invalid data found when processing input'):
-                                                        if(e.frames===0&&x==='record'){s.video('delete',e)};
-                                                    break;
                                                     case e.chk('Immediate exit requested'):
                                                     case e.chk('reset by peer'):
                                                        if(e.frames===0&&x==='record'){s.video('delete',e)};
@@ -1009,6 +1006,7 @@ app.get(['/:auth/monitor/:ke/:mid/:f','/:auth/monitor/:ke/:mid/:f/:ff','/:auth/m
                     sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',[req.params.f,r.ke,r.mid]);
                     if(req.params.ff&&req.params.f!=='stop'){
                         req.params.ff=parseFloat(req.params.ff);
+                        clearTimeout(s.group[r.ke].mon[r.mid].trigger_timer)
                         switch(req.params.fff){
                             case'day':case'days':
                                 req.timeout=req.params.ff*1000*60*60*24
@@ -1023,7 +1021,7 @@ app.get(['/:auth/monitor/:ke/:mid/:f','/:auth/monitor/:ke/:mid/:f/:ff','/:auth/m
                                 req.timeout=req.params.ff*1000
                             break;
                         }
-                        setTimeout(function(){
+                        s.group[r.ke].mon[r.mid].trigger_timer=setTimeout(function(){
                             sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',['stop',r.ke,r.mid]);
                             s.camera('stop',r);r.mode='stop';s.group[r.ke].mon_conf[r.mid]=r;
                             s.tx({f:'monitor_edit',mid:r.id,ke:r.ke,mon:r},'GRP_'+r.ke);

@@ -481,7 +481,20 @@ $('body')
     localStorage.removeItem('ShinobiLogin_'+location.host);location.reload();
 })
 .on('click','[video]',function(e){
-    e.e=$(this),e.a=e.e.attr('video'),e.p=e.e.parents('[mid]'),e.ke=e.p.attr('ke'),e.mid=e.p.attr('mid'),e.file=e.p.attr('file'),e.mon=$.ccio.mon[e.mid];
+    e.e=$(this),
+    e.a=e.e.attr('video'),
+    e.p=e.e.parents('[mid]'),
+    e.ke=e.p.attr('ke'),
+    e.mid=e.p.attr('mid'),
+    e.file=e.p.attr('file');
+    if(!e.ke||!e.mid){
+        //for calendar plugin
+        e.p=e.e.parents('[data-mid]'),
+        e.ke=e.p.data('ke'),
+        e.mid=e.p.data('mid'),
+        e.file=e.p.data('file');
+    }
+    e.mon=$.ccio.mon[e.mid];
     switch(e.a){
         case'launch':
             e.preventDefault();
@@ -586,7 +599,7 @@ $('body')
                             if(v.status!==0){
                                 v.start=v.time;
                                 v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
-                                e.tmp+='<tr ke="'+v.ke+'" mid="'+v.mid+'" file="'+v.filename+'">';
+                                e.tmp+='<tr data-ke="'+v.ke+'" data-mid="'+v.mid+'" data-file="'+v.filename+'">';
                                 e.tmp+='<td><div class="checkbox"><input id="'+v.ke+'_'+v.filename+'" name="'+v.filename+'" value="'+v.mid+'" type="checkbox"><label for="'+v.ke+'_'+v.filename+'"></label></div></td>';
                                 e.tmp+='<td><span class="livestamp" title="'+v.end+'"></span></td>';
                                 e.tmp+='<td>'+v.end+'</td>';
