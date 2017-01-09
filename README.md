@@ -56,12 +56,14 @@ ZoneMinder was the first choice but it proved unstable. A few reasons are mentio
 
 If you like Shinobi please consider donating.
 
-<a title="USD,XBT..." href='https://www.bountysource.com/teams/shinobi'><img src='https://d2bbtvgnhux6eq.cloudfront.net/assets/Bountysource-green-f2f437ed727ee2cacaee3f559c1907cb.png' ></a> <a title="CAD" href='https://gratipay.com/~moe_alam/'><img alt='Click here to lend your support to: Shinobi, Open Source CCTV written in Node.js and make a donation!' src='https://assets.gratipay.com/gratipay.svg?etag=3tGiSB5Uw_0-oWiLLxAqpQ~~' border='0' ></a> <a href='https://pledgie.com/campaigns/33051'><img alt='Click here to lend your support to: Shinobi, Open Source CCTV written in Node.js and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/33051.png?skin_name=chrome' border='0' ></a> <a target="_blank" class="badge-widget" style="border: none;" href="//www.gofundme.com/help-me-fund-my-program?utm_medium=wdgt" title="Visit this page now."><img src="https://funds.gofundme.com/css/3.0_donate/green/widget.png"></a>
+<a title="USD,XBT..." href='https://www.bountysource.com/teams/shinobi'><img src='https://d2bbtvgnhux6eq.cloudfront.net/assets/Bountysource-green-f2f437ed727ee2cacaee3f559c1907cb.png' ></a> <a title="CAD" href='https://gratipay.com/Shinobi-The-Open-Source-CCTV-Solution/'><img alt='Click here to lend your support to: Shinobi, Open Source CCTV written in Node.js and make a donation!' src='https://assets.gratipay.com/gratipay.svg?etag=3tGiSB5Uw_0-oWiLLxAqpQ~~' border='0' ></a> <a href='https://pledgie.com/campaigns/33051'><img alt='Click here to lend your support to: Shinobi, Open Source CCTV written in Node.js and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/33051.png?skin_name=chrome' border='0' ></a> <a target="_blank" class="badge-widget" style="border: none;" href="//www.gofundme.com/help-me-fund-my-program?utm_medium=wdgt" title="Visit this page now."><img src="https://funds.gofundme.com/css/3.0_donate/green/widget.png"></a>
 
 # Author
 
 Moe Alam
-https://twitter.com/moe_alam
+
+Follow me on Twitter https://twitter.com/moe_alam
+
 Find me on <a href="https://discord.gg/mdhmvuH">Discord</a>! :) 
 
 # Credits
