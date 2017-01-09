@@ -18,7 +18,7 @@
 // https://www.bountysource.com/teams/shinobi
 //
 var fs = require('fs');
-var os = require('os-utils');
+var os = require('os');
 var path = require('path');
 var mysql = require('mysql');
 var moment = require('moment');
@@ -29,6 +29,7 @@ var http = require('http');
 var server = http.Server(app);
 var bodyParser = require('body-parser');
 var io = require('socket.io')(server);
+var execSync = require('child_process').execSync;
 var exec = require('child_process').exec;
 var spawn = require('child_process').spawn;
 var crypto = require('crypto');
@@ -360,7 +361,7 @@ s.camera=function(x,e,cn,tx){
             s.kill(s.group[e.ke].mon[e.id].spawn,e);
             clearInterval(s.group[e.ke].mon[e.id].running);
             s.group[e.ke].mon[e.id].started=0;
-            if(s.group[e.ke].mon[e.mid].record){s.group[e.ke].mon[e.mid].record.yes=0}
+            if(s.group[e.ke].mon[e.id].record){s.group[e.ke].mon[e.id].record.yes=0}
             s.log(e,{type:'Monitor Stopping',msg:'Monitor session has been ordered to stop.'});
             s.tx({f:'monitor_stopping',mid:e.id,ke:e.ke,time:s.moment(),reason:e.reason},'GRP_'+e.ke);
             if(e.delete===1){
@@ -389,7 +390,6 @@ s.camera=function(x,e,cn,tx){
             }else{
                 s.group[e.ke].mon[e.mid].record.yes=0;
             }
-            s.log(e,{type:'Monitor Starting',msg:{mode:x}});
             s.tx({f:'monitor_starting',mode:x,mid:e.id,time:s.moment()},'GRP_'+e.ke);
             e.error_fatal_count=0;
             e.error_count=0;
@@ -449,9 +449,14 @@ s.camera=function(x,e,cn,tx){
                                 }
                                 e.frames=0;
                                 if(!s.group[e.ke].mon[e.id].record){s.group[e.ke].mon[e.id].record={yes:1}};
-                                if(x==='record'||e.type==='mjpeg'||e.type==='h264'||e.type==='local'){s.group[e.ke].mon[e.id].spawn = s.ffmpeg(e);}
+                                if(x==='record'||e.type==='mjpeg'||e.type==='h264'||e.type==='local'){s.group[e.ke].mon[e.id].spawn = s.ffmpeg(e);            s.log(e,{type:'FFMPEG Process Starting',msg:{cmd:s.group[e.ke].mon[e.id].ffmpeg}});
+}
                                 switch(e.type){
                                     case'jpeg':
+                                        if(!e.details.sfps||e.details.sfps===''){
+                                            e.details.sfps=parseFloat(e.details.sfps);
+                                            if(isNaN(e.details.sfps)){e.details.sfps=1}
+                                        }
                                         e.captureOne=function(f){
                                             s.group[e.ke].mon[e.id].record.request=request({url:e.url,method:'GET',encoding: null,timeout:3000},function(er,data){
                                                ++e.frames; if(s.group[e.ke].mon[e.id].spawn&&s.group[e.ke].mon[e.id].spawn.stdin){
@@ -464,7 +469,7 @@ s.camera=function(x,e,cn,tx){
                                                 if(s.group[e.ke].mon[e.id].watch&&Object.keys(s.group[e.ke].mon[e.id].watch).length>0){
                                                     s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:data.body.toString('base64'),frame_format:'b64'},'MON_'+e.id);
                                                 }
-                                                s.group[e.ke].mon[e.id].record.capturing=setTimeout(function(){e.captureOne()},800);
+                                                s.group[e.ke].mon[e.id].record.capturing=setTimeout(function(){e.captureOne()},1000/e.details.sfps);
                                                 clearTimeout(e.timeOut),e.timeOut=setTimeout(function(){e.error_count=0;},3000)
                                                 }
                                             }).on('error', function(err){
@@ -599,7 +604,7 @@ var tx;
                             apis:rrr,
                             os:{
                                 platform:os.platform(),
-                                cpuCount:os.cpuCount(),
+                                cpuCount:os.cpus().length,
                                 totalmem:os.totalmem()
                             }
                         })
@@ -622,10 +627,21 @@ var tx;
         if((d.id||d.uid||d.mid)&&cn.ke){
             try{
             switch(d.f){
+                case'update':
+                    if(!config.updateKey){
+                        tx({error:'"updateKey" is missing from "conf.json", cannot do updates this way until you add it.'});
+                        return;
+                    }
+                    if(d.key===config.updateKey){
+                        exec('chmod +x '+__dirname+'/UPDATE.sh&&'+__dirname+'/./UPDATE.sh')
+                    }else{
+                        tx({error:'"updateKey" is incorrect.'});
+                    }
+                break;
                 case'get':
                     switch(d.ff){
                         case'videos':
-                            d.cx={f:'get_'+d.ff,mid:d.mid};
+                            d.cx={f:'get_videos',mid:d.mid};
                             d.sql="SELECT * FROM Videos WHERE ke=?";d.ar=[d.ke];
                             if(d.mid){d.sql+=' AND mid=?';d.ar.push(d.mid)}
                             d.sql+=' ORDER BY `end` DESC';
@@ -902,6 +918,36 @@ app.get('/info', function (req,res){
 app.get('/', function (req,res){
     res.sendFile(__dirname+'/web/index.html');
 });
+//update server
+app.get('/:auth/update/:key', function (req,res){
+    req.ret={ok:false};
+    res.setHeader('Content-Type', 'application/json');
+    req.fn=function(){
+        if(!config.updateKey){
+            req.ret.msg='"updateKey" is missing from "conf.json", cannot do updates this way until you add it.';
+            return;
+        }
+        if(req.params.key===config.updateKey){
+            req.ret.ok=true;
+            exec('chmod +x '+__dirname+'/UPDATE.sh&&'+__dirname+'/./UPDATE.sh')
+        }else{
+            req.ret.msg='"updateKey" is incorrect.';
+        }
+        res.send(JSON.stringify(req.ret, null, 3));
+    }
+    if(s.group[req.params.ke]&&s.group[req.params.ke].users[req.params.auth]){
+        req.fn();
+    }else{
+        sql.query('SELECT * FROM API WHERE code=?',[req.params.auth],function(err,r){
+            if(r&&r[0]){
+                req.fn();
+            }else{
+                req.ret.msg='Not Authorized';
+                res.send(JSON.stringify(req.ret, null, 3));
+            }
+        })
+    }
+});
 //register function
 app.post('/register',function (req,res){
     req.resp={ok:false};
@@ -1124,11 +1170,14 @@ sql.query('SELECT * FROM Monitors WHERE mode != "stop"', function(err,r) {
 },1500)
 
 try{
-    
+    os.cpuUsage=function(){
+        return execSync("grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage}'",{encoding:'utf8'});
+    }
+    os.ramUsage=function(){
+        return execSync("free | grep Mem | awk '{print $4/$2 * 100.0}'",{encoding:'utf8'});
+    }
     setInterval(function(){
-        os.cpuUsage(function(cpu){
-            io.emit('f',{f:'os',cpu:cpu,ram:os.freememPercentage()});
-        });
+        io.emit('f',{f:'os',cpu:os.cpuUsage(),ram:os.ramUsage()});
     },2000);
 }catch(err){console.log('CPU indicator will not work. Continuing...')}
 //check disk space every 20 minutes
