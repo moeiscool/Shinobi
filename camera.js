@@ -40,7 +40,7 @@ var config = require('./conf.json');
 server.listen(config.port);
 console.log('Shinobi is listening :',config.port);
 
-s={child_help:false};
+s={child_help:false,platform:os.platform()};
 s.disc=function(){
     sql = mysql.createConnection(config.db);
     sql.connect(function(err){if(err){console.log('Error Connecting : DB',err);setTimeout(s.disc, 2000);}});
@@ -189,15 +189,15 @@ s.video=function(x,e){
                 }else{
                     if(fs.existsSync(e.dir+e.filename+'.'+e.ext)){
                         e.filesize=fs.statSync(e.dir+e.filename+'.'+e.ext)["size"];
-//                        if((e.filesize/100000).toFixed(2)>0.25){
+                        if((e.filesize/100000).toFixed(2)>0.25){
                             e.save=[e.filesize,e.frames,1,e.id,e.ke,s.nameToTime(e.filename)];
                             if(!e.status){e.save.push(0)}else{e.save.push(e.status)}
                             sql.query('UPDATE Videos SET `size`=?,`frames`=?,`status`=? WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save)
          s.tx({f:'video_build_success',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),size:e.filesize,end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
-//                        }else{
-//                            s.video('delete',e);
-//                            s.log(e,{type:'File Corrupt',msg:{ffmpeg:s.group[e.ke].mon[e.mid].ffmpeg,filesize:(e.filesize/100000).toFixed(2)}})
-//                        }
+                        }else{
+                            s.video('delete',e);
+                            s.log(e,{type:'File Corrupt',msg:{ffmpeg:s.group[e.ke].mon[e.mid].ffmpeg,filesize:(e.filesize/100000).toFixed(2)}})
+                        }
                     }else{
                         s.video('delete',e);
                         s.log(e,{type:'File Not Exist',msg:'Cannot save non existant file. Something went wrong.',ffmpeg:s.group[e.ke].mon[e.id].ffmpeg})
@@ -218,6 +218,7 @@ s.ffmpeg=function(e,x){
         case'mp4':
             x.vcodec='libx265';x.acodec='libfaac';
             if(e.details.vcodec&&e.details.vcodec!==''){x.vcodec=e.details.vcodec}
+            x.vcodec+=' -pix_fmt yuv420p';
         break;
         case'webm':
             x.acodec='libvorbis',x.vcodec='libvpx';
@@ -374,7 +375,8 @@ s.camera=function(x,e,cn,tx){
             if(!s.group[e.ke].mon_conf[e.id]){s.group[e.ke].mon_conf[e.id]=s.init('clean',e);}
             e.url=s.init('url',e);
             if(s.group[e.ke].mon[e.id].started===1){return}
-            if(!e.details.cutoff||e.details.cutoff===''){e.details.cutoff=60000*15;}else{e.details.cutoff=parseFloat(e.details.cutoff)*60000}//every 15 minutes start a new file.
+            if(!e.details.cutoff||e.details.cutoff===''){e.details.cutoff=60000*15;}else{e.details.cutoff=parseFloat(e.details.cutoff)*60000}
+            //every 15 minutes start a new file.
             s.group[e.ke].mon[e.id].started=1;
             s.kill(s.group[e.ke].mon[e.id].spawn,e);
             if(x==='record'){
@@ -449,8 +451,7 @@ s.camera=function(x,e,cn,tx){
                                 }
                                 e.frames=0;
                                 if(!s.group[e.ke].mon[e.id].record){s.group[e.ke].mon[e.id].record={yes:1}};
-                                if(x==='record'||e.type==='mjpeg'||e.type==='h264'||e.type==='local'){s.group[e.ke].mon[e.id].spawn = s.ffmpeg(e);            s.log(e,{type:'FFMPEG Process Starting',msg:{cmd:s.group[e.ke].mon[e.id].ffmpeg}});
-}
+                                if(x==='record'||e.type==='mjpeg'||e.type==='h264'||e.type==='local'){s.group[e.ke].mon[e.id].spawn = s.ffmpeg(e);            s.log(e,{type:'FFMPEG Process Starting',msg:{cmd:s.group[e.ke].mon[e.id].ffmpeg}});}
                                 switch(e.type){
                                     case'jpeg':
                                         if(!e.details.sfps||e.details.sfps===''){
@@ -553,12 +554,11 @@ s.camera=function(x,e,cn,tx){
                         e.ch.forEach(function(n){
                             if(e.ch_stop===0&&s.child_nodes[n].cpu<80){
                                 e.ch_stop=1;
-                                e.set(n);s.group[e.ke].mon[e.mid].child_node=n;
+                                s.group[e.ke].mon[e.mid].child_node=n;
                                 e.set(n);s.group[e.ke].mon[e.mid].child_node_id=s.child_nodes[n].cnid;
                                 e.fn(n);
                             }
                         })
-
                     }else{
                         e.set();
                         e.fn();
@@ -603,7 +603,7 @@ var tx;
                             users:s.group[d.ke].vid,
                             apis:rrr,
                             os:{
-                                platform:os.platform(),
+                                platform:s.platform,
                                 cpuCount:os.cpus().length,
                                 totalmem:os.totalmem()
                             }
@@ -853,6 +853,7 @@ s.tx({f:'monitor_watch_on',viewers:Object.keys(s.group[d.ke].mon[d.id].watch).le
 //        if(!cn.ke&&d.socket_key===s.child_key){
             if(!cn.shinobi_child&&d.f=='init'){
                 cn.ip=cn.request.connection.remoteAddress;
+                cn.name=d.u.name;
                 cn.shinobi_child=1;
                 tx=function(z){cn.emit('c',z);}
                 if(!s.child_nodes[cn.ip]){s.child_nodes[cn.ip]=d.u;};
@@ -862,6 +863,9 @@ s.tx({f:'monitor_watch_on',viewers:Object.keys(s.group[d.ke].mon[d.id].watch).le
             }else{
                 if(d.f!=='s.tx'){console.log(d)};
                 switch(d.f){
+                    case'cpu':
+                        s.child_nodes[cn.ip].cpu=d.cpu;
+                    break;
                     case'sql':
                         sql.query(d.query,d.values);
                     break;
@@ -870,6 +874,9 @@ s.tx({f:'monitor_watch_on',viewers:Object.keys(s.group[d.ke].mon[d.id].watch).le
                     break;
                     case's.tx':
                         s.tx(d.data,d.to)
+                    break;
+                    case's.log':
+                        s.log(d.data,d.to)
                     break;
                     case'created_file':
                         d.dir=s.dir.videos+d.d.ke+'/'+d.d.mid+'/';
@@ -1170,8 +1177,16 @@ sql.query('SELECT * FROM Monitors WHERE mode != "stop"', function(err,r) {
 },1500)
 
 try{
-    os.cpuUsage=function(){
-        return execSync("grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage}'",{encoding:'utf8'});
+    os.cpuUsage=function(e){
+        switch(s.platform){
+            case'darwin':
+                e="ps -A -o %cpu | awk '{s+=$1} END {print s}'";
+            break;
+            case'linux':
+                e="grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage}'";
+            break;
+        }
+        return execSync(e,{encoding:'utf8'});
     }
     os.ramUsage=function(){
         return execSync("free | grep Mem | awk '{print $4/$2 * 100.0}'",{encoding:'utf8'});
