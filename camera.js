@@ -451,7 +451,12 @@ s.camera=function(x,e,cn,tx){
                                 }
                                 e.frames=0;
                                 if(!s.group[e.ke].mon[e.id].record){s.group[e.ke].mon[e.id].record={yes:1}};
-                                if(x==='record'||e.type==='mjpeg'||e.type==='h264'||e.type==='local'){s.group[e.ke].mon[e.id].spawn = s.ffmpeg(e);            s.log(e,{type:'FFMPEG Process Starting',msg:{cmd:s.group[e.ke].mon[e.id].ffmpeg}});}
+                               //launch ffmpeg
+                                if(x==='record'||e.type==='mjpeg'||e.type==='h264'||e.type==='local'){
+                                    s.group[e.ke].mon[e.id].spawn = s.ffmpeg(e); 
+                                    s.log(e,{type:'FFMPEG Process Starting',msg:{cmd:s.group[e.ke].mon[e.id].ffmpeg}});
+                                }
+                                //start workers
                                 switch(e.type){
                                     case'jpeg':
                                         if(!e.details.sfps||e.details.sfps===''){
@@ -487,6 +492,7 @@ s.camera=function(x,e,cn,tx){
                                         if(s.group[e.ke].mon[e.id].spawn){
                                             s.group[e.ke].mon[e.id].spawn.on('error',function(er){e.error({type:'Spawn Error',msg:er})})
                                             s.group[e.ke].mon[e.id].spawn.stdout.on('data',function(d){
+                                               
                                                ++e.frames; if(s.group[e.ke]&&s.group[e.ke].mon[e.id]&&s.group[e.ke].mon[e.id].watch&&Object.keys(s.group[e.ke].mon[e.id].watch).length>0){
                                                     s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:d.toString('base64'),frame_format:'b64'},'MON_'+e.id);
 
@@ -1176,23 +1182,23 @@ sql.query('SELECT * FROM Monitors WHERE mode != "stop"', function(err,r) {
 });
 },1500)
 
+s.cpuUsage=function(e){
+    switch(s.platform){
+        case'darwin':
+            e="ps -A -o %cpu | awk '{s+=$1} END {print s}'";
+        break;
+        case'linux':
+            e="grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage}'";
+        break;
+    }
+    return execSync(e,{encoding:'utf8'});
+}
+s.ramUsage=function(){
+    return execSync("free | grep Mem | awk '{print $4/$2 * 100.0}'",{encoding:'utf8'});
+}
 try{
-    os.cpuUsage=function(e){
-        switch(s.platform){
-            case'darwin':
-                e="ps -A -o %cpu | awk '{s+=$1} END {print s}'";
-            break;
-            case'linux':
-                e="grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage}'";
-            break;
-        }
-        return execSync(e,{encoding:'utf8'});
-    }
-    os.ramUsage=function(){
-        return execSync("free | grep Mem | awk '{print $4/$2 * 100.0}'",{encoding:'utf8'});
-    }
     setInterval(function(){
-        io.emit('f',{f:'os',cpu:os.cpuUsage(),ram:os.ramUsage()});
+        io.emit('f',{f:'os',cpu:s.cpuUsage(),ram:s.ramUsage()});
     },2000);
 }catch(err){console.log('CPU indicator will not work. Continuing...')}
 //check disk space every 20 minutes

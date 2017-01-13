@@ -151,7 +151,7 @@ $.ccio.ws.on('connect',function (d){
 })
 PNotify.prototype.options.styling = "fontawesome";
 $.ccio.ws.on('f',function (d){
-    if(d.f!=='monitor_frame'&&d.f!=='o2s'&&d.f!=='video_delete'){console.log(d);}
+    if(d.f!=='monitor_frame'&&d.f!=='os'&&d.f!=='video_delete'){console.log(d);}
     switch(d.f){
         case'api_key_deleted':
             new PNotify({title:'API Key Deleted',text:'Key has been deleted. It will no longer work.',type:'notice'});

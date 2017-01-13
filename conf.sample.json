@@ -1,5 +1,6 @@
 {
   "port": 8080,
+  "utcOffset":"-0800",
   "db": {
     "host": "127.0.0.1",
     "user": "majesticflame",

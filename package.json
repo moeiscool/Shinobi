@@ -1,7 +1,7 @@
 {
   "name": "shinobi",
   "version": "1.0.0",
-  "description": "CCTV Recording for Node.JS",
+  "description": "CCTV and NVR for Node.js",
   "main": "camera.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -26,13 +26,9 @@
     "path": "^0.12.7",
     "del": "^2.2.2",
     "node-df": "^0.1.1",
-    "os-utils": "^0.0.14",
     "request": "^2.79.0",
     "socket.io": "^1.7.1",
     "socket.io-client": "^1.7.2"
   },
-  "devDependencies": {},
-  "scripts": {
-    "start": "node camera.js"
-  }
+  "devDependencies": {}
 }
