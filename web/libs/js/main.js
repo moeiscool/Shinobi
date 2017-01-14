@@ -179,7 +179,8 @@ $.ccio.ws.on('f',function (d){
             d.tmp+='</span>'
             d.tmp+='</li>';
             $.each(d.l,function(n,v){
-                if($(v).find('.log-item').length>10){d.l.find('.log-item:last').remove()}
+                v=$(v);
+                if(v.find('.log-item').length>10){v.find('.log-item:last').remove()}
             })
             d.l.prepend(d.tmp);$.ccio.init('ls');
         break;

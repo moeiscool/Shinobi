@@ -1,0 +1,37 @@
+<script src="/libs/js/socket.io.js"></script>
+<% if(data.addon&&data.addon.indexOf('jquery')>-1){ %>
+<script
+  src="https://code.jquery.com/jquery-3.1.1.min.js"
+  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+  crossorigin="anonymous"></script>
+<% } %>
+
+<% data.name='SHINOBI_'+data.ke+'_'+data.id %>
+<img id="<%= data.name %>">
+<script>
+if(!$.shinobi){
+    $.shinobi={}
+};
+if(!$.shinobi.ws||$.shinobi.ws.connected===false){
+    $.shinobi.ws=io(location.origin);
+    $.shinobi.ws.on('f',function (d){
+        if(d.f!=='monitor_frame'&&d.f!=='os'&&d.f!=='video_delete'){console.log(d);}
+        switch(d.f){
+            case'monitor_frame':
+                switch(d.frame_format){
+                    case'ab':
+                        var reader = new FileReader();
+                        reader.addEventListener("loadend",function(){$('<%='#'+data.name%>').attr('src',reader.result);delete(reader);});
+                        reader.readAsDataURL(new Blob([d.frame],{type:"image/jpeg"}));
+                    break;
+                    case'b64':
+                        $('<%='#'+data.name%>').attr('src','data:image/jpeg;base64,'+d.frame);
+                    break;
+                }
+                delete(d.frame);
+            break;
+        }
+    });
+};
+$.shinobi.ws.emit('e',{f:'init',auth:'<%=data.auth%>',id:'<%=data.id%>',ke:'<%=data.ke%>'})
+</script>
