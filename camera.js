@@ -218,6 +218,7 @@ s.ffmpeg=function(e,x){
         case'mp4':
             x.vcodec='libx265';x.acodec='libfaac';
             if(e.details.vcodec&&e.details.vcodec!==''){x.vcodec=e.details.vcodec}
+            if(e.details.crf&&e.details.crf!==''){x.vcodec+=' -crf '+e.details.crf}
             x.vcodec+=' -pix_fmt yuv420p';
         break;
         case'webm':
@@ -234,6 +235,8 @@ s.ffmpeg=function(e,x){
         x.time+=x.vf;
     }
     if(e.details.svf&&e.details.svf!==''){x.svf=' -vf '+e.details.svf;}else{x.svf='';}
+    x.pipe=' -f singlejpeg'+x.svf+' -s '+e.ratio+' pipe:1';
+    x.watch='';
 //        if(e.details.svf){'-vf "rotate=45*(PI/180)'}
     switch(e.type){
         case'socket':case'jpeg':case'pipe':
@@ -242,28 +245,22 @@ s.ffmpeg=function(e,x){
         break;
         case'mjpeg':
             if(e.mode=='record'){
-                x.watch=x.vcodec+x.time+' -r 10 -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1 '+e.dir+e.filename+'.'+e.ext+''
-            }else{
-                x.watch='';
-            };
-            x.tmp='-loglevel warning -reconnect 1 -f mjpeg -i '+e.url+''+x.watch+' -f image2pipe'+x.svf+' -s '+e.ratio+' pipe:1';
+                x.watch=x.vcodec+x.time+' -r 10 -use_wallclock_as_timestamps 1 -q:v 1 '+e.dir+e.filename+'.'+e.ext+''
+            }
+            x.tmp='-loglevel warning -reconnect 1 -f mjpeg -i '+e.url+x.watch+x.pipe;
         break;
         case'h264':
             if(!x.vf||x.vf===','){x.vf=''}
             if(e.mode=='record'){
-                x.watch=x.vcodec+x.framerate+x.acodec+' -movflags frag_keyframe+empty_moov -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext
-            }else{
-                x.watch='';
-            };
-            x.tmp='-loglevel warning -i '+e.url+' -stimeout 2000'+x.watch+' -f image2pipe'+x.svf+' -s '+e.ratio+' pipe:1';
+                x.watch=x.vcodec+x.framerate+x.acodec+' -movflags frag_keyframe+empty_moov -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext
+            }
+            x.tmp='-loglevel warning -i '+e.url+' -stimeout 2000'+x.watch+x.pipe;
         break;
         case'local':
             if(e.mode=='record'){
-                x.watch=x.vcodec+x.time+x.framerate+x.acodec+' -movflags frag_keyframe+empty_moov -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 '+e.dir+e.filename+'.'+e.ext
-            }else{
-                x.watch='';
-            };
-            x.tmp='-loglevel warning -i '+e.path+''+x.watch+' -f image2pipe'+x.svf+' -s '+e.ratio+' pipe:1';
+                x.watch=x.vcodec+x.time+x.framerate+x.acodec+' -movflags frag_keyframe+empty_moov -use_wallclock_as_timestamps 1 '+e.dir+e.filename+'.'+e.ext
+            }
+            x.tmp='-loglevel warning -i '+e.path+x.watch+x.pipe;
         break;
     }
     s.group[e.ke].mon[e.mid].ffmpeg=x.tmp;
@@ -494,8 +491,7 @@ s.camera=function(x,e,cn,tx){
                                             s.group[e.ke].mon[e.id].spawn.stdout.on('data',function(d){
                                                
                                                ++e.frames; if(s.group[e.ke]&&s.group[e.ke].mon[e.id]&&s.group[e.ke].mon[e.id].watch&&Object.keys(s.group[e.ke].mon[e.id].watch).length>0){
-                                                    s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:d.toString('base64'),frame_format:'b64'},'MON_'+e.id);
-
+                                                   s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:d.toString('base64'),frame_format:'b64'},'MON_'+e.id);
                                                 }
                                             });
                                             s.group[e.ke].mon[e.id].spawn.stderr.on('data',function(d){

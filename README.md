@@ -1,35 +1,13 @@
 # Shinobi
 
 <center>
-<a href="https://www.youtube.com/user/MrMoea92">YouTube</a> - <a href="https://discord.gg/mdhmvuH">Discord</a> - <a href="https://twitter.com/ShinobiCCTV">Twitter</a> - <a href="https://www.facebook.com/Shinobi-1223193167773738/?ref=bookmarks">Facebook</a> - <a href="https://www.reddit.com/r/ShinobiCCTV/">Reddit</a> - <a href="https://www.bountysource.com/teams/shinobi">Bountysource</a> - <a href="https://pledgie.com/campaigns/33051">Pledgie</a> - <a href="https://www.gofundme.com/help-me-fund-my-program">GoFundMe</a> - <a href="https://gratipay.com/~moe_alam/">GratiPay</a>
+<a href="https://www.youtube.com/user/MrMoea92">YouTube</a> - <a href="https://shinobicctv.herokuapp.com/">Slack</a> - <a href="https://twitter.com/ShinobiCCTV">Twitter</a> - <a href="https://www.facebook.com/Shinobi-1223193167773738/?ref=bookmarks">Facebook</a> - <a href="https://www.reddit.com/r/ShinobiCCTV/">Reddit</a> - <a href="https://www.bountysource.com/teams/shinobi">Bountysource</a> - <a href="https://pledgie.com/campaigns/33051">Pledgie</a> - <a href="https://www.gofundme.com/help-me-fund-my-program">GoFundMe</a> - <a href="https://gratipay.com/~moe_alam/">GratiPay</a>
 </center>
 
 Shinobi is an Open Source CCTV software written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. <s>Currently it is being crafted for IP Cameras, not local</s>.
 Shinobi can record IP Cameras and Local Cameras.
 
-# Supported Cameras
-
-- https://github.com/moeiscool/Shinobi/wiki/Supported-Cameras
-
-<img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.gif?raw=true">
-
-# Why make this? Other solutions already exist.
-
-ZoneMinder was the first choice but it proved unstable. A few reasons are mentioned below. Solutions such as ispyconnect are not relevant as they have a cost for using their platform.
-
-- *MJPEG streams are beyond unusable in modern applications.*
-    - Essentially with MJPEG you are opening a new stream everytime you create an image with an MJPEG url. Even if you remove this element it will continue to eat resources from the server and client. Only way to deal with it currently is through an `iframe` or `popup`. Neither of which should be considered acceptable.
-    - Shinobi addresses this with `WebSocket` streams. As frames are captured by FFMPEG they are base64 encoded and sent to the client.
-    
-- *JPEG Storage is just a terrible idea.*
-    - Saving each frame as a separate file in JPEG format can have a seriously detrmental effect on storage space and the hardware itself. Hardware is more likely to fail under the stress of continuously saving frames to storage.
-    - Shinobi saves to WebM and MP4 files. While MP4 takes a fair amount of space.. its level of CPU usage during encoding for H.264 streams is just amazing.
-
-- *Using languages that are not needed.*
-    - You'll find that ZoneMinder uses multiple languages to achieve very small results. This probably just because of the time it was written in... but with that said all the devs currently working on it should have addressed these issues and removed unecessary steps, languages, and files. ZoneMinder uses Perl, PHP, JavaScript, C, HTML, CSS, MySQL, and probably more.
-    - Shinobi uses JavaScript, HTML, CSS, and MySQL. Simple right? It should be.
-
-# Info
+# Key Aspects
 
 - Written in a simple structure. `camera.js` and `web` folder.
 - Streams are transferred through `WebSocket`. DOM element is an `img` tag.
@@ -37,6 +15,16 @@ ZoneMinder was the first choice but it proved unstable. A few reasons are mentio
 - Can save to WebM or MP4 *(Your version of FFMPEG must have libvpx and libx264)*
 - No Mootools (yes, you can shake my hand later)
 - Calendar view for Events
+
+# More about Shinobi in the Wiki
+
+https://github.com/moeiscool/Shinobi/wiki
+
+# Supported Cameras
+
+https://github.com/moeiscool/Shinobi/wiki/Supported-Cameras
+
+<img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.gif?raw=true">
 
 # Supported Systems
 
@@ -64,7 +52,7 @@ Moe Alam
 
 Follow me on Twitter https://twitter.com/moe_alam
 
-Find me on <a href="https://discord.gg/mdhmvuH">Discord</a>! :) 
+Find me on <a href="https://shinobicctv.herokuapp.com/">Slack</a>! :) 
 
 # Credits
 

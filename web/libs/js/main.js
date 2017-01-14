@@ -288,11 +288,13 @@ $.ccio.ws.on('f',function (d){
         break;
         case'monitor_watch_off':case'monitor_stopping':
             d.o=$.ccio.op().watch_on;if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=0;$.ccio.op('watch_on',d.o);
-            $.ccio.mon[d.id].watch=0;
-            if(d.cnid===$.ccio.ws.id){
-                $('#monitor_live_'+d.id).remove();
+            if($.ccio.mon[d.id]){
+                $.ccio.mon[d.id].watch=0;
+                if(d.cnid===$.ccio.ws.id){
+                    $('#monitor_live_'+d.id).remove();
+                }
+                $('#monitor_live_'+d.id+' .viewers').html(d.viewers)
             }
-            $('#monitor_live_'+d.id+' .viewers').html(d.viewers)
         break;
         case'monitor_watch_on':
             d.o=$.ccio.op().watch_on;if(!d.o){d.o={}};if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=1;$.ccio.op('watch_on',d.o);
