@@ -914,9 +914,9 @@ var tx;
                     cn.ke=d.ke;
                     if(!cn.mid){cn.mid={}}
                     cn.mid[d.id]={};
-                    if(!s.group[d.ke].embed){s.group[d.ke].embed={}}
-                    if(!s.group[d.ke].embed[d.mid]){s.group[d.ke].embed[d.mid]={}}
-                    s.group[d.ke].embed[d.mid][cn.id]={}
+//                    if(!s.group[d.ke].embed){s.group[d.ke].embed={}}
+//                    if(!s.group[d.ke].embed[d.mid]){s.group[d.ke].embed[d.mid]={}}
+//                    s.group[d.ke].embed[d.mid][cn.id]={}
                     
                     s.camera('watch_on',d,cn,tx)
                     cn.join('MON_'+d.id);
@@ -948,9 +948,6 @@ var tx;
         }
         if(cn.shinobi_child){
             delete(s.child_nodes[cn.ip]);
-        }
-        if(cn.embedded){
-            delete(s.group[d.ke].embed[d.mid][cn.id]);
         }
     })
 });
