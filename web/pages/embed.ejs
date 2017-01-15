@@ -1,36 +1,77 @@
 <script src="/libs/js/socket.io.js"></script>
-<% if(data.addon&&data.addon.indexOf('jquery')>-1){ %>
+<% if(data.addon){
+    if(data.addon.indexOf('jquery')>-1){ %>
 <script
   src="https://code.jquery.com/jquery-3.1.1.min.js"
   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
   crossorigin="anonymous"></script>
+<% };
+if(data.addon.indexOf('gui')>-1){ %>
+<style>
+    .shinobi_stream{position:relative;display:inline-block}
+    .shinobi_hud{position:absolute;width:100%;height:100%;top:0;left:0;}
+    .shinobi_hud .shinobi_viewers{position:absolute;top:5px;left:5px;}
+    .shinobi_hud .shinobi_viewers{
+        display: inline-block;
+        min-width: 10px;
+        padding: 3px 7px;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1;
+        color: #fff;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: middle;
+        background-color: #777;
+        border-radius: 10px;
+        font-family: sans-serif;
+    }
+</style>
+<% };
+if(data.addon.indexOf('fullscreen')>-1){ %>
+<style>
+    body{margin:0;padding:0;}
+    img,.shinobi_stream{position:absolute;width:100%;height:100%;top:0;left:0;}
+</style>
+<% } %>
 <% } %>
 
 <% data.name='SHINOBI_'+data.ke+'_'+data.id %>
-<img id="<%= data.name %>">
+<div class="shinobi_stream" id="<%= data.name %>">
+    <img>
+<% if(data.addon.indexOf('gui')>-1){ %>
+    <div class="shinobi_hud">
+        <div class="shinobi_viewers" title="Current number of viewers"></div>
+    </div>
+<% } %>
+</div>
 <script>
 if(!$.shinobi){
     $.shinobi={}
 };
+if(!$.shinobi.callback){$.shinobi.callback=function(){}}
 if(!$.shinobi.ws||$.shinobi.ws.connected===false){
     $.shinobi.ws=io(location.origin);
     $.shinobi.ws.on('f',function (d){
-        if(d.f!=='monitor_frame'&&d.f!=='os'&&d.f!=='video_delete'){console.log(d);}
         switch(d.f){
             case'monitor_frame':
                 switch(d.frame_format){
                     case'ab':
                         var reader = new FileReader();
-                        reader.addEventListener("loadend",function(){$('<%='#'+data.name%>').attr('src',reader.result);delete(reader);});
+                        reader.addEventListener("loadend",function(){$('<%='#'+data.name%> img').attr('src',reader.result);delete(reader);});
                         reader.readAsDataURL(new Blob([d.frame],{type:"image/jpeg"}));
                     break;
                     case'b64':
-                        $('<%='#'+data.name%>').attr('src','data:image/jpeg;base64,'+d.frame);
+                        $('<%='#'+data.name%> img').attr('src','data:image/jpeg;base64,'+d.frame);
                     break;
                 }
                 delete(d.frame);
             break;
+            case'monitor_watch_off':case'monitor_watch_on':
+                $('#<%=data.name%> .shinobi_viewers').html(d.viewers)
+            break;
         }
+        $.shinobi.callback()
     });
 };
 $.shinobi.ws.emit('e',{f:'init',auth:'<%=data.auth%>',id:'<%=data.id%>',ke:'<%=data.ke%>'})

@@ -40,11 +40,14 @@ https://github.com/moeiscool/Shinobi/wiki/Supported-Cameras
 - Save events with blank frames and force real duration instead of based on frame count.
 - better mobile support.
 
-# Donate
+# Help Shinobi
 
-If you like Shinobi please consider donating.
+**One Ad click from every visitor will be tremendously helpful and it would take less time than actually going through a donation engine** :D
 
-<a title="USD,XBT..." href='https://www.bountysource.com/teams/shinobi'><img src='https://d2bbtvgnhux6eq.cloudfront.net/assets/Bountysource-green-f2f437ed727ee2cacaee3f559c1907cb.png' ></a> <a title="CAD" href='https://gratipay.com/Shinobi-The-Open-Source-CCTV-Solution/'><img alt='Click here to lend your support to: Shinobi, Open Source CCTV written in Node.js and make a donation!' src='https://assets.gratipay.com/gratipay.svg?etag=3tGiSB5Uw_0-oWiLLxAqpQ~~' border='0' ></a> <a href='https://pledgie.com/campaigns/33051'><img alt='Click here to lend your support to: Shinobi, Open Source CCTV written in Node.js and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/33051.png?skin_name=chrome' border='0' ></a>
+<a href="https://shinobicctv.herokuapp.com/">https://moeiscool.github.com/Shinobi/</a>
+
+If you like Shinobi please check out some ways you can help <a href="https://github.com/moeiscool/Shinobi/wiki/Support-Shinobi">Support Shinobi</a>.
+
 
 # Author
 
@@ -52,7 +55,7 @@ Moe Alam
 
 Follow me on Twitter https://twitter.com/moe_alam
 
-Find me on <a href="https://shinobicctv.herokuapp.com/">Slack</a>! :) 
+<a title="Find me on Slack, Get an Invite" href="https://shinobicctv.herokuapp.com/"><img src="https://camo.githubusercontent.com/5843e066b5f0a7b5ff5942921aedcbac70766ed5/68747470733a2f2f612e736c61636b2d656467652e636f6d2f35656230302f696d672f6c616e64696e672f77686572655f776f726b5f68617070656e732f6c6f676f2d6461726b2d626c75652e706e67"></a>
 
 # Credits
 
@@ -87,7 +90,6 @@ If you wish to use this software for commercial purposes please consider donatin
     NPM: express - http://expressjs.com/
     NPM: request - https://www.npmjs.com/package/request
     NPM: connection-tester - https://www.npmjs.com/package/connection-tester
-    image : shinobi.jpg - the background image on the front page is not mine, there were no credits where i found it. it just looks cool :D
     
     and maybe a few others.
     

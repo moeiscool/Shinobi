@@ -108,7 +108,8 @@ s.log=function(e,x){
 }
 //directories
 s.group={};
-s.dir={videos:__dirname+'/videos/'};
+if(!config.videosDir){config.videosDir=__dirname+'/videos/'}
+s.dir={videos:config.videosDir};
 if (!fs.existsSync(s.dir.videos)){
     fs.mkdirSync(s.dir.videos);
 }
@@ -463,9 +464,9 @@ s.camera=function(x,e,cn,tx){
                                             if(isNaN(e.details.sfps)){e.details.sfps=1}
                                         }
                                         s.group[e.ke].mon[e.id].spawn.stdin.on('error',function(err){
-//                                            if(err){
-//                                                s.log(e,{type:'STDIN ERROR',msg:err});
-//                                            }
+                                            if(err){
+                                                s.log(e,{type:'STDIN ERROR',msg:err});
+                                            }
                                         })
                                         e.captureOne=function(f){
                                             s.group[e.ke].mon[e.id].record.request=request({url:e.url,method:'GET',encoding: null,timeout:3000},function(er,data){
@@ -505,16 +506,17 @@ s.camera=function(x,e,cn,tx){
                                                 d=d.toString();
                                                 e.chk=function(x){return d.indexOf(x)>-1;}
                                                 switch(true){
+                                                    case e.chk('NULL @'):
+                                                    case e.chk('RTP: missed'):
+                                                    case e.chk('deprecated pixel format used, make sure you did set range correctly'):
+                                                        return
+                                                    break;
     //                                                case e.chk('av_interleaved_write_frame'):
                                                     case e.chk('Connection timed out'):
                                                         setTimeout(function(){s.log(e,{type:"Can't Connect",msg:'Retrying...'});e.error_fatal();},1000)//restart
                                                     break;
                                                     case e.chk('No pixel format specified'):
                                                         s.log(e,{type:"FFMPEG STDERR",msg:{ffmpeg:s.group[e.ke].mon[e.id].ffmpeg,msg:d}})
-                                                    break;
-                                                    case e.chk('RTP: missed'):
-                                                    case e.chk('deprecated pixel format used, make sure you did set range correctly'):
-                                                        return
                                                     break;
                                                     case e.chk('No such file or directory'):
                                                     case e.chk('Unable to open RTSP for listening'):
