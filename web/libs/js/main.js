@@ -70,7 +70,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
 //                        tmp+='<img>';
 //                    break;
 //                }
-                tmp+='<div class="hud super-center"><div class="side-menu logs scrollable"></div><div class="side-menu videos_monitor_list glM'+d.mid+' scrollable"><ul></ul></div><div class="top_bar"><span class="badge badge-sm badge-danger"><i class="fa fa-eye"></i> <span class="viewers"></span></span></div><div class="bottom_bar"><span class="monitor_name">'+d.name+'</span><div class="pull-right"><a title="Snapshot" monitor="snapshot" class="btn btn-sm btn-primary"><i class="fa fa-camera"></i></a> <a title="Show Logs" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-sm btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="Enlarge" monitor="control_toggle" class="btn btn-sm btn-default"><i class="fa fa-arrows"></i></a> <a title="Status" class="btn btn-sm btn-danger signal" monitor="watch_on"><i class="fa fa-circle"></i></a> <a title="Calendar" monitor="calendar" class="btn btn-sm btn-default"><i class="fa fa-calendar"></i></a> <a title="Videos List" monitor="videos_table" class="btn btn-sm btn-default"><i class="fa fa-film"></i></a> <a class="btn btn-sm btn-default" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Enlarge" monitor="bigify" class="btn btn-sm btn-default"><i class="fa fa-expand"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a></div></div></div></div></div>';
+                tmp+='<div class="hud super-center"><div class="side-menu logs scrollable"></div><div class="side-menu videos_monitor_list glM'+d.mid+' scrollable"><ul></ul></div><div class="top_bar"><span class="badge badge-sm badge-danger"><i class="fa fa-eye"></i> <span class="viewers"></span></span></div><div class="bottom_bar"><span class="monitor_name">'+d.name+'</span><div class="pull-right btn-group"><a title="Snapshot" monitor="snapshot" class="btn btn-sm btn-primary"><i class="fa fa-camera"></i></a> <a title="Show Logs" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-sm btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="Enlarge" monitor="control_toggle" class="btn btn-sm btn-default"><i class="fa fa-arrows"></i></a> <a title="Status" class="btn btn-sm btn-danger signal" monitor="watch_on"><i class="fa fa-circle"></i></a> <a title="Calendar" monitor="calendar" class="btn btn-sm btn-default"><i class="fa fa-calendar"></i></a> <a title="Videos List" monitor="videos_table" class="btn btn-sm btn-default"><i class="fa fa-film"></i></a> <a class="btn btn-sm btn-default" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Enlarge" monitor="bigify" class="btn btn-sm btn-default"><i class="fa fa-expand"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a></div></div></div></div></div>';
             break;
             case 3:
                 tmp+='<tr api_key="'+d.code+'"><td class="code">'+d.code+'</td><td class="ip">'+d.ip+'</td><td class="time">'+d.time+'</td><td><a class="delete btn btn-xs btn-danger">&nbsp;<i class="fa fa-trash"></i>&nbsp;</a></td></tr>';
@@ -555,9 +555,8 @@ $('body')
                 var blob = bb.getBlob('application/octet-stream');
             }
             var url = (window.webkitURL || window.URL).createObjectURL(blob);
-//            location.href = url;
-            $('#temp').html('<a href="'+url+'" download="'+$.ccio.init('tf')+'_'+e.ke+'_'+e.mid+'.jpg">a</a>').find('[download]')[0].click();
-//            URL.revokeObjectURL(url)
+            $('#temp').html('<a href="'+url+'" download="'+$.ccio.init('tf')+'_'+e.ke+'_'+e.mid+'.jpg">a</a>').find('a')[0].click();
+            URL.revokeObjectURL(url)
         break;
         case'control':
             e.a=e.e.attr('control'),e.j=JSON.parse(e.mon.details);
@@ -596,7 +595,7 @@ $('body')
                                 $(this).css('border-color', 'red');
                             }
                         });
-                        setTimeout(function(){e.b.fullCalendar('changeView','listDay');},500)
+                        setTimeout(function(){e.b.fullCalendar('changeView','listDay');},1000)
                     break;
                     case'videos_table':
                         e.t.attr('class','fa fa-film')

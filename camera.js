@@ -17,7 +17,6 @@
 // If you like what I am doing here and want me to continue please consider donating :)
 // https://www.bountysource.com/teams/shinobi
 //
-//
 var fs = require('fs');
 var os = require('os');
 var path = require('path');
@@ -226,7 +225,7 @@ s.ffmpeg=function(e,x){
         break;
         case'webm':
             x.acodec='libvorbis',x.vcodec='libvpx';
-//            x.vcodec+=' -q:v 1';
+            x.vcodec+=' -q:v 1';
         break;
     }
     if(e.details.acodec&&e.details.acodec!==''){x.acodec=e.details.acodec}
@@ -245,18 +244,18 @@ s.ffmpeg=function(e,x){
     switch(e.type){
         case'socket':case'jpeg':case'pipe':
             if(!x.vf||x.vf===','){x.vf=''}
-            x.tmp='-loglevel warning -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg -i -'+x.vcodec+x.time+x.framerate+' -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext;
+            x.tmp='-loglevel warning -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg -i -'+x.vcodec+x.time+x.framerate+' -use_wallclock_as_timestamps 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext;
         break;
         case'mjpeg':
             if(e.mode=='record'){
-                x.watch=x.vcodec+x.time+' -r 10 -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1 '+e.dir+e.filename+'.'+e.ext+''
+                x.watch=x.vcodec+x.time+' -r 10 -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 '+e.dir+e.filename+'.'+e.ext+''
             }
             x.tmp='-loglevel warning -reconnect 1 -f mjpeg -i '+e.url+''+x.watch+x.pipe;
         break;
         case'h264':
             if(!x.vf||x.vf===','){x.vf=''}
             if(e.mode=='record'){
-                x.watch=x.vcodec+x.framerate+x.acodec+' -movflags frag_keyframe+empty_moov -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 -q:v 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext
+                x.watch=x.vcodec+x.framerate+x.acodec+' -movflags frag_keyframe+empty_moov -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext
             }
             x.tmp='-loglevel warning -i '+e.url+' -stimeout 2000'+x.watch+x.pipe;
         break;
@@ -956,7 +955,7 @@ var tx;
 });
 //Authenticator
 s.auth=function(xx,x){
-    if(s.group[xx.ke]&&s.group[xx.ke].users[xx.auth]){
+    if(s.group[xx.ke]&&s.group[xx.ke].users&&s.group[xx.ke].users[xx.auth]){
         x();
     }else{
         sql.query('SELECT * FROM API WHERE code=?',[xx.auth],function(err,r){
@@ -1059,7 +1058,7 @@ app.post('/auth',function (req,res){
 })
 //embed monitor
 app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,res){
-    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Origin",req.headers.origin);
     s.auth(req.params,function(){
         req.sql='SELECT * FROM Monitors WHERE ke=? and mid=?';req.ar=[req.params.ke,req.params.id];
         sql.query(req.sql,req.ar,function(err,r){

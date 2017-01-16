@@ -42,12 +42,7 @@ https://github.com/moeiscool/Shinobi/wiki/Supported-Cameras
 
 # Help Shinobi
 
-**One Ad click from every visitor will be tremendously helpful and it would take less time than actually going through a donation engine** :D
-
-<a href="https://shinobicctv.herokuapp.com/">https://moeiscool.github.com/Shinobi/</a>
-
 If you like Shinobi please check out some ways you can help <a href="https://github.com/moeiscool/Shinobi/wiki/Support-Shinobi">Support Shinobi</a>.
-
 
 # Author
 
