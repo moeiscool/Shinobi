@@ -1,3 +1,6 @@
+<%
+if(!port||port===''||port==80){data.url=baseUrl}else{data.url=baseUrl+':'+port}
+%>
 <script src="<%=baseUrl%>/libs/js/socket.io.js"></script>
 <% if(data.addon){
     if(data.addon.indexOf('jquery')>-1){ %>
@@ -39,7 +42,7 @@ if(data.addon.indexOf('fullscreen')>-1){ %>
 <% data.name='SHINOBI_'+data.ke+'_'+data.id %>
 <div class="shinobi_stream" id="<%= data.name %>">
     <img>
-<% if(data.addon.indexOf('gui')>-1){ %>
+<% if(data.addon&&data.addon.indexOf('gui')>-1){ %>
     <div class="shinobi_hud">
         <div class="shinobi_viewers" title="Current number of viewers"></div>
     </div>

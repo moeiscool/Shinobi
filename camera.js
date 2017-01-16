@@ -1065,7 +1065,7 @@ app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,re
         req.sql='SELECT * FROM Monitors WHERE ke=? and mid=?';req.ar=[req.params.ke,req.params.id];
         sql.query(req.sql,req.ar,function(err,r){
             if(r&&r[0]){r=r[0];}
-            res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname});
+            res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,port:req.port});
         })
     });
 });
@@ -1214,23 +1214,27 @@ sql.query('SELECT * FROM Monitors WHERE mode != "stop"', function(err,r) {
 });
 },1500)
 
-s.cpuUsage=function(e){
+s.cpuUsage=function(e,f){
     switch(s.platform){
         case'darwin':
-            e="ps -A -o %cpu | awk '{s+=$1} END {print s}'";
+            f="ps -A -o %cpu | awk '{s+=$1} END {print s}'";
         break;
         case'linux':
-            e='top -b -n 2 | grep "^%Cpu" | awk \'{print $2}\' | tail -n1';
+            f='top -b -n 2 | grep "^%Cpu" | awk \'{print $2}\' | tail -n1';
         break;
     }
-    return execSync(e,{encoding:'utf8'});
+     exec(f,{encoding:'utf8'},function(err,d){
+         e(d)
+     });
 }
 s.ramUsage=function(){
     return execSync("free | grep Mem | awk '{print $4/$2 * 100.0}'",{encoding:'utf8'});
 }
 try{
     setInterval(function(){
-        io.emit('f',{f:'os',cpu:s.cpuUsage(),ram:s.ramUsage()});
+        s.cpuUsage(function(d){
+            io.emit('f',{f:'os',cpu:d,ram:s.ramUsage()});
+        })
     },5000);
 }catch(err){console.log('CPU indicator will not work. Continuing...')}
 //check disk space every 20 minutes
