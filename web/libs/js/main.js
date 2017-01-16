@@ -580,7 +580,9 @@ $('body')
                                 e.ar.push(v);
                             }
                         })
-                            e.b.html('').fullCalendar('destroy').fullCalendar({
+                            e.b.html('')
+                            try{e.b.fullCalendar('destroy')}catch(er){}
+                            e.b.fullCalendar({
                             header: {
                                 left: 'prev,next today',
                                 center: 'title',
@@ -595,7 +597,7 @@ $('body')
                                 $(this).css('border-color', 'red');
                             }
                         });
-                        setTimeout(function(){e.b.fullCalendar('changeView','listDay');},1000)
+                        setTimeout(function(){e.b.fullCalendar('changeView','listDay');},500)
                     break;
                     case'videos_table':
                         e.t.attr('class','fa fa-film')
