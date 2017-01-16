@@ -1065,7 +1065,7 @@ app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,re
         req.sql='SELECT * FROM Monitors WHERE ke=? and mid=?';req.ar=[req.params.ke,req.params.id];
         sql.query(req.sql,req.ar,function(err,r){
             if(r&&r[0]){r=r[0];}
-            res.render("embed",{data:req.params});
+            res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname});
         })
     });
 });
