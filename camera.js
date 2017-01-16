@@ -1220,7 +1220,7 @@ s.cpuUsage=function(e){
             e="ps -A -o %cpu | awk '{s+=$1} END {print s}'";
         break;
         case'linux':
-            e="grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage}'";
+            e='top -b -n 2 | grep "^%Cpu" | awk \'{print $2}\' | tail -n1';
         break;
     }
     return execSync(e,{encoding:'utf8'});
@@ -1231,7 +1231,7 @@ s.ramUsage=function(){
 try{
     setInterval(function(){
         io.emit('f',{f:'os',cpu:s.cpuUsage(),ram:s.ramUsage()});
-    },2000);
+    },5000);
 }catch(err){console.log('CPU indicator will not work. Continuing...')}
 //check disk space every 20 minutes
 s.disk=function(x){
