@@ -240,7 +240,7 @@ s.ffmpeg=function(e,x){
     if(e.details.svf&&e.details.svf!==''){x.svf=' -vf '+e.details.svf;}else{x.svf='';}
     x.pipe=' -f singlejpeg'+x.svf+' -s '+e.ratio+' pipe:1';
     x.watch='',x.cust_input=' ';
-    if(e.details.cust_input&&e.details.cust_input!==''){x.cust_input+=' '+e.details.cust_input+' ';}
+    if(e.details.cust_input&&e.details.cust_input!==''){x.cust_input+=e.details.cust_input+' ';}
     if(e.details.cust_record&&e.details.cust_record!==''){x.watch+=' '+e.details.cust_record;}
 //        if(e.details.svf){'-vf "rotate=45*(PI/180)'}
     switch(e.type){
