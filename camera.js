@@ -239,31 +239,33 @@ s.ffmpeg=function(e,x){
     }
     if(e.details.svf&&e.details.svf!==''){x.svf=' -vf '+e.details.svf;}else{x.svf='';}
     x.pipe=' -f singlejpeg'+x.svf+' -s '+e.ratio+' pipe:1';
-    x.watch='';
+    x.watch='',x.cust_input=' ';
+    if(e.details.cust_input&&e.details.cust_input!==''){x.cust_input+=e.details.cust_input+' ';}
+    if(e.details.cust_record&&e.details.cust_record!==''){x.watch+=' '+e.details.cust_record;}
 //        if(e.details.svf){'-vf "rotate=45*(PI/180)'}
     switch(e.type){
         case'socket':case'jpeg':case'pipe':
             if(!x.vf||x.vf===','){x.vf=''}
-            x.tmp='-loglevel warning -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg -i -'+x.vcodec+x.time+x.framerate+' -use_wallclock_as_timestamps 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext;
+            x.tmp='-loglevel warning -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg'+x.cust_input+'-i - '+e.details.cust_record+x.vcodec+x.time+x.framerate+' -use_wallclock_as_timestamps 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext;
         break;
         case'mjpeg':
             if(e.mode=='record'){
-                x.watch=x.vcodec+x.time+' -r 10 -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 '+e.dir+e.filename+'.'+e.ext+''
+                x.watch+=x.vcodec+x.time+' -r 10 -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 '+e.dir+e.filename+'.'+e.ext+''
             }
-            x.tmp='-loglevel warning -reconnect 1 -f mjpeg -i '+e.url+''+x.watch+x.pipe;
+            x.tmp='-loglevel warning -reconnect 1 -f mjpeg'+x.cust_input+'-i '+e.url+''+x.watch+x.pipe;
         break;
         case'h264':
             if(!x.vf||x.vf===','){x.vf=''}
             if(e.mode=='record'){
-                x.watch=x.vcodec+x.framerate+x.acodec+' -movflags frag_keyframe+empty_moov -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext
+                x.watch+=x.vcodec+x.framerate+x.acodec+' -movflags frag_keyframe+empty_moov -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext
             }
-            x.tmp='-loglevel warning -i '+e.url+' -stimeout 2000'+x.watch+x.pipe;
+            x.tmp='-loglevel warning'+x.cust_input+'-i '+e.url+' -stimeout 2000'+x.watch+x.pipe;
         break;
         case'local':
             if(e.mode=='record'){
-                x.watch=x.vcodec+x.time+x.framerate+x.acodec+' -movflags frag_keyframe+empty_moov -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 '+e.dir+e.filename+'.'+e.ext
+                x.watch+=x.vcodec+x.time+x.framerate+x.acodec+' -movflags frag_keyframe+empty_moov -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 '+e.dir+e.filename+'.'+e.ext
             }
-            x.tmp='-loglevel warning -i '+e.path+''+x.watch+x.pipe;
+            x.tmp='-loglevel warning'+x.cust_input+'-i '+e.path+''+x.watch+x.pipe;
         break;
     }
     s.group[e.ke].mon[e.mid].ffmpeg=x.tmp;
@@ -1063,7 +1065,7 @@ app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,re
         req.sql='SELECT * FROM Monitors WHERE ke=? and mid=?';req.ar=[req.params.ke,req.params.id];
         sql.query(req.sql,req.ar,function(err,r){
             if(r&&r[0]){r=r[0];}
-            res.render("embed",{data:req.params});
+            res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname});
         })
     });
 });

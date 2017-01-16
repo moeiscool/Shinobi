@@ -1,4 +1,4 @@
-<script src="/libs/js/socket.io.js"></script>
+<script src="<%=baseUrl%>/libs/js/socket.io.js"></script>
 <% if(data.addon){
     if(data.addon.indexOf('jquery')>-1){ %>
 <script
@@ -51,7 +51,7 @@ if(!$.shinobi){
 };
 if(!$.shinobi.callback){$.shinobi.callback=function(){}}
 if(!$.shinobi.ws||$.shinobi.ws.connected===false){
-    $.shinobi.ws=io(location.origin);
+    $.shinobi.ws=io('<%=baseUrl%>');
     $.shinobi.ws.on('f',function (d){
         switch(d.f){
             case'monitor_frame':
