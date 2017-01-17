@@ -241,7 +241,7 @@ s.ffmpeg=function(e,x){
     x.pipe=' -f singlejpeg'+x.svf+' -s '+e.ratio+' pipe:1';
     x.watch='',x.cust_input=' ';
     if(e.details.cust_input&&e.details.cust_input!==''){x.cust_input+=e.details.cust_input+' ';}
-    if(e.details.cust_record&&e.details.cust_record!==''){x.watch+=' '+e.details.cust_record;}
+    if(e.details.cust_record&&e.details.cust_record!==''){x.watch+=' '+e.details.cust_record;}else{e.details.cust_record=''}
 //        if(e.details.svf){'-vf "rotate=45*(PI/180)'}
     switch(e.type){
         case'socket':case'jpeg':case'pipe':
@@ -1065,7 +1065,7 @@ app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,re
         req.sql='SELECT * FROM Monitors WHERE ke=? and mid=?';req.ar=[req.params.ke,req.params.id];
         sql.query(req.sql,req.ar,function(err,r){
             if(r&&r[0]){r=r[0];}
-            res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,port:req.port});
+            res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,port:config.port});
         })
     });
 });
