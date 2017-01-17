@@ -382,15 +382,20 @@ $.aM.f.find('[name="ext"]').change(function(e){
     $.aM.f.find('.h_f_'+e.v).show();
 });
 $.aM.f.find('[name="type"]').change(function(e){
-    e.v=$(this).val();
+    e.e=$(this);
+    e.v=e.e.val();
     $.aM.f.find('.h_t_input').hide()
     $.aM.f.find('.h_t_'+e.v).show();
     e.h=$.aM.f.find('[name="path"]');
+    e.p=e.e.parents('.form-group');
+    e.p.removeClass('col-md-12 col-md-6')
     switch(e.v){
-        case'local':
+        case'local':case'socket':
+            e.p.addClass('col-md-12')
             e.h.attr('placeholder','/dev/video0')
         break;
         default:
+            e.p.addClass('col-md-6')
             e.h.attr('placeholder','/videostream.cgi?1')
         break;
     }

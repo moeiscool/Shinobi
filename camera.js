@@ -241,7 +241,7 @@ s.ffmpeg=function(e,x){
     x.pipe=' -f singlejpeg'+x.svf+' -s '+e.ratio+' pipe:1';
     x.watch='',x.cust_input=' ';
     if(e.details.cust_input&&e.details.cust_input!==''){x.cust_input+=e.details.cust_input+' ';}
-    if(e.details.cust_record&&e.details.cust_record!==''){x.watch+=' '+e.details.cust_record;}
+    if(e.details.cust_record&&e.details.cust_record!==''){x.watch+=' '+e.details.cust_record;}else{e.details.cust_record=''}
 //        if(e.details.svf){'-vf "rotate=45*(PI/180)'}
     switch(e.type){
         case'socket':case'jpeg':case'pipe':
@@ -257,13 +257,13 @@ s.ffmpeg=function(e,x){
         case'h264':
             if(!x.vf||x.vf===','){x.vf=''}
             if(e.mode=='record'){
-                x.watch+=x.vcodec+x.framerate+x.acodec+' -movflags frag_keyframe+empty_moov -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext
+                x.watch+=x.vcodec+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext
             }
             x.tmp='-loglevel warning'+x.cust_input+'-i '+e.url+' -stimeout 2000'+x.watch+x.pipe;
         break;
         case'local':
             if(e.mode=='record'){
-                x.watch+=x.vcodec+x.time+x.framerate+x.acodec+' -movflags frag_keyframe+empty_moov -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 '+e.dir+e.filename+'.'+e.ext
+                x.watch+=x.vcodec+x.time+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 '+e.dir+e.filename+'.'+e.ext
             }
             x.tmp='-loglevel warning'+x.cust_input+'-i '+e.path+''+x.watch+x.pipe;
         break;
@@ -424,6 +424,9 @@ s.camera=function(x,e,cn,tx){
                     default:
                         e.ratio='640x480';
                     break;
+                }
+                if(e.details.scale&&e.details.scale!==''){
+                    e.ratio=e.details.scale;
                 }
                 e.error_fatal=function(x){
                     clearTimeout(e.err_fatal_timeout);
@@ -1065,7 +1068,7 @@ app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,re
         req.sql='SELECT * FROM Monitors WHERE ke=? and mid=?';req.ar=[req.params.ke,req.params.id];
         sql.query(req.sql,req.ar,function(err,r){
             if(r&&r[0]){r=r[0];}
-            res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,port:req.port});
+            res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,port:config.port});
         })
     });
 });
