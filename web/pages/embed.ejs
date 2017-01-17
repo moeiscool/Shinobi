@@ -49,33 +49,35 @@ if(data.addon.indexOf('fullscreen')>-1){ %>
 <% } %>
 </div>
 <script>
-if(!$.shinobi){
-    $.shinobi={}
-};
-if(!$.shinobi.callback){$.shinobi.callback=function(){}}
-if(!$.shinobi.ws||$.shinobi.ws.connected===false){
-    $.shinobi.ws=io('<%=data.url%>');
-    $.shinobi.ws.on('f',function (d){
-        switch(d.f){
-            case'monitor_frame':
-                switch(d.frame_format){
-                    case'ab':
-                        var reader = new FileReader();
-                        reader.addEventListener("loadend",function(){$('<%='#'+data.name%> img').attr('src',reader.result);delete(reader);});
-                        reader.readAsDataURL(new Blob([d.frame],{type:"image/jpeg"}));
+    $(document).ready(function(){
+        if(!$.shinobi){
+            $.shinobi={}
+        };
+        if(!$.shinobi.callback){$.shinobi.callback=function(){}}
+        if(!$.shinobi.ws||$.shinobi.ws.connected===false){
+            $.shinobi.ws=io('<%=data.url%>');
+            $.shinobi.ws.on('f',function (d){
+                switch(d.f){
+                    case'monitor_frame':
+                        switch(d.frame_format){
+                            case'ab':
+                                var reader = new FileReader();
+                                reader.addEventListener("loadend",function(){$('<%='#'+data.name%> img').attr('src',reader.result);delete(reader);});
+                                reader.readAsDataURL(new Blob([d.frame],{type:"image/jpeg"}));
+                            break;
+                            case'b64':
+                                $('<%='#'+data.name%> img').attr('src','data:image/jpeg;base64,'+d.frame);
+                            break;
+                        }
+                        delete(d.frame);
                     break;
-                    case'b64':
-                        $('<%='#'+data.name%> img').attr('src','data:image/jpeg;base64,'+d.frame);
+                    case'monitor_watch_off':case'monitor_watch_on':
+                        $('#<%=data.name%> .shinobi_viewers').html(d.viewers)
                     break;
                 }
-                delete(d.frame);
-            break;
-            case'monitor_watch_off':case'monitor_watch_on':
-                $('#<%=data.name%> .shinobi_viewers').html(d.viewers)
-            break;
-        }
-        $.shinobi.callback()
-    });
-};
-$.shinobi.ws.emit('e',{f:'init',auth:'<%=data.auth%>',id:'<%=data.id%>',ke:'<%=data.ke%>'})
+                $.shinobi.callback()
+            });
+        };
+        $.shinobi.ws.emit('e',{f:'init',auth:'<%=data.auth%>',id:'<%=data.id%>',ke:'<%=data.ke%>'})
+    })
 </script>
