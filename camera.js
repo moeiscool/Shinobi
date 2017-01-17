@@ -257,13 +257,13 @@ s.ffmpeg=function(e,x){
         case'h264':
             if(!x.vf||x.vf===','){x.vf=''}
             if(e.mode=='record'){
-                x.watch+=x.vcodec+x.framerate+x.acodec+' -movflags frag_keyframe+empty_moov -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext
+                x.watch+=x.vcodec+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext
             }
             x.tmp='-loglevel warning'+x.cust_input+'-i '+e.url+' -stimeout 2000'+x.watch+x.pipe;
         break;
         case'local':
             if(e.mode=='record'){
-                x.watch+=x.vcodec+x.time+x.framerate+x.acodec+' -movflags frag_keyframe+empty_moov -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 '+e.dir+e.filename+'.'+e.ext
+                x.watch+=x.vcodec+x.time+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 '+e.dir+e.filename+'.'+e.ext
             }
             x.tmp='-loglevel warning'+x.cust_input+'-i '+e.path+''+x.watch+x.pipe;
         break;
@@ -424,6 +424,9 @@ s.camera=function(x,e,cn,tx){
                     default:
                         e.ratio='640x480';
                     break;
+                }
+                if(e.details.scale&&e.details.scale!==''){
+                    e.ratio=e.details.scale;
                 }
                 e.error_fatal=function(x){
                     clearTimeout(e.err_fatal_timeout);

@@ -273,28 +273,58 @@
                 <input class="form-control" name="name">
             </label>
           </div>
-          <div class="form-group">
-            <label><span>Input Type</span>
-                <select class="form-control" name="type">
-                    <option value="jpeg">JPEG</option>  
-                    <option value="mjpeg">MJPEG</option>  
-                    <option value="h264">H.264</option>  
-                    <option value="socket">Shinobi Streamer</option>  
-                    <option value="local">Local</option>  
-                </select>
-            </label>
+          <div class="row">
+              <div class="form-group col-md-6">
+                <label><span>Input Type</span>
+                    <select class="form-control" name="type">
+                        <option value="jpeg">JPEG</option>  
+                        <option value="mjpeg">MJPEG</option>  
+                        <option value="h264">H.264</option>  
+                        <option value="socket">Shinobi Streamer</option>  
+                        <option value="local">Local</option>  
+                    </select>
+                </label>
+              </div>
+              <div class="form-group col-md-6 h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
+                <label><span>Connection Type</span>
+                    <select class="form-control" name="protocol">
+                        <option value="http">HTTP</option>  
+                        <option value="https">HTTPS</option>  
+                        <option value="rtsp">RTSP</option>  
+                    </select>
+                </label>
+              </div>
           </div>
-          <div class="form-group">
-            <label><span>Custom Input Flags</span>
-            <input class="form-control" detail="cust_input" placeholder="">
+          <div class="row h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
+              <div class="form-group col-md-6">
+                <label><span>Username</span>
+                <input class="form-control" detail="muser" placeholder="">
+                </label>
+              </div>
+              <div class="form-group col-md-6">
+                <label><span>Password</span>
+                <input class="form-control" type="password" detail="mpass" placeholder="">
+                </label>
+              </div>
+          </div>
+          <div class="row h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
+              <div class="form-group col-md-9">
+                <label><span>Host</span>
+                <input class="form-control" name="host" placeholder="">
+                </label>
+              </div>
+              <div class="form-group col-md-3">
+                <label><span>Port</span>
+                <input class="form-control" name="port" placeholder="Leave blank for Port 80">
+                </label>
+              </div>
+          </div>
+          <div class="form-group h_t_input h_t_h264 h_t_jpeg h_t_mjpeg h_t_local">
+            <label><span>Path</span>
+            <input class="form-control" name="path" placeholder="/videostream.cgi?1">
             </label>
           </div>
           <div class="h_m_input h_m_record">
-          <div class="form-group">
-            <label><span>Custom Recording Flags</span>
-            <input class="form-control" detail="cust_record" placeholder="">
-            </label>
-          </div>
           <div class="form-group">
             <label><span>File Type</span>
                 <select class="form-control" name="ext">
@@ -331,49 +361,22 @@
             </label>
           </div>
           </div>
-          <div class="form-group h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
-            <label><span>Connection Type</span>
-                <select class="form-control" name="protocol">
-                    <option value="http">HTTP</option>  
-                    <option value="https">HTTPS</option>  
-                    <option value="rtsp">RTSP</option>  
-                </select>
+          <div class="form-group">
+            <label><span>Stream Scale</span>
+            <input class="form-control" detail="scale" placeholder="640x360">
             </label>
           </div>
-          <div class="form-group h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
-            <label><span>Host</span>
-            <input class="form-control" name="host" placeholder="">
-            </label>
-          </div>
-          <div class="form-group h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
-            <label><span>Username</span>
-            <input class="form-control" detail="muser" placeholder="">
-            </label>
-          </div>
-          <div class="form-group h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
-            <label><span>Password</span>
-            <input class="form-control" type="password" detail="mpass" placeholder="">
-            </label>
-          </div>
-          <div class="form-group h_t_input h_t_h264 h_t_jpeg h_t_mjpeg h_t_local">
-            <label><span>Path</span>
-            <input class="form-control" name="path" placeholder="/videostream.cgi?1">
-            </label>
-          </div>
-          <div class="form-group h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
-            <label><span>Port</span>
-            <input class="form-control" name="port" placeholder="Leave blank for Port 80">
-            </label>
-          </div>
-          <div class="form-group h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
-            <label><span>Image Width</span>
-            <input class="form-control" name="width">
-            </label>
-          </div>
-          <div class="form-group h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
-            <label><span>Image Height</span>
-            <input class="form-control" name="height">
-            </label>
+          <div class="row">
+              <div class="form-group col-md-6">
+                <label><span>Capture Width</span>
+                <input class="form-control" name="width">
+                </label>
+              </div>
+              <div class="form-group col-md-6">
+                <label><span>Capture Height</span>
+                <input class="form-control" name="height">
+                </label>
+              </div>
           </div>
            <div class="form-group h_m_input h_m_record">
             <label><span>Record Speed (FPS)</span>
@@ -381,7 +384,7 @@
             </label>
           </div>
           <div class="form-group h_t_input h_t_socket h_t_jpeg">
-            <label><span>Capture Rate <small class="h_t_input h_t_socket">in Milliseconds</small></span>
+            <label><span>Capture Rate <small class="h_t_input h_t_jpeg">in Seconds</small><small class="h_t_input h_t_socket">in Milliseconds</small></span>
             <input class="form-control" detail="sfps">
             </label>
           </div>
@@ -475,6 +478,16 @@
                 <input class="form-control" detail="control_url_down_stop" placeholder="">
                 </label>
               </div>
+          </div>
+          <div class="form-group">
+            <label><span>Custom Input Flags</span>
+            <input class="form-control" detail="cust_input" placeholder="">
+            </label>
+          </div>
+          <div class="form-group h_m_input h_m_record">
+            <label><span>Custom Recording Flags</span>
+            <input class="form-control" detail="cust_record" placeholder="">
+            </label>
           </div>
           <div class="form-group" style="display:none">
             <input class="form-control" name="details" value="{}">
