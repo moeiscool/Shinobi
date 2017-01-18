@@ -46,6 +46,24 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 if(d.port==80){d.porty=''}else{d.porty=':'+d.port}
                 d.url=d.protocol+'://'+d.host+d.porty;return d.url;
             break;
+            case'data-video':
+                if(!d){
+                    $('[data-mid]').each(function(n,v){
+                        v=$(v);v.attr('mid',v.attr('data-mid'))
+                    });
+                    $('[data-ke]').each(function(n,v){
+                        v=$(v);v.attr('ke',v.attr('data-ke'))
+                    });
+                    $('[data-file]').each(function(n,v){
+                        v=$(v);v.attr('file',v.attr('data-file'))
+                    });
+                    $('[data-status]').each(function(n,v){
+                        v=$(v);v.attr('status',v.attr('data-status'))
+                    });
+                }else{
+                    $('[data-ke="'+d.ke+'"][data-mid="'+d.mid+'"][data-file="'+d.filename+'"]').attr('mid',d.mid).attr('ke',d.ke).attr('status',d.status).attr('file',d.filename);
+                }
+            break;
         }
         return k.tmp;
     }
@@ -56,7 +74,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 if(!d.filename){d.filename=moment(d.time).format('YYYY-MM-DDTHH-mm-ss')+'.'+d.ext;}
                 k=[d.mid+'-'+d.filename,'href="/'+$user.auth_token+'/videos/'+d.ke+'/'+d.mid+'/'+d.filename+'"'];
                 d.mom=moment(d.time),d.hr=parseInt(d.mom.format('HH'))+1,d.per=parseInt(d.hr/24*100);
-                tmp+='<li class="glM'+d.mid+'" mid="'+d.mid+'" ke="'+d.ke+'" file="'+d.filename+'"><div title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'" '+k[1]+' video="launch" class="progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div><div><span title="'+d.end+'" class="livestamp"></span></div><div class="small"><b>Start</b> : '+d.time+'</div><div class="small"><b>End</b> : '+d.end+'</div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls"><a class="btn btn-sm btn-primary" video="launch" '+k[1]+'><i class="fa fa-play-circle"></i></a> <a download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a> <a video="download" host="dropbox" download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a> <a title="Delete Video" video="delete" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></a></div></div></li>';
+                tmp+='<li class="glM'+d.mid+'" mid="'+d.mid+'" ke="'+d.ke+'" status="'+d.status+'" file="'+d.filename+'"><div title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'" '+k[1]+' video="launch" class="progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div><div><span title="'+d.end+'" class="livestamp"></span></div><div class="small"><b>Start</b> : '+d.time+'</div><div class="small"><b>End</b> : '+d.end+'</div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls"><a class="btn btn-sm btn-primary" video="launch" '+k[1]+'><i class="fa fa-play-circle"></i></a> <a download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a> <a video="download" host="dropbox" download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a> <a title="Delete Video" video="delete" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></a></div></div></li>';
             break;
             case 1://monitor icon
                 d.src=placeholder.getData(placeholder.plcimg({bgcolor:'#b57d00',text:'...'}));
@@ -261,6 +279,11 @@ $.ccio.ws.on('f',function (d){
         case'monitor_delete':
             $('[mid="'+d.mid+'"][ke="'+d.ke+'"]:not(.modal)').remove();
             delete($.ccio.mon[d.mid]);
+        break;
+        case'video_edit':
+            $.ccio.init('data-video',d)
+            d.e=$('[file="'+d.filename+'"][mid="'+d.mid+'"][ke="'+d.ke+'"]');
+            d.e.attr('status',d.status),d.e.attr('data-status',d.status);
         break;
         case'monitor_edit':
             d.e=$('#monitor_live_'+d.mid);
@@ -494,12 +517,14 @@ $('body')
     e.ke=e.p.attr('ke'),
     e.mid=e.p.attr('mid'),
     e.file=e.p.attr('file');
+    e.status=e.p.attr('status');
     if(!e.ke||!e.mid){
         //for calendar plugin
         e.p=e.e.parents('[data-mid]'),
         e.ke=e.p.data('ke'),
         e.mid=e.p.data('mid'),
         e.file=e.p.data('file');
+        e.status=e.p.data('status');
     }
     e.mon=$.ccio.mon[e.mid];
     switch(e.a){
@@ -514,6 +539,11 @@ $('body')
             e.f.find('.download_link').attr('href',e.href).attr('download',e.file);
             e.f.find('[monitor="download"][host="dropbox"]').attr('href',e.href);
             e.e.modal('show').attr('ke',e.ke).attr('mid',e.mid).attr('file',e.file);
+            if(e.status==1){
+                $.get(e.href+'/status/2',function(d){
+                    console.log(d)
+                })
+            }
         break;
         case'delete':
             $.confirm.e.modal('show');
@@ -627,7 +657,7 @@ $('body')
                             if(v.status!==0){
                                 v.start=v.time;
                                 v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
-                                e.tmp+='<tr data-ke="'+v.ke+'" data-mid="'+v.mid+'" data-file="'+v.filename+'">';
+                                e.tmp+='<tr data-ke="'+v.ke+'" data-status="'+v.status+'" data-mid="'+v.mid+'" data-file="'+v.filename+'">';
                                 e.tmp+='<td><div class="checkbox"><input id="'+v.ke+'_'+v.filename+'" name="'+v.filename+'" value="'+v.mid+'" type="checkbox"><label for="'+v.ke+'_'+v.filename+'"></label></div></td>';
                                 e.tmp+='<td><span class="livestamp" title="'+v.end+'"></span></td>';
                                 e.tmp+='<td>'+v.end+'</td>';

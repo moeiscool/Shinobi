@@ -86,6 +86,10 @@ s.moment=function(e,x){
     e=moment(e);if(config.utcOffset){e=e.utcOffset(config.utcOffset)}
     return e.format(x);
 }
+s.moment_noOffset=function(e,x){
+    if(!e){e=new Date};if(!x){x='YYYY-MM-DDTHH-mm-ss'};
+    return moment(e).format(x);
+}
 s.kill=function(x,e,p){
     if(s.group[e.ke]&&s.group[e.ke].mon[e.id]){
         if(e&&s.group[e.ke].mon[e.id].record){
@@ -492,7 +496,9 @@ s.camera=function(x,e,cn,tx){
                                                 if(s.group[e.ke].mon[e.id].watch&&Object.keys(s.group[e.ke].mon[e.id].watch).length>0){
                                                     s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:data.body.toString('base64'),frame_format:'b64'},'MON_'+e.id);
                                                 }
-                                                s.group[e.ke].mon[e.id].record.capturing=setTimeout(function(){e.captureOne()},1000/e.details.sfps);
+                                               if(s.group[e.ke].mon[e.id].started===1){
+                                                   s.group[e.ke].mon[e.id].record.capturing=setTimeout(function(){e.captureOne()},1000/e.details.sfps);
+                                                   }
                                                 clearTimeout(e.timeOut),e.timeOut=setTimeout(function(){e.error_count=0;},3000)
                                             }).on('error', function(err){
 //                                                if(s.group[e.ke]&&s.group[e.ke].mon[e.id]&&s.group[e.ke].mon[e.id].record&&s.group[e.ke].mon[e.id].record.request){s.group[e.ke].mon[e.id].record.request.abort();}
@@ -965,7 +971,7 @@ var tx;
     })
 });
 //Authenticator
-s.auth=function(xx,x){
+s.auth=function(xx,x,res,req){
     if(s.group[xx.ke]&&s.group[xx.ke].users&&s.group[xx.ke].users[xx.auth]){
         x();
     }else{
@@ -973,8 +979,11 @@ s.auth=function(xx,x){
             if(r&&r[0]){
                 x();
             }else{
-                req.ret.msg='Not Authorized';
-                res.send(JSON.stringify(req.ret, null, 3));
+                if(req){
+                    if(!req.ret){req.ret={ok:false}}
+                    req.ret.msg='Not Authorized';
+                    res.send(JSON.stringify(req.ret, null, 3));
+                }
             }
         })
     }
@@ -1011,7 +1020,7 @@ app.get('/:auth/update/:key', function (req,res){
         }
         res.send(JSON.stringify(req.ret, null, 3));
     }
-    s.auth(req.params,req.fn);
+    s.auth(req.params,req.fn,res,req);
 });
 //register function
 app.post('/register',function (req,res){
@@ -1076,7 +1085,7 @@ app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,re
             if(r&&r[0]){r=r[0];}
             res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,port:config.port});
         })
-    });
+    },res,req);
 });
 // Get monitors json
 app.get(['/:auth/monitor/:ke','/:auth/monitor/:ke/:id'], function (req,res){
@@ -1088,7 +1097,7 @@ app.get(['/:auth/monitor/:ke','/:auth/monitor/:ke/:id'], function (req,res){
             res.send(JSON.stringify(r, null, 3));
         })
     }
-    s.auth(req.params,req.fn);
+    s.auth(req.params,req.fn,res,req);
 });
 // Control monitor mode via HTTP
 app.get(['/:auth/monitor/:ke/:mid/:f','/:auth/monitor/:ke/:mid/:f/:ff','/:auth/monitor/:ke/:mid/:f/:ff/:fff'], function (req,res){
@@ -1167,6 +1176,8 @@ app.get(['/libs/:f/:f2','/libs/:f/:f2/:f3'], function (req,res){
     if(req.params.f3){req.dir=req.dir+'/'+req.params.f3}
     if (fs.existsSync(req.dir)){
         fs.createReadStream(req.dir).pipe(res);
+    }else{
+        res.send('File Not Found')
     }
 });
 // Get video file
@@ -1192,9 +1203,45 @@ app.get('/:auth/videos/:ke/:id/:file', function (req,res){
         })
     }
 });
+//modify video file
+app.get(['/:auth/videos/:ke/:id/:file/:mode','/:auth/videos/:ke/:id/:file/:mode/:f'], function (req,res){
+    req.ret={ok:false};
+    res.setHeader('Content-Type', 'application/json');
+    s.auth(req.params,function(){
+        req.sql='SELECT * FROM Videos WHERE ke=? AND mid=? AND time=?';
+        req.ar=[req.params.ke,req.params.id,s.nameToTime(req.params.file)];
+        sql.query(req.sql,req.ar,function(err,r){
+            if(r&&r[0]){
+                r=r[0];r.filename=s.moment(r.time)+'.'+r.ext;
+                switch(req.params.mode){
+                    case'status':
+                        req.params.f=parseInt(req.params.f)
+                        if(isNaN(req.params.f)||req.params.f===0){
+                            req.ret.msg='Not a valid value.';
+                        }else{
+                            req.ret.ok=true;
+                            sql.query('UPDATE Videos SET status=? WHERE ke=? AND mid=? AND time=?',[req.params.f,req.params.ke,req.params.id,s.nameToTime(req.params.file)])
+                            s.tx({f:'video_edit',status:req.params.f,filename:r.filename,mid:r.mid,ke:r.ke,time:s.nameToTime(r.filename),end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+r.ke);
+                        }
+                    break;
+                    case'delete':
+                        req.ret.ok=true;
+                        s.video('delete',r)
+                    break;
+                    default:
+                        req.ret.msg='Method doesn\'t exist. Check to make sure that the last value of the URL is not blank.';
+                    break;
+                }
+            }else{
+                req.ret.msg='No such file';
+            }
+            res.send(JSON.stringify(req.ret, null, 3));
+        })
+    },res,req);
+})
 // Get videos json
 app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
-    req.fn=function(){
+    s.auth(req.params,function(){
     req.sql='SELECT * FROM Videos WHERE ke=?';req.ar=[req.params.ke];
     if(req.params.id){req.sql+='and mid=?';req.ar.push(req.params.id)}
     sql.query(req.sql,req.ar,function(err,r){
@@ -1203,8 +1250,7 @@ app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
         })
         res.send(JSON.stringify(r, null, 3));
     })
-    }
-    s.auth(req.params,req.fn);
+    },res,req);
 });
 //preliminary monitor start
 setTimeout(function(){

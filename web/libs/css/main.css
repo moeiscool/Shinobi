@@ -46,6 +46,8 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 }
 
 .videos_list .title{font-size:12pt;padding:0 10px}
+[status="1"] .btn[video="launch"],[data-status="1"] .btn[video="launch"]{background:#337ab7;border-color:#337ab7}
+[status="2"] .btn[video="launch"],[data-status="2"] .btn[video="launch"]{background:#a59100;border-color:#a59100}
 .signal.red{background:#c9302c}
 .signal.green{background:#5cb85c}
 .side-menu .progress-circle{margin:0 10px 0 0;position:relative;height:40px;width:40px;float:left}
