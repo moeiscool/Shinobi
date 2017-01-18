@@ -1,22 +1,8 @@
 :root{
   --color-progress-circle-number: #fff;
   --color-progress-circle: #f0f0f0;
-  --color-progress-idicator: #66b8ff;
+  --color-progress-idicator: #b59f00;
   --color-progress-number: #8b8b8b;
-}
-
-body{
-  font-family: 'Open Sans Condensed', sans-serif;
-}
-
-h1{
-  color: #63B8FF;
-  text-align: center;
-}
-
-.container {
-  max-width: 1105px;
-  margin: 25px auto;
 }
 
 .progress-circle {
