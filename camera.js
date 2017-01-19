@@ -242,7 +242,8 @@ s.ffmpeg=function(e,x){
         x.time+=x.vf;
     }
     if(e.details.svf&&e.details.svf!==''){x.svf=' -vf '+e.details.svf;}else{x.svf='';}
-    x.pipe=' -f singlejpeg'+x.svf+' -s '+e.ratio+' pipe:1';
+    if(!e.details.stream_quality||e.details.stream_quality==''){e.details.stream_quality=2}
+    x.pipe=' -f singlejpeg'+x.svf+' -q:v '+e.details.stream_quality+' -s '+e.ratio+' pipe:1';
     x.watch='',x.cust_input=' ';
     if(e.details.cust_input&&e.details.cust_input!==''){x.cust_input+=e.details.cust_input+' ';}
     if(e.details.cust_record&&e.details.cust_record!==''){x.watch+=' '+e.details.cust_record;}else{e.details.cust_record=' '}
@@ -371,6 +372,7 @@ s.camera=function(x,e,cn,tx){
             if(s.group[e.ke].mon[e.id].record){s.group[e.ke].mon[e.id].record.yes=0}
             s.log(e,{type:'Monitor Stopping',msg:'Monitor session has been ordered to stop.'});
             s.tx({f:'monitor_stopping',mid:e.id,ke:e.ke,time:s.moment(),reason:e.reason},'GRP_'+e.ke);
+            s.camera('snapshot',{mid:e.id,ke:e.ke,mon:e})
             if(e.delete===1){
                 s.group[e.ke].mon[e.id].delete=setTimeout(function(){delete(s.group[e.ke].mon[e.id]);},60000*60);
             }
@@ -399,6 +401,7 @@ s.camera=function(x,e,cn,tx){
                 s.group[e.ke].mon[e.mid].record.yes=0;
             }
             s.tx({f:'monitor_starting',mode:x,mid:e.id,time:s.moment()},'GRP_'+e.ke);
+            s.camera('snapshot',{mid:e.id,ke:e.ke,mon:e})
             e.error_fatal_count=0;
             e.error_count=0;
                 e.set=function(y){
@@ -429,8 +432,8 @@ s.camera=function(x,e,cn,tx){
                         e.ratio='640x480';
                     break;
                 }
-                if(e.details.scale&&e.details.scale!==''){
-                    e.ratio=e.details.scale;
+                if(e.details.stream_scale_x&&e.details.stream_scale_x!==''&&e.details.stream_scale_y&&e.details.stream_scale_y!==''){
+                    e.ratio=e.details.stream_scale_x+'x'+e.details.stream_scale_y;
                 }
                 e.error_fatal=function(x){
                     clearTimeout(e.err_fatal_timeout);
