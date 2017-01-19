@@ -82,7 +82,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 delete(d.src);
             break;
             case 2://monitor stream
-                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" class="monitor_item glM'+d.mid+' col-md-4"><img>';
+                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" class="monitor_item glM'+d.mid+' col-md-4"><canvas></canvas>';
 //                switch(d.type){
 //                    case'jpeg':case'mjpeg':case'h264':
 //                        tmp+='<img>';
@@ -333,16 +333,12 @@ $.ccio.ws.on('f',function (d){
             $('#monitor_live_'+d.id+' iframe').attr('src',location.protocol+'//'+location.host+d.watch_url);
         break;
         case'monitor_frame':
-            switch(d.frame_format){
-                case'ab':
-                    var reader = new FileReader();
-                    reader.addEventListener("loadend",function(){$('[mid="'+d.id+'"][ke="'+d.ke+'"] .snapshot,#monitor_live_'+d.id+' img').attr('src',reader.result);delete(reader);});
-                    reader.readAsDataURL(new Blob([d.frame],{type:"image/jpeg"}));
-                break;
-                case'b64':
-                    $('[mid="'+d.id+'"][ke="'+d.ke+'"] .snapshot,#monitor_live_'+d.id+' img').attr('src','data:image/jpeg;base64,'+d.frame);
-                break;
-            }
+            var image = new Image();
+            var ctx = $('#monitor_live_'+d.id+' canvas')[0];
+            image.onload = function() {
+                ctx.getContext("2d").drawImage(image,0,0,ctx.width,ctx.height);
+            };
+            image.src='data:image/jpeg;base64,'+d.frame
             delete(d.frame);
             d.e=$('#monitor_live_'+d.id+' .signal').addClass('btn-success').removeClass('btn-danger');
             clearTimeout($.ccio.mon[d.id]._signal);$.ccio.mon[d.id]._signal=setTimeout(function(){d.e.addClass('btn-danger').removeClass('btn-success');},10000)
