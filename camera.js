@@ -242,7 +242,7 @@ s.ffmpeg=function(e,x){
         x.time+=x.vf;
     }
     if(e.details.svf&&e.details.svf!==''){x.svf=' -vf '+e.details.svf;}else{x.svf='';}
-    if(!e.details.stream_quality||e.details.stream_quality==''){e.details.stream_quality=2}
+    if(!e.details.stream_quality||e.details.stream_quality==''){e.details.stream_quality=10}
     x.pipe=' -f singlejpeg'+x.svf+' -q:v '+e.details.stream_quality+' -s '+e.ratio+' pipe:1';
     x.watch='',x.cust_input=' ';
     if(e.details.cust_input&&e.details.cust_input!==''){x.cust_input+=e.details.cust_input+' ';}
