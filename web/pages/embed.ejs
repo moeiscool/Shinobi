@@ -44,8 +44,14 @@ if(data.addon.indexOf('gui')>-1){ %>
 if(data.addon.indexOf('fullscreen')>-1){ %>
 <style>
     body{margin:0;padding:0;}
-    canvas,.shinobi_stream{position:absolute;width:100%!important;height:100%!important;top:0;left:0;}
+    canvas,.shinobi_stream{position:absolute;top:0;left:0;}
 </style>
+<script>
+$(window).resize(function(){
+    $('canvas').attr('width',$('body').width())
+    $('canvas').attr('height',$('body').height())
+})
+</script>
 <% } %>
 <% }else{
     //no addon set, do defaults
@@ -53,10 +59,11 @@ if(data.addon.indexOf('fullscreen')>-1){ %>
     ar.width=640;
     ar.height=480;
 } %>
-<style>
-    #<%= data.name %> canvas{height:<%=ar.height%>px}
-    #<%= data.name %> canvas{width:<%=ar.width%>px}
-</style>
+<script>
+$(document).ready(function(){
+    $('#<%= data.name %> canvas').attr('width',<%=ar.width%>).attr('height',<%=ar.height%>)
+})
+</script>
 <div class="shinobi_stream" id="<%= data.name %>">
     <canvas></canvas>
 <% if(data.addon&&data.addon.indexOf('gui')>-1){ %>
@@ -85,6 +92,7 @@ if(data.addon.indexOf('fullscreen')>-1){ %>
                             };
                             image.src='data:image/jpeg;base64,'+d.frame
                             delete(d.frame);
+                            delete(image);
                         break;
                         case'monitor_watch_off':case'monitor_watch_on':
                             $('#<%=data.name%> .shinobi_viewers').html(d.viewers)

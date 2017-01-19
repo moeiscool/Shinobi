@@ -10,7 +10,7 @@ Shinobi can record IP Cameras and Local Cameras.
 # Key Aspects
 
 - Written in a simple structure. `camera.js` and `web` folder.
-- Streams are transferred through `WebSocket`. DOM element is an `img` tag.
+- Streams are transferred through `WebSocket`. DOM element is an `canvas` tag.
 - Any websocket enabled browser can support the image stream (including mobile)
 - Can save to WebM or MP4 *(Your version of FFMPEG must have libvpx and libx264)*
 - No Mootools (yes, you can shake my hand later)
