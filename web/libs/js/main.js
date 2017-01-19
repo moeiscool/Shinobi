@@ -304,7 +304,7 @@ $.ccio.ws.on('f',function (d){
             });
             if(d.new===true){$.ccio.tm(1,d.mon,'#monitors_list')}
             switch(d.mon.mode){
-                case'stop':d.e.remove();break;
+//                case'stop':d.e.remove();break;
                 case'start':case'record':
                     if(d.o[d.ke]&&d.o[d.ke][d.mid]===1){$.ccio.cx({f:'monitor',ff:'watch_on',id:d.mid})}
                 break;
@@ -316,7 +316,7 @@ $.ccio.ws.on('f',function (d){
             d.e.find('.monitor_ext').text(d.mon.ext)
             d.e.find('.monitor_mode').text(d.mon.mode)
         break;
-        case'monitor_watch_off':case'monitor_stopping':
+        case'monitor_watch_off':
             d.o=$.ccio.op().watch_on;if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=0;$.ccio.op('watch_on',d.o);
             if($.ccio.mon[d.id]){
                 $.ccio.mon[d.id].watch=0;
@@ -436,6 +436,9 @@ $.aM.f.find('[name="protocol"]').change(function(e){
             if(e.t.val()==='h264'){e.t.val('jpeg')}
         break;
     }
+})
+$.aM.e.on('dblclick','.edit_id',function(e){
+    $.aM.e.find('[name="mid"]').parents('.form-group').toggle('show')
 })
 //api window
 $.apM={e:$('#apis')};$.apM.f=$.apM.e.find('form');

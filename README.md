@@ -40,7 +40,7 @@ https://github.com/moeiscool/Shinobi/wiki/Supported-Cameras
 - Save events with blank frames and force real duration instead of based on frame count.
 - better mobile support.
 
-# Help Shinobi
+## Help make Shinobi the best Open Source CCTV Solution.
 
 If you like Shinobi please check out some ways you can help <a href="https://github.com/moeiscool/Shinobi/wiki/Support-Shinobi">Support Shinobi</a>.
 

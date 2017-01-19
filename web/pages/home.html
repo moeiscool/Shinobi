@@ -362,19 +362,31 @@
           </div>
           </div>
           <div class="form-group">
-            <label><span>Stream Scale</span>
-            <input class="form-control" detail="scale" placeholder="640x360">
+            <label><span>Stream Quality <small>1 is High, 23 is Low</small></span>
+            <input class="form-control" placeholder="10" detail="stream_quality">
             </label>
           </div>
           <div class="row">
               <div class="form-group col-md-6">
+                <label><span>Stream Width</span>
+                <input class="form-control" type="number" min="1" detail="stream_scale_x" placeholder="640">
+                </label>
+              </div>
+              <div class="form-group col-md-6">
+                <label><span>Stream Height</span>
+                <input class="form-control" type="number" min="1" detail="stream_scale_y" placeholder="480">
+                </label>
+              </div>
+          </div>
+          <div class="row">
+              <div class="form-group col-md-6">
                 <label><span>Capture Width</span>
-                <input class="form-control" name="width">
+                <input class="form-control" type="number" min="1" name="width">
                 </label>
               </div>
               <div class="form-group col-md-6">
                 <label><span>Capture Height</span>
-                <input class="form-control" name="height">
+                <input class="form-control" type="number" min="1" name="height">
                 </label>
               </div>
           </div>
