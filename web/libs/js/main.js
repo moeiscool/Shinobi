@@ -1,5 +1,11 @@
 $.ccio={fr:$('#files_recent'),mon:{}};
     
+    $.ccio.gid=function(x){
+        if(!x){x=10};var t = "";var p = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        for( var i=0; i < x; i++ )
+            t += p.charAt(Math.floor(Math.random() * p.length));
+        return t;
+    };
     $.ccio.init=function(x,d,z,k){
         if(!k){k={}};k.tmp='';
         switch(x){
@@ -334,12 +340,12 @@ $.ccio.ws.on('f',function (d){
         break;
         case'monitor_frame':
             var image = new Image();
-            var ctx = $('#monitor_live_'+d.id+' canvas')[0];
+            var ctx = $('#monitor_live_'+d.id+' canvas');
             image.onload = function() {
-                ctx.getContext("2d").drawImage(image,0,0,ctx.width,ctx.height);
+                ctx[0].getContext("2d").drawImage(image,0,0,ctx.width(),ctx.height());
             };
             image.src='data:image/jpeg;base64,'+d.frame
-            delete(d.frame);
+            delete(d.frame);delete(image);
             d.e=$('#monitor_live_'+d.id+' .signal').addClass('btn-success').removeClass('btn-danger');
             clearTimeout($.ccio.mon[d.id]._signal);$.ccio.mon[d.id]._signal=setTimeout(function(){d.e.addClass('btn-danger').removeClass('btn-success');},10000)
         break;
@@ -690,6 +696,7 @@ $('body')
             }
             e.m.find('.selected').toggleClass(e.classes);
             if(!e.e.hasClass('selected')){e.e.toggleClass(e.classes)}
+            e.m.find('.monitor_item').resize()
         break;
         case'watch_on':
             $.ccio.cx({f:'monitor',ff:'watch_on',id:e.mid})
@@ -729,10 +736,14 @@ $('body')
             if(!$.ccio.mon[e.mid]){
                 e.p.find('[monitor="delete"]').hide()
                 e.mt.find('span').text('Add'),e.mt.find('i').attr('class','fa fa-plus');
-                e.values={"mode":"stop","mid":"","name":"","protocol":"http","ext":"webm","type":"jpeg","host":"","path":"","port":"","fps":"1","width":"640","height":"480","details":JSON.stringify({"control":"0","control_stop":"0","vf":"","svf":"fps=1","sfps":"1000","cutoff":"15","vcodec":"copy","acodec":"libvorbis","motion":"0","timestamp":"0"}),"shto":"[]","shfr":"[]"}
+                e.values={"mode":"stop","mid":$.ccio.gid(),"name":"","protocol":"http","ext":"webm","type":"jpeg","host":"","path":"","port":"","fps":"1","width":"640","height":"480","details":JSON.stringify({"control":"0","control_stop":"0","vf":"","svf":"fps=1","sfps":"1000","cutoff":"15","vcodec":"copy","acodec":"libvorbis","motion":"0","timestamp":"0"}),"shto":"[]","shfr":"[]"}
+                e.mt.find('.edit_id').text(e.values.mid);
             }else{
                 e.p.find('[monitor="delete"]').show()
-                e.mt.find('span').text('Edit'),e.mt.find('i').attr('class','fa fa-wrench'),e.values=$.ccio.mon[e.mid];
+                e.mt.find('.edit_id').text(e.mid);
+                e.mt.find('span').text('Edit');
+                e.mt.find('i').attr('class','fa fa-wrench');
+                e.values=$.ccio.mon[e.mid];
             }
             $.each(e.values,function(n,v){
                 $.aM.e.find('[name="'+n+'"]').val(v).change()
@@ -755,3 +766,10 @@ $('body')
 $('#video_viewer,#confirm_window').on('hidden.bs.modal',function(){
     $(this).find('video').remove();
 });
+$('body')
+.on('resize','#monitors_live .monitor_item',function(e){
+    e.e=$(this);
+    e.c=e.e.find('canvas');
+    e.c.attr('height',e.e.height());
+    e.c.attr('width',e.e.width());
+})
