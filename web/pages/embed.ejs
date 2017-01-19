@@ -1,9 +1,18 @@
 <script>var io=null;</script>
-<%
+<% data.name='SHINOBI_'+data.ke+'_'+data.id;
 if(!port||port===''||port==80){data.url=baseUrl}else{data.url=baseUrl+':'+port}
 %>
 <script src="<%=data.url%>/libs/js/socket.io.js"></script>
 <% if(data.addon){
+    var ar={}
+    decodeURI(data.addon).split('|').forEach(function(v){
+        if(v.indexOf('=')>-1){
+            v=v.split('=');
+            ar[v[0]]=v[1];
+        }
+    })
+    if(!ar.width){ar.width=640;}
+    if(!ar.height){ar.height=480;}
     if(data.addon.indexOf('jquery')>-1){ %>
 <script
   src="https://code.jquery.com/jquery-3.1.1.min.js"
@@ -35,14 +44,21 @@ if(data.addon.indexOf('gui')>-1){ %>
 if(data.addon.indexOf('fullscreen')>-1){ %>
 <style>
     body{margin:0;padding:0;}
-    img,.shinobi_stream{position:absolute;width:100%;height:100%;top:0;left:0;}
+    canvas,.shinobi_stream{position:absolute;width:100%!important;height:100%!important;top:0;left:0;}
 </style>
 <% } %>
-<% } %>
-
-<% data.name='SHINOBI_'+data.ke+'_'+data.id %>
+<% }else{
+    //no addon set, do defaults
+    var ar={};
+    ar.width=640;
+    ar.height=480;
+} %>
+<style>
+    #<%= data.name %> canvas{height:<%=ar.height%>px}
+    #<%= data.name %> canvas{width:<%=ar.width%>px}
+</style>
 <div class="shinobi_stream" id="<%= data.name %>">
-    <img>
+    <canvas></canvas>
 <% if(data.addon&&data.addon.indexOf('gui')>-1){ %>
     <div class="shinobi_hud">
         <div class="shinobi_viewers" title="Current number of viewers"></div>
@@ -62,16 +78,12 @@ if(data.addon.indexOf('fullscreen')>-1){ %>
                 $.shinobi.ws.on('f',function (d){
                     switch(d.f){
                         case'monitor_frame':
-                            switch(d.frame_format){
-                                case'ab':
-                                    var reader = new FileReader();
-                                    reader.addEventListener("loadend",function(){$('<%='#'+data.name%> img').attr('src',reader.result);delete(reader);});
-                                    reader.readAsDataURL(new Blob([d.frame],{type:"image/jpeg"}));
-                                break;
-                                case'b64':
-                                    $('<%='#'+data.name%> img').attr('src','data:image/jpeg;base64,'+d.frame);
-                                break;
-                            }
+                            var image = new Image();
+                            var ctx = $('<%='#'+data.name%> canvas')[0];
+                            image.onload = function() {
+                                ctx.getContext("2d").drawImage(image,0,0,ctx.width,ctx.height);
+                            };
+                            image.src='data:image/jpeg;base64,'+d.frame
                             delete(d.frame);
                         break;
                         case'monitor_watch_off':case'monitor_watch_on':

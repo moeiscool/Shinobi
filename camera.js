@@ -870,7 +870,7 @@ var tx;
         switch(d.f){
             case'monitor_frame':
                if(s.group[d.ke].mon[d.mid].started!==1){s.tx({error:'Not Started'},cn.id);return false};if(s.group[d.ke]&&s.group[d.ke].mon[d.mid]&&s.group[d.ke].mon[d.mid].watch&&Object.keys(s.group[d.ke].mon[d.mid].watch).length>0){
-                        s.tx({f:'monitor_frame',ke:d.ke,id:d.mid,time:s.moment(),frame:d.frame,frame_format:'ab'},'MON_'+d.mid);
+                        s.tx({f:'monitor_frame',ke:d.ke,id:d.mid,time:s.moment(),frame:d.frame.toString('base64')},'MON_'+d.mid);
 
                     }
                 if(s.group[d.ke].mon[d.mid].record.yes===1){
