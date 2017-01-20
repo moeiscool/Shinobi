@@ -266,7 +266,7 @@ s.ffmpeg=function(e,x){
         case'h264':
             if(!x.vf||x.vf===','){x.vf=''}
             if(e.mode=='record'){
-                x.watch+=x.vcodec+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1'+x.vf+' "'+e.dir+e.filename+'.'+e.ext+'"'
+                x.watch+=x.vcodec+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext+''
             }
             x.tmp='-loglevel warning'+x.cust_input+' -i '+e.url+' -stimeout 2000'+x.watch+x.pipe;
         break;
