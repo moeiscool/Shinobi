@@ -344,7 +344,8 @@ $.ccio.ws.on('f',function (d){
             image.onload = function() {
                 ctx[0].getContext("2d").drawImage(image,0,0,ctx.width(),ctx.height());
             };
-            image.src='data:image/jpeg;base64,'+d.frame
+            image.src='data:image/jpeg;base64,'+d.frame;
+            $.ccio.mon[d.id].last_frame='data:image/jpeg;base64,'+d.frame;
             delete(d.frame);delete(image);
             d.e=$('#monitor_live_'+d.id+' .signal').addClass('btn-success').removeClass('btn-danger');
             clearTimeout($.ccio.mon[d.id]._signal);$.ccio.mon[d.id]._signal=setTimeout(function(){d.e.addClass('btn-danger').removeClass('btn-success');},10000)
@@ -687,8 +688,8 @@ $('body')
         break;
         case'bigify':
             e.classes='col-md-4 col-md-8 selected';
-            if(e.p.hasClass('selected')){e.p.toggleClass(e.classes);return}
             e.m=$('#monitors_live')
+            if(e.p.hasClass('selected')){e.p.toggleClass(e.classes);e.m.find('.monitor_item').resize();return}
             $('.monitor_item .videos_list').remove();
             e.e=e.e.parents('.monitor_item');
             $('.videos_list.glM'+e.mid).clone().appendTo(e.e.find('.hud .videos_monitor_list')).find('h3').remove()
