@@ -344,7 +344,8 @@ $.ccio.ws.on('f',function (d){
             image.onload = function() {
                 ctx[0].getContext("2d").drawImage(image,0,0,ctx.width(),ctx.height());
             };
-            image.src='data:image/jpeg;base64,'+d.frame
+            image.src='data:image/jpeg;base64,'+d.frame;
+            $.ccio.mon[d.id].last_frame='data:image/jpeg;base64,'+d.frame;
             delete(d.frame);delete(image);
             d.e=$('#monitor_live_'+d.id+' .signal').addClass('btn-success').removeClass('btn-danger');
             clearTimeout($.ccio.mon[d.id]._signal);$.ccio.mon[d.id]._signal=setTimeout(function(){d.e.addClass('btn-danger').removeClass('btn-success');},10000)
@@ -580,8 +581,7 @@ $('body')
     e.e=$(this),e.a=e.e.attr('monitor'),e.p=e.e.parents('[mid]'),e.ke=e.p.attr('ke'),e.mid=e.p.attr('mid'),e.mon=$.ccio.mon[e.mid]
     switch(e.a){
         case'snapshot':
-            var img =e.p.find('img')[0]
-            var image_data = atob(img.src.split(',')[1]);
+            var image_data = atob($.ccio.mon[e.mid].last_frame.split(',')[1]);
             var arraybuffer = new ArrayBuffer(image_data.length);
             var view = new Uint8Array(arraybuffer);
             for (var i=0; i<image_data.length; i++) {
@@ -687,8 +687,8 @@ $('body')
         break;
         case'bigify':
             e.classes='col-md-4 col-md-8 selected';
-            if(e.p.hasClass('selected')){e.p.toggleClass(e.classes);return}
             e.m=$('#monitors_live')
+            if(e.p.hasClass('selected')){e.p.toggleClass(e.classes);e.m.find('.monitor_item').resize();return}
             $('.monitor_item .videos_list').remove();
             e.e=e.e.parents('.monitor_item');
             $('.videos_list.glM'+e.mid).clone().appendTo(e.e.find('.hud .videos_monitor_list')).find('h3').remove()
@@ -699,7 +699,11 @@ $('body')
             }
             e.m.find('.selected').toggleClass(e.classes);
             if(!e.e.hasClass('selected')){e.e.toggleClass(e.classes)}
-            e.m.find('.monitor_item').resize()
+            e.m.find('.monitor_item').resize();
+            e.e=$('#files_recent .videos_list.glM'+e.mid);
+            if(e.e.length>1){
+                e.e.eq(2).remove();
+            }
         break;
         case'watch_on':
             $.ccio.cx({f:'monitor',ff:'watch_on',id:e.mid})
@@ -709,7 +713,7 @@ $('body')
             if(e.e.length>0){e.e.remove()}else{e.p.append('<div class="pad"><div class="control top" monitor="control" control="up"></div><div class="control left" monitor="control" control="left"></div><div class="control right" monitor="control" control="right"></div><div class="control bottom" monitor="control" control="down"></div><div class="control middle" monitor="control" control="center"></div></div>')}
         break;
         case'watch':
-            if($.ccio.mon[e.mid].watch!==1){
+            if($("#monitor_live_"+e.mid).length===0||$.ccio.mon[e.mid].watch!==1){
                 $.ccio.cx({f:'monitor',ff:'watch_on',id:e.mid})
             }else{
                 $("#monitor_live_"+e.mid+' [monitor="bigify"]').click()
@@ -739,7 +743,7 @@ $('body')
             if(!$.ccio.mon[e.mid]){
                 e.p.find('[monitor="delete"]').hide()
                 e.mt.find('span').text('Add'),e.mt.find('i').attr('class','fa fa-plus');
-                e.values={"mode":"stop","mid":$.ccio.gid(),"name":"","protocol":"http","ext":"webm","type":"jpeg","host":"","path":"","port":"","fps":"1","width":"640","height":"480","details":JSON.stringify({"control":"0","control_stop":"0","vf":"","svf":"fps=1","sfps":"1000","cutoff":"15","vcodec":"copy","acodec":"libvorbis","motion":"0","timestamp":"0"}),"shto":"[]","shfr":"[]"}
+                e.values={"mode":"stop","mid":$.ccio.gid(),"name":"","protocol":"http","ext":"webm","type":"jpeg","host":"","path":"","port":"","fps":"1","width":"640","height":"480","details":JSON.stringify({"control":"0","control_stop":"0","vf":"","svf":"fps=1","sfps":"1","cutoff":"15","vcodec":"copy","acodec":"libvorbis","motion":"0","timestamp":"0"}),"shto":"[]","shfr":"[]"}
                 e.mt.find('.edit_id').text(e.values.mid);
             }else{
                 e.p.find('[monitor="delete"]').show()

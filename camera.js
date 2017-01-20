@@ -225,12 +225,16 @@ s.ffmpeg=function(e,x){
             x.vcodec='libx265';x.acodec='libfaac';
             if(e.details.vcodec&&e.details.vcodec!==''){x.vcodec=e.details.vcodec}
             if(e.details.crf&&e.details.crf!==''){x.vcodec+=' -crf '+e.details.crf}
-            x.vcodec+=' -pix_fmt yuv420p';
         break;
         case'webm':
             x.acodec='libvorbis',x.vcodec='libvpx';
             x.vcodec+=' -q:v 1';
         break;
+    }
+    x.vcodec+=' -pix_fmt yuv420p';
+    if(!e.details.sfps||e.details.sfps===''){
+        e.details.sfps=parseFloat(e.details.sfps);
+        if(isNaN(e.details.sfps)){e.details.sfps=1}
     }
     if(e.details.acodec&&e.details.acodec!==''){x.acodec=e.details.acodec}
     if(x.acodec==='none'){x.acodec=''}else{x.acodec=' -acodec '+x.acodec}
@@ -242,11 +246,11 @@ s.ffmpeg=function(e,x){
         x.time+=x.vf;
     }
     if(e.details.svf&&e.details.svf!==''){x.svf=' -vf '+e.details.svf;}else{x.svf='';}
-    if(!e.details.stream_quality||e.details.stream_quality==''){e.details.stream_quality=10}
-    x.pipe=' -f singlejpeg'+x.svf+' -q:v '+e.details.stream_quality+' -s '+e.ratio+' pipe:1';
+    if(e.details.stream_quality&&e.details.stream_quality!==''){x.stream_quality=' -q:v '+e.details.stream_quality}else{x.stream_quality=''}
+    x.pipe=' -f singlejpeg'+x.svf+x.stream_quality+' -s '+e.ratio+' pipe:1';
     x.watch='',x.cust_input=' ';
     if(e.details.cust_input&&e.details.cust_input!==''){x.cust_input+=e.details.cust_input+' ';}
-    if(e.details.cust_record&&e.details.cust_record!==''){x.watch+=' '+e.details.cust_record;}else{e.details.cust_record=' '}
+    if(e.details.cust_record&&e.details.cust_record!==''){x.watch+=' '+e.details.cust_record;}
 //        if(e.details.svf){'-vf "rotate=45*(PI/180)'}
     switch(e.type){
         case'socket':case'jpeg':case'pipe':
@@ -255,22 +259,22 @@ s.ffmpeg=function(e,x){
         break;
         case'mjpeg':
             if(e.mode=='record'){
-                x.watch+=x.vcodec+x.time+' -r 10 -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 '+e.dir+e.filename+'.'+e.ext+''
+                x.watch+=x.vcodec+x.time+x.framerate+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 '+e.dir+e.filename+'.'+e.ext+''
             }
-            x.tmp='-loglevel warning -reconnect 1 -f mjpeg'+x.cust_input+'-i '+e.url+''+x.watch+x.pipe;
+            x.tmp='-loglevel warning -reconnect 1 -r '+e.details.sfps+' -f mjpeg'+x.cust_input+'-i '+e.url+''+x.watch+x.pipe;
         break;
         case'h264':
             if(!x.vf||x.vf===','){x.vf=''}
             if(e.mode=='record'){
-                x.watch+=x.vcodec+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext
+                x.watch+=x.vcodec+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1'+x.vf+' "'+e.dir+e.filename+'.'+e.ext+'"'
             }
-            x.tmp='-loglevel warning'+x.cust_input+'-i '+e.url+' -stimeout 2000'+x.watch+x.pipe;
+            x.tmp='-loglevel warning'+x.cust_input+' -i '+e.url+' -stimeout 2000'+x.watch+x.pipe;
         break;
         case'local':
             if(e.mode=='record'){
                 x.watch+=x.vcodec+x.time+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 '+e.dir+e.filename+'.'+e.ext
             }
-            x.tmp='-loglevel warning'+x.cust_input+'-i '+e.path+''+x.watch+x.pipe;
+            x.tmp='-loglevel warning -reconnect 1'+x.cust_input+'-i '+e.path+''+x.watch+x.pipe;
         break;
     }
     s.group[e.ke].mon[e.mid].ffmpeg=x.tmp;
@@ -332,7 +336,6 @@ s.camera=function(x,e,cn,tx){
             s.camera('start',e);
         break;
         case'watch_on'://live streamers - join
-            s.init(0,{mid:e.id,ke:e.ke});
 //            if(s.group[e.ke].mon[e.id].watch[cn.id]){s.camera('watch_off',e,cn,tx);return}
             if(!cn.monitor_watching){cn.monitor_watching={}}
             if(!cn.monitor_watching[e.id]){cn.monitor_watching[e.id]={ke:e.ke}}
@@ -818,6 +821,7 @@ var tx;
                         break;
                         case'watch_on':
                             if(!d.ke){d.ke=cn.ke}
+                            s.init(0,{mid:d.id,ke:d.ke});
                             if(!s.group[d.ke]||!s.group[d.ke].mon[d.id]||s.group[d.ke].mon[d.id].started===0){return false}
                             s.camera(d.ff,d,cn,tx)
                             cn.join('MON_'+d.id);
