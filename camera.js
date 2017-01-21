@@ -399,6 +399,14 @@ s.camera=function(x,e,cn,tx){
                 if (!fs.existsSync(e.dir)){
                     fs.mkdirSync(e.dir);
                 }
+                s.group[e.ke].mon[e.id].fswatch=fs.watch(e.dir,{encoding:'utf8'},function(eventType,filename){
+                    if(eventType==='rename'){
+                        e.filename=filename.split('.')[0];
+                        s.video('open',e);
+                        s.group[e.ke].mon[e.id].open=e.filename;
+                        s.group[e.ke].mon[e.id].open_ext=e.ext;
+                    }
+                })
             }else{
                 s.group[e.ke].mon[e.mid].record.yes=0;
             }
@@ -500,43 +508,41 @@ s.camera=function(x,e,cn,tx){
                                                    s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:d.toString('base64'),frame_format:'b64'},'MON_'+e.id);
                                                 }
                                             });
-                                            s.group[e.ke].mon[e.id].spawn.stderr.on('data',function(d){
-                                                d=d.toString();
-                                                e.chk=function(x){return d.indexOf(x)>-1;}
-                                                switch(true){
-                                                    case e.chk('NULL @'):
-                                                    case e.chk('RTP: missed'):
-                                                    case e.chk('deprecated pixel format used, make sure you did set range correctly'):
-                                                        return
-                                                    break;
-    //                                                case e.chk('av_interleaved_write_frame'):
-                                                    case e.chk('Connection timed out'):
-                                                        setTimeout(function(){s.log(e,{type:"Can't Connect",msg:'Retrying...'});e.error_fatal();},1000)//restart
-                                                    break;
-                                                    case e.chk('No pixel format specified'):
-                                                        s.log(e,{type:"FFMPEG STDERR",msg:{ffmpeg:s.group[e.ke].mon[e.id].ffmpeg,msg:d}})
-                                                    break;
-                                                    case e.chk('No such file or directory'):
-                                                    case e.chk('Unable to open RTSP for listening'):
-                                                    case e.chk('timed out'):
-                                                    case e.chk('Invalid data found when processing input'):
-                                                    case e.chk('Immediate exit requested'):
-                                                    case e.chk('reset by peer'):
-                                                       if(e.frames===0&&x==='record'){s.video('delete',e)};
-                                                    break;
-                                                        //close event
-                                                    case /T[0-9][0-9]-[0-9][0-9]-[0-9][0-9]./.test(d):
-                                                        e.filename=d.split('.')[0];
-                                                        s.video('open',e);
-                                                        s.group[e.ke].mon[e.id].open=e.filename;
-                                                        s.group[e.ke].mon[e.id].open_ext=e.ext;
-                                                        s.video('close',e);
-                                                    break;
-                                                }
-                                                s.log(e,{type:"FFMPEG STDERR",msg:d})
-                                            });
                                         }
                                     break;
+                                }
+                                if(x==='record'||e.type==='mjpeg'||e.type==='h264'||e.type==='local'){
+                                    s.group[e.ke].mon[e.id].spawn.stderr.on('data',function(d){
+                                        d=d.toString();
+                                        e.chk=function(x){return d.indexOf(x)>-1;}
+                                        switch(true){
+                                            case e.chk('NULL @'):
+                                            case e.chk('RTP: missed'):
+                                            case e.chk('deprecated pixel format used, make sure you did set range correctly'):
+                                                return
+                                            break;
+//                                                case e.chk('av_interleaved_write_frame'):
+                                            case e.chk('Connection timed out'):
+                                                setTimeout(function(){s.log(e,{type:"Can't Connect",msg:'Retrying...'});e.error_fatal();},1000)//restart
+                                            break;
+                                            case e.chk('No pixel format specified'):
+                                                s.log(e,{type:"FFMPEG STDERR",msg:{ffmpeg:s.group[e.ke].mon[e.id].ffmpeg,msg:d}})
+                                            break;
+                                            case e.chk('No such file or directory'):
+                                            case e.chk('Unable to open RTSP for listening'):
+                                            case e.chk('timed out'):
+                                            case e.chk('Invalid data found when processing input'):
+                                            case e.chk('Immediate exit requested'):
+                                            case e.chk('reset by peer'):
+                                               if(e.frames===0&&x==='record'){s.video('delete',e)};
+                                            break;
+                                                //close event
+                                            case /T[0-9][0-9]-[0-9][0-9]-[0-9][0-9]./.test(d):
+                                                s.video('close',e);
+                                            break;
+                                        }
+                                        s.log(e,{type:"FFMPEG STDERR",msg:d})
+                                    });
                                 }
                                 }else{
                                     s.log(e,{type:"Can't Connect",msg:'Retrying...'});e.error_fatal();return;
