@@ -389,7 +389,6 @@ s.camera=function(x,e,cn,tx){
             if(s.group[e.ke].mon[e.id].started===1){return}
             //every 15 minutes start a new file.
             s.group[e.ke].mon[e.id].started=1;
-            s.kill(s.group[e.ke].mon[e.id].spawn,e);
             if(x==='record'){
                 s.group[e.ke].mon[e.id].record.yes=1;
                 e.dir=s.dir.videos+e.ke+'/';
@@ -446,6 +445,7 @@ s.camera=function(x,e,cn,tx){
                 }
                 e.fn=function(){//this function loops to create new files
                     try{
+                        s.kill(s.group[e.ke].mon[e.id].spawn,e);
                         e.draw=function(err,o){
                             if(o.success===true){
                                 e.frames=0;
@@ -524,7 +524,8 @@ s.camera=function(x,e,cn,tx){
                                             break;
 //                                                case e.chk('av_interleaved_write_frame'):
                                             case e.chk('Connection timed out'):
-                                                setTimeout(function(){s.log(e,{type:"Can't Connect",msg:'Retrying...'});e.error_fatal();},1000)//restart
+                                                //restart
+                                                setTimeout(function(){s.log(e,{type:"Can't Connect",msg:'Retrying...'});e.error_fatal();},1000)
                                             break;
                                             case e.chk('No pixel format specified'):
                                                 s.log(e,{type:"FFMPEG STDERR",msg:{ffmpeg:s.group[e.ke].mon[e.id].ffmpeg,msg:d}})
@@ -537,7 +538,7 @@ s.camera=function(x,e,cn,tx){
                                             case e.chk('reset by peer'):
                                                if(e.frames===0&&x==='record'){s.video('delete',e)};
                                             break;
-                                                //close event
+                                                //close video
                                             case /T[0-9][0-9]-[0-9][0-9]-[0-9][0-9]./.test(d):
                                                 s.video('close',e);
                                             break;
