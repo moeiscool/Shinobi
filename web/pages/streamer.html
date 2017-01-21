@@ -51,7 +51,7 @@ $.ccio.start=function(){
         ctx=_base64ToArrayBuffer(ctx);
         $.ccio.cx({f:'monitor_frame',frame:ctx,mid:$.ccio.selected});
         delete(ctx);
-    },$.ccio.framerate);
+    },$.ccio.framerate/1000);
 $('[record]').unbind('click').click($.ccio.end)
 };
     
@@ -107,7 +107,7 @@ window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
     $('body').on('click','[monitor]',function(e){
         e.e=$(this);e.a=e.e.attr('monitor'),e.m=$.ccio.mon[e.a];
         $.ccio.selected=e.a;$('#selected').html(e.a);
-        if(e.m.details.sfps&&e.m.details.sfps!==''){$.ccio.framerate=e.m.details.sfps}else{$.ccio.framerate=1000;}
+        if(e.m.details.sfps&&e.m.details.sfps!==''){$.ccio.framerate=e.m.details.sfps}else{$.ccio.framerate=1;}
         $.ls.setItem('Shinobi_socket_camera',e.a)
         $('[monitor]').removeClass('active'),e.e.addClass('active');
     })
