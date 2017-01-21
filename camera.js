@@ -367,6 +367,7 @@ s.camera=function(x,e,cn,tx){
         break;
         case'stop'://stop monitor
             if(!s.group[e.ke]||!s.group[e.ke].mon[e.id]){return}
+            if(s.group[e.ke].mon[e.id].fswatch){s.group[e.ke].mon[e.id].fswatch.close();delete(s.group[e.ke].mon[e.id].fswatch)}
             if(s.group[e.ke].mon[e.id].open){ee.filename=s.group[e.ke].mon[e.id].open,ee.ext=s.group[e.ke].mon[e.id].open_ext;s.video('close',ee)}
             if(s.group[e.ke].mon[e.id].started!==1){return}
             s.kill(s.group[e.ke].mon[e.id].spawn,e);
