@@ -401,7 +401,7 @@ s.camera=function(x,e,cn,tx){
                     fs.mkdirSync(e.dir);
                 }
                 s.group[e.ke].mon[e.id].fswatch=fs.watch(e.dir,{encoding:'utf8'},function(eventType,filename){
-                    if(eventType==='rename'){
+                    if(eventType==='rename'&&s.group[e.ke].mon[e.id].started===1){
                         e.filename=filename.split('.')[0];
                         s.video('open',e);
                         s.group[e.ke].mon[e.id].open=e.filename;
