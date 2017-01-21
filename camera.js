@@ -274,7 +274,7 @@ s.ffmpeg=function(e,x){
             if(e.mode=='record'){
                 x.watch+=x.vcodec+x.time+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 '+x.segment;
             }
-            x.tmp='-loglevel warning -reconnect 1'+x.cust_input+'-i '+e.path+''+x.watch+x.pipe;
+            x.tmp='-loglevel warning'+x.cust_input+'-i '+e.path+''+x.watch+x.pipe;
         break;
     }
     s.group[e.ke].mon[e.mid].ffmpeg=x.tmp;
