@@ -256,7 +256,7 @@ $.ccio.ws.on('f',function (d){
             $('[file="'+d.filename+'"][mid="'+d.mid+'"][ke="'+d.ke+'"]').remove();
         break;
         case'video_build_success':
-            if(!d.mid){d.mid=d.id;}
+            if(!d.mid){d.mid=d.id;};d.status=1;
             d.e='.glM'+d.mid+'.videos_list ul,.glM'+d.mid+'.videos_monitor_list ul';$(d.e).find('.notice.novideos').remove();
             $.ccio.tm(0,d,d.e)
         break;
