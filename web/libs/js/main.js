@@ -316,7 +316,7 @@ $.ccio.ws.on('f',function (d){
             d.e.find('.monitor_ext').text(d.mon.ext)
             d.e.find('.monitor_mode').text(d.mon.mode)
         break;
-        case'monitor_watch_off':
+        case'monitor_watch_off':case'monitor_stopping':
             d.o=$.ccio.op().watch_on;if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=0;$.ccio.op('watch_on',d.o);
             if($.ccio.mon[d.id]){
                 $.ccio.mon[d.id].watch=0;
@@ -346,7 +346,6 @@ $.ccio.ws.on('f',function (d){
             };
             image.src='data:image/jpeg;base64,'+d.frame;
             $.ccio.mon[d.id].last_frame='data:image/jpeg;base64,'+d.frame;
-            delete(d.frame);delete(image);
             d.e=$('#monitor_live_'+d.id+' .signal').addClass('btn-success').removeClass('btn-danger');
             clearTimeout($.ccio.mon[d.id]._signal);$.ccio.mon[d.id]._signal=setTimeout(function(){d.e.addClass('btn-danger').removeClass('btn-success');},10000)
         break;

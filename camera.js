@@ -217,8 +217,8 @@ s.video=function(x,e){
 }
 s.ffmpeg=function(e,x){
     if(!x){x={tmp:''}}
-//            if(!e.details.cutoff||e.details.cutoff===''){x.cutoff=15}else{x.cutoff=parseFloat(e.details.cutoff)};if(isNaN(x.cutoff)===true){x.cutoff=15}
-//            x.segment=' -f segment -strftime 1 -segment_time '+(60*x.cutoff)+' -segment_format '+e.ext
+            if(!e.details.cutoff||e.details.cutoff===''){x.cutoff=15}else{x.cutoff=parseFloat(e.details.cutoff)};if(isNaN(x.cutoff)===true){x.cutoff=15}
+            x.segment=' -f segment -strftime 1 -segment_list pipe:2 -segment_time '+(60*x.cutoff)+' '+e.dir+'%Y-%m-%dT%H-%M-%S.'+e.ext+''
         if(!e.details.timestamp||e.details.timestamp==1){x.time=' -vf drawtext=fontfile=/usr/share/fonts/truetype/freefont/FreeSans.ttf:text=\'%{localtime}\':x=(w-tw)/2:y=0:fontcolor=white:box=1:boxcolor=0x00000000@1:fontsize=10';}else{x.time=''}
     switch(e.ext){
         case'mp4':
@@ -255,30 +255,30 @@ s.ffmpeg=function(e,x){
     switch(e.type){
         case'socket':case'jpeg':case'pipe':
             if(!x.vf||x.vf===','){x.vf=''}
-            x.tmp='-loglevel warning -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg -i -'+x.vcodec+x.time+x.framerate+' -use_wallclock_as_timestamps 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext;
+            x.tmp='-loglevel warning -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg -i -'+x.vcodec+x.time+x.framerate+' -use_wallclock_as_timestamps 1'+x.vf+' '+x.segment;
         break;
         case'mjpeg':
             if(e.mode=='record'){
-                x.watch+=x.vcodec+x.time+x.framerate+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 '+e.dir+e.filename+'.'+e.ext+''
+                x.watch+=x.vcodec+x.time+x.framerate+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 '+x.segment;
             }
             x.tmp='-loglevel warning -reconnect 1 -r '+e.details.sfps+' -f mjpeg'+x.cust_input+'-i '+e.url+''+x.watch+x.pipe;
         break;
         case'h264':
             if(!x.vf||x.vf===','){x.vf=''}
             if(e.mode=='record'){
-                x.watch+=x.vcodec+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1'+x.vf+' '+e.dir+e.filename+'.'+e.ext+''
+                x.watch+=x.vcodec+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1'+x.vf+' '+x.segment;
             }
             x.tmp='-loglevel warning'+x.cust_input+'-i '+e.url+' -stimeout 2000'+x.watch+x.pipe;
         break;
         case'local':
             if(e.mode=='record'){
-                x.watch+=x.vcodec+x.time+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 '+e.dir+e.filename+'.'+e.ext
+                x.watch+=x.vcodec+x.time+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 '+x.segment;
             }
             x.tmp='-loglevel warning -reconnect 1'+x.cust_input+'-i '+e.path+''+x.watch+x.pipe;
         break;
     }
     s.group[e.ke].mon[e.mid].ffmpeg=x.tmp;
-    return spawn('ffmpeg',x.tmp.split(' '));
+    return spawn('ffmpeg',x.tmp.replace(/\s+/g,' ').trim().split(' '));
 }
 s.file=function(x,e){
     if(!e){e={}};
@@ -386,7 +386,6 @@ s.camera=function(x,e,cn,tx){
             if(!s.group[e.ke].mon_conf[e.id]){s.group[e.ke].mon_conf[e.id]=s.init('clean',e);}
             e.url=s.init('url',e);
             if(s.group[e.ke].mon[e.id].started===1){return}
-            if(!e.details.cutoff||e.details.cutoff===''){e.details.cutoff=60000*15;}else{e.details.cutoff=parseFloat(e.details.cutoff)*60000}
             //every 15 minutes start a new file.
             s.group[e.ke].mon[e.id].started=1;
             s.kill(s.group[e.ke].mon[e.id].spawn,e);
@@ -407,26 +406,6 @@ s.camera=function(x,e,cn,tx){
             s.camera('snapshot',{mid:e.id,ke:e.ke,mon:e})
             e.error_fatal_count=0;
             e.error_count=0;
-                e.set=function(y){
-                    clearInterval(s.group[e.ke].mon[e.id].running);
-                    if(x==='record'){
-                        s.group[e.ke].mon[e.id].running=setInterval(function(){//start loop
-                            e.fn(y)
-                        },e.details.cutoff);
-                    }
-                }
-                e.init_video=function(k){
-                    s.kill(s.group[e.ke].mon[e.id].spawn,e);
-
-                    if(s.group[e.ke].mon[e.id].open&&s.group[e.ke].mon[e.id].record.yes===1){
-                        s.video('close',e);
-                    }
-                    e.filename=s.moment();
-                    s.group[e.ke].mon[e.id].open=e.filename;
-                    s.group[e.ke].mon[e.id].open_ext=e.ext;
-                    e.hosty=e.host.split('@');
-                    if(e.hosty[1]){e.hosty=e.hosty[1];}else{e.hosty=e.hosty[0];}
-                }
                 switch(s.ratio(e.width,e.height)){
                     case'16:9':
                         e.ratio='640x360';
@@ -458,12 +437,8 @@ s.camera=function(x,e,cn,tx){
                 }
                 e.fn=function(){//this function loops to create new files
                     try{
-                        e.init_video();
                         e.draw=function(err,o){
                             if(o.success===true){
-                                if(x==='record'){
-                                    s.video('open',e);
-                                }
                                 e.frames=0;
                                 if(!s.group[e.ke].mon[e.id].record){s.group[e.ke].mon[e.id].record={yes:1}};
                                //launch ffmpeg
@@ -549,6 +524,14 @@ s.camera=function(x,e,cn,tx){
                                                     case e.chk('reset by peer'):
                                                        if(e.frames===0&&x==='record'){s.video('delete',e)};
                                                     break;
+                                                        //close event
+                                                    case /T[0-9][0-9]-[0-9][0-9]-[0-9][0-9]./.test(d):
+                                                        e.filename=d.split('.')[0];
+                                                        s.video('open',e);
+                                                        s.group[e.ke].mon[e.id].open=e.filename;
+                                                        s.group[e.ke].mon[e.id].open_ext=e.ext;
+                                                        s.video('close',e);
+                                                    break;
                                                 }
                                                 s.log(e,{type:"FFMPEG STDERR",msg:d})
                                             });
@@ -560,7 +543,7 @@ s.camera=function(x,e,cn,tx){
                                 }
                         }
                         if(e.type!=='socket'){
-                            connectionTester.test(e.hosty,e.port,2000,e.draw);
+                            connectionTester.test(e.host,e.port,2000,e.draw);
                         }else{
                             e.draw(null,{success:true})
                         }
@@ -572,8 +555,7 @@ s.camera=function(x,e,cn,tx){
                     if(e.ch.length>0){
                         e.ch_stop=0;
                         e.fn=function(n){
-                            e.init_video();
-                        connectionTester.test(e.hosty,e.port,2000,function(err,o){
+                        connectionTester.test(e.host,e.port,2000,function(err,o){
                             if(o.success===true){
                                 s.video('open',e);
                                 e.frames=0;
@@ -589,16 +571,14 @@ s.camera=function(x,e,cn,tx){
                             if(e.ch_stop===0&&s.child_nodes[n].cpu<80){
                                 e.ch_stop=1;
                                 s.group[e.ke].mon[e.mid].child_node=n;
-                                e.set(n);s.group[e.ke].mon[e.mid].child_node_id=s.child_nodes[n].cnid;
+                                s.group[e.ke].mon[e.mid].child_node_id=s.child_nodes[n].cnid;
                                 e.fn(n);
                             }
                         })
                     }else{
-                        e.set();
                         e.fn();
                     }
                 }else{
-                    e.set();
                     e.fn();
                 }
         break;
@@ -1301,6 +1281,7 @@ try{
 }catch(err){console.log('CPU indicator will not work. Continuing...')}
 //check disk space every 20 minutes
 s.disk=function(x){
+    exec('echo 3 > /proc/sys/vm/drop_caches')
     df(function (er,d) {
         if (er) { clearInterval(s.disk_check); }else{er={f:'disk',data:d}}
         if(x){s.tx(er,x)}else{io.emit('f',er);}
