@@ -543,7 +543,7 @@ s.camera=function(x,e,cn,tx){
                                                if(e.frames===0&&x==='record'){s.video('delete',e)};
                                             break;
                                             case /T[0-9][0-9]-[0-9][0-9]-[0-9][0-9]./.test(d):
-                                                s.log(e,{type:"Video Finished",msg:{filename:d}})
+                                                return s.log(e,{type:"Video Finished",msg:{filename:d}})
                                             break;
                                         }
                                         s.log(e,{type:"FFMPEG STDERR",msg:d})
