@@ -251,7 +251,7 @@ s.ffmpeg=function(e,x){
     x.pipe=' -f singlejpeg'+x.svf+x.stream_quality+' -s '+e.ratio+' pipe:1';
     x.watch='',x.cust_input=' ';
     if(e.details.cust_input&&e.details.cust_input!==''){x.cust_input+=e.details.cust_input+' ';}
-    if(e.details.cust_record&&e.details.cust_record!==''){x.watch+=' '+e.details.cust_record;}
+    if(e.details.cust_record&&e.details.cust_record!==''&&e.mode=='record'){x.watch+=' '+e.details.cust_record;}
 //        if(e.details.svf){'-vf "rotate=45*(PI/180)'}
     switch(e.type){
         case'socket':case'jpeg':case'pipe':
@@ -402,6 +402,9 @@ s.camera=function(x,e,cn,tx){
                 }
                 s.group[e.ke].mon[e.id].fswatch=fs.watch(e.dir,{encoding:'utf8'},function(eventType,filename){
                     if(eventType==='rename'&&s.group[e.ke].mon[e.id].started===1){
+                        if(s.group[e.ke].mon[e.id].open&&s.group[e.ke].mon[e.id].record.yes===1){
+                            s.video('close',e);
+                        }
                         e.filename=filename.split('.')[0];
                         s.video('open',e);
                         s.group[e.ke].mon[e.id].open=e.filename;
@@ -539,9 +542,8 @@ s.camera=function(x,e,cn,tx){
                                             case e.chk('reset by peer'):
                                                if(e.frames===0&&x==='record'){s.video('delete',e)};
                                             break;
-                                                //close video
                                             case /T[0-9][0-9]-[0-9][0-9]-[0-9][0-9]./.test(d):
-                                                s.video('close',e);
+                                                return s.log(e,{type:"Video Finished",msg:{filename:d}})
                                             break;
                                         }
                                         s.log(e,{type:"FFMPEG STDERR",msg:d})
