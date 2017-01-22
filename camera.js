@@ -251,7 +251,7 @@ s.ffmpeg=function(e,x){
     x.pipe=' -f singlejpeg'+x.svf+x.stream_quality+' -s '+e.ratio+' pipe:1';
     x.watch='',x.cust_input=' ';
     if(e.details.cust_input&&e.details.cust_input!==''){x.cust_input+=e.details.cust_input+' ';}
-    if(e.details.cust_record&&e.details.cust_record!==''){x.watch+=' '+e.details.cust_record;}
+    if(e.details.cust_record&&e.details.cust_record!==''&&e.mode=='record'){x.watch+=' '+e.details.cust_record;}
 //        if(e.details.svf){'-vf "rotate=45*(PI/180)'}
     switch(e.type){
         case'socket':case'jpeg':case'pipe':
