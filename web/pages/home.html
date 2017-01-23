@@ -334,13 +334,20 @@
                 </select>
             </label>
           </div>
-          <div class="form-group h_f_input h_f_mp4">
+          <div class="form-group">
             <label><span>Video Codec</span>
                 <select class="form-control" detail="vcodec">
-                    <option value="libx265">libx265</option>
-                    <option value="libx264">libx264</option>
-                    <option value="copy" selected>copy</option>
-                    <option value="none">No vcodec</option>
+                    <option value="default" selected>Default</option>
+                    <option value="none">Auto</option>
+                    <optgroup label="WebM">
+                        <option value="libvpx">libvpx</option>
+                        <option value="libvpx-vp9">libvpx-vp9 (Default)</option>
+                    </optgroup>
+                    <optgroup label="MP4">
+                        <option value="libx265">libx265</option>
+                        <option value="libx264">libx264 (Default)</option>
+                        <option value="copy">copy</option>
+                    </optgroup>
                 </select>
             </label>
           </div>
@@ -352,11 +359,19 @@
           <div class="form-group">
             <label><span>Audio Codec</span>
                 <select class="form-control" detail="acodec">
-                    <option value="libvorbis">libvorbis (Good for WebM)</option>
-                    <option value="libfaac">libfaac (Good for MP4)</option>
-                    <option value="aac">aac</option>
-                    <option value="copy" selected>copy (Good for MP4)</option>
-                    <option value="none">No acodec</option>
+                    <option value="default" selected>Default</option>
+                    <option value="none">Auto</option>
+                    <option value="no">No Audio</option>
+                    <optgroup label="WebM">
+                        <option value="libvorbis">libvorbis (Default)</option>
+                        <option value="libopus">libopus</option>
+                    </optgroup>
+                    <optgroup label="MP4">
+                        <option value="libmp3lame">libmp3lame</option>
+                        <option value="aac">aac (Default)</option>
+                        <option value="ac3">ac3</option>
+                        <option value="copy">copy</option>
+                    </optgroup>
                 </select>
             </label>
           </div>
@@ -500,6 +515,27 @@
             <label><span>Custom Recording Flags</span>
             <input class="form-control" detail="cust_record" placeholder="">
             </label>
+          </div>
+          <div class="row">
+          <div class="form-group col-md-6">
+              <label><span>Log Level</span>
+                <select class="form-control" detail="loglevel">
+                    <option value="quiet">Silent</option>
+                    <option value="fatal">Fatal</option>
+                    <option value="error" selected>on Error</option>
+                    <option value="warning">All Warnings</option>
+                    <option value="debug">Debug</option>
+                </select>
+              </label>
+          </div>
+          <div class="form-group col-md-6">
+              <label><span>Save Log in SQL <small>This can fill up quickly.</small></span>
+                <select class="form-control" detail="sqllog">
+                    <option value="0" selected>No</option>  
+                    <option value="1">Yes</option>  
+                </select>
+              </label>
+          </div>
           </div>
           <div class="form-group" style="display:none">
             <input class="form-control" name="details" value="{}">
