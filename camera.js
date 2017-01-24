@@ -209,10 +209,8 @@ s.video=function(x,e){
             if(!e.status){e.status=0}
             e.save=[e.id,e.ke,s.nameToTime(e.filename),e.status];
             sql.query('DELETE FROM Videos WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save,function(err,r){
-                if(r&&r.affectedRows>0){
-                    s.tx({f:'video_delete',filename:e.filename+'.'+e.ext,mid:e.mid,ke:e.ke,time:s.nameToTime(e.filename),end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
+                s.tx({f:'video_delete',filename:e.filename+'.'+e.ext,mid:e.mid,ke:e.ke,time:s.nameToTime(e.filename),end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
                     s.file('delete',e.dir+e.filename+'.'+e.ext)
-                }
             })
         break;
         case'open':

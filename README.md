@@ -1,20 +1,25 @@
 # Shinobi
 
 <center>
-<a href="https://www.youtube.com/user/MrMoea92">YouTube</a> - <a href="https://shinobicctv.herokuapp.com/">Slack</a> - <a href="https://twitter.com/ShinobiCCTV">Twitter</a> - <a href="https://www.facebook.com/Shinobi-1223193167773738/?ref=bookmarks">Facebook</a> - <a href="https://www.reddit.com/r/ShinobiCCTV/">Reddit</a> - <a href="https://www.bountysource.com/teams/shinobi">Bountysource</a> - <a href="https://pledgie.com/campaigns/33051">Pledgie</a> - <a href="https://gratipay.com/~moe_alam/">GratiPay</a>
+<a href="https://www.youtube.com/user/MrMoea92">YouTube</a> - <a href="https://shinobicctv.herokuapp.com/">Slack</a> - <a href="https://twitter.com/ShinobiCCTV">Twitter</a> - <a href="https://www.facebook.com/Shinobi-1223193167773738/?ref=bookmarks">Facebook</a> - <a href="https://www.reddit.com/r/ShinobiCCTV/">Reddit</a> - <a href="https://gratipay.com/Shinobi-The-Open-Source-CCTV-Solution/"><b>Donate</b></a>
 </center>
 
 Shinobi is an Open Source CCTV software written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. <s>Currently it is being crafted for IP Cameras, not local</s>.
 Shinobi can record IP Cameras and Local Cameras.
 
+<img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.gif?raw=true">
+
 # Key Aspects
 
-- Written in a simple structure. `camera.js` and `web` folder.
-- Streams are transferred through `WebSocket`. DOM element is an `canvas` tag.
-- Any websocket enabled browser can support the image stream (including mobile)
-- Can save to WebM or MP4 *(Your version of FFMPEG must have libvpx and libx264)*
-- No Mootools (yes, you can shake my hand later)
-- Calendar view for Events
+- Records IP Cameras and Local Cameras
+- Streams by WebSocket
+- Save to WebM and MP4
+ - Other formats will be added after codec choices are less confusing.
+- API
+ - Get videos
+ - Get monitors
+ - Change monitor modes : Disabled, Watch, Record
+ - Embedding streams
 
 # More about Shinobi in the Wiki
 
@@ -24,7 +29,6 @@ https://github.com/moeiscool/Shinobi/wiki
 
 https://github.com/moeiscool/Shinobi/wiki/Supported-Cameras
 
-<img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.gif?raw=true">
 
 # Supported Systems
 
@@ -33,12 +37,6 @@ https://github.com/moeiscool/Shinobi/wiki/Supported-Cameras
 # How to Install and Run
 
 - https://github.com/moeiscool/Shinobi/blob/master/INSTALL.md
-
-# To Do
-
-- Fix Pipe error that occasionally occurs. `(appears to be caused by JPEG stream emit or pipe into ffmpeg, MJPEG is not affected)` - this will be addressed by segmenting feature.
-- Save events with blank frames and force real duration instead of based on frame count.
-- better mobile support.
 
 ## Help make Shinobi the best Open Source CCTV Solution.
 
