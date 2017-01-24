@@ -126,6 +126,7 @@ s.init=function(x,e){
         case 0://camera
             if(!s.group[e.ke]){s.group[e.ke]={}};
             if(!s.group[e.ke].mon){s.group[e.ke].mon={}}
+            if(!s.group[e.ke].users){s.group[e.ke].users={}}
             if(!s.group[e.ke].mon[e.mid]){s.group[e.ke].mon[e.mid]={}}
             if(!s.group[e.ke].mon[e.mid].watch){s.group[e.ke].mon[e.mid].watch={}};
             if(e.type==='record'){e.record=1}else{e.record=0}
@@ -1381,7 +1382,7 @@ app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
     if(req.params.id){req.sql+='and mid=?';req.ar.push(req.params.id)}
     sql.query(req.sql,req.ar,function(err,r){
         r.forEach(function(v){
-            v.href='/'+req.params.auth+'/videos/'+v.ke+'/'+v.mid+'/'+s.moment(v.time)+'.'+v.ext;
+            v.href='/'+req.params.auth+'/videos/'+v.ke+'/'+v.mid+'/'+s.moment_noOffset(v.time)+'.'+v.ext;
         })
         res.send(JSON.stringify(r, null, 3));
     })
