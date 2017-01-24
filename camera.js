@@ -241,7 +241,7 @@ s.video=function(x,e){
                                fs.readFile(e.dir+e.filename+'.'+e.ext,function(err,data){
                                    s.group[e.ke].webdav.putFileContents(s.group[e.ke].init.webdav_dir+e.ke+'/'+e.mid+'/'+e.filename+'.'+e.ext,"binary",data)
                                 .catch(function(err) {
-                                       s.log(e,{type:'Webdav Error',msg:{msg:'Cannot save.',info:err},ffmpeg:s.group[e.ke].mon[e.id].ffmpeg})
+                                       s.log(e,{type:'Webdav Error',msg:{msg:'Cannot save. Did you make the folders <b>/'+e.ke+'/'+e.id+'</b> inside your chosen save directory?',info:err},ffmpeg:s.group[e.ke].mon[e.id].ffmpeg})
                                     console.error(err);
                                    });
                                 });
@@ -289,8 +289,8 @@ s.ffmpeg=function(e,x){
 //    x.vcodec+=' -pix_fmt yuvj420p';
     //use custom audio codec
     if(e.details.acodec&&e.details.acodec!==''&&e.details.acodec!=='default'){x.acodec=e.details.acodec}
-    if(x.acodec=='aac'&&(e.details.cust_record.indexOf('-strict -2')>-1)===false){e.details.cust_record+=' -strict -2';}
-    if((e.details.cust_input.indexOf('-use_wallclock_as_timestamps 1')>-1)===false){e.details.cust_input+=' -use_wallclock_as_timestamps 1';}
+    if(x.acodec=='aac'&&e.details.cust_record&&(e.details.cust_record.indexOf('-strict -2')>-1)===false){e.details.cust_record+=' -strict -2';}
+//    if(e.details.cust_input&&(e.details.cust_input.indexOf('-use_wallclock_as_timestamps 1')>-1)===false){e.details.cust_input+=' -use_wallclock_as_timestamps 1';}
     //ready or reset codecs
     if(x.acodec!=='no'){
         if(x.acodec.indexOf('none')>-1){x.acodec=''}else{x.acodec=' -acodec '+x.acodec}
