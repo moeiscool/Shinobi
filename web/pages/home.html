@@ -182,6 +182,38 @@
                 <input class="form-control" detail="days">
             </label>
         </div>
+        <div>
+            <div class="form-group">
+                <label><span>Webdav URL</span>
+                    <input class="form-control" detail="webdav_url">
+                </label>
+            </div>
+            <div class="row">
+                <div class="form-group col-md-6">
+                    <label><span>Webdav Username</span>
+                        <input class="form-control" detail="webdav_user">
+                    </label>
+                </div>
+                <div class="form-group col-md-6">
+                    <label><span>Webdav Password</span>
+                        <input class="form-control" type="password" detail="webdav_pass">
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label><span>Webdav Autosave?</span>
+                        <select class="form-control" detail="webdav_save">
+                            <option value="0">No</option>  
+                            <option value="1">Yes</option>  
+                        </select>
+                </label>
+            </div>
+            <div class="form-group">
+                <label><span>Webdav Save Directory</span>
+                    <input class="form-control" placeholder="/" detail="webdav_dir">
+                </label>
+            </div>
+        </div>
         <input type="hidden" name="details">
       </div>
       <div class="modal-footer">

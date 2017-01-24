@@ -34,6 +34,7 @@ var execSync = require('child_process').execSync;
 var exec = require('child_process').exec;
 var spawn = require('child_process').spawn;
 var crypto = require('crypto');
+var webdav = require("webdav");
 var connectionTester = require('connection-tester');
 var df = require('node-df');
 var config = require('./conf.json');
@@ -131,6 +132,39 @@ s.init=function(x,e){
             if(!s.group[e.ke].mon[e.mid].record){s.group[e.ke].mon[e.mid].record={yes:e.record}};
             if(!s.group[e.ke].mon[e.mid].started){s.group[e.ke].mon[e.mid].started=0};
             if(s.group[e.ke].mon[e.mid].delete){clearTimeout(s.group[e.ke].mon[e.mid].delete)}
+            s.init('apps',e)
+        break;
+        case'apps':
+            if(!s.group[e.ke].init){
+                s.group[e.ke].init={};
+                sql.query('SELECT * FROM Users WHERE ke=? AND details NOT LIKE ?',[e.ke,'%"sub"%'],function(ar,r){
+                    if(r&&r[0]){
+                        r=r[0];
+                        ar=JSON.parse(r.details);
+                        if(!ar.sub){
+                            //owncloud/webdav
+                            if(ar.webdav_user&&
+                               ar.webdav_user!==''&&
+                               ar.webdav_pass&&
+                               ar.webdav_pass!==''&&
+                               ar.webdav_url&&
+                               ar.webdav_url!==''
+                              ){
+                                if(!ar.webdav_dir||ar.webdav_dir===''){
+                                    ar.webdav_dir='/';
+                                    if(ar.webdav_dir.slice(-1)!=='/'){ar.webdav_dir+='/';}
+                                }
+                                s.group[e.ke].webdav = webdav(
+                                    ar.webdav_url,
+                                    ar.webdav_user,
+                                    ar.webdav_pass
+                                );
+                            }
+                            s.group[e.ke].init=ar;
+                        }
+                    }
+                });
+            }
         break;
         case'sync':
             e.cn=Object.keys(s.child_nodes);
@@ -201,6 +235,18 @@ s.video=function(x,e){
                             if(!e.status){e.save.push(0)}else{e.save.push(e.status)}
                             sql.query('UPDATE Videos SET `size`=?,`frames`=?,`status`=? WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save)
          s.tx({f:'video_build_success',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),size:e.filesize,end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
+                            
+                            //cloud auto savers
+                            //webdav
+                            if(s.group[e.ke].webdav&&s.group[e.ke].init.webdav_save=="1"){
+                               fs.readFile(e.dir+e.filename+'.'+e.ext,function(err,data){
+                                   s.group[e.ke].webdav.putFileContents(s.group[e.ke].init.webdav_dir+e.ke+'/'+e.mid+'/'+e.filename+'.'+e.ext,"binary",data)
+                                .catch(function(err) {
+                                       s.log(e,{type:'Webdav Error',msg:{msg:'Cannot save.',info:err},ffmpeg:s.group[e.ke].mon[e.id].ffmpeg})
+                                    console.error(err);
+                                   });
+                                });
+                            }
                         }else{
                             s.video('delete',e);
                             s.log(e,{type:'File Corrupt',msg:{ffmpeg:s.group[e.ke].mon[e.mid].ffmpeg,filesize:(e.filesize/100000).toFixed(2)}})
@@ -245,6 +291,7 @@ s.ffmpeg=function(e,x){
     //use custom audio codec
     if(e.details.acodec&&e.details.acodec!==''&&e.details.acodec!=='default'){x.acodec=e.details.acodec}
     if(x.acodec=='aac'&&(e.details.cust_record.indexOf('-strict -2')>-1)===false){e.details.cust_record+=' -strict -2';}
+    if((e.details.cust_input.indexOf('-use_wallclock_as_timestamps 1')>-1)===false){e.details.cust_input+=' -use_wallclock_as_timestamps 1';}
     //ready or reset codecs
     if(x.acodec!=='no'){
         if(x.acodec.indexOf('none')>-1){x.acodec=''}else{x.acodec=' -acodec '+x.acodec}
@@ -280,24 +327,24 @@ s.ffmpeg=function(e,x){
     switch(e.type){
         case'socket':case'jpeg':case'pipe':
             if(!x.vf||x.vf===','){x.vf=''}
-            x.tmp='-loglevel '+x.loglevel+' -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg -i -'+x.vcodec+x.time+x.framerate+' -use_wallclock_as_timestamps 1'+x.vf+' '+x.segment;
+            x.tmp='-loglevel '+x.loglevel+' -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg -i -'+x.vcodec+x.time+x.framerate+x.vf+' '+x.segment;
         break;
         case'mjpeg':
             if(e.mode=='record'){
-                x.watch+=x.vcodec+x.time+x.framerate+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1 '+x.segment;
+                x.watch+=x.vcodec+x.time+x.framerate+' -s '+e.width+'x'+e.height+x.segment;
             }
             x.tmp='-loglevel '+x.loglevel+' -reconnect 1 -r '+e.details.sfps+' -f mjpeg'+x.cust_input+'-i '+e.url+''+x.watch+x.pipe;
         break;
         case'h264':
             if(!x.vf||x.vf===','){x.vf=''}
             if(e.mode=='record'){
-                x.watch+=x.vcodec+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1'+x.vf+' '+x.segment;
+                x.watch+=x.vcodec+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+x.vf+' '+x.segment;
             }
             x.tmp='-loglevel '+x.loglevel+x.cust_input+'-i '+e.url+x.watch+x.pipe;
         break;
         case'local':
             if(e.mode=='record'){
-                x.watch+=x.vcodec+x.time+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+' -use_wallclock_as_timestamps 1'+x.vf+' '+x.segment;
+                x.watch+=x.vcodec+x.time+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+x.vf+' '+x.segment;
             }
             x.tmp='-loglevel '+x.loglevel+x.cust_input+'-i '+e.path+''+x.watch+x.pipe;
         break;
@@ -651,28 +698,29 @@ var tx;
                         s.group[d.ke].mon={}
                         if(!s.group[d.ke].mon){s.group[d.ke].mon={}}
                     }
+                    s.init('apps',d)
                     sql.query('SELECT * FROM API WHERE ke=? && uid=?',[d.ke,d.uid],function(err,rrr) {
-                    sql.query('SELECT * FROM Monitors WHERE ke=?',[d.ke],function(err,rr) {
-                        tx({
-                            f:'init_success',
-                            monitors:rr,
-                            users:s.group[d.ke].vid,
-                            apis:rrr,
-                            os:{
-                                platform:s.platform,
-                                cpuCount:os.cpus().length,
-                                totalmem:os.totalmem()
-                            }
+                        sql.query('SELECT * FROM Monitors WHERE ke=?',[d.ke],function(err,rr) {
+                            tx({
+                                f:'init_success',
+                                monitors:rr,
+                                users:s.group[d.ke].vid,
+                                apis:rrr,
+                                os:{
+                                    platform:s.platform,
+                                    cpuCount:os.cpus().length,
+                                    totalmem:os.totalmem()
+                                }
+                            })
+                            s.disk(cn.id);
+                            setTimeout(function(){
+                                if(rr&&rr[0]){
+                                    rr.forEach(function(t){
+                                        s.camera('snapshot',{mid:t.mid,ke:t.ke,mon:t})
+                                    })
+                                }
+                            },2000)
                         })
-                        s.disk(cn.id);
-                        setTimeout(function(){
-                            if(rr&&rr[0]){
-                                rr.forEach(function(t){
-                                    s.camera('snapshot',{mid:t.mid,ke:t.ke,mon:t})
-                                })
-                            }
-                        },2000)
-                    })
                     })
                 }else{
                     tx({ok:false,msg:'Not Authorized',token_used:d.auth,ke:d.ke});cn.disconnect();
@@ -751,6 +799,29 @@ var tx;
                             sql.query('UPDATE Users SET '+d.set.join(',')+' WHERE ke=? AND uid=?',d.ar,function(err,r){
                                 tx({f:'user_settings_change',uid:d.uid,ke:d.ke,form:d.form});
                             });
+                            d.form.details=JSON.parse(d.form.details);
+                            if(!d.form.details.sub){
+                                if(d.form.details.webdav_user&&
+                                   d.form.details.webdav_user!==''&&
+                                   d.form.details.webdav_pass&&
+                                   d.form.details.webdav_pass!==''&&
+                                   d.form.details.webdav_url&&
+                                   d.form.details.webdav_url!==''
+                                  ){
+                                    if(!d.form.details.webdav_dir||d.form.details.webdav_dir===''){
+                                        d.form.details.webdav_dir='/';
+                                        if(d.form.details.webdav_dir.slice(-1)!=='/'){d.form.details.webdav_dir+='/';}
+                                    }
+                                    s.group[d.ke].webdav = webdav(
+                                        d.form.details.webdav_url,
+                                        d.form.details.webdav_user,
+                                        d.form.details.webdav_pass
+                                    );
+                                    s.group[d.ke].init=d.form.details;
+                                }else{
+                                    delete(s.group[d.ke].webdav);
+                                }
+                            }
                         break;
                     }
                 break;
