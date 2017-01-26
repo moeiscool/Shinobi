@@ -308,7 +308,7 @@ s.ffmpeg=function(e,x){
         if(isNaN(e.details.sfps)){e.details.sfps=1}
     }
     if(e.fps&&e.fps!==''){x.framerate=' -r '+e.fps}else{x.framerate=''}
-    if(e.stream_fps&&e.stream_fps!==''){x.stream_fps=' -r '+e.stream_fps}else{x.stream_fps=''}
+    if(e.details.stream_fps&&e.details.stream_fps!==''){x.stream_fps=' -r '+e.details.stream_fps}else{x.stream_fps=''}
     //recording video filter
     if(e.details.vf&&e.details.vf!==''){
         if(x.time===''){x.vf=' -vf '}else{x.vf=','}
