@@ -114,6 +114,7 @@ s.log=function(e,x){
 }
 //directories
 s.group={};
+if(!config.defaultMjpeg){config.defaultMjpeg=__dirname+'/web/libs/img/bg.jpg'}
 if(!config.videosDir){config.videosDir=__dirname+'/videos/'}
 s.dir={videos:config.videosDir};
 if (!fs.existsSync(s.dir.videos)){
@@ -178,7 +179,7 @@ s.init=function(x,e){
         case'clean':
             x={keys:Object.keys(e),ar:{}};
             x.keys.forEach(function(v){
-                if(v!=='record'&&v!=='spawn'&&v!=='running'&&(v!=='time'&&typeof e[v]!=='function')){x.ar[v]=e[v];}
+                if(v!=='last_frame'&&v!=='record'&&v!=='spawn'&&v!=='running'&&(v!=='time'&&typeof e[v]!=='function')){x.ar[v]=e[v];}
             });
             return x.ar;
         break;
@@ -320,7 +321,7 @@ s.ffmpeg=function(e,x){
     //pipe to client streams
     switch(e.details.stream_type){
         case'hls':
-            x.pipe=' -c:v libx264 -flags +global_header -hls_time 1 -hls_list_size 4 -hls_wrap 4 -start_number 0 -hls_allow_cache 0 -hls_flags omit_endlist '+e.sdir+'s.m3u8';
+            x.pipe=' -c:v libx264 -flags +global_header -hls_time 0 -hls_list_size 3 -hls_wrap 3 -start_number 0 -hls_allow_cache 0 -hls_flags omit_endlist '+e.sdir+'s.m3u8';
         break;
         default://base64
             x.pipe=' -f singlejpeg'+x.svf+x.stream_quality+' -s '+e.ratio+' pipe:1';
@@ -453,6 +454,7 @@ s.camera=function(x,e,cn,tx){
             if(!s.group[e.ke]||!s.group[e.ke].mon[e.id]){return}
             if(s.group[e.ke].mon[e.id].fswatch){s.group[e.ke].mon[e.id].fswatch.close();delete(s.group[e.ke].mon[e.id].fswatch)}
             if(s.group[e.ke].mon[e.id].open){ee.filename=s.group[e.ke].mon[e.id].open,ee.ext=s.group[e.ke].mon[e.id].open_ext;s.video('close',ee)}
+            if(s.group[e.ke].mon[e.id].last_frame){delete(s.group[e.ke].mon[e.id].last_frame)}
             if(s.group[e.ke].mon[e.id].started!==1){return}
             s.kill(s.group[e.ke].mon[e.id].spawn,e);
             clearInterval(s.group[e.ke].mon[e.id].running);
@@ -501,7 +503,6 @@ s.camera=function(x,e,cn,tx){
                     s.group[e.ke].mon[e.id].open_ext=e.ext;
                 }
             })
-            s.tx({f:'monitor_starting',mode:x,mid:e.id,time:s.moment()},'GRP_'+e.ke);
             s.camera('snapshot',{mid:e.id,ke:e.ke,mon:e})
             e.error_fatal_count=0;
             e.error_count=0;
@@ -546,6 +547,7 @@ s.camera=function(x,e,cn,tx){
                                //launch ffmpeg
                                 s.group[e.ke].mon[e.id].spawn = s.ffmpeg(e); 
                                 s.log(e,{type:'FFMPEG Process Starting',msg:{cmd:s.group[e.ke].mon[e.id].ffmpeg}});
+                                s.tx({f:'monitor_starting',mode:x,mid:e.id,time:s.moment()},'GRP_'+e.ke);
                                 //start workers
                                 switch(e.type){
                                     case'jpeg':
@@ -598,9 +600,17 @@ s.camera=function(x,e,cn,tx){
                                 s.group[e.ke].mon[e.id].spawn.on('error',function(er){e.error({type:'Spawn Error',msg:er})})
                                 s.group[e.ke].mon[e.id].spawn.stdout.on('data',function(d){
 
-                                   ++e.frames; if(s.group[e.ke]&&s.group[e.ke].mon[e.id]&&s.group[e.ke].mon[e.id].watch&&Object.keys(s.group[e.ke].mon[e.id].watch).length>0){
-                                       s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:d.toString('base64'),frame_format:'b64'},'MON_'+e.id);
-                                    }
+                                   ++e.frames;
+                                   switch(e.details.stream_type){
+                                        case'mjpeg':
+                                           s.group[e.ke].mon[e.id].last_frame=d;
+                                        break;
+                                        case'b64':case undefined:case null:
+                                           if(s.group[e.ke]&&s.group[e.ke].mon[e.id]&&s.group[e.ke].mon[e.id].watch&&Object.keys(s.group[e.ke].mon[e.id].watch).length>0){
+                                               s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:d.toString('base64'),frame_format:'b64'},'MON_'+e.id);
+                                            }
+                                        break;
+                                   }
                                 });
                                 if(x==='record'||e.type==='mjpeg'||e.type==='h264'||e.type==='local'){
                                     s.group[e.ke].mon[e.id].spawn.stderr.on('data',function(d){
@@ -1192,11 +1202,52 @@ app.post('/',function (req,res){
 //});
 // Get HLS stream (m3u8)
 app.get('/:auth/hls/:ke/:id/:file', function (req,res){
-    req.dir=config.videosDir+'/'+req.params.ke+'/'+req.params.id+'_stream/'+req.params.file;
-    if (fs.existsSync(req.dir)){
-        fs.createReadStream(req.dir).pipe(res);
+    s.auth(req.params,function(){
+        req.dir=config.videosDir+'/'+req.params.ke+'/'+req.params.id+'_stream/'+req.params.file;
+        if (fs.existsSync(req.dir)){
+            fs.createReadStream(req.dir).pipe(res);
+        }else{
+            res.send('File Not Found')
+        }
+    },res,req);
+});
+//Get MJPEG stream
+app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res) {
+    if(req.params.addon=='full'){
+        res.render('mjpeg',{url:'/'+req.params.auth+'/mjpeg/'+req.params.ke+'/'+req.params.id})
     }else{
-        res.send('File Not Found')
+        s.auth(req.params,function(){
+            res.writeHead(200, {
+            'Content-Type': 'multipart/x-mixed-replace; boundary=myboundary',
+            'Cache-Control': 'no-cache',
+            'Connection': 'close',
+            'Pragma': 'no-cache'
+            });
+
+            var i = 0;
+            var stop = false;
+
+            res.connection.on('close', function() { stop = true; });
+            var content;
+            var send_next = function() {
+            if (stop)
+              return;
+            if(!s.group[req.params.ke]||!s.group[req.params.ke].mon[req.params.id].last_frame){
+                content = fs.readFileSync(config.defaultMjpeg,'binary');
+            }else{
+                content = s.group[req.params.ke].mon[req.params.id].last_frame;
+            }
+            i = (i+1) % 100;
+              res.write("--myboundary\r\n");
+              res.write("Content-Type: image/jpeg\r\n");
+              res.write("Content-Length: " + content.length + "\r\n");
+              res.write("\r\n");
+              res.write(content, 'binary');
+              res.write("\r\n");
+              setTimeout(send_next, 500);
+            };
+            send_next();
+        },res,req);
     }
 });
 //embed monitor
