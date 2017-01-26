@@ -4,7 +4,8 @@
   "description": "CCTV and NVR for Node.js",
   "main": "camera.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node camera.js"
   },
   "repository": {
     "type": "git",

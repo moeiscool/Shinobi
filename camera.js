@@ -1419,7 +1419,14 @@ s.cpuUsage=function(e,f){
      });
 }
 s.ramUsage=function(){
-    return execSync("free | grep Mem | awk '{print $4/$2 * 100.0}'",{encoding:'utf8'});
+    var cmd;
+    if (os.platform()=='darwin')
+            cmd = "vm_stat | awk '/^Pages free: /{f=substr($3,1,length($3)-1)} /^Pages active: /{a=substr($3,1,length($3-1))} /^Pages inactive: /{i=substr($3,1,length($3-1))} /^Pages speculative: /{s=substr($3,1,length($3-1))} /^Pages wired down: /{w=substr($4,1,length($4-1))} /^Pages occupied by compressor: /{c=substr($5,1,length($5-1)); print ((a+w)/(f+a+i+w+s+c))*100;}'"
+    else
+            cmd = "free | grep Mem | awk '{print $4/$2 * 100.0}'";
+
+
+        return execSync(cmd,{encoding:'utf8'});
 }
 try{
     setInterval(function(){
