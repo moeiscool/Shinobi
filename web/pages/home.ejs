@@ -338,6 +338,15 @@
                 <input class="form-control" name="name">
             </label>
           </div>
+          <div class="form-group">
+            <label><span>Stream Type</span>
+                <select class="form-control" detail="stream_type">
+                    <option value="b64" selected>Base64</option>
+                    <option value="hls">HLS</option>
+                    <option value="mjpeg">MJPEG</option>
+                </select>
+            </label>
+          </div>
           <div class="row">
               <div class="form-group col-md-6">
                 <label><span>Input Type</span>
@@ -441,16 +450,6 @@
             </label>
           </div>
           </div>
-          <div class="form-group">
-            <label><span>Stream Type</span>
-                <select class="form-control" detail="stream_type">
-                    <option value="b64" selected>Base64</option>
-                    <option value="hls">HLS</option>
-                    <option value="mjpeg">MJPEG</option>
-                </select>
-            </label>
-          </div>
-
           <div class="row">
               <div class="form-group col-md-6">
                 <label><span>Stream Quality <small>1 is High, 23 is Low</small></span>
@@ -459,7 +458,7 @@
               </div>
               <div class="form-group col-md-6">
                 <label><span>Stream Rate <small>(FPS)</small></span>
-                <input class="form-control" type="number" detail="stream_fps" placeholder="1">
+                <input class="form-control" detail="stream_fps" placeholder="1">
                 </label>
               </div>
           </div>

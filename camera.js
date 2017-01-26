@@ -1203,14 +1203,14 @@ app.post('/',function (req,res){
 //});
 // Get HLS stream (m3u8)
 app.get('/:auth/hls/:ke/:id/:file', function (req,res){
-    s.auth(req.params,function(){
+//    s.auth(req.params,function(){
         req.dir=config.videosDir+'/'+req.params.ke+'/'+req.params.id+'_stream/'+req.params.file;
         if (fs.existsSync(req.dir)){
             fs.createReadStream(req.dir).pipe(res);
         }else{
             res.send('File Not Found')
         }
-    },res,req);
+//    },res,req);
 });
 //Get MJPEG stream
 app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res) {
