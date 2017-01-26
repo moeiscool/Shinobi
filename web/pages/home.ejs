@@ -1,3 +1,5 @@
+<% include blocks/header %>
+<script>var $user=<%- JSON.stringify($user) %>;</script>
 <link rel="stylesheet" href="libs/css/pnotify.custom.min.css">
 <link rel="stylesheet" href="libs/css/vbox.css">
 <link rel="stylesheet" href="libs/css/circles.css">
@@ -117,6 +119,32 @@
     </section>
 </section>
 <div class="hidden" id="temp"></div>
+<!--PROBE Window-->
+<div class="modal fade" id="probe" tabindex="-1" role="dialog" aria-labelledby="probeLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="probeLabel"><i class="fa fa-gears"></i> &nbsp; Probe</h4>
+      </div>
+      <div class="modal-body">
+          <div class="text-center msg"></div>
+        <div class="form-group">
+            <label><span>Complete Stream URL</span>
+                <input class="form-control" name="url">
+            </label>
+        </div>
+        <div class="output_data"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-success">Check</button>
+      </div>
+    </form>
+  </div>
+</div>
 <!--API Window-->
 <div class="modal fade" id="apis" tabindex="-1" role="dialog" aria-labelledby="apisLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
@@ -211,6 +239,11 @@
             <div class="form-group">
                 <label><span>WebDAV Save Directory</span>
                     <input class="form-control" placeholder="/" detail="webdav_dir">
+                </label>
+            </div>
+            <div class="form-group">
+                <label><span>Custom CSS <small>Style your dashboard.</small></span>
+                    <textarea class="form-control" placeholder="#main_header{background:#b59f00}" detail="css"></textarea>
                 </label>
             </div>
         </div>
@@ -372,8 +405,8 @@
                     <option value="default" selected>Default</option>
                     <option value="none">Auto</option>
                     <optgroup label="WebM">
-                        <option value="libvpx">libvpx</option>
-                        <option value="libvpx-vp9">libvpx-vp9 (Default)</option>
+                        <option value="libvpx">libvpx (Default)</option>
+                        <option value="libvpx-vp9">libvpx-vp9</option>
                     </optgroup>
                     <optgroup label="MP4">
                         <option value="libx265">libx265</option>
@@ -602,7 +635,7 @@
   </div>
 </div>
 <!--Dropbox Library, Change data-app-key to your app key. -->
-<script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="mwgh09b16myew4s"></script>
+<script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="<%= $user.DropboxAppKey %>"></script>
 <!--Dropbox End-->
 <script src="libs/js/pnotify.custom.min.js"></script>
 <script src="libs/js/moment.js"></script>

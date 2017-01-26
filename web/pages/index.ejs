@@ -1,25 +1,4 @@
-<head>
-<title>Shinobi</title>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, maximum-scale=1">
-<meta name="description" content="Shinobi, Open Source CCTV Technology">
-<meta name="author" content="Moe Alam, moeiscool on GitHub">
-<meta http-equiv="content-type" content="text/html;charset=UTF-8">
-<link rel="stylesheet" href="libs/css/bootstrap.min.css">
-<link rel="stylesheet" href="libs/css/login.css">
-<link rel="shortcut icon" href="/libs/img/icon/favicon.ico" type="image/x-icon" />
-<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<link rel="apple-touch-icon" sizes="57x57" href="/libs/img/icon/apple-touch-icon-57x57.png" />
-<link rel="apple-touch-icon" sizes="72x72" href="/libs/img/icon/apple-touch-icon-72x72.png" />
-<link rel="apple-touch-icon" sizes="76x76" href="/libs/img/icon/apple-touch-icon-76x76.png" />
-<link rel="apple-touch-icon" sizes="114x114" href="/libs/img/icon/apple-touch-icon-114x114.png" />
-<link rel="apple-touch-icon" sizes="120x120" href="/libs/img/icon/apple-touch-icon-120x120.png" />
-<link rel="apple-touch-icon" sizes="144x144" href="/libs/img/icon/apple-touch-icon-144x144.png" />
-<link rel="apple-touch-icon" sizes="152x152" href="/libs/img/icon/apple-touch-icon-152x152.png" />
-<link rel="apple-touch-icon" sizes="180x180" href="/libs/img/icon/apple-touch-icon-180x180.png" />
-<script src="libs/js/jquery.min.js"></script>
-<script>jQuery.fn.serializeObject=function (){"use strict";var result={};var extend=function (i, element){var node=result[element.name];if ('undefined' !==typeof node && node !==null){if (jQuery.isArray(node)){node.push(element.value);}else{result[element.name]=[node, element.value];}}else{result[element.name]=element.value;}};jQuery.each(this.serializeArray(), extend);return result;};</script>
-</head>
+<% include blocks/header %>
 <div class="shinobi-bg display-table" style="height:100%">
 <div class="shinobi-bg-shade">
 <div class="container">
@@ -42,12 +21,12 @@
 					<div class="panel-body">
 						<div class="row">
 							<div class="col-lg-12">
-								<form id="login-form" method="post" role="form" style="display: block;">
+								<form id="login-form" action="/" method="post" style="display: block;">
 									<div class="form-group">
 										<input type="email" name="mail" id="email" tabindex="1" class="form-control" placeholder="Email" value="">
 									</div>
 									<div class="form-group">
-										<input type="password" name="pass" tabindex="2" class="form-control" placeholder="Password">
+										<input type="password" name="pass" id="pass" tabindex="2" class="form-control" placeholder="Password">
 									</div>
 									<div class="form-group text-center">
                                         <label>
@@ -108,23 +87,9 @@
         return false;
     });
     $.ccio.f.submit(function(e){
-        e.preventDefault();$('input').css('border-color','')
-        e.e=$(this),e.s=e.e.serializeObject(),e.inputs=e.e.find('input,button').prop('disabled',true)
+        $('input').css('border-color','')
+        e.e=$(this),e.s=e.e.serializeObject(),e.inputs=e.e.find('input,button');
         if(e.s.remember){localStorage.setItem('ShinobiLogin_'+location.host,JSON.stringify({mail:e.s.mail,pass:e.s.pass}))}else{localStorage.removeItem('ShinobiLogin_'+location.host)}
-        $.post('/auth',e.s,function(d){
-            if(d.ok===true){
-                $user=d;
-                $('body').html(d.body);
-                delete(d.ok);delete(d.body);
-                delete($user.ok);delete($user.body);
-            }else{
-                $('input').css('border-color','#b53200')
-                console.log('incorrect login details',d)
-            }
-            e.inputs.prop('disabled',false)
-        })
-        
-        return false;
     })
     if($.ccio.ls){$.ccio.ls=JSON.parse($.ccio.ls);$.each($.ccio.ls,function(n,v){$.ccio.f.find('[name="'+n+'"]').val(v)});$.ccio.f.find('[name="remember"]').prop('checked',true);$.ccio.f.submit()}
 

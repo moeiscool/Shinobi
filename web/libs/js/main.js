@@ -96,7 +96,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
 //                }
                 tmp+='<div class="hud super-center"><div class="side-menu logs scrollable"></div><div class="side-menu videos_monitor_list glM'+d.mid+' scrollable"><ul></ul></div><div class="top_bar"><span class="badge badge-sm badge-danger"><i class="fa fa-eye"></i> <span class="viewers"></span></span></div><div class="bottom_bar"><span class="monitor_name">'+d.name+'</span><div class="pull-right btn-group"><a title="Snapshot" monitor="snapshot" class="btn btn-sm btn-primary"><i class="fa fa-camera"></i></a> <a title="Show Logs" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-sm btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="Enlarge" monitor="control_toggle" class="btn btn-sm btn-default"><i class="fa fa-arrows"></i></a> <a title="Status" class="btn btn-sm btn-danger signal" monitor="watch_on"><i class="fa fa-circle"></i></a> <a title="Calendar" monitor="calendar" class="btn btn-sm btn-default"><i class="fa fa-calendar"></i></a> <a title="Videos List" monitor="videos_table" class="btn btn-sm btn-default"><i class="fa fa-film"></i></a> <a class="btn btn-sm btn-default" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Enlarge" monitor="bigify" class="btn btn-sm btn-default"><i class="fa fa-expand"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a></div></div></div></div></div>';
             break;
-            case 3:
+            case 3://api key row
                 tmp+='<tr api_key="'+d.code+'"><td class="code">'+d.code+'</td><td class="ip">'+d.ip+'</td><td class="time">'+d.time+'</td><td><a class="delete btn btn-xs btn-danger">&nbsp;<i class="fa fa-trash"></i>&nbsp;</a></td></tr>';
             break;
         }
@@ -363,6 +363,19 @@ $.ccio.form.details=function(e){
     });
     e.f.find('[name="details"]').val(JSON.stringify(e.ar));
 };
+//probe
+$.pB={e:$('#probe')};$.pB.f=$.pB.e.find('form');$.pB.o=$.pB.e.find('.output_data');
+$.pB.f.submit(function(e){
+    e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
+    $.pB.o.empty();
+    $.getJSON('/'+$user.auth_token+'/probe/'+$user.ke+'/'+e.s.url,function(d){
+        if(d.ok===false){
+            d.output='<center>No data could be displayed. Check your command.</center>'
+        }
+        $.pB.o.append(d.output)
+    })
+    return false;
+});
 //add Monitor
 $.aM={e:$('#add_monitor')};$.aM.f=$.aM.e.find('form')
 $.aM.f.submit(function(e){
@@ -513,7 +526,7 @@ $.vidview.e.find('.delete_selected').click(function(e){
 //dynamic bindings
 $('body')
 .on('click','.logout',function(e){
-    localStorage.removeItem('ShinobiLogin_'+location.host);location.reload();
+    localStorage.removeItem('ShinobiLogin_'+location.host);location.href=location.href;
 })
 .on('click','[video]',function(e){
     e.e=$(this),
