@@ -442,6 +442,14 @@
           </div>
           </div>
           <div class="form-group">
+            <label><span>Stream Type</span>
+                <select class="form-control" detail="stream_type">
+                    <option value="b64" selected>Base64</option>
+                    <option value="hls">HLS</option>
+                </select>
+            </label>
+          </div>
+          <div class="form-group">
             <label><span>Stream Quality <small>1 is High, 23 is Low</small></span>
             <input class="form-control" placeholder="23" detail="stream_quality">
             </label>
@@ -645,5 +653,6 @@
 <script src="libs/js/bootstrap-table.min.js"></script>
 <script src="libs/js/socket.io.js"></script>
 <script src="libs/js/fullcalendar.min.js"></script>
+<script src="libs/js/hls.min.js"></script>
 <script src="libs/js/menu.js"></script>
 <script src="libs/js/main.js"></script>

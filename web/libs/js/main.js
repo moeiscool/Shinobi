@@ -88,12 +88,16 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 delete(d.src);
             break;
             case 2://monitor stream
-                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" class="monitor_item glM'+d.mid+' col-md-4"><canvas></canvas>';
-//                switch(d.type){
-//                    case'jpeg':case'mjpeg':case'h264':
-//                        tmp+='<img>';
-//                    break;
-//                }
+                try{k.d=JSON.parse(d.details);}catch(er){k.d=d.details;}
+                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" class="monitor_item glM'+d.mid+' col-md-4">';
+                switch(k.d.stream_type){
+                    case'hls':
+                        tmp+='<video></video>';
+                    break;
+                    default://base64
+                        tmp+='<canvas></canvas>';
+                    break;
+                }
                 tmp+='<div class="hud super-center"><div class="side-menu logs scrollable"></div><div class="side-menu videos_monitor_list glM'+d.mid+' scrollable"><ul></ul></div><div class="top_bar"><span class="badge badge-sm badge-danger"><i class="fa fa-eye"></i> <span class="viewers"></span></span></div><div class="bottom_bar"><span class="monitor_name">'+d.name+'</span><div class="pull-right btn-group"><a title="Snapshot" monitor="snapshot" class="btn btn-sm btn-primary"><i class="fa fa-camera"></i></a> <a title="Show Logs" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-sm btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="Enlarge" monitor="control_toggle" class="btn btn-sm btn-default"><i class="fa fa-arrows"></i></a> <a title="Status" class="btn btn-sm btn-danger signal" monitor="watch_on"><i class="fa fa-circle"></i></a> <a title="Calendar" monitor="calendar" class="btn btn-sm btn-default"><i class="fa fa-calendar"></i></a> <a title="Videos List" monitor="videos_table" class="btn btn-sm btn-default"><i class="fa fa-film"></i></a> <a class="btn btn-sm btn-default" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Enlarge" monitor="bigify" class="btn btn-sm btn-default"><i class="fa fa-expand"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a></div></div></div></div></div>';
             break;
             case 3://api key row
@@ -292,6 +296,17 @@ $.ccio.ws.on('f',function (d){
             d.e.attr('status',d.status),d.e.attr('data-status',d.status);
         break;
         case'monitor_edit':
+            d.e=$('[mid="'+d.mon.mid+'"][ke="'+d.mon.ke+'"]');
+            switch(d.mon.details.stream_type){
+                case'hls':
+                    d.e.find('canvas').after('<video></video>').remove()
+                break;
+                default://base64
+                    d.e.find('video').after('<canvas></canvas>').remove()
+                break;
+            }
+            d.e.find('[monitor="watch_on"]').click()
+            d.e.resize();
             d.e=$('#monitor_live_'+d.mid);
             if(d.mon.details.control=="1"){d.e.find('[monitor="control_toggle"]').show()}else{d.e.find('.pad').remove();d.e.find('[monitor="control_toggle"]').hide()}
             
@@ -333,7 +348,16 @@ $.ccio.ws.on('f',function (d){
             if(d.e.length==0){
                 $.ccio.tm(2,$.ccio.mon[d.id],'#monitors_live');
             }
-            $('#monitor_live_'+d.id+' .viewers').html(d.viewers)
+            $('#monitor_live_'+d.id+' .viewers').html(d.viewers);
+            if(JSON.parse($.ccio.mon[d.id].details).stream_type==='hls'){
+                var video = $('[mid="'+d.id+'"][ke="'+d.ke+'"] video')[0];
+                var hls = new Hls();
+                hls.loadSource($user.auth_token+'/hls/'+d.ke+'/'+d.id+'/s.m3u8');
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED,function() {
+                  video.play();
+                });
+            }
         break;
         case'monitor_mjpeg_url':
             $('#monitor_live_'+d.id+' iframe').attr('src',location.protocol+'//'+location.host+d.watch_url);

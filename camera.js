@@ -318,7 +318,14 @@ s.ffmpeg=function(e,x){
     //stream quality
     if(e.details.stream_quality&&e.details.stream_quality!==''){x.stream_quality=' -q:v '+e.details.stream_quality}else{x.stream_quality=''}
     //pipe to client streams
-    x.pipe=' -f singlejpeg'+x.svf+x.stream_quality+' -s '+e.ratio+' pipe:1';
+    switch(e.details.stream_type){
+        case'hls':
+            x.pipe=' -c:v libx264 -flags +global_header -hls_time 1 -hls_list_size 4 -hls_wrap 4 -start_number 0 -hls_allow_cache 0 -hls_flags omit_endlist '+e.sdir+'s.m3u8';
+        break;
+        default://base64
+            x.pipe=' -f singlejpeg'+x.svf+x.stream_quality+' -s '+e.ratio+' pipe:1';
+        break;
+    }
     //custom input flags
     if(e.details.cust_input&&e.details.cust_input!==''){x.cust_input+=e.details.cust_input+' ';}
     //loglevel
@@ -329,7 +336,8 @@ s.ffmpeg=function(e,x){
     if(!x.vf||x.vf===','){x.vf=''}
     switch(e.type){
         case'socket':case'jpeg':case'pipe':
-            x.tmp='-loglevel '+x.loglevel+' -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg -i -'+x.vcodec+x.time+x.framerate+x.vf+' '+x.segment;
+            if(e.mode==='record'){x.watch=x.vcodec+x.time+x.framerate+x.vf+' '+x.segment;}
+            x.tmp='-loglevel '+x.loglevel+' -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg -i -'+x.watch+x.pipe;
         break;
         case'mjpeg':
             if(e.mode=='record'){
@@ -413,9 +421,9 @@ s.camera=function(x,e,cn,tx){
         break;
         case'watch_on'://live streamers - join
 //            if(s.group[e.ke].mon[e.id].watch[cn.id]){s.camera('watch_off',e,cn,tx);return}
-            if(!cn.monitor_watching){cn.monitor_watching={}}
-            if(!cn.monitor_watching[e.id]){cn.monitor_watching[e.id]={ke:e.ke}}
-            s.group[e.ke].mon[e.id].watch[cn.id]={};
+           if(!cn.monitor_watching){cn.monitor_watching={}}
+           if(!cn.monitor_watching[e.id]){cn.monitor_watching[e.id]={ke:e.ke}}
+           s.group[e.ke].mon[e.id].watch[cn.id]={};
 //            if(Object.keys(s.group[e.ke].mon[e.id].watch).length>0){
 //                sql.query('SELECT * FROM Monitors WHERE ke=? AND mid=?',[e.ke,e.id],function(err,r) {
 //                    if(r&&r[0]){
@@ -467,28 +475,32 @@ s.camera=function(x,e,cn,tx){
             s.group[e.ke].mon[e.id].started=1;
             if(x==='record'){
                 s.group[e.ke].mon[e.id].record.yes=1;
-                e.dir=s.dir.videos+e.ke+'/';
-                if (!fs.existsSync(e.dir)){
-                    fs.mkdirSync(e.dir);
-                }
-                e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
-                if (!fs.existsSync(e.dir)){
-                    fs.mkdirSync(e.dir);
-                }
-                s.group[e.ke].mon[e.id].fswatch=fs.watch(e.dir,{encoding:'utf8'},function(eventType,filename){
-                    if(eventType==='rename'&&s.group[e.ke].mon[e.id].started===1){
-                        if(s.group[e.ke].mon[e.id].open&&s.group[e.ke].mon[e.id].record.yes===1){
-                            s.video('close',e);
-                        }
-                        e.filename=filename.split('.')[0];
-                        s.video('open',e);
-                        s.group[e.ke].mon[e.id].open=e.filename;
-                        s.group[e.ke].mon[e.id].open_ext=e.ext;
-                    }
-                })
             }else{
                 s.group[e.ke].mon[e.mid].record.yes=0;
             }
+            e.dir=s.dir.videos+e.ke+'/';
+            if (!fs.existsSync(e.dir)){
+                fs.mkdirSync(e.dir);
+            }
+            e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
+            if (!fs.existsSync(e.dir)){
+                fs.mkdirSync(e.dir);
+            }
+            e.sdir=s.dir.videos+e.ke+'/'+e.id+'_stream/';
+            if (!fs.existsSync(e.sdir)){
+                fs.mkdirSync(e.sdir);
+            }
+            s.group[e.ke].mon[e.id].fswatch=fs.watch(e.dir,{encoding:'utf8'},function(eventType,filename){
+                if(eventType==='rename'&&s.group[e.ke].mon[e.id].started===1){
+                    if(s.group[e.ke].mon[e.id].open&&s.group[e.ke].mon[e.id].record.yes===1){
+                        s.video('close',e);
+                    }
+                    e.filename=filename.split('.')[0];
+                    s.video('open',e);
+                    s.group[e.ke].mon[e.id].open=e.filename;
+                    s.group[e.ke].mon[e.id].open_ext=e.ext;
+                }
+            })
             s.tx({f:'monitor_starting',mode:x,mid:e.id,time:s.moment()},'GRP_'+e.ke);
             s.camera('snapshot',{mid:e.id,ke:e.ke,mon:e})
             e.error_fatal_count=0;
@@ -532,10 +544,8 @@ s.camera=function(x,e,cn,tx){
                                 e.frames=0;
                                 if(!s.group[e.ke].mon[e.id].record){s.group[e.ke].mon[e.id].record={yes:1}};
                                //launch ffmpeg
-                                if(x==='record'||e.type==='mjpeg'||e.type==='h264'||e.type==='local'){
-                                    s.group[e.ke].mon[e.id].spawn = s.ffmpeg(e); 
-                                    s.log(e,{type:'FFMPEG Process Starting',msg:{cmd:s.group[e.ke].mon[e.id].ffmpeg}});
-                                }
+                                s.group[e.ke].mon[e.id].spawn = s.ffmpeg(e); 
+                                s.log(e,{type:'FFMPEG Process Starting',msg:{cmd:s.group[e.ke].mon[e.id].ffmpeg}});
                                 //start workers
                                 switch(e.type){
                                     case'jpeg':
@@ -564,12 +574,9 @@ s.camera=function(x,e,cn,tx){
                                                        }
                                                           return;
                                                 }
-                                               if(x==='record'&&s.group[e.ke].mon[e.id].spawn&&s.group[e.ke].mon[e.id].spawn.stdin){
+                                               if(s.group[e.ke].mon[e.id].spawn&&s.group[e.ke].mon[e.id].spawn.stdin){
                                                    s.group[e.ke].mon[e.id].spawn.stdin.write(data.body);
                                                }
-                                                if(s.group[e.ke].mon[e.id].watch&&Object.keys(s.group[e.ke].mon[e.id].watch).length>0){
-                                                    s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:data.body.toString('base64'),frame_format:'b64'},'MON_'+e.id);
-                                                }
                                                if(s.group[e.ke].mon[e.id].started===1){
                                                    s.group[e.ke].mon[e.id].record.capturing=setTimeout(function(){e.captureOne()},1000/e.details.sfps);
                                                    }
@@ -584,18 +591,17 @@ s.camera=function(x,e,cn,tx){
                                       e.captureOne()
                                     break;
                                     case'mjpeg':case'h264':case'socket':case'local':
-                                        if(!s.group[e.ke]||!s.group[e.ke].mon[e.id]){s.init(0,e)}
-                                        if(s.group[e.ke].mon[e.id].spawn){
-                                            s.group[e.ke].mon[e.id].spawn.on('error',function(er){e.error({type:'Spawn Error',msg:er})})
-                                            s.group[e.ke].mon[e.id].spawn.stdout.on('data',function(d){
-                                               
-                                               ++e.frames; if(s.group[e.ke]&&s.group[e.ke].mon[e.id]&&s.group[e.ke].mon[e.id].watch&&Object.keys(s.group[e.ke].mon[e.id].watch).length>0){
-                                                   s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:d.toString('base64'),frame_format:'b64'},'MON_'+e.id);
-                                                }
-                                            });
-                                        }
+
                                     break;
                                 }
+                                if(!s.group[e.ke]||!s.group[e.ke].mon[e.id]){s.init(0,e)}
+                                s.group[e.ke].mon[e.id].spawn.on('error',function(er){e.error({type:'Spawn Error',msg:er})})
+                                s.group[e.ke].mon[e.id].spawn.stdout.on('data',function(d){
+
+                                   ++e.frames; if(s.group[e.ke]&&s.group[e.ke].mon[e.id]&&s.group[e.ke].mon[e.id].watch&&Object.keys(s.group[e.ke].mon[e.id].watch).length>0){
+                                       s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:d.toString('base64'),frame_format:'b64'},'MON_'+e.id);
+                                    }
+                                });
                                 if(x==='record'||e.type==='mjpeg'||e.type==='h264'||e.type==='local'){
                                     s.group[e.ke].mon[e.id].spawn.stderr.on('data',function(d){
                                         d=d.toString();
@@ -1184,6 +1190,15 @@ app.post('/',function (req,res){
 //        });
 //    },res,req);
 //});
+// Get HLS stream (m3u8)
+app.get('/:auth/hls/:ke/:id/:file', function (req,res){
+    req.dir=config.videosDir+'/'+req.params.ke+'/'+req.params.id+'_stream/'+req.params.file;
+    if (fs.existsSync(req.dir)){
+        fs.createReadStream(req.dir).pipe(res);
+    }else{
+        res.send('File Not Found')
+    }
+});
 //embed monitor
 app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,res){
     res.header("Access-Control-Allow-Origin",req.headers.origin);
