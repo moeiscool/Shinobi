@@ -308,6 +308,7 @@ s.ffmpeg=function(e,x){
         if(isNaN(e.details.sfps)){e.details.sfps=1}
     }
     if(e.fps&&e.fps!==''){x.framerate=' -r '+e.fps}else{x.framerate=''}
+    if(e.stream_fps&&e.stream_fps!==''){x.stream_fps=' -r '+e.stream_fps}else{x.stream_fps=''}
     //recording video filter
     if(e.details.vf&&e.details.vf!==''){
         if(x.time===''){x.vf=' -vf '}else{x.vf=','}
@@ -321,10 +322,10 @@ s.ffmpeg=function(e,x){
     //pipe to client streams
     switch(e.details.stream_type){
         case'hls':
-            x.pipe=' -c:v libx264 -flags +global_header -hls_time 0 -hls_list_size 3 -hls_wrap 3 -start_number 0 -hls_allow_cache 0 -hls_flags omit_endlist '+e.sdir+'s.m3u8';
+            x.pipe=x.stream_fps+' -c:v libx264 -flags +global_header -hls_time 0 -hls_list_size 3 -hls_wrap 3 -start_number 0 -hls_allow_cache 0 -hls_flags omit_endlist '+e.sdir+'s.m3u8';
         break;
-        default://base64
-            x.pipe=' -f singlejpeg'+x.svf+x.stream_quality+' -s '+e.ratio+' pipe:1';
+        default://base64//mjpeg
+            x.pipe=' -f singlejpeg'+x.svf+x.stream_quality+x.stream_fps+' -s '+e.ratio+' pipe:1';
         break;
     }
     //custom input flags
@@ -1217,36 +1218,49 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
         res.render('mjpeg',{url:'/'+req.params.auth+'/mjpeg/'+req.params.ke+'/'+req.params.id})
     }else{
         s.auth(req.params,function(){
-            res.writeHead(200, {
-            'Content-Type': 'multipart/x-mixed-replace; boundary=myboundary',
-            'Cache-Control': 'no-cache',
-            'Connection': 'close',
-            'Pragma': 'no-cache'
-            });
+        sql.query('SELECT * FROM Monitors WHERE ke=? AND mid=?',[req.params.ke,req.params.id],function(err,r){
+            if(r&&r[0]){
+                r=r[0],r.details=JSON.parse(r.details);
+                if(!r.details.stream_fps||r.details.stream_fps===''){
+                    r.details.stream_fps=2;
+                }else{
+                    r.details.stream_fps=r.details.stream_fps=parseFloat(r.details.stream_fps);
+                }
+                res.writeHead(200, {
+                'Content-Type': 'multipart/x-mixed-replace; boundary=myboundary',
+                'Cache-Control': 'no-cache',
+                'Connection': 'close',
+                'Pragma': 'no-cache'
+                });
 
-            var i = 0;
-            var stop = false;
+                var i = 0;
+                var stop = false;
 
-            res.connection.on('close', function() { stop = true; });
-            var content;
-            var send_next = function() {
-            if (stop)
-              return;
-            if(!s.group[req.params.ke]||!s.group[req.params.ke].mon[req.params.id].last_frame){
-                content = fs.readFileSync(config.defaultMjpeg,'binary');
+                res.connection.on('close',function(){ stop = true; });
+                var content;
+                var send_next = function() {
+                if (stop)
+                  return;
+                if(!s.group[req.params.ke]||!s.group[req.params.ke].mon[req.params.id].last_frame){
+                    content = fs.readFileSync(config.defaultMjpeg,'binary');
+                }else{
+                    content = s.group[req.params.ke].mon[req.params.id].last_frame;
+                }
+                i = (i+1) % 100;
+                  res.write("--myboundary\r\n");
+                  res.write("Content-Type: image/jpeg\r\n");
+                  res.write("Content-Length: " + content.length + "\r\n");
+                  res.write("\r\n");
+                  res.write(content, 'binary');
+                  res.write("\r\n");
+                  setTimeout(send_next,1000/r.details.stream_fps);
+                };
+                send_next();
             }else{
-                content = s.group[req.params.ke].mon[req.params.id].last_frame;
+                res.send('No Camera Found');
+                res.end();
             }
-            i = (i+1) % 100;
-              res.write("--myboundary\r\n");
-              res.write("Content-Type: image/jpeg\r\n");
-              res.write("Content-Length: " + content.length + "\r\n");
-              res.write("\r\n");
-              res.write(content, 'binary');
-              res.write("\r\n");
-              setTimeout(send_next, 500);
-            };
-            send_next();
+        })
         },res,req);
     }
 });

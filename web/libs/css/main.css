@@ -21,7 +21,7 @@ img{max-width:100%}
 .monitor_item{position:relative;padding:0;background:#111;}
 .monitor_item.selected .stream-element{height:600px}
 .monitor_item.selected .fa-expand:before{content:"\f066"}
-.monitor_item .hud{width:100%;height:100%;opacity:0.1;transition:0.2s}
+.monitor_item .hud{width:100%;height:100%;opacity:0;transition:0.2s}
 .monitor_item.col-md-4 .hud .side-menu{display:none}
 .monitor_item.col-md-8 .hud .side-menu{opacity:0.1}
 .monitor_item.col-md-8 .hud:hover .side-menu{opacity:1}
