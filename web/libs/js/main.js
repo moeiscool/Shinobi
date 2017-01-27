@@ -636,7 +636,34 @@ $('body')
     e.e=$(this),e.a=e.e.attr('monitor'),e.p=e.e.parents('[mid]'),e.ke=e.p.attr('ke'),e.mid=e.p.attr('mid'),e.mon=$.ccio.mon[e.mid]
     switch(e.a){
         case'snapshot':
-            var image_data = atob($.ccio.mon[e.mid].last_frame.split(',')[1]);
+            var image_data;
+            switch(JSON.parse(e.mon.details).stream_type){
+                case'hls':
+                    $('#temp').html('<canvas></canvas>')
+                    var c = $('#temp canvas')[0];
+                    var img = e.p.find('video')[0];
+                    img.pause();
+                    c.width = img.videoWidth;
+                    c.height = img.videoHeight;
+                    var ctx = c.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    image_data=atob(c.toDataURL('image/jpeg').split(',')[1]);
+                    img.play();
+                break;
+                case'mjpeg':
+                    $('#temp').html('<canvas></canvas>')
+                    var c = $('#temp canvas')[0];
+                    var img = $('img',e.p.find('.stream-element').contents())[0];
+                    c.width = img.width;
+                    c.height = img.height;
+                    var ctx = c.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    image_data=atob(c.toDataURL('image/jpeg').split(',')[1]);
+                break;
+                case'b64':
+                    image_data = atob(e.mon.last_frame.split(',')[1]);
+                break;
+            }
             var arraybuffer = new ArrayBuffer(image_data.length);
             var view = new Uint8Array(arraybuffer);
             for (var i=0; i<image_data.length; i++) {
