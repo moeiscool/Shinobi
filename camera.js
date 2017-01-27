@@ -726,7 +726,7 @@ var tx;
             tx=function(z){if(!z.ke){z.ke=cn.ke;};cn.emit('f',z);}
             sql.query('SELECT ke,uid,auth,mail,details FROM Users WHERE ke=? AND auth=? AND uid=?',[d.ke,d.auth,d.uid],function(err,r) {
                 if(r&&r[0]){
-                    r=r[0];cn.join('GRP_'+d.ke);
+                    r=r[0];cn.join('GRP_'+d.ke);cn.join('CPU');
                     cn.ke=d.ke,cn.uid=d.uid,cn.auth=d.auth;
                     if(!s.group[d.ke])s.group[d.ke]={};
 //                    if(!s.group[d.ke].vid)s.group[d.ke].vid={};
@@ -935,6 +935,7 @@ var tx;
                                     s.camera('stop',d.mon);
                                     setTimeout(function(){s.camera(d.mon.mode,d.mon);},5000)
                                     s.tx(d.tx,'GRP_'+d.mon.ke);
+                                    s.tx(d.tx,'STR_'+d.mon.ke);
                                 })
                             }
                         break;
@@ -1078,6 +1079,7 @@ var tx;
                     
                     s.camera('watch_on',d,cn,tx)
                     cn.join('MON_'+d.id);
+                    cn.join('STR_'+d.ke);
                     if(s.group[d.ke]&&s.group[d.ke].mon&&s.group[d.ke].mon[d.id]&&s.group[d.ke].mon[d.id].watch){
 
                         s.tx({f:'monitor_watch_on',viewers:Object.keys(s.group[d.ke].mon[d.id].watch).length,id:d.id,ke:d.ke},'MON_'+d.id)
@@ -1289,7 +1291,7 @@ app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,re
         req.sql='SELECT * FROM Monitors WHERE ke=? and mid=?';req.ar=[req.params.ke,req.params.id];
         sql.query(req.sql,req.ar,function(err,r){
             if(r&&r[0]){r=r[0];}
-            res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,port:config.port});
+            res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,port:config.port,mon:r});
         })
     },res,req);
 });
@@ -1360,6 +1362,7 @@ app.get(['/:auth/monitor/:ke/:mid/:f','/:auth/monitor/:ke/:mid/:f/:ff','/:auth/m
                     r.mode=req.params.f;
                     s.group[r.ke].mon_conf[r.mid]=r;
                     s.tx({f:'monitor_edit',mid:r.id,ke:r.ke,mon:r},'GRP_'+r.ke);
+                    s.tx({f:'monitor_edit',mid:r.id,ke:r.ke,mon:r},'STR_'+r.ke);
                     s.camera('stop',r);
                     if(req.params.f!=='stop'){
                         s.camera(req.params.f,r);
@@ -1388,6 +1391,7 @@ app.get(['/:auth/monitor/:ke/:mid/:f','/:auth/monitor/:ke/:mid/:f/:ff','/:auth/m
                             sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',['stop',r.ke,r.mid]);
                             s.camera('stop',r);r.mode='stop';s.group[r.ke].mon_conf[r.mid]=r;
                             s.tx({f:'monitor_edit',mid:r.id,ke:r.ke,mon:r},'GRP_'+r.ke);
+                            s.tx({f:'monitor_edit',mid:r.id,ke:r.ke,mon:r},'STR_'+r.ke);
                         },req.timeout);
                         req.ret.end_at=s.moment(new Date,'YYYY-MM-DD HH:mm:ss').add(req.timeout,'milliseconds');
                     }
@@ -1537,7 +1541,7 @@ s.ramUsage=function(){
 try{
     setInterval(function(){
         s.cpuUsage(function(d){
-            io.emit('f',{f:'os',cpu:d,ram:s.ramUsage()});
+            s.tx({f:'os',cpu:d,ram:s.ramUsage()},'CPU');
         })
     },5000);
 }catch(err){console.log('CPU indicator will not work. Continuing...')}
@@ -1546,7 +1550,7 @@ s.disk=function(x){
     exec('echo 3 > /proc/sys/vm/drop_caches')
     df(function (er,d) {
         if (er) { clearInterval(s.disk_check); }else{er={f:'disk',data:d}}
-        if(x){s.tx(er,x)}else{io.emit('f',er);}
+        s.tx(er,'CPU')
     });
 };
 s.disk_check=setInterval(function(){s.disk()},60000*20);
