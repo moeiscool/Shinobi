@@ -116,9 +116,13 @@ s.log=function(e,x){
 s.group={};
 if(!config.defaultMjpeg){config.defaultMjpeg=__dirname+'/web/libs/img/bg.jpg'}
 if(!config.videosDir){config.videosDir=__dirname+'/videos/'}
-s.dir={videos:config.videosDir};
-if (!fs.existsSync(s.dir.videos)){
+if(!config.streamDir){config.streamDir=__dirname+'/streams/'}
+s.dir={videos:config.videosDir,streams:config.streamDir};
+if(!fs.existsSync(s.dir.videos)){
     fs.mkdirSync(s.dir.videos);
+}
+if(!fs.existsSync(s.dir.streams)){
+    fs.mkdirSync(s.dir.streams);
 }
 ////Camera Controller
 s.init=function(x,e){
@@ -319,10 +323,14 @@ s.ffmpeg=function(e,x){
     if(e.details.svf&&e.details.svf!==''){x.svf=' -vf '+e.details.svf;}else{x.svf='';}
     //stream quality
     if(e.details.stream_quality&&e.details.stream_quality!==''){x.stream_quality=' -q:v '+e.details.stream_quality}else{x.stream_quality=''}
+    //hls stream vcodec
+    if(e.details.stream_vcodec&&e.details.stream_vcodec!==''){x.stream_vcodec=e.details.stream_vcodec}else{x.stream_vcodec='libx264'}
+    //hls stream acodec
+    if(e.details.stream_acodec&&e.details.stream_acodec!==''){x.stream_acodec=' -c:a '+e.details.stream_acodec}else{x.stream_acodec=''}
     //pipe to client streams
     switch(e.details.stream_type){
         case'hls':
-            x.pipe=x.stream_fps+' -c:v libx264 -flags +global_header -hls_time 0 -hls_list_size 3 -hls_wrap 3 -start_number 0 -hls_allow_cache 0 -hls_flags omit_endlist '+e.sdir+'s.m3u8';
+            x.pipe=x.stream_fps+x.stream_acodec+' -c:v '+x.stream_acodec+' -flags +global_header -hls_time 0 -hls_list_size 3 -hls_wrap 3 -start_number 0 -hls_allow_cache 0 -hls_flags omit_endlist '+e.sdir+'s.m3u8';
         break;
         default://base64//mjpeg
             x.pipe=' -f singlejpeg'+x.svf+x.stream_quality+x.stream_fps+' -s '+e.ratio+' pipe:1';
@@ -489,7 +497,11 @@ s.camera=function(x,e,cn,tx){
             if (!fs.existsSync(e.dir)){
                 fs.mkdirSync(e.dir);
             }
-            e.sdir=s.dir.videos+e.ke+'/'+e.id+'_stream/';
+            e.sdir=s.dir.streams+e.ke+'/';
+            if (!fs.existsSync(e.sdir)){
+                fs.mkdirSync(e.sdir);
+            }
+            e.sdir=s.dir.streams+e.ke+'/'+e.id+'/';
             if (!fs.existsSync(e.sdir)){
                 fs.mkdirSync(e.sdir);
             }
@@ -1204,7 +1216,7 @@ app.post('/',function (req,res){
 // Get HLS stream (m3u8)
 app.get('/:auth/hls/:ke/:id/:file', function (req,res){
 //    s.auth(req.params,function(){
-        req.dir=config.videosDir+'/'+req.params.ke+'/'+req.params.id+'_stream/'+req.params.file;
+        req.dir=s.dir.streams+req.params.ke+'/'+req.params.id+'/'+req.params.file;
         if (fs.existsSync(req.dir)){
             fs.createReadStream(req.dir).pipe(res);
         }else{
@@ -1235,7 +1247,6 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
 
                 var i = 0;
                 var stop = false;
-
                 res.connection.on('close',function(){ stop = true; });
                 var content;
                 var send_next = function() {

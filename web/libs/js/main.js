@@ -451,6 +451,11 @@ $.aM.f.find('[detail="control_stop"]').change(function(e){
     $.aM.f.find('.h_cs_input').hide()
     $.aM.f.find('.h_cs_'+e.v).show();
 });
+$.aM.f.find('[detail="stream_type"]').change(function(e){
+    e.v=$(this).val();
+    $.aM.f.find('.h_st_input').hide()
+    $.aM.f.find('.h_st_'+e.v).show();
+});
 $.aM.f.find('[name="ext"]').change(function(e){
     e.v=$(this).val();
     $.aM.f.find('.h_f_input').hide()
