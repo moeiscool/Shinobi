@@ -31,7 +31,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             break;
             case'id':
                 $('.usermail').html(d.mail)
-                k.d=JSON.parse(d.details);
+                try{k.d=JSON.parse(d.details);}catch(er){k.d=d.details}
                 $.each($user,function(n,v){$.sM.e.find('[name="'+n+'"]').val(v).change()})
                 $.each(k.d,function(n,v){$.sM.e.find('[detail="'+n+'"]').val(v).change()})
             break;
@@ -195,6 +195,7 @@ $.ccio.ws.on('f',function (d){
         case'user_settings_change':
             new PNotify({title:'Settings Changed',text:'Your settings have been saved and applied.',type:'success'});
             $.ccio.init('id',d.form);
+            $('#custom_css').append(d.form.details.css)
         break;
         case'log':
             d.l=$('#logs,.monitor_item[mid="'+d.mid+'"][ke="'+d.ke+'"] .logs')

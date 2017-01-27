@@ -1545,5 +1545,5 @@ s.disk=function(x){
         if (er) { clearInterval(s.disk_check); }else{er={f:'disk',data:d}}
         if(x){s.tx(er,x)}else{io.emit('f',er);}
     });
-}
+};
 s.disk_check=setInterval(function(){s.disk()},60000*20);
