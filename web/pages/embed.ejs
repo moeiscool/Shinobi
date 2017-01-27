@@ -40,12 +40,13 @@ if(data.addon.indexOf('gui')>-1){ %>
         border-radius: 10px;
         font-family: sans-serif;
     }
+    iframe.stream-element{border:0;}
 </style>
 <% };
 if(data.addon.indexOf('fullscreen')>-1){ %>
 <style>
     body{margin:0;padding:0;}
-    .stream-element,.shinobi_stream{border:0;position:absolute;top:0;left:0;}
+    .stream-element,.shinobi_stream{position:absolute;top:0;left:0;}
 </style>
 <script>
 $(window).resize(function(){
@@ -96,19 +97,19 @@ $(document).ready(function(){
             if(!$.shinobi.mon){
                 $.shinobi.mon={}
             };
-            $.shinobi.init=function(){
-                  switch(JSON.parse($.shinobi.mon['<%=data.id%>'].details).stream_type){
+            $.shinobi.init=function(d){
+                  switch(JSON.parse($.shinobi.mon[d.id].details).stream_type){
                     case'hls':
-                        var video = $('<%='#'+data.name%> .stream-element')[0];
+                        var video = $('#SHINOBI_'+d.ke+'_'+d.id+' .stream-element')[0];
                         var hls = new Hls();
-                        hls.loadSource('<%=data.url%>/<%=data.auth%>/hls/<%=data.ke%>/<%=data.id%>/s.m3u8');
+                        hls.loadSource('<%=data.url%>/<%=data.auth%>/hls/'+d.ke+'/'+d.id+'/s.m3u8');
                         hls.attachMedia(video);
                         hls.on(Hls.Events.MANIFEST_PARSED,function() {
                           video.play();
                         });
                     break;
                     case'mjpeg':
-                        $('<%='#'+data.name%> .stream-element').attr('src','<%=data.url%>/<%=data.auth%>/mjpeg/<%=data.ke%>/<%=data.id%>/full')
+                        $('#SHINOBI_'+d.ke+'_'+d.id+' .stream-element').attr('src','<%=data.url%>/<%=data.auth%>/mjpeg/'+d.ke+'/'+d.id+'/full')
                     break;
                 }
             }
@@ -118,10 +119,13 @@ $(document).ready(function(){
                 $.shinobi.ws=io('<%=data.url%>');
                 $.shinobi.ws.on('f',function (d){
                     console.log(d)
-                    switch(d.f){
+                if(d.viewers){
+                    $('#SHINOBI_'+d.ke+'_'+d.id+' .shinobi_viewers').html(d.viewers);
+                }
+                switch(d.f){
                         case'monitor_frame':
                             var image = new Image();
-                            var ctx = $('<%='#'+data.name%> canvas')[0];
+                            var ctx = $('#SHINOBI_'+d.ke+'_'+d.id+' canvas')[0];
                             image.onload = function() {
                                 ctx.getContext("2d").drawImage(image,0,0,ctx.width,ctx.height);
                             };
@@ -130,11 +134,11 @@ $(document).ready(function(){
                             delete(image);
                         break;
                         case'monitor_watch_off':case'monitor_watch_on':
-                            $('#<%=data.name%> .shinobi_viewers').html(d.viewers)
-                            $.shinobi.init()
+                            $('#SHINOBI_'+d.ke+'_'+d.id+' .shinobi_viewers').html(d.viewers)
+                            $.shinobi.init(d)
                         break;
                         case'monitor_edit':
-                            d.e=$('#<%=data.name%>');d.ee=d.e.find('.stream-element');
+                            d.e=$('#SHINOBI_'+d.ke+'_'+d.id+'');d.ee=d.e.find('.stream-element');
                             switch(d.mon.details.stream_type){
                                 case'hls':
                                     d.ee.after('<video class="stream-element"></video>').remove()
@@ -149,7 +153,7 @@ $(document).ready(function(){
                             $(window).resize();
                             d.mon.details=JSON.stringify(d.mon.details);
                             $.shinobi.mon[d.mon.mid]=d.mon;
-                            $.shinobi.init();
+                            $.shinobi.init(d);
                         break;
                     }
                     $.shinobi.callback()

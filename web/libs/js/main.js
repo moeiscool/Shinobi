@@ -183,6 +183,9 @@ $.ccio.ws.on('connect',function (d){
 PNotify.prototype.options.styling = "fontawesome";
 $.ccio.ws.on('f',function (d){
     if(d.f!=='monitor_frame'&&d.f!=='os'&&d.f!=='video_delete'){console.log(d);}
+    if(d.viewers){
+        $('#monitor_live_'+d.id+' .viewers').html(d.viewers);
+    }
     switch(d.f){
         case'api_key_deleted':
             new PNotify({title:'API Key Deleted',text:'Key has been deleted. It will no longer work.',type:'notice'});
@@ -347,7 +350,6 @@ $.ccio.ws.on('f',function (d){
                 if(d.cnid===$.ccio.ws.id){
                     $('#monitor_live_'+d.id).remove();
                 }
-                $('#monitor_live_'+d.id+' .viewers').html(d.viewers)
             }
         break;
         case'monitor_watch_on':
@@ -357,7 +359,6 @@ $.ccio.ws.on('f',function (d){
             if(d.e.length==0){
                 $.ccio.tm(2,$.ccio.mon[d.id],'#monitors_live');
             }
-            $('#monitor_live_'+d.id+' .viewers').html(d.viewers);
             switch(JSON.parse($.ccio.mon[d.id].details).stream_type){
                 case'hls':
                     var video = $('#monitor_live_'+d.id+' .stream-element')[0];

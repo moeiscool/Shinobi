@@ -464,7 +464,8 @@ s.camera=function(x,e,cn,tx){
             }else{
                 e.ob=0;
             }
-            s.tx({f:'monitor_watch_off',viewers:e.ob,ke:e.ke,id:e.id,cnid:cn.id},'MON_'+e.id);
+            if(tx){tx({f:'monitor_watch_off',ke:e.ke,id:e.id,cnid:cn.id})};
+            s.tx({viewers:e.ob,ke:e.ke,id:e.id},'MON_'+e.id);
         break;
         case'stop'://stop monitor
             if(!s.group[e.ke]||!s.group[e.ke].mon[e.id]){return}
@@ -960,12 +961,14 @@ var tx;
                             cn.join('MON_'+d.id);
                             if(s.group[d.ke]&&s.group[d.ke].mon&&s.group[d.ke].mon[d.id]&&s.group[d.ke].mon[d.id].watch){
 
-                                s.tx({f:'monitor_watch_on',viewers:Object.keys(s.group[d.ke].mon[d.id].watch).length,id:d.id,ke:d.ke},'MON_'+d.id)
+                                tx({f:'monitor_watch_on',id:d.id,ke:d.ke},'MON_'+d.id)
+                                s.tx({viewers:Object.keys(s.group[d.ke].mon[d.id].watch).length,ke:d.ke,id:d.id},'MON_'+d.id)
                            }
                         break;
                         case'watch_off':
                             if(!d.ke){d.ke=cn.ke;};cn.leave('MON_'+d.id);s.camera(d.ff,d,cn,tx);
-                            tx({f:'monitor_watch_off',viewers:d.ob,id:d.id,cnid:cn.id});
+                            tx({f:'monitor_watch_off',id:d.id,cnid:cn.id});
+                            s.tx({viewers:d.ob,ke:d.ke,id:d.id},'MON_'+d.id)
                         break;
                         case'start':case'stop':
                     sql.query('SELECT * FROM Monitors WHERE ke=? AND mid=?',[cn.ke,d.id],function(err,r) {
@@ -1065,6 +1068,7 @@ var tx;
     })
     //embed functions
     cn.on('e', function (d) {
+        tx=function(z){if(!z.ke){z.ke=cn.ke;};cn.emit('f',z);}
         switch(d.f){
             case'init':
                     if(!s.group[d.ke]||!s.group[d.ke].mon[d.id]||s.group[d.ke].mon[d.id].started===0){return false}
@@ -1082,7 +1086,8 @@ var tx;
                     cn.join('STR_'+d.ke);
                     if(s.group[d.ke]&&s.group[d.ke].mon&&s.group[d.ke].mon[d.id]&&s.group[d.ke].mon[d.id].watch){
 
-                        s.tx({f:'monitor_watch_on',viewers:Object.keys(s.group[d.ke].mon[d.id].watch).length,id:d.id,ke:d.ke},'MON_'+d.id)
+                        tx({f:'monitor_watch_on',id:d.id,ke:d.ke},'MON_'+d.id)
+                        s.tx({viewers:Object.keys(s.group[d.ke].mon[d.id].watch).length,ke:d.ke,id:d.id},'MON_'+d.id)
                    }
                 });
             break;
