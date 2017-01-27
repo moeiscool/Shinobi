@@ -330,7 +330,7 @@ s.ffmpeg=function(e,x){
     //pipe to client streams
     switch(e.details.stream_type){
         case'hls':
-            x.pipe=x.stream_fps+x.stream_acodec+' -c:v '+x.stream_acodec+' -flags +global_header -hls_time 0 -hls_list_size 3 -hls_wrap 3 -start_number 0 -hls_allow_cache 0 -hls_flags omit_endlist '+e.sdir+'s.m3u8';
+            x.pipe=x.stream_fps+x.stream_acodec+' -c:v '+x.stream_vcodec+' -flags +global_header -hls_time 0 -hls_list_size 3 -hls_wrap 3 -start_number 0 -hls_allow_cache 0 -hls_flags omit_endlist '+e.sdir+'s.m3u8';
         break;
         default://base64//mjpeg
             x.pipe=' -f singlejpeg'+x.svf+x.stream_quality+x.stream_fps+' -s '+e.ratio+' pipe:1';
