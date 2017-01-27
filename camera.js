@@ -1224,14 +1224,19 @@ app.post('/',function (req,res){
 //});
 // Get HLS stream (m3u8)
 app.get('/:auth/hls/:ke/:id/:file', function (req,res){
-//    s.auth(req.params,function(){
+    req.fn=function(){
         req.dir=s.dir.streams+req.params.ke+'/'+req.params.id+'/'+req.params.file;
         if (fs.existsSync(req.dir)){
             fs.createReadStream(req.dir).pipe(res);
         }else{
             res.send('File Not Found')
         }
-//    },res,req);
+    }
+    if(req.params.file.indexOf('.m3u8')>-1){
+        s.auth(req.params,req.fn,res,req);
+    }else{
+        req.fn();
+    }
 });
 //Get MJPEG stream
 app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res) {
@@ -1515,7 +1520,7 @@ sql.query('SELECT * FROM Monitors WHERE mode != "stop"', function(err,r) {
     }
 });
 },1500)
-
+try{
 s.cpuUsage=function(e,f){
     switch(s.platform){
         case'darwin':
@@ -1538,7 +1543,6 @@ s.ramUsage=function(){
 
     return execSync(cmd,{encoding:'utf8'});
 }
-try{
     setInterval(function(){
         s.cpuUsage(function(d){
             s.tx({f:'os',cpu:d,ram:s.ramUsage()},'CPU');
