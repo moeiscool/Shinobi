@@ -326,7 +326,11 @@ s.ffmpeg=function(e,x){
     //hls stream vcodec
     if(e.details.stream_vcodec&&e.details.stream_vcodec!==''){x.stream_vcodec=e.details.stream_vcodec}else{x.stream_vcodec='libx264'}
     //hls stream acodec
+    if(e.details.stream_acodec!=='no'){
     if(e.details.stream_acodec&&e.details.stream_acodec!==''){x.stream_acodec=' -c:a '+e.details.stream_acodec}else{x.stream_acodec=''}
+    }else{
+        x.stream_acodec=' -an';
+    }
     //pipe to client streams
     switch(e.details.stream_type){
         case'hls':
