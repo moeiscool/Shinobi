@@ -437,6 +437,7 @@ s.camera=function(x,e,cn,tx){
         break;
         case'watch_on'://live streamers - join
 //            if(s.group[e.ke].mon[e.id].watch[cn.id]){s.camera('watch_off',e,cn,tx);return}
+           s.init(0,{ke:e.ke,mid:e.id})
            if(!cn.monitor_watching){cn.monitor_watching={}}
            if(!cn.monitor_watching[e.id]){cn.monitor_watching[e.id]={ke:e.ke}}
            s.group[e.ke].mon[e.id].watch[cn.id]={};
