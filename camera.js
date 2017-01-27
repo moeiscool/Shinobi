@@ -323,18 +323,20 @@ s.ffmpeg=function(e,x){
     if(e.details.svf&&e.details.svf!==''){x.svf=' -vf '+e.details.svf;}else{x.svf='';}
     //stream quality
     if(e.details.stream_quality&&e.details.stream_quality!==''){x.stream_quality=' -q:v '+e.details.stream_quality}else{x.stream_quality=''}
-    //hls stream vcodec
+    //hls vcodec
     if(e.details.stream_vcodec&&e.details.stream_vcodec!==''){x.stream_vcodec=e.details.stream_vcodec}else{x.stream_vcodec='libx264'}
-    //hls stream acodec
+    //hls acodec
     if(e.details.stream_acodec!=='no'){
     if(e.details.stream_acodec&&e.details.stream_acodec!==''){x.stream_acodec=' -c:a '+e.details.stream_acodec}else{x.stream_acodec=''}
     }else{
         x.stream_acodec=' -an';
     }
+    //hls segment time
+    if(e.details.hls_time&&e.details.hls_time!==''){x.hls_time=e.details.hls_time}else{x.hls_time='3'}
     //pipe to client streams
     switch(e.details.stream_type){
         case'hls':
-            x.pipe=x.stream_fps+x.stream_acodec+' -c:v '+x.stream_vcodec+' -flags +global_header -hls_time 0 -hls_list_size 3 -hls_wrap 3 -start_number 0 -hls_allow_cache 0 -hls_flags omit_endlist '+e.sdir+'s.m3u8';
+            x.pipe=x.stream_fps+x.stream_acodec+' -c:v '+x.stream_vcodec+' -flags +global_header -hls_time '+x.hls_time+' -hls_list_size 3 -hls_wrap 3 -start_number 0 -hls_allow_cache 0 -hls_flags omit_endlist '+e.sdir+'s.m3u8';
         break;
         default://base64//mjpeg
             x.pipe=' -f singlejpeg'+x.svf+x.stream_quality+x.stream_fps+' -s '+e.ratio+' pipe:1';

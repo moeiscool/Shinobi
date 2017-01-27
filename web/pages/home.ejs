@@ -348,26 +348,35 @@
                 </select>
             </label>
           </div>
-          <div class="form-group h_st_input h_st_hls">
-            <label><span>HLS Video Encoder</span>
-                <select class="form-control" detail="stream_vcodec">
-                    <option value="libx264" selected>libx264</option>
-                    <option value="libx265">libx265</option>
-                    <option value="copy">copy</option>
-                </select>
-            </label>
-          </div>
-          <div class="form-group h_st_input h_st_hls">
-            <label><span>HLS Audio Encoder</span>
-                <select class="form-control" detail="stream_acodec">
-                    <option value="no" selected>No Audio</option>
-                    <option value="" selected>Auto</option>
-                    <option value="aac">aac</option>
-                    <option value="ac3">ac3</option>
-                    <option value="libmp3lame">libmp3lame</option>
-                    <option value="copy">copy</option>
-                </select>
-            </label>
+          <div class="h_st_input h_st_hls">
+              <div class="row">
+                  <div class="form-group col-md-6">
+                    <label><span>HLS Video Encoder</span>
+                        <select class="form-control" detail="stream_vcodec">
+                            <option value="libx264" selected>libx264</option>
+                            <option value="libx265">libx265</option>
+                            <option value="copy">copy</option>
+                        </select>
+                    </label>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label><span>HLS Audio Encoder</span>
+                        <select class="form-control" detail="stream_acodec">
+                            <option value="no" selected>No Audio</option>
+                            <option value="" selected>Auto</option>
+                            <option value="aac">aac</option>
+                            <option value="ac3">ac3</option>
+                            <option value="libmp3lame">libmp3lame</option>
+                            <option value="copy">copy</option>
+                        </select>
+                    </label>
+                  </div>
+              </div>
+              <div class="form-group">
+                <label><span>HLS Segment Length <small>In Seconds</small></span>
+                    <input class="form-control" detail="hls_time" placeholder="3">
+                </label>
+              </div>
           </div>
           <div class="row">
               <div class="form-group col-md-6">
