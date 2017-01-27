@@ -43,61 +43,37 @@ s.cron=function(){
                         es.qu=[];
                         evs.forEach(function(ev){
                             es.qu.push('(mid=? AND time=?)');es.ar.push(ev.mid),es.ar.push(ev.time);
-                            es.del.push(s.dir.events+v.ke+'/'+ev.mid+'/'+s.moment(ev.time)+'.'+ev.ext);
+                            es.del.push(s.dir.events+v.ke+'/'+ev.mid+'/'+s.moment_noOffset(ev.time)+'.'+ev.ext);
                         });
-                        if(es.del.length>0){
+                        if(es.del.length){
                             sql.query('DELETE FROM Videos WHERE ke =? AND ('+es.qu+')',es.ar,function(){
                                 del(es.del).then(paths => {
-                                    s.cx({f:'did',msg:es.del.length+' old events deleted',ke:v.ke,time:moment()})
+                                    s.cx({f:'end',msg:es.del.length+' old events deleted',ke:v.ke,time:moment()})
                                 });
                             })
                         }else{
-                            s.cx({f:'did',msg:'0 old events deleted',time:moment()})
+                            s.cx({f:'end',msg:'0 old events deleted',time:moment()})
                         }
                     }
                     
-                    //purge SQL rows with no file and orphaned files
-                    sql.query('SELECT * FROM Videos WHERE ke = ?;',[v.ke],function(er,evs,es){
-                        es={};
+                    //purge SQL rows with no file
+                    sql.query('SELECT * FROM Videos WHERE ke = ?;',[v.ke],function(err,evs){
                         if(evs&&evs[0]){
-                            es.del=[];es.orph_check=[];es.ar=[v.ke];
+                            es.del=[];es.ar=[v.ke];
                             evs.forEach(function(ev){
-                                ev.dir=s.dir.events+v.ke+'/'+ev.mid+'/'+s.moment(ev.time)+'.'+ev.ext;
+                                ev.dir=s.dir.events+v.ke+'/'+ev.mid+'/'+s.moment_noOffset(ev.time)+'.'+ev.ext;
                                 if(!fs.existsSync(ev.dir)){
                                     es.del.push('(mid=? AND time=?)');
                                     es.ar.push(ev.mid),es.ar.push(ev.time);
-                                }else{
-                                    //Orphaned Events: make list for checking against.
-                                    es.orph_check.push({dir:ev.dir,mid:ev.mid});
                                 }
                             })
-                            //purge SQL rows with no file
                             if(es.del.length>0){
-                                s.cx({f:'did',msg:es.del.length+' SQL rows with no file deleted',ke:v.ke,time:moment()})
+                                s.cx({f:'end',msg:es.del.length+' SQL rows with no file deleted',ke:v.ke,time:moment()})
                                 es.del=es.del.join(' OR ');
                                 sql.query('DELETE FROM Videos WHERE ke =? AND ('+es.del+')',es.ar)
                             }else{
-                                s.cx({f:'did',msg:'0 SQL rows with no file deleted',ke:v.ke,time:moment()})
+                                s.cx({f:'end',msg:'0 SQL rows with no file deleted',ke:v.ke,time:moment()})
                             }
-                            //Orphaned Events : check if event is in sql, if not delete it.
-                            es.number_found=0;
-                            evs.forEach(function(ev){
-                                fs.readdir(s.dir.events+v.ke+'/'+ev.mid,function(err,files){
-                                    if(files&&files.length>0){
-                                        files.forEach(function(file,e){
-                                            e={};
-                                            if(file.indexOf('.webm')>-1||file.indexOf('.mp4')>-1){
-                                                e.found=0;
-                                                es.orph_check.forEach(function(ve){
-                                                    if(ve.dir.indexOf(ve.mid+'/'+file)>-1){e.found=1}
-                                                })
-                                                if(e.found===0){++e.number_found;exec('rm -rf '+s.dir.events+v.ke+'/'+ev.mid+'/'+file)}
-                                            }
-                                        });
-                                        s.cx({f:'did',msg:es.number_found+' files deleted with no SQL row',mid:ev.mid,ke:v.ke,time:moment()});
-                                    }
-                                })
-                            })
                         }
                     })
                 })
@@ -109,3 +85,4 @@ setInterval(function(){
     s.cron();
 },600000*60)//every hour
 s.cron()
+console.log('Shinobi : cron.js started')
