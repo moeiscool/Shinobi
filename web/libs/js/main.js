@@ -361,13 +361,21 @@ $.ccio.ws.on('f',function (d){
             }
             switch(JSON.parse($.ccio.mon[d.id].details).stream_type){
                 case'hls':
+                    d.url=$user.auth_token+'/hls/'+d.ke+'/'+d.id+'/s.m3u8';
                     var video = $('#monitor_live_'+d.id+' .stream-element')[0];
-                    var hls = new Hls();
-                    hls.loadSource($user.auth_token+'/hls/'+d.ke+'/'+d.id+'/s.m3u8');
-                    hls.attachMedia(video);
-                    hls.on(Hls.Events.MANIFEST_PARSED,function() {
-                      video.play();
-                    });
+                    if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)) {
+                        video.src=d.url;
+                        video.onload=function(){
+                            video.play();
+                        }
+                    }else{
+                        var hls = new Hls();
+                        hls.loadSource(d.url);
+                        hls.attachMedia(video);
+                        hls.on(Hls.Events.MANIFEST_PARSED,function() {
+                          video.play();
+                        });
+                    }
                 break;
                 case'mjpeg':
                     $('#monitor_live_'+d.id+' .stream-element').attr('src',$user.auth_token+'/mjpeg/'+d.ke+'/'+d.id+'/full')

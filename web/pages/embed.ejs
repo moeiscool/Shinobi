@@ -100,13 +100,21 @@ $(document).ready(function(){
             $.shinobi.init=function(d){
                   switch(JSON.parse($.shinobi.mon[d.id].details).stream_type){
                     case'hls':
-                        var video = $('#SHINOBI_'+d.ke+'_'+d.id+' .stream-element')[0];
+                    var video = $('#SHINOBI_'+d.ke+'_'+d.id+' .stream-element')[0];
+                    d.url='<%=data.url%>/<%=data.auth%>/hls/'+d.ke+'/'+d.id+'/s.m3u8';
+                    if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)) {
+                        video.src=d.url;
+                        video.onload=function(){
+                            video.play();
+                        }
+                    }else{
                         var hls = new Hls();
-                        hls.loadSource('<%=data.url%>/<%=data.auth%>/hls/'+d.ke+'/'+d.id+'/s.m3u8');
+                        hls.loadSource(d.url);
                         hls.attachMedia(video);
                         hls.on(Hls.Events.MANIFEST_PARSED,function() {
                           video.play();
                         });
+                    }
                     break;
                     case'mjpeg':
                         $('#SHINOBI_'+d.ke+'_'+d.id+' .stream-element').attr('src','<%=data.url%>/<%=data.auth%>/mjpeg/'+d.ke+'/'+d.id+'/full')
