@@ -276,7 +276,12 @@ s.ffmpeg=function(e,x){
     if(!e.details.cutoff||e.details.cutoff===''){x.cutoff=15}else{x.cutoff=parseFloat(e.details.cutoff)};
     if(isNaN(x.cutoff)===true){x.cutoff=15}
     //segmenting
-    x.segment=' -f segment -segment_atclocktime 1 -reset_timestamps 1 -strftime 1 -segment_list pipe:2 -segment_time '+(60*x.cutoff)+' '+e.dir+'%Y-%m-%dT%H-%M-%S.'+e.ext+'';
+    x.segment=' -f segment -segment_atclocktime 1 -reset_timestamps 1 -strftime 1 -segment_list pipe:2 -segment_time '+(60*x.cutoff)+' ';
+    if(e.details.dqf=='1'){
+        x.segment+='"'+e.dir+'%Y-%m-%dT%H-%M-%S.'+e.ext+'"';
+    }else{
+        x.segment+=e.dir+'%Y-%m-%dT%H-%M-%S.'+e.ext;
+    }
     //timestamp
     if(!e.details.timestamp||e.details.timestamp==1){x.time=' -vf drawtext=fontfile=/usr/share/fonts/truetype/freefont/FreeSans.ttf:text=\'%{localtime}\':x=(w-tw)/2:y=0:fontcolor=white:box=1:boxcolor=0x00000000@1:fontsize=10';}else{x.time=''}
     //get video and audio codec defaults based on extension

@@ -46,7 +46,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 }
 
 .form-group-group{padding:0 10px 10px 10px;overflow:hidden;margin-bottom:15px;border-radius:5px;border:1px solid #ddd}
-.form-group-group:last-child{margin-bottom:0}
+.form-group-group:last-child,.form-group-group .form-group:last-child{margin-bottom:0}
 .form-group-group h4{margin:0 -10px 15px -10px;padding:15px;background:#ddd;}
 .form-group-group.red{border-color:#d9534f}
 .form-group-group.red h4{background:#d9534f;color:#fff}
