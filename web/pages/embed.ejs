@@ -126,7 +126,6 @@ $(document).ready(function(){
             if(!$.shinobi.ws||$.shinobi.ws.connected===false){
                 $.shinobi.ws=io('<%=data.url%>');
                 $.shinobi.ws.on('f',function (d){
-                    console.log(d)
                 if(d.viewers){
                     $('#SHINOBI_'+d.ke+'_'+d.id+' .shinobi_viewers').html(d.viewers);
                 }
