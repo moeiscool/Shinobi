@@ -359,7 +359,8 @@ $.ccio.ws.on('f',function (d){
             if(d.e.length==0){
                 $.ccio.tm(2,$.ccio.mon[d.id],'#monitors_live');
             }
-            switch(JSON.parse($.ccio.mon[d.id].details).stream_type){
+            d.d=JSON.parse($.ccio.mon[d.id].details);
+            switch(d.d.stream_type){
                 case'hls':
                     d.url=$user.auth_token+'/hls/'+d.ke+'/'+d.id+'/s.m3u8';
                     var video = $('#monitor_live_'+d.id+' .stream-element')[0];
