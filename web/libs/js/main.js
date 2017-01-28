@@ -31,7 +31,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             break;
             case'id':
                 $('.usermail').html(d.mail)
-                k.d=JSON.parse(d.details);
+                try{k.d=JSON.parse(d.details);}catch(er){k.d=d.details}
                 $.each($user,function(n,v){$.sM.e.find('[name="'+n+'"]').val(v).change()})
                 $.each(k.d,function(n,v){$.sM.e.find('[detail="'+n+'"]').val(v).change()})
             break;
@@ -88,15 +88,22 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 delete(d.src);
             break;
             case 2://monitor stream
-                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" class="monitor_item glM'+d.mid+' col-md-4"><canvas></canvas>';
-//                switch(d.type){
-//                    case'jpeg':case'mjpeg':case'h264':
-//                        tmp+='<img>';
-//                    break;
-//                }
+                try{k.d=JSON.parse(d.details);}catch(er){k.d=d.details;}
+                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" class="monitor_item glM'+d.mid+' col-md-4">';
+                switch(k.d.stream_type){
+                    case'mjpeg':
+                        tmp+='<iframe class="stream-element"></iframe>';
+                    break;
+                    case'hls':
+                        tmp+='<video class="stream-element"></video>';
+                    break;
+                    default://base64
+                        tmp+='<canvas class="stream-element"></canvas>';
+                    break;
+                }
                 tmp+='<div class="hud super-center"><div class="side-menu logs scrollable"></div><div class="side-menu videos_monitor_list glM'+d.mid+' scrollable"><ul></ul></div><div class="top_bar"><span class="badge badge-sm badge-danger"><i class="fa fa-eye"></i> <span class="viewers"></span></span></div><div class="bottom_bar"><span class="monitor_name">'+d.name+'</span><div class="pull-right btn-group"><a title="Snapshot" monitor="snapshot" class="btn btn-sm btn-primary"><i class="fa fa-camera"></i></a> <a title="Show Logs" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-sm btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="Enlarge" monitor="control_toggle" class="btn btn-sm btn-default"><i class="fa fa-arrows"></i></a> <a title="Status" class="btn btn-sm btn-danger signal" monitor="watch_on"><i class="fa fa-circle"></i></a> <a title="Calendar" monitor="calendar" class="btn btn-sm btn-default"><i class="fa fa-calendar"></i></a> <a title="Videos List" monitor="videos_table" class="btn btn-sm btn-default"><i class="fa fa-film"></i></a> <a class="btn btn-sm btn-default" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Enlarge" monitor="bigify" class="btn btn-sm btn-default"><i class="fa fa-expand"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a></div></div></div></div></div>';
             break;
-            case 3:
+            case 3://api key row
                 tmp+='<tr api_key="'+d.code+'"><td class="code">'+d.code+'</td><td class="ip">'+d.ip+'</td><td class="time">'+d.time+'</td><td><a class="delete btn btn-xs btn-danger">&nbsp;<i class="fa fa-trash"></i>&nbsp;</a></td></tr>';
             break;
         }
@@ -176,6 +183,9 @@ $.ccio.ws.on('connect',function (d){
 PNotify.prototype.options.styling = "fontawesome";
 $.ccio.ws.on('f',function (d){
     if(d.f!=='monitor_frame'&&d.f!=='os'&&d.f!=='video_delete'){console.log(d);}
+    if(d.viewers){
+        $('#monitor_live_'+d.id+' .viewers').html(d.viewers);
+    }
     switch(d.f){
         case'api_key_deleted':
             new PNotify({title:'API Key Deleted',text:'Key has been deleted. It will no longer work.',type:'notice'});
@@ -188,6 +198,7 @@ $.ccio.ws.on('f',function (d){
         case'user_settings_change':
             new PNotify({title:'Settings Changed',text:'Your settings have been saved and applied.',type:'success'});
             $.ccio.init('id',d.form);
+            $('#custom_css').append(d.form.details.css)
         break;
         case'log':
             d.l=$('#logs,.monitor_item[mid="'+d.mid+'"][ke="'+d.ke+'"] .logs')
@@ -263,10 +274,12 @@ $.ccio.ws.on('f',function (d){
 //        case'monitor_stopping':
 //            new PNotify({title:'Monitor Stopping',text:'Monitor <b>'+d.mid+'</b> is now off.',type:'notice'});
 //        break;
-//        case'monitor_starting':
+        case'monitor_starting':
 //            switch(d.mode){case'start':d.mode='Watch';break;case'record':d.mode='Record';break;}
 //            new PNotify({title:'Monitor Starting',text:'Monitor <b>'+d.mid+'</b> is now running in mode <b>'+d.mode+'</b>',type:'success'});
-//        break;
+            d.e=$('#monitor_live_'+d.mid)
+            if(d.e.length>0){d.e.find('[monitor="watch_on"]').click()}
+        break;
         case'monitor_snapshot':
             switch(d.snapshot_format){
                 case'plc':
@@ -292,6 +305,20 @@ $.ccio.ws.on('f',function (d){
             d.e.attr('status',d.status),d.e.attr('data-status',d.status);
         break;
         case'monitor_edit':
+            d.e=$('[mid="'+d.mon.mid+'"][ke="'+d.mon.ke+'"]');d.ee=d.e.find('.stream-element');
+            switch(d.mon.details.stream_type){
+                case'hls':
+                    d.ee.after('<video class="stream-element"></video>').remove()
+                break;
+                case'mjpeg':
+                    d.ee.after('<iframe class="stream-element"></iframe>').remove()
+                break;
+                default://base64
+                    d.ee.after('<canvas class="stream-element"></canvas>').remove()
+                break;
+            }
+            d.e.find('[monitor="watch_on"]').click()
+            d.e.resize();
             d.e=$('#monitor_live_'+d.mid);
             if(d.mon.details.control=="1"){d.e.find('[monitor="control_toggle"]').show()}else{d.e.find('.pad').remove();d.e.find('[monitor="control_toggle"]').hide()}
             
@@ -323,7 +350,6 @@ $.ccio.ws.on('f',function (d){
                 if(d.cnid===$.ccio.ws.id){
                     $('#monitor_live_'+d.id).remove();
                 }
-                $('#monitor_live_'+d.id+' .viewers').html(d.viewers)
             }
         break;
         case'monitor_watch_on':
@@ -333,7 +359,28 @@ $.ccio.ws.on('f',function (d){
             if(d.e.length==0){
                 $.ccio.tm(2,$.ccio.mon[d.id],'#monitors_live');
             }
-            $('#monitor_live_'+d.id+' .viewers').html(d.viewers)
+            switch(JSON.parse($.ccio.mon[d.id].details).stream_type){
+                case'hls':
+                    d.url=$user.auth_token+'/hls/'+d.ke+'/'+d.id+'/s.m3u8';
+                    var video = $('#monitor_live_'+d.id+' .stream-element')[0];
+                    if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)) {
+                        video.src=d.url;
+                        video.onload=function(){
+                            video.play();
+                        }
+                    }else{
+                        var hls = new Hls();
+                        hls.loadSource(d.url);
+                        hls.attachMedia(video);
+                        hls.on(Hls.Events.MANIFEST_PARSED,function() {
+                          video.play();
+                        });
+                    }
+                break;
+                case'mjpeg':
+                    $('#monitor_live_'+d.id+' .stream-element').attr('src',$user.auth_token+'/mjpeg/'+d.ke+'/'+d.id+'/full')
+                break;
+            }
         break;
         case'monitor_mjpeg_url':
             $('#monitor_live_'+d.id+' iframe').attr('src',location.protocol+'//'+location.host+d.watch_url);
@@ -363,6 +410,19 @@ $.ccio.form.details=function(e){
     });
     e.f.find('[name="details"]').val(JSON.stringify(e.ar));
 };
+//probe
+$.pB={e:$('#probe')};$.pB.f=$.pB.e.find('form');$.pB.o=$.pB.e.find('.output_data');
+$.pB.f.submit(function(e){
+    e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
+    $.pB.o.empty();
+    $.getJSON('/'+$user.auth_token+'/probe/'+$user.ke+'/'+e.s.url,function(d){
+        if(d.ok===false){
+            d.output='<center>No data could be displayed. Check your command.</center>'
+        }
+        $.pB.o.append(d.output)
+    })
+    return false;
+});
 //add Monitor
 $.aM={e:$('#add_monitor')};$.aM.f=$.aM.e.find('form')
 $.aM.f.submit(function(e){
@@ -400,6 +460,11 @@ $.aM.f.find('[detail="control_stop"]').change(function(e){
     e.v=$(this).val();
     $.aM.f.find('.h_cs_input').hide()
     $.aM.f.find('.h_cs_'+e.v).show();
+});
+$.aM.f.find('[detail="stream_type"]').change(function(e){
+    e.v=$(this).val();
+    $.aM.f.find('.h_st_input').hide()
+    $.aM.f.find('.h_st_'+e.v).show();
 });
 $.aM.f.find('[name="ext"]').change(function(e){
     e.v=$(this).val();
@@ -513,7 +578,7 @@ $.vidview.e.find('.delete_selected').click(function(e){
 //dynamic bindings
 $('body')
 .on('click','.logout',function(e){
-    localStorage.removeItem('ShinobiLogin_'+location.host);location.reload();
+    localStorage.removeItem('ShinobiLogin_'+location.host);location.href=location.href;
 })
 .on('click','[video]',function(e){
     e.e=$(this),
@@ -580,7 +645,34 @@ $('body')
     e.e=$(this),e.a=e.e.attr('monitor'),e.p=e.e.parents('[mid]'),e.ke=e.p.attr('ke'),e.mid=e.p.attr('mid'),e.mon=$.ccio.mon[e.mid]
     switch(e.a){
         case'snapshot':
-            var image_data = atob($.ccio.mon[e.mid].last_frame.split(',')[1]);
+            var image_data;
+            switch(JSON.parse(e.mon.details).stream_type){
+                case'hls':
+                    $('#temp').html('<canvas></canvas>')
+                    var c = $('#temp canvas')[0];
+                    var img = e.p.find('video')[0];
+                    img.pause();
+                    c.width = img.videoWidth;
+                    c.height = img.videoHeight;
+                    var ctx = c.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    image_data=atob(c.toDataURL('image/jpeg').split(',')[1]);
+                    img.play();
+                break;
+                case'mjpeg':
+                    $('#temp').html('<canvas></canvas>')
+                    var c = $('#temp canvas')[0];
+                    var img = $('img',e.p.find('.stream-element').contents())[0];
+                    c.width = img.width;
+                    c.height = img.height;
+                    var ctx = c.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    image_data=atob(c.toDataURL('image/jpeg').split(',')[1]);
+                break;
+                case'b64':
+                    image_data = atob(e.mon.last_frame.split(',')[1]);
+                break;
+            }
             var arraybuffer = new ArrayBuffer(image_data.length);
             var view = new Uint8Array(arraybuffer);
             for (var i=0; i<image_data.length; i++) {
@@ -742,7 +834,7 @@ $('body')
             if(!$.ccio.mon[e.mid]){
                 e.p.find('[monitor="delete"]').hide()
                 e.mt.find('span').text('Add'),e.mt.find('i').attr('class','fa fa-plus');
-                e.values={"mode":"stop","mid":$.ccio.gid(),"name":"","protocol":"http","ext":"webm","type":"jpeg","host":"","path":"","port":"","fps":"1","width":"640","height":"480","details":JSON.stringify({"control":"0","control_stop":"0","vf":"","svf":"fps=1","sfps":"1","cutoff":"15","vcodec":"copy","acodec":"libvorbis","motion":"0","timestamp":"0","loglevel":"error","sqllog":"0","cust_record":"","cust_input":""}),"shto":"[]","shfr":"[]"}
+                e.values={"mode":"stop","mid":$.ccio.gid(),"name":"","protocol":"http","ext":"webm","type":"jpeg","host":"","path":"","port":"","fps":"1","width":"640","height":"480","details":JSON.stringify({"stream_type":"b64",control":"0","control_stop":"0","vf":"","svf":"fps=1","sfps":"1","cutoff":"15","vcodec":"copy","acodec":"libvorbis","motion":"0","timestamp":"0","loglevel":"error","sqllog":"0","cust_record":"","cust_input":""}),"shto":"[]","shfr":"[]"}
                 e.mt.find('.edit_id').text(e.values.mid);
             }else{
                 e.p.find('[monitor="delete"]').show()

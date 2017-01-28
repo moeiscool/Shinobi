@@ -1,7 +1,7 @@
 # Shinobi
 
 <center>
-<a href="https://www.youtube.com/user/MrMoea92">YouTube</a> - <a href="https://shinobicctv.herokuapp.com/">Slack</a> - <a href="https://twitter.com/ShinobiCCTV">Twitter</a> - <a href="https://www.facebook.com/Shinobi-1223193167773738/?ref=bookmarks">Facebook</a> - <a href="https://www.reddit.com/r/ShinobiCCTV/">Reddit</a> - <a href="https://gratipay.com/Shinobi-The-Open-Source-CCTV-Solution/"><b>Donate</b></a>
+<a href="https://www.youtube.com/user/MrMoea92">YouTube</a> - <a href="https://shinobicctv.herokuapp.com/">Slack</a> - <a href="https://twitter.com/ShinobiCCTV">Twitter</a> - <a href="https://www.facebook.com/Shinobi-1223193167773738/?ref=bookmarks">Facebook</a> - <a href="https://www.reddit.com/r/ShinobiCCTV/">Reddit</a> - <a href="https://github.com/moeiscool/Shinobi/wiki/Support-Shinobi"><b>Donate</b></a>
 </center>
 
 Shinobi is an Open Source CCTV software written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. <s>Currently it is being crafted for IP Cameras, not local</s>.
@@ -26,7 +26,9 @@ If you like Shinobi please check out some ways you can help <a href="https://git
 
 $5 from each person that visits the github page would be enough. Currently all hours spent on Shinobi are entirely voluntary. There is no income from sharing this program with you, so all support means a great deal.
 
-**Just a side note:** <a title="USD,XBT..." href='https://gratipay.com/Shinobi-The-Open-Source-CCTV-Solution/'>Gratipay</a> is the best way to donate :)
+**Just a side note:** Paypal is the best way to donate :)
+
+**paypal@m03.ca**
 
 # More about Shinobi in the Wiki
 

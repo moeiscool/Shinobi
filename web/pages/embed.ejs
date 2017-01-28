@@ -3,6 +3,7 @@
 if(!port||port===''||port==80){data.url=baseUrl}else{data.url=baseUrl+':'+port}
 %>
 <script src="<%=data.url%>/libs/js/socket.io.js"></script>
+<script src="<%=data.url%>/libs/js/hls.min.js"></script>
 <% if(data.addon){
     var ar={}
     decodeURI(data.addon).split('|').forEach(function(v){
@@ -39,17 +40,18 @@ if(data.addon.indexOf('gui')>-1){ %>
         border-radius: 10px;
         font-family: sans-serif;
     }
+    iframe.stream-element{border:0;}
 </style>
 <% };
 if(data.addon.indexOf('fullscreen')>-1){ %>
 <style>
     body{margin:0;padding:0;}
-    canvas,.shinobi_stream{position:absolute;top:0;left:0;}
+    .stream-element,.shinobi_stream{position:absolute;top:0;left:0;}
 </style>
 <script>
 $(window).resize(function(){
-    $('canvas').attr('width',$('body').width())
-    $('canvas').attr('height',$('body').height())
+    $('.stream-element').attr('width',$('body').width())
+    $('.stream-element').attr('height',$('body').height())
 })
 </script>
 <% } %>
@@ -65,7 +67,20 @@ $(document).ready(function(){
 })
 </script>
 <div class="shinobi_stream" id="<%= data.name %>">
-    <canvas></canvas>
+    
+    <% switch(JSON.parse(mon.details).stream_type){
+        case'hls':
+            %><video class="stream-element"></video><%
+        break;
+        case'mjpeg':
+            %><iframe class="stream-element"></iframe><%
+        break;
+        case'b64':
+            %><canvas class="stream-element"></canvas><%
+        break;
+    } %>
+    
+    
 <% if(data.addon&&data.addon.indexOf('gui')>-1){ %>
     <div class="shinobi_hud">
         <div class="shinobi_viewers" title="Current number of viewers"></div>
@@ -79,14 +94,46 @@ $(document).ready(function(){
             if(!$.shinobi){
                 $.shinobi={}
             };
+            if(!$.shinobi.mon){
+                $.shinobi.mon={}
+            };
+            $.shinobi.init=function(d){
+                  switch(JSON.parse($.shinobi.mon[d.id].details).stream_type){
+                    case'hls':
+                    var video = $('#SHINOBI_'+d.ke+'_'+d.id+' .stream-element')[0];
+                    d.url='<%=data.url%>/<%=data.auth%>/hls/'+d.ke+'/'+d.id+'/s.m3u8';
+                    if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)) {
+                        video.src=d.url;
+                        video.onload=function(){
+                            video.play();
+                        }
+                    }else{
+                        var hls = new Hls();
+                        hls.loadSource(d.url);
+                        hls.attachMedia(video);
+                        hls.on(Hls.Events.MANIFEST_PARSED,function() {
+                          video.play();
+                        });
+                    }
+                    break;
+                    case'mjpeg':
+                        $('#SHINOBI_'+d.ke+'_'+d.id+' .stream-element').attr('src','<%=data.url%>/<%=data.auth%>/mjpeg/'+d.ke+'/'+d.id+'/full')
+                    break;
+                }
+            }
+            $.shinobi.mon['<%=data.id%>']=<%- JSON.stringify(mon) %>;
             if(!$.shinobi.callback){$.shinobi.callback=function(){}}
             if(!$.shinobi.ws||$.shinobi.ws.connected===false){
                 $.shinobi.ws=io('<%=data.url%>');
                 $.shinobi.ws.on('f',function (d){
-                    switch(d.f){
+                    console.log(d)
+                if(d.viewers){
+                    $('#SHINOBI_'+d.ke+'_'+d.id+' .shinobi_viewers').html(d.viewers);
+                }
+                switch(d.f){
                         case'monitor_frame':
                             var image = new Image();
-                            var ctx = $('<%='#'+data.name%> canvas')[0];
+                            var ctx = $('#SHINOBI_'+d.ke+'_'+d.id+' canvas')[0];
                             image.onload = function() {
                                 ctx.getContext("2d").drawImage(image,0,0,ctx.width,ctx.height);
                             };
@@ -95,13 +142,33 @@ $(document).ready(function(){
                             delete(image);
                         break;
                         case'monitor_watch_off':case'monitor_watch_on':
-                            $('#<%=data.name%> .shinobi_viewers').html(d.viewers)
+                            $('#SHINOBI_'+d.ke+'_'+d.id+' .shinobi_viewers').html(d.viewers)
+                            $.shinobi.init(d)
+                        break;
+                        case'monitor_edit':
+                            d.e=$('#SHINOBI_'+d.ke+'_'+d.id+'');d.ee=d.e.find('.stream-element');
+                            switch(d.mon.details.stream_type){
+                                case'hls':
+                                    d.ee.after('<video class="stream-element"></video>').remove()
+                                break;
+                                case'mjpeg':
+                                    d.ee.after('<iframe class="stream-element"></iframe>').remove()
+                                break;
+                                default://base64
+                                    d.ee.after('<canvas class="stream-element"></canvas>').remove()
+                                break;
+                            }
+                            $(window).resize();
+                            d.mon.details=JSON.stringify(d.mon.details);
+                            $.shinobi.mon[d.mon.mid]=d.mon;
+                            $.shinobi.init(d);
                         break;
                     }
                     $.shinobi.callback()
                 });
             };
             $.shinobi.ws.emit('e',{f:'init',auth:'<%=data.auth%>',id:'<%=data.id%>',ke:'<%=data.ke%>'})
+            $(window).resize();
         }
-    },1000)
+    },1000);
 </script>

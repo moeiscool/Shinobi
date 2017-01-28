@@ -1,0 +1,713 @@
+<% include blocks/header %>
+<script>var $user=<%- JSON.stringify($user) %>;</script>
+<link rel="stylesheet" href="libs/css/pnotify.custom.min.css">
+<link rel="stylesheet" href="libs/css/vbox.css">
+<link rel="stylesheet" href="libs/css/circles.css">
+<link rel="stylesheet" href="libs/css/bootstrap.min.css">
+<link rel="stylesheet" href="libs/css/font-awesome.min.css">
+<link rel="stylesheet" href="libs/css/fullcalendar.min.css">
+<link rel="stylesheet" href="libs/css/bootstrap-table.min.css">
+<link rel="stylesheet" href="libs/css/main.css">
+<style id="custom_css"><%= JSON.parse($user.details).css %></style>
+<div id="cd-nav" class="hidden-lg">
+    <a href="#0" class="cd-nav-trigger">Menu<span></span></a>
+
+    <nav id="cd-main-nav">
+        <ul>
+            <li mid="" ke=""><a monitor="edit"><i class="fa fa-plus"></i> &nbsp; Add Monitor</a></li>
+            <li><a data-toggle="modal" data-target="#settings"><i class="fa fa-gears"></i> &nbsp; Settings</a></li>
+            <li><a data-toggle="modal" data-target="#apis"><i class="fa fa-code"></i> &nbsp; API</a></li>
+            <li><a class_toggle="list-blocks" data-target="#side_menu"><i class="fa fa-camera"></i> &nbsp; Monitor List <small>Toggle</small></a></li>
+            <li><a class_toggle="nav-xs" data-target="#side_menu_right"><i class="fa fa-film"></i> &nbsp; Event Pane <small>Toggle</small></a></li>
+            <li><a class_toggle="nav-xs" data-target="#side_menu"><i class="fa fa-bars"></i> &nbsp; Monitor Pane <small>Toggle</small></a></li>
+        </ul>
+    </nav>
+</div>
+<section class="app">
+    <section class="hbox stretch">
+    <section class="vbox">
+        <header id="main_header" class="header">
+            <div class="pull-right">
+<ul class="nav navbar-nav navbar-right">
+                <li role="presentation" class="dropdown">
+                  <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown" aria-expanded="true">&nbsp;<i class="fa fa-hdd-o"></i>&nbsp;</a>
+                  <ul id="disk" class="dropdown-menu list-unstyled msg_list scrollable" role="menu"></ul>
+                </li>
+                <li role="presentation" class="dropdown">
+                  <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown" aria-expanded="true">&nbsp;<i class="fa fa-exclamation-triangle"></i>&nbsp;</a>
+                  <ul id="logs" class="dropdown-menu list-unstyled msg_list scrollable" role="menu">
+<!--
+                    <li>
+                      <div class="text-center">
+                        <a>
+                          <strong>See All Alerts</strong>
+                          <i class="fa fa-angle-right"></i>
+                        </a>
+                      </div>
+                    </li>
+-->
+                  </ul>
+                </li>
+                <li role="presentation" class="dropdown">
+                    <a class="info-number" class_toggle="nav-xs" data-target="#side_menu_right">&nbsp;<i class="fa fa-reorder"></i>&nbsp;</a>
+                </li>
+                <li class="">
+                  <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                    <span class="usermail"></span>
+                    <span class=" fa fa-angle-down"></span>
+                  </a>
+                  <ul class="dropdown-menu dropdown-usermenu pull-right">
+                    <li><a data-toggle="modal" data-target="#settings"><i class="fa fa-gears pull-right"></i> Settings</a></li>
+                    <li><a data-toggle="modal" data-target="#apis"><i class="fa fa-code pull-right"></i> API</a></li>
+                    <li><a class="logout"><i class="fa fa-sign-out pull-right"></i> Log Out</a></li>
+                  </ul>
+                </li>
+              </ul>
+<!--
+                <div class="btn-group" mid="" ke="">
+                    <a class="btn btn-default" class_toggle="nav-xs" data-target="#side_menu_right"><i class="fa fa-reorder"></i></a>
+                </div>
+-->
+            </div>
+        <ul class="nav navbar-nav">
+            <li class="hidden-xs"><a class="info-number" class_toggle="nav-xs" data-target="#side_menu">&nbsp;<i class="fa fa-reorder"></i>&nbsp;</a>&nbsp;</li>
+            <li class="hidden-xs"><a class="info-number" class_toggle="list-blocks" data-target="#side_menu">&nbsp;<i class="fa fa-camera"></i>&nbsp;</a></li>
+            <li class="hidden-xs" mid="" ke=""><a class="info-number" monitor="edit">&nbsp;<i class="fa fa-plus"></i>&nbsp;</a></li>
+            <li class="os_bars">
+                <div class="display-table">
+                    <div class="cpu_load display-table-cell">
+                        <span class="pull-right percent"></span>
+                        <label><span class="os_cpuCount"></span> CPU<span class="os_cpuCount_trailer"></span> on <span class="os_platform" style="text-transform:capitalize"></span></label>
+                      <div class="progress">
+                        <div class="progress-bar progress-bar-warning" role="progressbar" style="width:0%"></div>
+                      </div>
+                    </div>
+                    <div class="ram_load display-table-cell">
+                        <span class="pull-right percent"></span>
+                       <label><span class="os_totalmem" style="letter-spacing:2px;font-weight:100"></span> MB RAM</label>
+                      <div class="progress">
+                        <div class="progress-bar progress-bar-warning" role="progressbar" style="width:0%"></div>
+                      </div>
+                    </div>
+                </div>
+            </li>
+        </ul>
+            <div class="pull-left">
+                
+            </div>
+        </header>
+        <section>
+        <section class="hbox stretch">
+            <aside class="aside-lg vbox side-menu" id="side_menu">
+                <section class="scrollable">
+                    <div id="monitors_list" class="display-table"></div>
+                </section>
+            </aside>
+            <aside class="vbox" id="main_canvas">
+                <section class="scrollable">
+                    <div id="monitors_live"></div>
+                </section>
+            </aside>
+            <aside class="aside-lg vbox side-menu" id="side_menu_right">
+                <section class="scrollable w-f">
+                    <div id="files_recent"></div>
+                </section>
+                <footer class="footer dker"></footer>
+            </aside>
+        </section>
+        </section>
+    </section>
+    </section>
+</section>
+<div class="hidden" id="temp"></div>
+<!--PROBE Window-->
+<div class="modal fade" id="probe" tabindex="-1" role="dialog" aria-labelledby="probeLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="probeLabel"><i class="fa fa-gears"></i> &nbsp; Probe</h4>
+      </div>
+      <div class="modal-body">
+          <div class="text-center msg"></div>
+        <div class="form-group">
+            <label><span>Complete Stream URL</span>
+                <input class="form-control" name="url">
+            </label>
+        </div>
+        <div class="output_data"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-success">Check</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!--API Window-->
+<div class="modal fade" id="apis" tabindex="-1" role="dialog" aria-labelledby="apisLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="apisLabel"><i class="fa fa-gears"></i> &nbsp; API Keys</h4>
+      </div>
+      <div class="modal-body">
+          <div class="text-center msg"></div>
+        <div class="form-group">
+            <label><span>Allowed IPs <small>Separate with commas, no spaces</small></span>
+                <div class="input-group">
+                    <input class="form-control" name="ip">
+                    <div class="input-group-btn">
+                        <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> &nbsp; Add</button>
+                    </div>
+                </div>
+            </label>
+        </div>
+        <div class="form-group">
+            <table class="table table-striped" id="api_list"></table>
+          </div>
+        <input type="hidden" name="details">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!--Settings Window-->
+<div class="modal fade" id="settings" tabindex="-1" role="dialog" aria-labelledby="settingsLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="settingsLabel"><i class="fa fa-gears"></i> &nbsp; Settings</h4>
+      </div>
+      <div class="modal-body">
+          <div class="text-center msg"></div>
+        <div class="form-group">
+            <label><span>Email</span>
+                <input class="form-control" type="email" name="mail">
+            </label>
+        </div>
+        <div class="form-group">
+            <label><span>Password <small>Leave blank to keep same password</small></span>
+                <input class="form-control" type="password" name="pass">
+            </label>
+        </div>
+        <div class="form-group">
+            <label><span>Password Again</span>
+                <input class="form-control" type="password" name="password_again">
+            </label>
+        </div>
+        <div class="form-group">
+            <label><span>Number of Days to keep Videos</span>
+                <input class="form-control" detail="days">
+            </label>
+        </div>
+        <div>
+            <div class="form-group">
+                <label><span>WebDAV URL</span>
+                    <input class="form-control" detail="webdav_url">
+                </label>
+            </div>
+            <div class="row">
+                <div class="form-group col-md-6">
+                    <label><span>WebDAV Username</span>
+                        <input class="form-control" detail="webdav_user">
+                    </label>
+                </div>
+                <div class="form-group col-md-6">
+                    <label><span>WebDAV Password</span>
+                        <input class="form-control" type="password" detail="webdav_pass">
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label><span>WebDAV Autosave</span>
+                        <select class="form-control" detail="webdav_save">
+                            <option value="0">No</option>  
+                            <option value="1">Yes</option>  
+                        </select>
+                </label>
+            </div>
+            <div class="form-group">
+                <label><span>WebDAV Save Directory</span>
+                    <input class="form-control" placeholder="/" detail="webdav_dir">
+                </label>
+            </div>
+            <div class="form-group">
+                <label><span>Custom CSS <small>Style your dashboard.</small></span>
+                    <textarea class="form-control" placeholder="#main_header{background:#b59f00}" detail="css"></textarea>
+                </label>
+            </div>
+        </div>
+        <input type="hidden" name="details">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-success">Save changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!--Videos List Window-->
+<div class="modal full fade" id="videos_viewer" tabindex="-1" role="dialog" aria-labelledby="videos_viewerLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="videos_viewerLabel"><i class="fa fa-film"></i> &nbsp; Videos</h4>
+      </div>
+      <div class="modal-body"></div>
+      <div class="modal-footer">
+          <div class="pull-left">
+              <a class="btn btn-danger delete_selected"><i class="fa fa-trash-o"></i> &nbsp; Delete selected</a>
+          </div>
+        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!--Event File Window-->
+<div class="modal full fade dark" id="video_viewer" tabindex="-1" role="dialog" aria-labelledby="video_viewerLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="video_viewerLabel"><i class="fa fa-play-circle"></i> &nbsp; <span></span></h4>
+      </div>
+      <div class="modal-body text-center"></div>
+      <div class="modal-footer">
+        <a class="btn btn-danger pull-left" video="delete" data-dismiss="modal">Delete</a>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <a class="btn btn-primary download_link"><i class="fa fa-download"></i> &nbsp; Save</a>
+        <a class="btn btn-primary" monitor="download" host="dropbox"><i class="fa fa-dropbox"></i> &nbsp; Dropbox</a>
+      </div>
+    </div>
+  </div>
+</div>
+<!--Add Monitor Window-->
+<div class="modal fade" id="add_monitor" tabindex="-1" role="dialog" aria-labelledby="add_monitorLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="add_monitorLabel"><i class="fa fa-plus"></i> &nbsp; <span>Add</span> Monitor &nbsp; <small>Monitor ID : <t class="edit_id"></t></small></h4>
+      </div>
+      <div class="modal-body">
+          <div class="text-center msg"></div>
+        <div class="form-group-group grey">
+          <h4>Identity</h4>
+            <div class="form-group">
+            <label><span>Mode</span>
+                <select class="form-control" name="mode">
+                    <option value="stop">Disabled</option>  
+                    <option value="start">Watch Only</option>  
+                    <option value="record">Record</option>  
+                </select>
+            </label>
+            </div>
+              <div class="form-group" style="display:none">
+                <label><span>Monitor ID <small>No spaces or special characters.</small></span>
+                    <input class="form-control" name="mid">
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Name</span>
+                    <input class="form-control" name="name">
+                </label>
+              </div>
+          </div>
+<!--     START of Input     -->
+          <div class="form-group-group forestgreen">
+          <h4>Input</h4>
+              <div class="row">
+                  <div class="form-group col-md-6">
+                    <label><span>Input Type</span>
+                        <select class="form-control" name="type">
+                            <option value="jpeg">JPEG</option>  
+                            <option value="mjpeg">MJPEG</option>  
+                            <option value="h264">H.264</option>  
+                            <option value="socket">Shinobi Streamer</option>  
+                            <option value="local">Local</option>  
+                        </select>
+                    </label>
+                  </div>
+                  <div class="form-group col-md-6 h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
+                    <label><span>Connection Type</span>
+                        <select class="form-control" name="protocol">
+                            <option value="http">HTTP</option>  
+                            <option value="https">HTTPS</option>  
+                            <option value="rtsp">RTSP</option>  
+                        </select>
+                    </label>
+                  </div>
+              </div>
+              <div class="row h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
+                  <div class="form-group col-md-6">
+                    <label><span>Username</span>
+                    <input class="form-control" detail="muser" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label><span>Password</span>
+                    <input class="form-control" type="password" detail="mpass" placeholder="">
+                    </label>
+                  </div>
+              </div>
+              <div class="row h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
+                  <div class="form-group col-md-9">
+                    <label><span>Host</span>
+                    <input class="form-control" name="host" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group col-md-3">
+                    <label><span>Port</span>
+                    <input class="form-control" name="port" placeholder="80">
+                    </label>
+                  </div>
+              </div>
+              <div class="form-group h_t_input h_t_h264 h_t_jpeg h_t_mjpeg h_t_local">
+                <label><span>Path</span>
+                <input class="form-control" name="path" placeholder="/videostream.cgi?1">
+                </label>
+              </div>
+              <div class="form-group h_t_input h_t_socket h_t_jpeg h_t_mjpeg">
+                <label><span>Monitor Capture Rate <small>(FPS)</small></span>
+                <input class="form-control" detail="sfps">
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Custom Input Flags</span>
+                <input class="form-control" detail="cust_input" placeholder="">
+                </label>
+              </div>
+          </div>
+<!--     END of Input     -->
+<!--     START of Stream     -->
+          <div class="form-group-group navy">
+          <h4>Stream</h4>
+              <div class="form-group">
+                <label><span>Stream Type</span>
+                    <select class="form-control" detail="stream_type">
+                        <option value="b64" selected>Base64</option>
+                        <option value="mjpeg">MJPEG</option>
+                        <option value="hls">HLS (Experimental)</option>
+                    </select>
+                </label>
+              </div>
+              <div class="h_st_input h_st_hls">
+                  <div class="row">
+                      <div class="form-group col-md-6">
+                        <label><span>HLS Video Encoder</span>
+                            <select class="form-control" detail="stream_vcodec">
+                                <option value="libx264" selected>libx264</option>
+                                <option value="libx265">libx265</option>
+                                <option value="copy">copy</option>
+                            </select>
+                        </label>
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label><span>HLS Audio Encoder</span>
+                            <select class="form-control" detail="stream_acodec">
+                                <option value="no" selected>No Audio</option>
+                                <option value="" selected>Auto</option>
+                                <option value="aac">aac</option>
+                                <option value="ac3">ac3</option>
+                                <option value="libmp3lame">libmp3lame</option>
+                                <option value="copy">copy</option>
+                            </select>
+                        </label>
+                      </div>
+                  </div>
+                  <div class="form-group">
+                    <label><span>HLS Segment Length <small>In Seconds</small></span>
+                        <input class="form-control" detail="hls_time" placeholder="3">
+                    </label>
+                  </div>
+              </div>
+              <div class="row">
+                  <div class="form-group col-md-6">
+                    <label><span>Stream Quality <small>1 is High, 23 is Low</small></span>
+                    <input class="form-control" placeholder="23" detail="stream_quality">
+                    </label>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label><span>Stream Rate <small>(FPS)</small></span>
+                    <input class="form-control" detail="stream_fps" placeholder="1">
+                    </label>
+                  </div>
+              </div>
+              <div class="row">
+                  <div class="form-group col-md-6">
+                    <label><span>Stream Width</span>
+                    <input class="form-control" type="number" min="1" detail="stream_scale_x" placeholder="640">
+                    </label>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label><span>Stream Height</span>
+                    <input class="form-control" type="number" min="1" detail="stream_scale_y" placeholder="480">
+                    </label>
+                  </div>
+              </div>
+              <div class="form-group">
+                <label><span>Stream Video Filter</span>
+                <input class="form-control" detail="svf">
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Custom Stream Flags</span>
+                <input class="form-control" detail="stream_flags">
+                </label>
+              </div>
+          </div>
+<!--     END of Stream     -->
+<!--     Start of Record     -->
+          <div class="form-group-group red h_m_input h_m_record">
+          <h4>Recording</h4>
+              <div class="form-group">
+                <label><span>Record File Type</span>
+                    <select class="form-control" name="ext">
+                        <option value="webm">WebM (libvpx)</option>  
+                        <option value="mp4">MP4 (copy, libx264, libx265)</option>  
+    <!--                    <option value="mkv">MKV</option>  -->
+                    </select>
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Video Codec</span>
+                    <select class="form-control" detail="vcodec">
+                        <option value="default" selected>Default</option>
+                        <option value="none">Auto</option>
+                        <optgroup label="WebM">
+                            <option value="libvpx">libvpx (Default)</option>
+                            <option value="libvpx-vp9">libvpx-vp9</option>
+                        </optgroup>
+                        <optgroup label="MP4">
+                            <option value="libx265">libx265</option>
+                            <option value="libx264">libx264 (Default)</option>
+                            <option value="copy">copy</option>
+                        </optgroup>
+                    </select>
+                </label>
+              </div>
+              <div class="form-group h_f_input h_f_mp4">
+                <label><span>crf</span>
+                <input class="form-control" detail="crf" placeholder="">
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Audio Codec</span>
+                    <select class="form-control" detail="acodec">
+                        <option value="default" selected>Default</option>
+                        <option value="none">Auto</option>
+                        <option value="no">No Audio</option>
+                        <optgroup label="WebM">
+                            <option value="libvorbis">libvorbis (Default)</option>
+                            <option value="libopus">libopus</option>
+                        </optgroup>
+                        <optgroup label="MP4">
+                            <option value="libmp3lame">libmp3lame</option>
+                            <option value="aac">aac (Default)</option>
+                            <option value="ac3">ac3</option>
+                            <option value="copy">copy</option>
+                        </optgroup>
+                    </select>
+                </label>
+              </div>
+               <div class="form-group">
+                <label><span>Video Record Rate <small>(FPS)</small></span>
+                <input class="form-control" name="fps">
+                </label>
+              </div>
+              <div class="row">
+                  <div class="form-group col-md-6">
+                    <label><span>Record Width</span>
+                    <input class="form-control" type="number" min="1" name="width">
+                    </label>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label><span>Record Height</span>
+                    <input class="form-control" type="number" min="1" name="height">
+                    </label>
+                  </div>
+              </div>
+              <div class="form-group">
+                  <label><span>Timestamp <small>Does not work with copy encoder</small></span>
+                    <select class="form-control" detail="timestamp">
+                        <option value="1">Yes</option>  
+                        <option value="0" selected>No</option>  
+                    </select>
+                  </label>
+              </div>
+              <div class="form-group">
+                <label><span>Recording Segment Interval <small>in minutes</small></span>
+                <input class="form-control" detail="cutoff" placeholder="15">
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Record Video Filter</span>
+                <input class="form-control" detail="vf">
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Custom Recording Flags</span>
+                <input class="form-control" detail="cust_record" placeholder="">
+                </label>
+              </div>
+          </div>
+<!--     END of Record     -->
+          <div class="form-group-group blue">
+          <h4>Control</h4>
+              <div class="form-group">
+                <label><span>Controllable</span>
+                    <select class="form-control" detail="control">
+                        <option value="0">No</option>  
+                        <option value="1">Yes</option>  
+                    </select>
+                </label>
+              </div>
+              <div class="h_c_input h_c_1">
+                  <div class="form-group">
+                    <label><span>Control <small>Monitor Need a Stop URL?</small></span>
+                        <select class="form-control" detail="control_stop">
+                            <option value="0">No</option>  
+                            <option value="1">Yes</option>
+                        </select>
+                    </label>
+                  </div>
+                  <div class="form-group h_cs_input h_cs_1">
+                    <label><span>Control URL Stop Timeout <small>Run stop URL after X milliseconds</small></span>
+                    <input class="form-control" detail="control_url_stop_timeout" placeholder="1000">
+                    </label>
+                  </div>
+                  <div class="form-group h_c_input h_c_1">
+                    <label><span>Control Center <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_center" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group h_c_input h_c_1">
+                    <label><span>Control Left <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_left" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group h_cs_input h_cs_1">
+                    <label><span>Control Left Stop <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_left_stop" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group h_c_input h_c_1">
+                    <label><span>Control Right <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_right" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group h_cs_input h_cs_1">
+                    <label><span>Control Right Stop <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_right_stop" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group h_c_input h_c_1">
+                    <label><span>Control Up <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_up" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group h_cs_input h_cs_1">
+                    <label><span>Control Up Stop <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_up_stop" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group h_c_input h_c_1">
+                    <label><span>Control Down <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_down" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group h_cs_input h_cs_1">
+                    <label><span>Control Down Stop <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_down_stop" placeholder="">
+                    </label>
+                  </div>
+              </div>
+          </div>
+          <div class="form-group-group green">
+          <h4>Logging</h4>
+              <div class="row">
+                  <div class="form-group col-md-6">
+                      <label><span>Log Level</span>
+                        <select class="form-control" detail="loglevel">
+                            <option value="quiet">Silent</option>
+                            <option value="fatal">Fatal</option>
+                            <option value="error" selected>on Error</option>
+                            <option value="warning">All Warnings</option>
+                            <option value="debug">Debug</option>
+                        </select>
+                      </label>
+                  </div>
+                  <div class="form-group col-md-6">
+                      <label><span>Save Log in SQL <small>This can fill up quickly.</small></span>
+                        <select class="form-control" detail="sqllog">
+                            <option value="0" selected>No</option>  
+                            <option value="1">Yes</option>  
+                        </select>
+                      </label>
+                  </div>
+              </div>
+              <div class="form-group" style="display:none">
+                <input class="form-control" name="details" value="{}">
+                <input class="form-control" name="shto" value="[]">
+                <input class="form-control" name="shfr" value="[]">
+              </div>
+          </div>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-danger pull-left" monitor="delete" data-dismiss="modal">Delete</a>
+        <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-success">Save changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!--Confirmation Window-->
+<div class="modal fade" id="confirm_window" tabindex="-1" role="dialog" aria-labelledby="confirm_windowLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="confirm_windowLabel"><i class="fa fa-exclamation-circle"></i> &nbsp; <span>Confirmation</span></h4>
+      </div>
+      <div class="modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success confirmaction">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!--Dropbox Library, Change data-app-key to your app key. -->
+<script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="<%= $user.DropboxAppKey %>"></script>
+<!--Dropbox End-->
+<script src="libs/js/pnotify.custom.min.js"></script>
+<script src="libs/js/moment.js"></script>
+<script src="libs/js/livestamp.min.js"></script>
+<script src="libs/js/placeholder.js"></script>
+<script src="libs/js/bootstrap.min.js"></script>
+<script src="libs/js/bootstrap-table.min.js"></script>
+<script src="libs/js/socket.io.js"></script>
+<script src="libs/js/fullcalendar.min.js"></script>
+<script src="libs/js/hls.min.js"></script>
+<script src="libs/js/menu.js"></script>
+<script src="libs/js/main.js"></script>

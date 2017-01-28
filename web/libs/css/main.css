@@ -17,11 +17,11 @@ img{max-width:100%}
 .display-table{display:table;width:100%}
 .display-table-cell{display:table-cell}
 .small{font-size:80%}
-.monitor_item img,.monitor_item iframe,.monitor_item canvas{width:100%;height:300px;border:0;}
-.monitor_item{position:relative;padding:0;}
-.monitor_item.selected img,.monitor_item.selected canvas{height:600px}
+.monitor_item .stream-element{width:100%;height:300px;border:0;}
+.monitor_item{position:relative;padding:0;background:#111;}
+.monitor_item.selected .stream-element{height:600px}
 .monitor_item.selected .fa-expand:before{content:"\f066"}
-.monitor_item .hud{width:100%;height:100%;opacity:0.1;transition:0.2s}
+.monitor_item .hud{width:100%;height:100%;opacity:0;transition:0.2s}
 .monitor_item.col-md-4 .hud .side-menu{display:none}
 .monitor_item.col-md-8 .hud .side-menu{opacity:0.1}
 .monitor_item.col-md-8 .hud:hover .side-menu{opacity:1}
@@ -45,6 +45,23 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
     .modal.full .modal-dialog{width:calc(100% - 10px)!important;margin: 30px auto;}
 }
 
+.form-group-group{padding:0 10px 10px 10px;overflow:hidden;margin-bottom:15px;border-radius:5px;border:1px solid #ddd}
+.form-group-group:last-child{margin-bottom:0}
+.form-group-group h4{margin:0 -10px 15px -10px;padding:15px;background:#ddd;}
+.form-group-group.red{border-color:#d9534f}
+.form-group-group.red h4{background:#d9534f;color:#fff}
+.form-group-group.blue{border-color:#337ab7}
+.form-group-group.blue h4{background:#337ab7;color:#fff}
+.form-group-group.navy{border-color:#31708f}
+.form-group-group.navy h4{background:#31708f;color:#fff}
+.form-group-group.green{border-color:#449d44}
+.form-group-group.green h4{background:#449d44;color:#fff}
+.form-group-group.forestgreen{border-color:#1e4046}
+.form-group-group.forestgreen h4{background:#1e4046;color:#fff}
+.form-group-group.orange{border-color:#f0ad4e}
+.form-group-group.orange h4{background:#f0ad4e;color:#fff}
+.form-group-group.grey{border-color:#777}
+.form-group-group.grey h4{background:#777;color:#fff}
 .videos_list .title{font-size:12pt;padding:0 10px}
 [status="1"] .btn[video="launch"],[data-status="1"] .btn[video="launch"]{background:#337ab7;border-color:#337ab7}
 [status="2"] .btn[video="launch"],[data-status="2"] .btn[video="launch"]{background:#a59100;border-color:#a59100}
