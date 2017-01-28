@@ -309,7 +309,8 @@
       </div>
       <div class="modal-body">
           <div class="text-center msg"></div>
-        <div class="form-group-group">
+        <div class="form-group-group grey">
+          <h4>Identity</h4>
             <div class="form-group">
             <label><span>Mode</span>
                 <select class="form-control" name="mode">
@@ -331,7 +332,8 @@
               </div>
           </div>
 <!--     START of Input     -->
-          <div class="form-group-group">
+          <div class="form-group-group forestgreen">
+          <h4>Input</h4>
               <div class="row">
                   <div class="form-group col-md-6">
                     <label><span>Input Type</span>
@@ -408,7 +410,8 @@
           </div>
 <!--     END of Input     -->
 <!--     START of Stream     -->
-          <div class="form-group-group">
+          <div class="form-group-group navy">
+          <h4>Stream</h4>
               <div class="form-group">
                 <label><span>Stream Type</span>
                     <select class="form-control" detail="stream_type">
@@ -477,10 +480,16 @@
                 <input class="form-control" detail="svf">
                 </label>
               </div>
+              <div class="form-group">
+                <label><span>Custom Stream Flags</span>
+                <input class="form-control" detail="stream_flags">
+                </label>
+              </div>
           </div>
 <!--     END of Stream     -->
 <!--     Start of Record     -->
-          <div class="form-group-group h_m_input h_m_record">
+          <div class="form-group-group red h_m_input h_m_record">
+          <h4>Recording</h4>
               <div class="form-group">
                 <label><span>Record File Type</span>
                     <select class="form-control" name="ext">
@@ -561,7 +570,8 @@
               </div>
           </div>
 <!--     END of Record     -->
-          <div class="form-group-group">
+          <div class="form-group-group blue">
+          <h4>Control</h4>
               <div class="form-group">
                 <label><span>Controllable</span>
                     <select class="form-control" detail="control">
@@ -631,28 +641,29 @@
                   </div>
               </div>
           </div>
-          <div class="form-group-group">
-          <div class="row">
-          <div class="form-group col-md-6">
-              <label><span>Log Level</span>
-                <select class="form-control" detail="loglevel">
-                    <option value="quiet">Silent</option>
-                    <option value="fatal">Fatal</option>
-                    <option value="error" selected>on Error</option>
-                    <option value="warning">All Warnings</option>
-                    <option value="debug">Debug</option>
-                </select>
-              </label>
-          </div>
-          <div class="form-group col-md-6">
-              <label><span>Save Log in SQL <small>This can fill up quickly.</small></span>
-                <select class="form-control" detail="sqllog">
-                    <option value="0" selected>No</option>  
-                    <option value="1">Yes</option>  
-                </select>
-              </label>
-          </div>
-          </div>
+          <div class="form-group-group green">
+          <h4>Logging</h4>
+              <div class="row">
+                  <div class="form-group col-md-6">
+                      <label><span>Log Level</span>
+                        <select class="form-control" detail="loglevel">
+                            <option value="quiet">Silent</option>
+                            <option value="fatal">Fatal</option>
+                            <option value="error" selected>on Error</option>
+                            <option value="warning">All Warnings</option>
+                            <option value="debug">Debug</option>
+                        </select>
+                      </label>
+                  </div>
+                  <div class="form-group col-md-6">
+                      <label><span>Save Log in SQL <small>This can fill up quickly.</small></span>
+                        <select class="form-control" detail="sqllog">
+                            <option value="0" selected>No</option>  
+                            <option value="1">Yes</option>  
+                        </select>
+                      </label>
+                  </div>
+              </div>
               <div class="form-group" style="display:none">
                 <input class="form-control" name="details" value="{}">
                 <input class="form-control" name="shto" value="[]">
