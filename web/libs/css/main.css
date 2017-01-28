@@ -45,6 +45,8 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
     .modal.full .modal-dialog{width:calc(100% - 10px)!important;margin: 30px auto;}
 }
 
+.form-group-group{padding:10px;margin-bottom:15px;border-radius:5px;border:1px solid #ddd}
+.form-group-group:last-child{margin-bottom:0}
 .videos_list .title{font-size:12pt;padding:0 10px}
 [status="1"] .btn[video="launch"],[data-status="1"] .btn[video="launch"]{background:#337ab7;border-color:#337ab7}
 [status="2"] .btn[video="launch"],[data-status="2"] .btn[video="launch"]{background:#a59100;border-color:#a59100}
