@@ -978,7 +978,6 @@ var tx;
                         break;
                         case'watch_off':
                             if(!d.ke){d.ke=cn.ke;};cn.leave('MON_'+d.id);s.camera(d.ff,d,cn,tx);
-                            tx({f:'monitor_watch_off',id:d.id,cnid:cn.id});
                             s.tx({viewers:d.ob,ke:d.ke,id:d.id},'MON_'+d.id)
                         break;
                         case'start':case'stop':

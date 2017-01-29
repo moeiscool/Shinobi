@@ -70,7 +70,12 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                     $('[data-ke="'+d.ke+'"][data-mid="'+d.mid+'"][data-file="'+d.filename+'"]').attr('mid',d.mid).attr('ke',d.ke).attr('status',d.status).attr('file',d.filename);
                 }
             break;
+            case'signal':
+                d.e=$('#monitor_live_'+d.id+' .signal').addClass('btn-success').removeClass('btn-danger');
+                clearTimeout($.ccio.mon[d.id]._signal);$.ccio.mon[d.id]._signal=setTimeout(function(){d.e.addClass('btn-danger').removeClass('btn-success');},10000)
+            break;
             case'signal-check':
+                try{
                 d.mon=$.ccio.mon[d.id];d.p=$('#monitor_live_'+d.id);
                 d.check={c:0};
                 d.fn=function(){
@@ -91,12 +96,17 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                                     }
                                 }else{
                                     delete(d.check)
+                                    $.ccio.init('signal',d);
                                 }
                             });
                         },d.speed)
                     });
                 }
                 d.fn();
+                }catch(er){
+                    console.log('signal-check',er)
+                    clearInterval($.ccio.mon[d.id].signal);delete($.ccio.mon[d.id].signal);
+                }
             break;
         }
         return k.tmp;
@@ -438,17 +448,14 @@ $.ccio.ws.on('f',function (d){
             d.e.find('.monitor_mode').text(d.mode)
         break;
         case'monitor_watch_off':case'monitor_stopping':
-            clearInterval($.ccio.mon[d.id].signal);
             d.o=$.ccio.op().watch_on;if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=0;$.ccio.op('watch_on',d.o);
             if($.ccio.mon[d.id]){
                 $.ccio.mon[d.id].watch=0;
-                if(d.cnid===$.ccio.ws.id){
-                    $('#monitor_live_'+d.id).remove();
-                }
+                $('#monitor_live_'+d.id).remove();
             }
         break;
         case'monitor_watch_on':
-            $.ccio.mon[d.id].signal=setInterval(function(){$.ccio.init('signal-check',{id:d.id,ke:d.ke})},30000);
+            $.ccio.mon[d.id].signal=setInterval(function(){$.ccio.init('signal-check',{id:d.id,ke:d.ke})},10000);
             d.o=$.ccio.op().watch_on;if(!d.o){d.o={}};if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=1;$.ccio.op('watch_on',d.o);
             $.ccio.mon[d.id].watch=1;
             d.e=$('#monitor_live_'+d.id);
@@ -490,8 +497,7 @@ $.ccio.ws.on('f',function (d){
             };
             image.src='data:image/jpeg;base64,'+d.frame;
             $.ccio.mon[d.id].last_frame='data:image/jpeg;base64,'+d.frame;
-            d.e=$('#monitor_live_'+d.id+' .signal').addClass('btn-success').removeClass('btn-danger');
-            clearTimeout($.ccio.mon[d.id]._signal);$.ccio.mon[d.id]._signal=setTimeout(function(){d.e.addClass('btn-danger').removeClass('btn-success');},10000)
+            $.ccio.init('signal',d)
         break;
     }
     delete(d);
@@ -928,3 +934,15 @@ $('body')
     e.c.attr('height',e.e.height());
     e.c.attr('width',e.e.width());
 })
+
+document.addEventListener("visibilitychange",function(e) {
+    if (document.hidden === false) {
+        $('video').each(function(n,v){
+            v.pause()
+        });
+    } else {
+        $('video').each(function(n,v){
+            v.play()
+        });
+    }
+});
