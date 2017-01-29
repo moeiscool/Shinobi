@@ -1579,3 +1579,8 @@ s.disk=function(x){
     });
 };
 s.disk_check=setInterval(function(){s.disk()},60000*20);
+s.beat=function(){
+    setTimeout(s.beat, 8000);
+    io.sockets.emit('ping',{beat:1});
+}
+s.beat();

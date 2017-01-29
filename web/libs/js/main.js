@@ -276,6 +276,9 @@ $.ccio.ws.on('connect',function (d){
     $.ccio.cx({f:'init',ke:$user.ke,auth:$user.auth_token,uid:$user.uid})
 })
 PNotify.prototype.options.styling = "fontawesome";
+$.ccio.ws.on('ping', function(d){
+    $.ccio.ws.emit('pong',{beat:1});
+});
 $.ccio.ws.on('f',function (d){
     if(d.f!=='monitor_frame'&&d.f!=='os'&&d.f!=='video_delete'){console.log(d);}
     if(d.viewers){
@@ -937,15 +940,3 @@ $('body')
     e.c.attr('height',e.e.height());
     e.c.attr('width',e.e.width());
 })
-
-document.addEventListener("visibilitychange",function(e) {
-    if (document.hidden === false) {
-        $('video').each(function(n,v){
-            v.play()
-        });
-    } else {
-        $('video').each(function(n,v){
-            v.pause()
-        });
-    }
-});
