@@ -190,7 +190,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                         tmp+='<iframe class="stream-element"></iframe>';
                     break;
                     case'hls':
-                        tmp+='<video class="stream-element"></video>';
+                        tmp+='<video class="stream-element" autoplay></video>';
                     break;
                     default://base64
                         tmp+='<canvas class="stream-element"></canvas>';
@@ -403,7 +403,7 @@ $.ccio.ws.on('f',function (d){
             d.e=$('[mid="'+d.mon.mid+'"][ke="'+d.mon.ke+'"]');d.ee=d.e.find('.stream-element');
             switch(d.mon.details.stream_type){
                 case'hls':
-                    d.ee.after('<video class="stream-element"></video>').remove()
+                    d.ee.after('<video class="stream-element" autoplay></video>').remove()
                 break;
                 case'mjpeg':
                     d.ee.after('<iframe class="stream-element"></iframe>').remove()
@@ -470,9 +470,7 @@ $.ccio.ws.on('f',function (d){
                     var video = $('#monitor_live_'+d.id+' .stream-element')[0];
                     if (navigator.userAgent.match(/(iPod|iPhone|iPad|Safari)/)&&!navigator.userAgent.match('Chrome')) {
                         video.src=d.url;
-                        video.onload=function(){
-                            video.play();
-                        }
+                        video.play();
                     }else{
                         var hls = new Hls();
                         hls.loadSource(d.url);
@@ -489,7 +487,7 @@ $.ccio.ws.on('f',function (d){
             d.signal=parseFloat(d.d.signal_check);
             if(!d.signal||d.signal==NaN){d.signal=10;};d.signal=d.signal*1000;
             if(d.signal>0){
-                $.ccio.mon[d.id].signal=setInterval(function(){$.ccio.init('signal-check',{id:d.id,ke:d.ke})},d.signal);
+//                $.ccio.mon[d.id].signal=setInterval(function(){$.ccio.init('signal-check',{id:d.id,ke:d.ke})},d.signal);
             }
         break;
         case'monitor_mjpeg_url':
