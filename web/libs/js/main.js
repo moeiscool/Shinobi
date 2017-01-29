@@ -468,7 +468,7 @@ $.ccio.ws.on('f',function (d){
                 case'hls':
                     d.url=$user.auth_token+'/hls/'+d.ke+'/'+d.id+'/s.m3u8';
                     var video = $('#monitor_live_'+d.id+' .stream-element')[0];
-                    if (navigator.userAgent.match(/(iPod|iPhone|iPad|Safari)/)&&!navigator.userAgent.match('Chrome')) {
+                    if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)||(navigator.userAgent.match(/(Safari)/)&&!navigator.userAgent.match('Chrome'))) {
                         video.src=d.url;
                         video.play();
                     }else{
