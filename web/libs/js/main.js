@@ -70,8 +70,81 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                     $('[data-ke="'+d.ke+'"][data-mid="'+d.mid+'"][data-file="'+d.filename+'"]').attr('mid',d.mid).attr('ke',d.ke).attr('status',d.status).attr('file',d.filename);
                 }
             break;
+            case'signal-check':
+                d.mon=$.ccio.mon[d.id];d.p=$('#monitor_live_'+d.id);
+                $.ccio.mon[d.id].check={c:0};
+                d.fn=function(){
+                    if(!d.speed){d.speed=1000}
+                    $.ccio.snapshot(d,function(e,url){
+                        $.ccio.mon[d.id].check.f=url;
+                        setTimeout(function(){
+                            $.ccio.snapshot(d,function(e,url){
+                                if($.ccio.mon[d.id].check.f===url){
+                                    if($.ccio.mon[d.id].check.c<3){
+                                        ++$.ccio.mon[d.id].check.c;
+                                        setTimeout(function(){
+                                            d.fn();
+                                        },d.speed)
+                                    }else{
+                                        delete($.ccio.mon[d.id].check)
+                                        $.ccio.cx({f:'monitor',ff:'watch_on',id:d.id});
+                                    }
+                                }else{
+                                    delete($.ccio.mon[d.id].check)
+                                }
+                            });
+                        },d.speed)
+                    });
+                }
+                d.fn();
+            break;
         }
         return k.tmp;
+    }
+    $.ccio.snapshot=function(e,cb){
+        var image_data;
+        switch(JSON.parse(e.mon.details).stream_type){
+            case'hls':
+                $('#temp').html('<canvas></canvas>')
+                var c = $('#temp canvas')[0];
+                var img = e.p.find('video')[0];
+//                img.pause();
+                c.width = img.videoWidth;
+                c.height = img.videoHeight;
+                var ctx = c.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                image_data=atob(c.toDataURL('image/jpeg').split(',')[1]);
+//                img.play();
+            break;
+            case'mjpeg':
+                $('#temp').html('<canvas></canvas>')
+                var c = $('#temp canvas')[0];
+                var img = $('img',e.p.find('.stream-element').contents())[0];
+                c.width = img.width;
+                c.height = img.height;
+                var ctx = c.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                image_data=atob(c.toDataURL('image/jpeg').split(',')[1]);
+            break;
+            case'b64':
+                image_data = atob(e.mon.last_frame.split(',')[1]);
+            break;
+        }
+        var arraybuffer = new ArrayBuffer(image_data.length);
+        var view = new Uint8Array(arraybuffer);
+        for (var i=0; i<image_data.length; i++) {
+            view[i] = image_data.charCodeAt(i) & 0xff;
+        }
+        try {
+            var blob = new Blob([arraybuffer], {type: 'application/octet-stream'});
+        } catch (e) {
+            var bb = new (window.WebKitBlobBuilder || window.MozBlobBuilder);
+            bb.append(arraybuffer);
+            var blob = bb.getBlob('application/octet-stream');
+        }
+        var url = (window.URL || window.webkitURL).createObjectURL(blob);
+        cb(url,image_data);
+        URL.revokeObjectURL(url)
     }
     $.ccio.tm=function(x,d,z,k){
         var tmp='';if(!d){d={}};if(!k){k={}};
@@ -90,6 +163,17 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             case 2://monitor stream
                 try{k.d=JSON.parse(d.details);}catch(er){k.d=d.details;}
                 tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" class="monitor_item glM'+d.mid+' col-md-4">';
+                switch(d.mode){
+                    case'stop':
+                        k.mode='Disabled'
+                    break;
+                    case'record':
+                        k.mode='Record'
+                    break;
+                    case'start':
+                        k.mode='Watch Only'
+                    break;
+                }
                 switch(k.d.stream_type){
                     case'mjpeg':
                         tmp+='<iframe class="stream-element"></iframe>';
@@ -101,7 +185,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                         tmp+='<canvas class="stream-element"></canvas>';
                     break;
                 }
-                tmp+='<div class="hud super-center"><div class="side-menu logs scrollable"></div><div class="side-menu videos_monitor_list glM'+d.mid+' scrollable"><ul></ul></div><div class="top_bar"><span class="badge badge-sm badge-danger"><i class="fa fa-eye"></i> <span class="viewers"></span></span></div><div class="bottom_bar"><span class="monitor_name">'+d.name+'</span><div class="pull-right btn-group"><a title="Snapshot" monitor="snapshot" class="btn btn-sm btn-primary"><i class="fa fa-camera"></i></a> <a title="Show Logs" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-sm btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="Enlarge" monitor="control_toggle" class="btn btn-sm btn-default"><i class="fa fa-arrows"></i></a> <a title="Status" class="btn btn-sm btn-danger signal" monitor="watch_on"><i class="fa fa-circle"></i></a> <a title="Calendar" monitor="calendar" class="btn btn-sm btn-default"><i class="fa fa-calendar"></i></a> <a title="Videos List" monitor="videos_table" class="btn btn-sm btn-default"><i class="fa fa-film"></i></a> <a class="btn btn-sm btn-default" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Enlarge" monitor="bigify" class="btn btn-sm btn-default"><i class="fa fa-expand"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a></div></div></div></div></div>';
+                tmp+='<div class="hud super-center"><div class="side-menu logs scrollable"></div><div class="side-menu videos_monitor_list glM'+d.mid+' scrollable"><ul></ul></div><div class="top_bar"><span class="badge badge-sm badge-danger"><i class="fa fa-eye"></i> <span class="viewers"></span></span></div><div class="bottom_bar"><span class="monitor_name">'+d.name+'</span> - <b class="monitor_mode">'+k.mode+'</b><div class="pull-right btn-group"><a title="Snapshot" monitor="snapshot" class="btn btn-sm btn-primary"><i class="fa fa-camera"></i></a> <a title="Show Logs" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-sm btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="Enlarge" monitor="control_toggle" class="btn btn-sm btn-default"><i class="fa fa-arrows"></i></a> <a title="Status Indicator, Click to Recconnect" class="btn btn-sm btn-danger signal" monitor="watch_on"><i class="fa fa-circle"></i></a> <a title="Calendar" monitor="calendar" class="btn btn-sm btn-default"><i class="fa fa-calendar"></i></a> <a title="Videos List" monitor="videos_table" class="btn btn-sm btn-default"><i class="fa fa-film"></i></a> <a class="btn btn-sm btn-default" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Enlarge" monitor="bigify" class="btn btn-sm btn-default"><i class="fa fa-expand"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a></div></div></div></div></div>';
             break;
             case 3://api key row
                 tmp+='<tr api_key="'+d.code+'"><td class="code">'+d.code+'</td><td class="ip">'+d.ip+'</td><td class="time">'+d.time+'</td><td><a class="delete btn btn-xs btn-danger">&nbsp;<i class="fa fa-trash"></i>&nbsp;</a></td></tr>';
@@ -278,7 +362,7 @@ $.ccio.ws.on('f',function (d){
 //            switch(d.mode){case'start':d.mode='Watch';break;case'record':d.mode='Record';break;}
 //            new PNotify({title:'Monitor Starting',text:'Monitor <b>'+d.mid+'</b> is now running in mode <b>'+d.mode+'</b>',type:'success'});
             d.e=$('#monitor_live_'+d.mid)
-            if(d.e.length>0){d.e.find('[monitor="watch_on"]').click()}
+            if(d.e.length>0){$.ccio.cx({f:'monitor',ff:'watch_on',id:d.mid})}
         break;
         case'monitor_snapshot':
             switch(d.snapshot_format){
@@ -317,7 +401,6 @@ $.ccio.ws.on('f',function (d){
                     d.ee.after('<canvas class="stream-element"></canvas>').remove()
                 break;
             }
-            d.e.find('[monitor="watch_on"]').click()
             d.e.resize();
             d.e=$('#monitor_live_'+d.mid);
             if(d.mon.details.control=="1"){d.e.find('[monitor="control_toggle"]').show()}else{d.e.find('.pad').remove();d.e.find('[monitor="control_toggle"]').hide()}
@@ -340,10 +423,22 @@ $.ccio.ws.on('f',function (d){
             d.e=$('.glM'+d.mon.mid);
             d.e.find('.monitor_name').text(d.mon.name)
             d.e.find('.monitor_mid').text(d.mon.mid)
-            d.e.find('.monitor_ext').text(d.mon.ext)
-            d.e.find('.monitor_mode').text(d.mon.mode)
+            d.e.find('.monitor_ext').text(d.mon.ext);
+                switch(d.mon.mode){
+                    case'stop':
+                        d.mode='Disabled'
+                    break;
+                    case'record':
+                        d.mode='Record'
+                    break;
+                    case'start':
+                        d.mode='Watch Only'
+                    break;
+                }
+            d.e.find('.monitor_mode').text(d.mode)
         break;
         case'monitor_watch_off':case'monitor_stopping':
+            clearInterval($.ccio.mon[d.id].signal);
             d.o=$.ccio.op().watch_on;if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=0;$.ccio.op('watch_on',d.o);
             if($.ccio.mon[d.id]){
                 $.ccio.mon[d.id].watch=0;
@@ -353,6 +448,7 @@ $.ccio.ws.on('f',function (d){
             }
         break;
         case'monitor_watch_on':
+            $.ccio.mon[d.id].signal=setInterval(function(){$.ccio.init('signal-check',{id:d.id,ke:d.ke})},30000);
             d.o=$.ccio.op().watch_on;if(!d.o){d.o={}};if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=1;$.ccio.op('watch_on',d.o);
             $.ccio.mon[d.id].watch=1;
             d.e=$('#monitor_live_'+d.id);
@@ -364,7 +460,7 @@ $.ccio.ws.on('f',function (d){
                 case'hls':
                     d.url=$user.auth_token+'/hls/'+d.ke+'/'+d.id+'/s.m3u8';
                     var video = $('#monitor_live_'+d.id+' .stream-element')[0];
-                    if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)) {
+                    if (navigator.userAgent.match(/(iPod|iPhone|iPad|Safari)/)&&!navigator.userAgent.match('Chrome')) {
                         video.src=d.url;
                         video.onload=function(){
                             video.play();
@@ -646,49 +742,9 @@ $('body')
     e.e=$(this),e.a=e.e.attr('monitor'),e.p=e.e.parents('[mid]'),e.ke=e.p.attr('ke'),e.mid=e.p.attr('mid'),e.mon=$.ccio.mon[e.mid]
     switch(e.a){
         case'snapshot':
-            var image_data;
-            switch(JSON.parse(e.mon.details).stream_type){
-                case'hls':
-                    $('#temp').html('<canvas></canvas>')
-                    var c = $('#temp canvas')[0];
-                    var img = e.p.find('video')[0];
-                    img.pause();
-                    c.width = img.videoWidth;
-                    c.height = img.videoHeight;
-                    var ctx = c.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
-                    image_data=atob(c.toDataURL('image/jpeg').split(',')[1]);
-                    img.play();
-                break;
-                case'mjpeg':
-                    $('#temp').html('<canvas></canvas>')
-                    var c = $('#temp canvas')[0];
-                    var img = $('img',e.p.find('.stream-element').contents())[0];
-                    c.width = img.width;
-                    c.height = img.height;
-                    var ctx = c.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
-                    image_data=atob(c.toDataURL('image/jpeg').split(',')[1]);
-                break;
-                case'b64':
-                    image_data = atob(e.mon.last_frame.split(',')[1]);
-                break;
-            }
-            var arraybuffer = new ArrayBuffer(image_data.length);
-            var view = new Uint8Array(arraybuffer);
-            for (var i=0; i<image_data.length; i++) {
-                view[i] = image_data.charCodeAt(i) & 0xff;
-            }
-            try {
-                var blob = new Blob([arraybuffer], {type: 'application/octet-stream'});
-            } catch (e) {
-                var bb = new (window.WebKitBlobBuilder || window.MozBlobBuilder);
-                bb.append(arraybuffer);
-                var blob = bb.getBlob('application/octet-stream');
-            }
-            var url = (window.webkitURL || window.URL).createObjectURL(blob);
-            $('#temp').html('<a href="'+url+'" download="'+$.ccio.init('tf')+'_'+e.ke+'_'+e.mid+'.jpg">a</a>').find('a')[0].click();
-            URL.revokeObjectURL(url)
+            $.ccio.snapshot(e,function(url){
+                $('#temp').html('<a href="'+url+'" download="'+$.ccio.init('tf')+'_'+e.ke+'_'+e.mid+'.jpg">a</a>').find('a')[0].click();
+            });
         break;
         case'control':
             e.a=e.e.attr('control'),e.j=JSON.parse(e.mon.details);

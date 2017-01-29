@@ -813,7 +813,12 @@ var tx;
                                 d.set.push(v+'=?'),d.ar.push(d.form[v]);
                             });
                             sql.query('DELETE FROM API WHERE '+d.set.join(' AND '),d.ar,function(err,r){
-                                if(!err){tx({f:'api_key_deleted',form:d.form});}else{console.log(err)}
+                                if(!err){
+                                    tx({f:'api_key_deleted',form:d.form});
+                                    s.api[xx.auth]=d.form.code;
+                                }else{
+                                    console.log(err)
+                                }
                             })
                         break;
                         case'add':
@@ -1123,21 +1128,27 @@ var tx;
     })
 });
 //Authenticator
+s.api={};
 s.auth=function(xx,x,res,req){
     if(s.group[xx.ke]&&s.group[xx.ke].users&&s.group[xx.ke].users[xx.auth]){
         x();
     }else{
-        sql.query('SELECT * FROM API WHERE code=?',[xx.auth],function(err,r){
-            if(r&&r[0]){
-                x();
-            }else{
-                if(req){
-                    if(!req.ret){req.ret={ok:false}}
-                    req.ret.msg='Not Authorized';
-                    res.send(JSON.stringify(req.ret, null, 3));
+        if(s.api[xx.auth]){
+            x();
+        }else{
+            sql.query('SELECT * FROM API WHERE code=?',[xx.auth],function(err,r){
+                if(r&&r[0]){
+                    s.api[xx.auth]={};
+                    x();
+                }else{
+                    if(req){
+                        if(!req.ret){req.ret={ok:false}}
+                        req.ret.msg='Not Authorized';
+                        res.send(JSON.stringify(req.ret, null, 3));
+                    }
                 }
-            }
-        })
+            })
+        }
     }
 }
 
