@@ -78,6 +78,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             case'signal-check':
                 try{
                 d.mon=$.ccio.mon[d.id];d.p=$('#monitor_live_'+d.id);
+                    try{d.d=JSON.parse(d.mon.details)}catch(er){d.d=d.mon.details;}
                 d.check={c:0};
                 d.fn=function(){
                     if(!d.speed){d.speed=1000}
@@ -92,10 +93,18 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                                             d.fn();
                                         },d.speed)
                                     }else{
+                                        if(d.d.signal_check_log==1){
+                                            d.log={type:'Signal Check',msg:'Failed, Attempting reconnect.'}
+                                            $.ccio.tm(4,d,'#logs,.monitor_item[mid="'+d.id+'"][ke="'+d.ke+'"] .logs')
+                                        }
                                         delete(d.check)
                                         $.ccio.cx({f:'monitor',ff:'watch_on',id:d.id});
                                     }
                                 }else{
+                                    if(d.d.signal_check_log==1){
+                                        d.log={type:'Signal Check',msg:'Success'}
+                                        $.ccio.tm(4,d,'#logs,.monitor_item[mid="'+d.id+'"][ke="'+d.ke+'"] .logs')
+                                    }
                                     delete(d.check)
                                     $.ccio.init('signal',d);
                                 }
@@ -105,7 +114,17 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 }
                 d.fn();
                 }catch(er){
-                    console.log('signal-check',er)
+                    er=er.stack;
+                    d.in=function(x){return er.indexOf(x)>-1}
+                    switch(true){
+                        case d.in("The HTMLImageElement provided is in the 'broken' state."):
+                            delete(d.check)
+                            $.ccio.cx({f:'monitor',ff:'watch_on',id:d.id});
+                        break;
+                        default:
+                            console.log('signal-check',er)
+                        break;
+                    }
                     clearInterval($.ccio.mon[d.id].signal);delete($.ccio.mon[d.id].signal);
                 }
             break;
@@ -159,6 +178,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
     }
     $.ccio.tm=function(x,d,z,k){
         var tmp='';if(!d){d={}};if(!k){k={}};
+        if(d.id&&!d.mid){d.mid=d.id;}
         switch(x){
             case 0://video
                 if(!d.filename){d.filename=moment(d.time).format('YYYY-MM-DDTHH-mm-ss')+'.'+d.ext;}
@@ -201,12 +221,28 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             case 3://api key row
                 tmp+='<tr api_key="'+d.code+'"><td class="code">'+d.code+'</td><td class="ip">'+d.ip+'</td><td class="time">'+d.time+'</td><td><a class="delete btn btn-xs btn-danger">&nbsp;<i class="fa fa-trash"></i>&nbsp;</a></td></tr>';
             break;
+            case 4://log row, draw to global and monitor
+                tmp+='<li class="log-item">'
+                tmp+='<span>'
+                tmp+='<div>'+d.ke+' : <b>'+d.mid+'</b></div>'
+                tmp+='<span>'+d.log.type+'</span>'
+                tmp+='<span class="time livestamp" titel="'+d.time+'"></span>'
+                tmp+='</span>'
+                tmp+='<div class="message">'
+                tmp+=$.ccio.init('jsontoblock',d.log.msg);
+                tmp+='</div>'
+                tmp+='</li>';
+                $(z).each(function(n,v){
+                    v=$(v);
+                    if(v.find('.log-item').length>10){v.find('.log-item:last').remove()}
+                })
+            break;
         }
         if(z){
             $(z).prepend(tmp)
         }
         switch(x){
-            case 0:
+            case 0:case 4:
                 $.ccio.init('ls');
             break;
             case 2:
@@ -299,23 +335,7 @@ $.ccio.ws.on('f',function (d){
             $('#custom_css').append(d.form.details.css)
         break;
         case'log':
-            d.l=$('#logs,.monitor_item[mid="'+d.mid+'"][ke="'+d.ke+'"] .logs')
-            d.tmp='';
-            d.tmp+='<li class="log-item">'
-            d.tmp+='<span>'
-            d.tmp+='<div>'+d.ke+' : <b>'+d.mid+'</b></div>'
-            d.tmp+='<span>'+d.log.type+'</span>'
-            d.tmp+='<span class="time livestamp" titel="'+d.time+'"></span>'
-            d.tmp+='</span>'
-            d.tmp+='<span class="message">'
-            d.tmp+=$.ccio.init('jsontoblock',d.log.msg);
-            d.tmp+='</span>'
-            d.tmp+='</li>';
-            $.each(d.l,function(n,v){
-                v=$(v);
-                if(v.find('.log-item').length>10){v.find('.log-item:last').remove()}
-            })
-            d.l.prepend(d.tmp);$.ccio.init('ls');
+            $.ccio.tm(4,d,'#logs,.monitor_item[mid="'+d.mid+'"][ke="'+d.ke+'"] .logs')
         break;
         case'os'://indicator
             //cpu
@@ -452,9 +472,9 @@ $.ccio.ws.on('f',function (d){
             d.e.find('.monitor_mode').text(d.mode)
         break;
         case'monitor_watch_off':case'monitor_stopping':
-            clearInterval($.ccio.mon[d.id].signal);delete($.ccio.mon[d.id].signal);
             d.o=$.ccio.op().watch_on;if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=0;$.ccio.op('watch_on',d.o);
             if($.ccio.mon[d.id]){
+                clearInterval($.ccio.mon[d.id].signal);delete($.ccio.mon[d.id].signal);
                 $.ccio.mon[d.id].watch=0;
                 $('#monitor_live_'+d.id).remove();
             }
@@ -490,7 +510,7 @@ $.ccio.ws.on('f',function (d){
             d.signal=parseFloat(d.d.signal_check);
             if(!d.signal||d.signal==NaN){d.signal=10;};d.signal=d.signal*1000;
             if(d.signal>0){
-//                $.ccio.mon[d.id].signal=setInterval(function(){$.ccio.init('signal-check',{id:d.id,ke:d.ke})},d.signal);
+                $.ccio.mon[d.id].signal=setInterval(function(){$.ccio.init('signal-check',{id:d.id,ke:d.ke})},d.signal);
             }
         break;
         case'monitor_mjpeg_url':

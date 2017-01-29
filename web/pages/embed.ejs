@@ -15,10 +15,7 @@ if(!port||port===''||port==80){data.url=baseUrl}else{data.url=baseUrl+':'+port}
     if(!ar.width){ar.width=640;}
     if(!ar.height){ar.height=480;}
     if(data.addon.indexOf('jquery')>-1){ %>
-<script
-  src="https://code.jquery.com/jquery-3.1.1.min.js"
-  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-  crossorigin="anonymous"></script>
+<script src="<%=data.url%>/libs/js/jquery.min.js"></script>
 <% };
 if(data.addon.indexOf('gui')>-1){ %>
 <style>

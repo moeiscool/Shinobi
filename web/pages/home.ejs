@@ -446,10 +446,20 @@
                     </label>
                   </div>
               </div>
-              <div class="form-group">
-                <label><span>Check Signal Interval<small>In Seconds</small></span>
-                    <input class="form-control" detail="signal_check" placeholder="10">
-                </label>
+              <div class="row">
+                  <div class="form-group col-md-6">
+                    <label><span>Check Signal Interval <small>In Seconds</small></span>
+                        <input class="form-control" detail="signal_check" placeholder="Set to 0 to Disable">
+                    </label>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label><span>Log Signal Event <small>Client side only</small></span>
+                            <select class="form-control" detail="signal_check_log">
+                                <option value="0" selected>No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                      </label>
+                  </div>
               </div>
               <div class="row">
                   <div class="form-group col-md-6">
