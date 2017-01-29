@@ -72,25 +72,25 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             break;
             case'signal-check':
                 d.mon=$.ccio.mon[d.id];d.p=$('#monitor_live_'+d.id);
-                $.ccio.mon[d.id].check={c:0};
+                d.check={c:0};
                 d.fn=function(){
                     if(!d.speed){d.speed=1000}
                     $.ccio.snapshot(d,function(e,url){
-                        $.ccio.mon[d.id].check.f=url;
+                        d.check.f=url;
                         setTimeout(function(){
                             $.ccio.snapshot(d,function(e,url){
-                                if($.ccio.mon[d.id].check.f===url){
-                                    if($.ccio.mon[d.id].check.c<3){
-                                        ++$.ccio.mon[d.id].check.c;
+                                if(d.check.f===url){
+                                    if(d.check.c<3){
+                                        ++d.check.c;
                                         setTimeout(function(){
                                             d.fn();
                                         },d.speed)
                                     }else{
-                                        delete($.ccio.mon[d.id].check)
+                                        delete(d.check)
                                         $.ccio.cx({f:'monitor',ff:'watch_on',id:d.id});
                                     }
                                 }else{
-                                    delete($.ccio.mon[d.id].check)
+                                    delete(d.check)
                                 }
                             });
                         },d.speed)
