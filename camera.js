@@ -483,7 +483,7 @@ s.camera=function(x,e,cn,tx){
             clearInterval(s.group[e.ke].mon[e.id].running);
             s.group[e.ke].mon[e.id].started=0;
             if(s.group[e.ke].mon[e.id].record){s.group[e.ke].mon[e.id].record.yes=0}
-            s.log(e,{type:'Monitor Stopping',msg:'Monitor session has been ordered to stop.'});
+            s.log(e,{type:'Monitor Stopped',msg:'Monitor session has been ordered to stop.'});
             s.tx({f:'monitor_stopping',mid:e.id,ke:e.ke,time:s.moment(),reason:e.reason},'GRP_'+e.ke);
             s.camera('snapshot',{mid:e.id,ke:e.ke,mon:e})
             if(e.delete===1){
@@ -573,7 +573,7 @@ s.camera=function(x,e,cn,tx){
                                 if(!s.group[e.ke].mon[e.id].record){s.group[e.ke].mon[e.id].record={yes:1}};
                                //launch ffmpeg
                                 s.group[e.ke].mon[e.id].spawn = s.ffmpeg(e); 
-                                s.log(e,{type:'FFMPEG Process Starting',msg:{cmd:s.group[e.ke].mon[e.id].ffmpeg}});
+                                s.log(e,{type:'FFMPEG Process Started',msg:{cmd:s.group[e.ke].mon[e.id].ffmpeg}});
                                 s.tx({f:'monitor_starting',mode:x,mid:e.id,time:s.moment()},'GRP_'+e.ke);
                                 //start workers
                                 switch(e.type){

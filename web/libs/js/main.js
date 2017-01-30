@@ -225,8 +225,8 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 tmp+='<li class="log-item">'
                 tmp+='<span>'
                 tmp+='<div>'+d.ke+' : <b>'+d.mid+'</b></div>'
-                tmp+='<span>'+d.log.type+'</span>'
-                tmp+='<span class="time livestamp" titel="'+d.time+'"></span>'
+                tmp+='<span>'+d.log.type+'</span> '
+                tmp+='<b class="time livestamp" title="'+d.time+'"></b>'
                 tmp+='</span>'
                 tmp+='<div class="message">'
                 tmp+=$.ccio.init('jsontoblock',d.log.msg);
