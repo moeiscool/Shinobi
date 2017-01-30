@@ -72,7 +72,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             break;
             case'signal':
                 d.e=$('#monitor_live_'+d.id+' .signal').addClass('btn-success').removeClass('btn-danger');d.signal=parseFloat(JSON.parse(d.mon.details).signal_check);
-                if(!d.signal||d.signal==NaN){d.signal=10;};d.signal=d.signal*1000;
+                if(!d.signal||d.signal==NaN){d.signal=10;};d.signal=d.signal*1000*60;
                 clearTimeout($.ccio.mon[d.id]._signal);$.ccio.mon[d.id]._signal=setTimeout(function(){d.e.addClass('btn-danger').removeClass('btn-success');},d.signal)
             break;
             case'signal-check':
@@ -222,6 +222,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 tmp+='<tr api_key="'+d.code+'"><td class="code">'+d.code+'</td><td class="ip">'+d.ip+'</td><td class="time">'+d.time+'</td><td><a class="delete btn btn-xs btn-danger">&nbsp;<i class="fa fa-trash"></i>&nbsp;</a></td></tr>';
             break;
             case 4://log row, draw to global and monitor
+                if(!d.time){d.time=$.ccio.init('t')}
                 tmp+='<li class="log-item">'
                 tmp+='<span>'
                 tmp+='<div>'+d.ke+' : <b>'+d.mid+'</b></div>'
@@ -508,7 +509,7 @@ $.ccio.ws.on('f',function (d){
                 break;
             }
             d.signal=parseFloat(d.d.signal_check);
-            if(!d.signal||d.signal==NaN){d.signal=10;};d.signal=d.signal*1000;
+            if(!d.signal||d.signal==NaN){d.signal=10;};d.signal=d.signal*1000*60;
             if(d.signal>0){
                 $.ccio.mon[d.id].signal=setInterval(function(){$.ccio.init('signal-check',{id:d.id,ke:d.ke})},d.signal);
             }
