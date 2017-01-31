@@ -1,5 +1,19 @@
 <% include blocks/header %>
 <script>$user=<%-JSON.stringify($user)%></script>
+<style>
+.shinobi-bg {
+    background: url(/libs/img/bg.jpg);
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}.shinobi-bg-shade {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: rgba(0,0,0,0.5);
+}
+    nav{margin-top:20px}
+</style>
 <link rel="stylesheet" href="libs/css/pnotify.custom.min.css">
 <link rel="stylesheet" href="libs/css/vbox.css">
 <link rel="stylesheet" href="libs/css/circles.css">
@@ -8,9 +22,37 @@
 <link rel="stylesheet" href="libs/css/fullcalendar.min.css">
 <link rel="stylesheet" href="libs/css/bootstrap-table.min.css">
 <link rel="stylesheet" href="libs/css/main.css">
-
+<body class="shinobi-bg">
+    <div class="shinobi-bg-shade">
 <div class="container-fluid">
     <div class="container">
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/">Shinobi : Admin</a>
+    </div>
+
+
+      <ul class="nav navbar-nav navbar-right">
+<!--        <li><a href="#">Link</a></li>-->
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">&nbsp;<i class="fa fa-bars"></i>&nbsp;</a>
+          <ul class="dropdown-menu">
+<!--
+            <li><a href="#">Action</a></li>
+            <li><a href="#">Another action</a></li>
+            <li><a href="#">Something else here</a></li>
+            <li role="separator" class="divider"></li>
+-->
+            <li><a class="logout"><i class="fa fa-sign-out pull-right"></i> Logout</a></li>
+          </ul>
+        </li>
+      </ul>
+  </div><!-- /.container-fluid -->
+</nav>
+        
+        
         <div class="row">
             <div class="col-md-6">
                 <div class="form-group-group grey">
@@ -21,8 +63,7 @@
             <div class="col-md-6">
                 <form id="add_new">
                   <div class="form-group-group grey">
-                        <h4>Add</h4>
-                        <div id="msg" class="text-center" style="padding:10px;"></div>
+                        <h4>Add<small id="msg" class="pull-right" style="color:#fff"></small></h4>
                         <div class="form-group">
                             <label><span>Email</span>
                                 <input class="form-control" type="email" name="mail">
@@ -50,6 +91,8 @@
     </div>
 </div>
 <% include blocks/confirm.html %>
+    </div>
+</body>
 <script src="libs/js/pnotify.custom.min.js"></script>
 <script src="libs/js/socket.io.js"></script>
 <script src="libs/js/moment.js"></script>
@@ -115,5 +158,10 @@ $.sU.e.on('click','.delete',function(e){
     $.confirm.click({title:'Delete',class:'btn-danger'},function(){
         $.ccio.cx({f:'accounts',ff:'delete',$uid:e.u,auth:$user.auth_token,mail:e.m})
     });
+})
+
+$('body')
+.on('click','.logout',function(e){
+    localStorage.removeItem('ShinobiLogin_'+location.host);location.href=location.href;
 })
 </script>
