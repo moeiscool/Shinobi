@@ -14,7 +14,7 @@
         <div class="row">
             <div class="col-md-6">
                 <div class="form-group-group grey">
-                    <h4>Sub Accounts</h4>
+                    <h4>Sub-Accounts</h4>
                     <table class="table table-striped" id="sub_accounts"></table>
                 </div>
             </div>
@@ -49,7 +49,7 @@
         </div>
     </div>
 </div>
-
+<% include blocks/confirm.html %>
 <script src="libs/js/pnotify.custom.min.js"></script>
 <script src="libs/js/socket.io.js"></script>
 <script src="libs/js/moment.js"></script>
@@ -66,6 +66,9 @@ $.ccio.ws.on('f',function(d){
     switch(d.f){
         case'add_sub_account':
             $.ccio.tm(0,d,'#sub_accounts')
+        break;
+        case'delete_sub_account':
+            $('#sub_accounts tr[uid="'+d.uid+'"]').remove()
         break;
     }
 })
@@ -101,4 +104,16 @@ $.aN.e.submit(function(e){
     });
     return false;
 });
+    
+$.sU={e:$('#sub_accounts')};
+$.sU.e.on('click','.delete',function(e){
+    e.e=$(this).parents('tr');e.m=e.e.find('.mail').text();e.u=e.e.attr('uid');
+    $.confirm.e.modal('show');
+    $.confirm.title.html('Delete Sub-Account <small>'+e.u+'</small>')
+    e.html='Do you want to delete <b>'+e.m+'</b>? You cannot recover this account.'
+    $.confirm.body.html(e.html)
+    $.confirm.click({title:'Delete',class:'btn-danger'},function(){
+        $.ccio.cx({f:'accounts',ff:'delete',$uid:e.u,auth:$user.auth_token,mail:e.m})
+    });
+})
 </script>

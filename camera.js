@@ -1019,12 +1019,32 @@ var tx;
     })
     // admin page socket functions
     cn.on('a',function(d){
-        switch(d.f){
-            case'init':
-                if(!s.group[d.ke]){s.group[d.ke]={users:{}}}
-                if(!s.group[d.ke].users[d.auth]){s.group[d.ke].users[d.auth]={cnid:cn.id}}
-                cn.join('ADM_'+d.ke)
-            break;
+        if(!cn.shinobi_child&&d.f=='init'){
+            sql.query('SELECT * FROM Users WHERE auth=? && uid=?',[d.auth,d.uid],function(err,r){
+                if(r&&r[0]){
+                    if(!s.group[d.ke]){s.group[d.ke]={users:{}}}
+                    if(!s.group[d.ke].users[d.auth]){s.group[d.ke].users[d.auth]={cnid:cn.id}}
+                    cn.join('ADM_'+d.ke);
+                    cn.ke=d.ke;
+                    cn.uid=d.uid;
+                    cn.auth=d.auth;
+                }else{
+                    cn.disconnect();
+                }
+            })
+        }else{
+            s.auth({auth:d.auth,ke:d.ke,id:d.id},function(){
+                switch(d.f){
+                    case'accounts':
+                        switch(d.ff){
+                            case'delete':
+                                sql.query('DELETE FROM Users WHERE uid=? AND ke=? AND mail=?',[d.$uid,cn.ke,d.mail])
+                                s.tx({f:'delete_sub_account',ke:cn.ke,uid:d.$uid,mail:d.mail},'ADM_'+d.ke);
+                            break;
+                        }
+                    break;
+                }
+            })
         }
     })
     //functions for webcam recorder
