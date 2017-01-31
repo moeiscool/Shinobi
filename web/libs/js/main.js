@@ -511,7 +511,7 @@ $.ccio.ws.on('f',function (d){
             d.signal=parseFloat(d.d.signal_check);
             if(!d.signal||d.signal==NaN){d.signal=10;};d.signal=d.signal*1000*60;
             if(d.signal>0){
-                $.ccio.mon[d.id].signal=setInterval(function(){$.ccio.init('signal-check',{id:d.id,ke:d.ke})},d.signal);
+//                $.ccio.mon[d.id].signal=setInterval(function(){$.ccio.init('signal-check',{id:d.id,ke:d.ke})},d.signal);
             }
         break;
         case'monitor_mjpeg_url':
@@ -924,7 +924,7 @@ $('body')
             if(!$.ccio.mon[e.mid]){
                 e.p.find('[monitor="delete"]').hide()
                 e.mt.find('span').text('Add'),e.mt.find('i').attr('class','fa fa-plus');
-                e.values={"mode":"stop","mid":$.ccio.gid(),"name":"","protocol":"http","ext":"webm","type":"jpeg","host":"","path":"","port":"","fps":"1","width":"640","height":"480","details":JSON.stringify({"dqf":"0","stream_type":"b64","control":"0","control_stop":"0","vf":"","svf":"fps=1","sfps":"1","cutoff":"15","vcodec":"copy","acodec":"libvorbis","motion":"0","timestamp":"0","loglevel":"error","sqllog":"0","cust_record":"","cust_input":""}),"shto":"[]","shfr":"[]"}
+                e.values={"mode":"stop","mid":$.ccio.gid(),"name":"","protocol":"http","ext":"webm","type":"jpeg","host":"","path":"","port":"","fps":"1","width":"640","height":"480","details":JSON.stringify({"dqf":"0","stream_type":"b64","control":"0","control_stop":"0","vf":"","svf":"","sfps":"1","cutoff":"15","vcodec":"copy","acodec":"libvorbis","motion":"0","timestamp":"0","loglevel":"error","sqllog":"0","cust_record":"","cust_input":""}),"shto":"[]","shfr":"[]"}
                 e.mt.find('.edit_id').text(e.values.mid);
             }else{
                 e.p.find('[monitor="delete"]').show()

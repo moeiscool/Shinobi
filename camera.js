@@ -299,7 +299,6 @@ s.ffmpeg=function(e,x){
     }
     //use custom video codec
     if(e.details.vcodec&&e.details.vcodec!==''&&e.details.vcodec!=='default'){x.vcodec=e.details.vcodec}
-//    x.vcodec+=' -pix_fmt yuvj420p';
     //use custom audio codec
     if(e.details.acodec&&e.details.acodec!==''&&e.details.acodec!=='default'){x.acodec=e.details.acodec}
     if(x.acodec=='aac'&&e.details.cust_record&&(e.details.cust_record.indexOf('-strict -2')>-1)===false){e.details.cust_record+=' -strict -2';}
@@ -342,12 +341,13 @@ s.ffmpeg=function(e,x){
     if(e.details.stream_flags&&e.details.stream_flags!==''){x.pipe=' '+e.details.stream_flags}else{x.pipe=''}
     switch(e.details.stream_type){
         case'hls':
-            x.pipe+=x.stream_fps+x.stream_acodec+' -c:v '+x.stream_vcodec+' -flags +global_header -hls_time '+x.hls_time+' -hls_list_size 3 -hls_wrap 3 -start_number 0 -hls_allow_cache 0 -hls_flags omit_endlist '+e.sdir+'s.m3u8';
+            x.pipe+=x.stream_fps+x.stream_acodec+' -s '+e.ratio+' -c:v '+x.stream_vcodec+' -flags +global_header -hls_time '+x.hls_time+' -hls_list_size 3 -hls_wrap 3 -start_number 0 -hls_allow_cache 0 -hls_flags omit_endlist '+e.sdir+'s.m3u8';
         break;
         default://base64//mjpeg
             x.pipe+=' -f singlejpeg'+x.svf+x.stream_quality+x.stream_fps+' -s '+e.ratio+' pipe:1';
         break;
     }
+    if(e.details.custom_output&&e.details.custom_output!==''){x.pipe+=' '+e.details.custom_output;}
     //custom input flags
     if(e.details.cust_input&&e.details.cust_input!==''){x.cust_input+=e.details.cust_input+' ';}
     //loglevel
@@ -358,7 +358,7 @@ s.ffmpeg=function(e,x){
     if(!x.vf||x.vf===','){x.vf=''}
     switch(e.type){
         case'socket':case'jpeg':case'pipe':
-            if(e.mode==='record'){x.watch=x.vcodec+x.time+x.framerate+x.vf+' '+x.segment;}
+            if(e.mode==='record'){x.watch=x.vcodec+x.time+x.framerate+x.vf+' -s '+e.width+'x'+e.height+x.segment;}
             x.tmp='-loglevel '+x.loglevel+' -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg -i -'+x.watch+x.pipe;
         break;
         case'mjpeg':
@@ -632,7 +632,7 @@ s.camera=function(x,e,cn,tx){
                                         case'mjpeg':
                                            s.group[e.ke].mon[e.id].last_frame=d;
                                         break;
-                                        case'b64':case undefined:case null:
+                                       case'b64':case undefined:case null:
                                            if(s.group[e.ke]&&s.group[e.ke].mon[e.id]&&s.group[e.ke].mon[e.id].watch&&Object.keys(s.group[e.ke].mon[e.id].watch).length>0){
                                                s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:d.toString('base64'),frame_format:'b64'},'MON_'+e.id);
                                             }
@@ -1017,6 +1017,16 @@ var tx;
         }
         console.log('CRON : ',d)
     })
+    // admin page socket functions
+    cn.on('a',function(d){
+        switch(d.f){
+            case'init':
+                if(!s.group[d.ke]){s.group[d.ke]={users:{}}}
+                if(!s.group[d.ke].users[d.auth]){s.group[d.ke].users[d.auth]={cnid:cn.id}}
+                cn.join('ADM_'+d.ke)
+            break;
+        }
+    })
     //functions for webcam recorder
     cn.on('r',function(d){
         if(!s.group[d.ke]||!s.group[d.ke].mon[d.mid]){return}
@@ -1185,26 +1195,39 @@ app.get('/:auth/update/:key', function (req,res){
     s.auth(req.params,req.fn,res,req);
 });
 //register function
-app.post('/register',function (req,res){
+app.post('/:auth/register/:ke/:uid',function (req,res){
     req.resp={ok:false};
     res.setHeader('Content-Type', 'application/json');
-    if(req.body.mail!==''&&req.body.pass!==''){
-        if(req.body.pass===req.body.pass2){
-            sql.query('SELECT * FROM Users WHERE mail=?',[req.body.mail],function(err,r) {
-                if(r&&r[0]){//found one exist
-                    req.resp.msg='Account Already Exists';
-                }else{//create new
-                    req.resp.msg='New Account Created';req.resp.ok=true;
-                    sql.query('INSERT INTO Users (ke,uid,mail,pass,details) VALUES (?,?,?,?,?)',[s.gid(),s.gid(),req.body.mail,s.md5(req.body.pass),'{"days":"0.5"}'])
+    s.auth(req.params,function(){
+        sql.query('SELECT * FROM Users WHERE uid=? AND ke=? AND details NOT LIKE ? LIMIT 1',[req.params.uid,req.params.ke,'%"sub"%'],function(err,u) {
+            if(u&&u[0]){
+                if(req.body.mail!==''&&req.body.pass!==''){
+                    if(req.body.pass===req.body.password_again){
+                        sql.query('SELECT * FROM Users WHERE mail=?',[req.body.mail],function(err,r) {
+                            if(r&&r[0]){//found one exist
+                                req.resp.msg='Email address is in use.';
+                            }else{//create new
+                                req.resp.msg='New Account Created';req.resp.ok=true;
+                                req.gid=s.gid();
+                                sql.query('INSERT INTO Users (ke,uid,mail,pass,details) VALUES (?,?,?,?,?)',[req.params.ke,req.gid,req.body.mail,s.md5(req.body.pass),'{"sub":"1"}'])
+                                s.tx({f:'add_sub_account',ke:req.params.ke,uid:req.gid,mail:req.body.mail},'ADM_'+req.params.ke);
+                            }
+                            res.send(JSON.stringify(req.resp,null,3));
+                        })
+                    }else{
+                        req.resp.msg='Passwords Don\'t Match';
+                    }
+                }else{
+                    req.resp.msg='Fields cannot be empty';
                 }
-            })
-        }else{
-            req.resp.msg='Passwords Don\'t Match';req.resp.body=req.body;
-        }
-    }else{
-        req.resp.msg='Fields cannot be empty';
-    }
-    res.send(JSON.stringify(req.resp,null,3));
+            }else{
+                req.resp.msg='Not an Administrator Account';
+            }
+            if(req.resp.msg){
+                res.send(JSON.stringify(req.resp,null,3));
+            }
+        })
+    },res,req);
 })
 //login function
 app.post('/',function (req,res){
@@ -1215,16 +1238,26 @@ app.post('/',function (req,res){
             r=r[0];r.auth=s.md5(s.gid());
             sql.query("UPDATE Users SET auth=? WHERE ke=? AND uid=?",[r.auth,r.ke,r.uid])
             req.resp={ok:true,auth_token:r.auth,ke:r.ke,uid:r.uid,mail:r.mail,details:r.details,dropbox:config.dropbox};
-            
-            if(!req.body.recorder){
-                //dashboard
-                res.render("home",{$user:req.resp});
+            r.details=JSON.parse(r.details);
+            if(req.body.admin){
+                //admin checkbox selected
+                if(!r.details.sub){
+                    sql.query('SELECT uid,mail,details FROM Users WHERE ke=? AND details LIKE \'%"sub"%\'',[r.ke],function(err,r) {
+                        res.render("admin",{$user:req.resp,$subs:r});
+                    })
+                }
             }else{
-                //webcam recorder
-                sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
-                    req.resp.mons=rr;
-                    res.render("streamer",{$user:req.resp});
-                })
+                //no admin checkbox selected
+                if(!req.body.recorder){
+                    //dashboard
+                    res.render("home",{$user:req.resp});
+                }else{
+                    //streamer
+                    sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
+                        req.resp.mons=rr;
+                        res.render("streamer",{$user:req.resp});
+                    })
+                }
             }
         }else{
             res.render("index");
@@ -1253,11 +1286,7 @@ app.get('/:auth/hls/:ke/:id/:file', function (req,res){
             res.send('File Not Found')
         }
     }
-    if(req.params.file.indexOf('.m3u8')>-1){
-        s.auth(req.params,req.fn,res,req);
-    }else{
-        req.fn();
-    }
+    s.auth(req.params,req.fn,res,req);
 });
 //Get MJPEG stream
 app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res) {
