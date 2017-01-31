@@ -191,63 +191,70 @@
       </div>
       <div class="modal-body">
           <div class="text-center msg"></div>
-        <div class="form-group">
-            <label><span>Email</span>
-                <input class="form-control" type="email" name="mail">
-            </label>
-        </div>
-        <div class="form-group">
-            <label><span>Password <small>Leave blank to keep same password</small></span>
-                <input class="form-control" type="password" name="pass">
-            </label>
-        </div>
-        <div class="form-group">
-            <label><span>Password Again</span>
-                <input class="form-control" type="password" name="password_again">
-            </label>
-        </div>
-        <div class="form-group">
-            <label><span>Number of Days to keep Videos</span>
-                <input class="form-control" detail="days">
-            </label>
-        </div>
-        <div>
-            <div class="form-group">
-                <label><span>WebDAV URL</span>
-                    <input class="form-control" detail="webdav_url">
-                </label>
-            </div>
-            <div class="row">
-                <div class="form-group col-md-6">
-                    <label><span>WebDAV Username</span>
-                        <input class="form-control" detail="webdav_user">
+          <div class="form-group-group grey">
+                <h4>Profile</h4>
+                <div class="form-group">
+                    <label><span>Email</span>
+                        <input class="form-control" type="email" name="mail">
                     </label>
                 </div>
-                <div class="form-group col-md-6">
-                    <label><span>WebDAV Password</span>
-                        <input class="form-control" type="password" detail="webdav_pass">
+                <div class="form-group">
+                    <label><span>Password <small>Leave blank to keep same password</small></span>
+                        <input class="form-control" type="password" name="pass">
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label><span>Password Again</span>
+                        <input class="form-control" type="password" name="password_again">
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label><span>Number of Days to keep Videos</span>
+                        <input class="form-control" detail="days">
+                    </label>
+                </div>
+          </div>
+          <div class="form-group-group forestgreen">
+                <h4>WebDAV</h4>
+                <div class="form-group">
+                    <label><span>URL</span>
+                        <input class="form-control" detail="webdav_url">
+                    </label>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label><span>Username</span>
+                            <input class="form-control" detail="webdav_user">
+                        </label>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label><span>Password</span>
+                            <input class="form-control" type="password" detail="webdav_pass">
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><span>Autosave</span>
+                            <select class="form-control" detail="webdav_save">
+                                <option value="0">No</option>  
+                                <option value="1">Yes</option>  
+                            </select>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label><span>Save Directory</span>
+                        <input class="form-control" placeholder="/" detail="webdav_dir">
                     </label>
                 </div>
             </div>
+            <div class="form-group-group navy">
+                <h4>Custom Styles</h4>
             <div class="form-group">
-                <label><span>WebDAV Autosave</span>
-                        <select class="form-control" detail="webdav_save">
-                            <option value="0">No</option>  
-                            <option value="1">Yes</option>  
-                        </select>
-                </label>
-            </div>
-            <div class="form-group">
-                <label><span>WebDAV Save Directory</span>
-                    <input class="form-control" placeholder="/" detail="webdav_dir">
-                </label>
-            </div>
-            <div class="form-group">
-                <label><span>Custom CSS <small>Style your dashboard.</small></span>
+                <label><span>CSS <small>Style your dashboard.</small></span>
                     <textarea class="form-control" placeholder="#main_header{background:#b59f00}" detail="css"></textarea>
                 </label>
             </div>
-        </div>
+            </div>
         <input type="hidden" name="details">
       </div>
       <div class="modal-footer">
@@ -390,11 +397,6 @@
                 <input class="form-control" detail="sfps">
                 </label>
               </div>
-              <div class="form-group">
-                <label><span>Custom Input Flags</span>
-                <input class="form-control" detail="cust_input" placeholder="">
-                </label>
-              </div>
           </div>
 <!--     END of Input     -->
 <!--     START of Stream     -->
@@ -441,6 +443,21 @@
               </div>
               <div class="row">
                   <div class="form-group col-md-6">
+                    <label><span>Check Signal Interval <small>In Minutes</small></span>
+                        <input class="form-control" detail="signal_check" placeholder="Set to 0 to Disable">
+                    </label>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label><span>Log Signal Event <small>Client side only</small></span>
+                            <select class="form-control" detail="signal_check_log">
+                                <option value="0" selected>No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                      </label>
+                  </div>
+              </div>
+              <div class="row">
+                  <div class="form-group col-md-6">
                     <label><span>Stream Quality <small>1 is High, 23 is Low</small></span>
                     <input class="form-control" placeholder="23" detail="stream_quality">
                     </label>
@@ -466,11 +483,6 @@
               <div class="form-group">
                 <label><span>Stream Video Filter</span>
                 <input class="form-control" detail="svf">
-                </label>
-              </div>
-              <div class="form-group">
-                <label><span>Custom Stream Flags</span>
-                <input class="form-control" detail="stream_flags">
                 </label>
               </div>
           </div>
@@ -554,6 +566,14 @@
                   </label>
               </div>
               <div class="form-group">
+                  <label><span>Double Quote Directory <small>Some directories have spaces. Using this may crash some cameras.</small></span>
+                    <select class="form-control" detail="dqf">
+                        <option value="0" selected>No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                  </label>
+              </div>
+              <div class="form-group">
                 <label><span>Recording Segment Interval <small>in minutes</small></span>
                 <input class="form-control" detail="cutoff" placeholder="15">
                 </label>
@@ -561,11 +581,6 @@
               <div class="form-group">
                 <label><span>Record Video Filter</span>
                 <input class="form-control" detail="vf">
-                </label>
-              </div>
-              <div class="form-group">
-                <label><span>Custom Recording Flags</span>
-                <input class="form-control" detail="cust_record" placeholder="">
                 </label>
               </div>
           </div>
@@ -641,6 +656,29 @@
                   </div>
               </div>
           </div>
+          <div class="form-group-group navy">
+          <h4>Custom</h4>
+              <div class="form-group">
+                <label><span>Input Flags</span>
+                <input class="form-control" detail="cust_input" placeholder="">
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Stream Flags</span>
+                <input class="form-control" detail="stream_flags">
+                </label>
+              </div>
+              <div class="form-group h_m_input h_m_record">
+                <label><span>Recording Flags</span>
+                <input class="form-control" detail="cust_record" placeholder="">
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Output Method</span>
+                    <input class="form-control" detail="custom_output" placeholder="-f rtmp rtmp://..">
+                </label>
+              </div>
+          </div>
           <div class="form-group-group green">
           <h4>Logging</h4>
               <div class="row">
@@ -679,24 +717,7 @@
     </form>
   </div>
 </div>
-<!--Confirmation Window-->
-<div class="modal fade" id="confirm_window" tabindex="-1" role="dialog" aria-labelledby="confirm_windowLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-        <h4 class="modal-title" id="confirm_windowLabel"><i class="fa fa-exclamation-circle"></i> &nbsp; <span>Confirmation</span></h4>
-      </div>
-      <div class="modal-body"></div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-success confirmaction">Save changes</button>
-      </div>
-    </div>
-  </div>
-</div>
+<% include blocks/confirm.html %>
 <!--Dropbox Library, Change data-app-key to your app key. -->
 <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="<%= $user.DropboxAppKey %>"></script>
 <!--Dropbox End-->

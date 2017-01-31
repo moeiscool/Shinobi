@@ -15,10 +15,7 @@ if(!port||port===''||port==80){data.url=baseUrl}else{data.url=baseUrl+':'+port}
     if(!ar.width){ar.width=640;}
     if(!ar.height){ar.height=480;}
     if(data.addon.indexOf('jquery')>-1){ %>
-<script
-  src="https://code.jquery.com/jquery-3.1.1.min.js"
-  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-  crossorigin="anonymous"></script>
+<script src="<%=data.url%>/libs/js/jquery.min.js"></script>
 <% };
 if(data.addon.indexOf('gui')>-1){ %>
 <style>
@@ -70,12 +67,12 @@ $(document).ready(function(){
     
     <% switch(JSON.parse(mon.details).stream_type){
         case'hls':
-            %><video class="stream-element"></video><%
+            %><video class="stream-element" autoplay></video><%
         break;
         case'mjpeg':
             %><iframe class="stream-element"></iframe><%
         break;
-    default:
+        default:
             %><canvas class="stream-element"></canvas><%
         break;
     } %>
@@ -102,11 +99,9 @@ $(document).ready(function(){
                     case'hls':
                     var video = $('#SHINOBI_'+d.ke+'_'+d.id+' .stream-element')[0];
                     d.url='<%=data.url%>/<%=data.auth%>/hls/'+d.ke+'/'+d.id+'/s.m3u8';
-                    if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)) {
+                    if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)||(navigator.userAgent.match(/(Safari)/)&&!navigator.userAgent.match('Chrome'))) {
                         video.src=d.url;
-                        video.onload=function(){
-                            video.play();
-                        }
+                        video.play();
                     }else{
                         var hls = new Hls();
                         hls.loadSource(d.url);
@@ -148,7 +143,7 @@ $(document).ready(function(){
                             d.e=$('#SHINOBI_'+d.ke+'_'+d.id+'');d.ee=d.e.find('.stream-element');
                             switch(d.mon.details.stream_type){
                                 case'hls':
-                                    d.ee.after('<video class="stream-element"></video>').remove()
+                                    d.ee.after('<video class="stream-element" autoplay></video>').remove()
                                 break;
                                 case'mjpeg':
                                     d.ee.after('<iframe class="stream-element"></iframe>').remove()

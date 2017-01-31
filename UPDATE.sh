@@ -8,6 +8,7 @@ pm2 stop camera.js
 pm2 stop cron.js
 pm2 kill
 mv master_temp/UPDATE.sh UPDATE.sh
+chmod +x UPDATE.sh
 mv master_temp/web web
 mv master_temp/package.json package.json
 mv master_temp/camera.js camera.js
