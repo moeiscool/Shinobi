@@ -1,0 +1,414 @@
+<!--Add Monitor Window-->
+<div class="modal fade" id="add_monitor" tabindex="-1" role="dialog" aria-labelledby="add_monitorLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="add_monitorLabel"><i class="fa fa-plus"></i> &nbsp; <span>Add</span> Monitor &nbsp; <small>Monitor ID : <t class="edit_id"></t></small></h4>
+      </div>
+      <div class="modal-body">
+          <div class="text-center msg"></div>
+        <div class="form-group-group grey">
+          <h4>Identity</h4>
+            <div class="form-group">
+            <label><span>Mode</span>
+                <select class="form-control" name="mode">
+                    <option value="stop">Disabled</option>  
+                    <option value="start">Watch Only</option>  
+                    <option value="record">Record</option>  
+                </select>
+            </label>
+            </div>
+              <div class="form-group" style="display:none">
+                <label><span>Monitor ID <small>No spaces or special characters.</small></span>
+                    <input class="form-control" name="mid">
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Name</span>
+                    <input class="form-control" name="name">
+                </label>
+              </div>
+          </div>
+<!--     START of Input     -->
+          <div class="form-group-group forestgreen">
+          <h4>Input</h4>
+              <div class="row">
+                  <div class="form-group col-md-6">
+                    <label><span>Input Type</span>
+                        <select class="form-control" name="type">
+                            <option value="jpeg">JPEG</option>  
+                            <option value="mjpeg">MJPEG</option>  
+                            <option value="h264">H.264</option>  
+                            <option value="socket">Shinobi Streamer</option>  
+                            <option value="local">Local</option>  
+                        </select>
+                    </label>
+                  </div>
+                  <div class="form-group col-md-6 h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
+                    <label><span>Connection Type</span>
+                        <select class="form-control" name="protocol">
+                            <option value="http" selected>HTTP</option>
+                            <option value="https">HTTPS</option>
+                            <option value="rtsp">RTSP</option>
+                            <option value="udp">UDP</option>
+                        </select>
+                    </label>
+                  </div>
+              </div>
+              <div class="row h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
+                  <div class="form-group col-md-6">
+                    <label><span>Username</span>
+                    <input class="form-control" detail="muser" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label><span>Password</span>
+                    <input class="form-control" type="password" detail="mpass" placeholder="">
+                    </label>
+                  </div>
+              </div>
+              <div class="row h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
+                  <div class="form-group col-md-9">
+                    <label><span>Host</span>
+                    <input class="form-control" name="host" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group col-md-3">
+                    <label><span>Port</span>
+                    <input class="form-control" name="port" placeholder="80">
+                    </label>
+                  </div>
+              </div>
+              <div class="form-group h_t_input h_t_h264 h_t_jpeg h_t_mjpeg h_t_local">
+                <label><span>Path</span>
+                <input class="form-control" name="path" placeholder="/videostream.cgi?1">
+                </label>
+              </div>
+              <div class="form-group h_t_input h_t_socket h_t_jpeg h_t_mjpeg">
+                <label><span>Monitor Capture Rate <small>(FPS)</small></span>
+                <input class="form-control" detail="sfps">
+                </label>
+              </div>
+          </div>
+<!--     END of Input     -->
+<!--     START of Stream     -->
+          <div class="form-group-group navy">
+          <h4>Stream</h4>
+              <div class="form-group">
+                <label><span>Stream Type</span>
+                    <select class="form-control" detail="stream_type">
+                        <option value="b64" selected>Base64</option>
+                        <option value="mjpeg">MJPEG</option>
+                        <option value="hls">HLS (Experimental)</option>
+                    </select>
+                </label>
+              </div>
+              <div class="h_st_input h_st_hls">
+                  <div class="row">
+                      <div class="form-group col-md-6">
+                        <label><span>HLS Video Encoder</span>
+                            <select class="form-control" detail="stream_vcodec">
+                                <option value="libx264" selected>libx264</option>
+                                <option value="libx265">libx265</option>
+                                <option value="copy">copy</option>
+                            </select>
+                        </label>
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label><span>HLS Audio Encoder</span>
+                            <select class="form-control" detail="stream_acodec">
+                                <option value="no" selected>No Audio</option>
+                                <option value="" selected>Auto</option>
+                                <option value="aac">aac</option>
+                                <option value="ac3">ac3</option>
+                                <option value="libmp3lame">libmp3lame</option>
+                                <option value="copy">copy</option>
+                            </select>
+                        </label>
+                      </div>
+                  </div>
+                  <div class="form-group">
+                    <label><span>HLS Segment Length <small>In Seconds</small></span>
+                        <input class="form-control" detail="hls_time" placeholder="3">
+                    </label>
+                  </div>
+              </div>
+              <div class="row">
+                  <div class="form-group col-md-6">
+                    <label><span>Check Signal Interval <small>In Minutes</small></span>
+                        <input class="form-control" detail="signal_check" placeholder="Set to 0 to Disable">
+                    </label>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label><span>Log Signal Event <small>Client side only</small></span>
+                            <select class="form-control" detail="signal_check_log">
+                                <option value="0" selected>No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                      </label>
+                  </div>
+              </div>
+              <div class="row">
+                  <div class="form-group col-md-6">
+                    <label><span>Stream Quality <small>1 is High, 23 is Low</small></span>
+                    <input class="form-control" placeholder="23" detail="stream_quality">
+                    </label>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label><span>Stream Rate <small>(FPS)</small></span>
+                    <input class="form-control" detail="stream_fps" placeholder="1">
+                    </label>
+                  </div>
+              </div>
+              <div class="row">
+                  <div class="form-group col-md-6">
+                    <label><span>Stream Width</span>
+                    <input class="form-control" type="number" min="1" detail="stream_scale_x" placeholder="640">
+                    </label>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label><span>Stream Height</span>
+                    <input class="form-control" type="number" min="1" detail="stream_scale_y" placeholder="480">
+                    </label>
+                  </div>
+              </div>
+              <div class="form-group">
+                <label><span>Stream Video Filter</span>
+                <input class="form-control" detail="svf">
+                </label>
+              </div>
+          </div>
+<!--     END of Stream     -->
+<!--     Start of Record     -->
+          <div class="form-group-group red h_m_input h_m_record">
+          <h4>Recording</h4>
+              <div class="form-group">
+                <label><span>Record File Type</span>
+                    <select class="form-control" name="ext">
+                        <option value="webm">WebM (libvpx)</option>  
+                        <option value="mp4">MP4 (copy, libx264, libx265)</option>  
+    <!--                    <option value="mkv">MKV</option>  -->
+                    </select>
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Video Codec</span>
+                    <select class="form-control" detail="vcodec">
+                        <option value="default" selected>Default</option>
+                        <option value="none">Auto</option>
+                        <optgroup label="WebM">
+                            <option value="libvpx">libvpx (Default)</option>
+                            <option value="libvpx-vp9">libvpx-vp9</option>
+                        </optgroup>
+                        <optgroup label="MP4">
+                            <option value="libx265">libx265</option>
+                            <option value="libx264">libx264 (Default)</option>
+                            <option value="copy">copy</option>
+                        </optgroup>
+                    </select>
+                </label>
+              </div>
+              <div class="form-group h_f_input h_f_mp4">
+                <label><span>crf</span>
+                <input class="form-control" detail="crf" placeholder="">
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Audio Codec</span>
+                    <select class="form-control" detail="acodec">
+                        <option value="default" selected>Default</option>
+                        <option value="none">Auto</option>
+                        <option value="no">No Audio</option>
+                        <optgroup label="WebM">
+                            <option value="libvorbis">libvorbis (Default)</option>
+                            <option value="libopus">libopus</option>
+                        </optgroup>
+                        <optgroup label="MP4">
+                            <option value="libmp3lame">libmp3lame</option>
+                            <option value="aac">aac (Default)</option>
+                            <option value="ac3">ac3</option>
+                            <option value="copy">copy</option>
+                        </optgroup>
+                    </select>
+                </label>
+              </div>
+               <div class="form-group">
+                <label><span>Video Record Rate <small>(FPS)</small></span>
+                <input class="form-control" name="fps">
+                </label>
+              </div>
+              <div class="row">
+                  <div class="form-group col-md-6">
+                    <label><span>Record Width</span>
+                    <input class="form-control" type="number" min="1" name="width">
+                    </label>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label><span>Record Height</span>
+                    <input class="form-control" type="number" min="1" name="height">
+                    </label>
+                  </div>
+              </div>
+              <div class="form-group">
+                  <label><span>Timestamp <small>Does not work with copy encoder</small></span>
+                    <select class="form-control" detail="timestamp">
+                        <option value="1">Yes</option>  
+                        <option value="0" selected>No</option>  
+                    </select>
+                  </label>
+              </div>
+              <div class="form-group">
+                  <label><span>Double Quote Directory <small>Some directories have spaces. Using this may crash some cameras.</small></span>
+                    <select class="form-control" detail="dqf">
+                        <option value="0" selected>No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                  </label>
+              </div>
+              <div class="form-group">
+                <label><span>Recording Segment Interval <small>in minutes</small></span>
+                <input class="form-control" detail="cutoff" placeholder="15">
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Record Video Filter</span>
+                <input class="form-control" detail="vf">
+                </label>
+              </div>
+          </div>
+<!--     END of Record     -->
+          <div class="form-group-group blue">
+          <h4>Control</h4>
+              <div class="form-group">
+                <label><span>Controllable</span>
+                    <select class="form-control" detail="control">
+                        <option value="0">No</option>  
+                        <option value="1">Yes</option>  
+                    </select>
+                </label>
+              </div>
+              <div class="h_c_input h_c_1">
+                  <div class="form-group">
+                    <label><span>Control <small>Monitor Need a Stop URL?</small></span>
+                        <select class="form-control" detail="control_stop">
+                            <option value="0">No</option>  
+                            <option value="1">Yes</option>
+                        </select>
+                    </label>
+                  </div>
+                  <div class="form-group h_cs_input h_cs_1">
+                    <label><span>Control URL Stop Timeout <small>Run stop URL after X milliseconds</small></span>
+                    <input class="form-control" detail="control_url_stop_timeout" placeholder="1000">
+                    </label>
+                  </div>
+                  <div class="form-group h_c_input h_c_1">
+                    <label><span>Control Center <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_center" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group h_c_input h_c_1">
+                    <label><span>Control Left <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_left" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group h_cs_input h_cs_1">
+                    <label><span>Control Left Stop <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_left_stop" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group h_c_input h_c_1">
+                    <label><span>Control Right <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_right" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group h_cs_input h_cs_1">
+                    <label><span>Control Right Stop <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_right_stop" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group h_c_input h_c_1">
+                    <label><span>Control Up <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_up" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group h_cs_input h_cs_1">
+                    <label><span>Control Up Stop <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_up_stop" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group h_c_input h_c_1">
+                    <label><span>Control Down <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_down" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group h_cs_input h_cs_1">
+                    <label><span>Control Down Stop <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_down_stop" placeholder="">
+                    </label>
+                  </div>
+              </div>
+          </div>
+          <div class="form-group-group navy">
+          <h4>Custom</h4>
+              <div class="form-group">
+                <label><span>Input Flags</span>
+                <input class="form-control" detail="cust_input" placeholder="">
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Stream Flags</span>
+                <input class="form-control" detail="stream_flags">
+                </label>
+              </div>
+              <div class="form-group h_m_input h_m_record">
+                <label><span>Recording Flags</span>
+                <input class="form-control" detail="cust_record" placeholder="">
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Output Method</span>
+                    <input class="form-control" detail="custom_output" placeholder="-f rtmp rtmp://..">
+                </label>
+              </div>
+          </div>
+          <div class="form-group-group green">
+          <h4>Logging</h4>
+              <div class="row">
+                  <div class="form-group col-md-6">
+                      <label><span>Log Level</span>
+                        <select class="form-control" detail="loglevel">
+                            <option value="quiet">Silent</option>
+                            <option value="fatal">Fatal</option>
+                            <option value="error" selected>on Error</option>
+                            <option value="warning">All Warnings</option>
+                            <option value="debug">Debug</option>
+                        </select>
+                      </label>
+                  </div>
+                  <div class="form-group col-md-6">
+                      <label><span>Save Log in SQL <small>This can fill up quickly.</small></span>
+                        <select class="form-control" detail="sqllog">
+                            <option value="0" selected>No</option>  
+                            <option value="1">Yes</option>  
+                        </select>
+                      </label>
+                  </div>
+              </div>
+              <div class="form-group" style="display:none">
+                <input class="form-control" name="details" value="{}">
+                <input class="form-control" name="shto" value="[]">
+                <input class="form-control" name="shfr" value="[]">
+              </div>
+          </div>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-danger pull-left" monitor="delete" data-dismiss="modal">Delete</a>
+        <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-success">Save changes</button>
+      </div>
+    </form>
+  </div>
+</div>
