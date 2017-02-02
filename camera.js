@@ -677,7 +677,7 @@ s.camera=function(x,e,cn,tx){
                                     s.log(e,{type:"Can't Connect",msg:'Retrying...'});e.error_fatal();return;
                                 }
                         }
-                        if(e.type!=='socket'){
+                        if(e.type!=='socket'&&e.protocol!=='udp'){
                             connectionTester.test(e.hosty,e.port,2000,e.draw);
                         }else{
                             e.draw(null,{success:true})
