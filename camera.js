@@ -631,11 +631,12 @@ s.camera=function(x,e,cn,tx){
                                 if(!s.group[e.ke]||!s.group[e.ke].mon[e.id]){s.init(0,e)}
                                 s.group[e.ke].mon[e.id].spawn.on('error',function(er){e.error({type:'Spawn Error',msg:er})})
                                 //frames from motion detect
-                                if(s.ocv&&e.details.detector==='1'){
-                                    s.group[e.ke].mon[e.id].spawn.stdin.on('data',function(d){
+                                s.group[e.ke].mon[e.id].spawn.stdin.on('data',function(d){
+                                    if(s.ocv&&e.details.detector==='1'){
+
                                         s.tx({f:'frame',ke:e.ke,id:e.id,time:s.moment(),frame:d},s.ocv.id);
-                                    })
-                                };
+                                    };
+                                })
                                 //frames to stream
                                 s.group[e.ke].mon[e.id].spawn.stdout.on('data',function(d){
 

@@ -40,7 +40,6 @@ io.on('f',function(d){
                   if(faces&&faces.length>0){
                     for (var i=0;i<faces.length; i++){
                       var x = faces[i];
-                        console.log(x)
                       im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
                     }
                   }
@@ -49,7 +48,6 @@ io.on('f',function(d){
                       if(faces&&faces.length>0){
                         for (var i=0;i<faces.length; i++){
                           var x = faces[i];
-                            console.log(x)
                           im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
                         }
                           s.cx({f:'frame',frame:im.toBuffer(),id:d.id,ke:d.ke})
