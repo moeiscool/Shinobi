@@ -40,7 +40,7 @@ var df = require('node-df');
 var config = require('./conf.json');
 
 server.listen(config.port);
-console.log('Shinobi is listening :',config.port);
+console.log('Shinobi - PORT : '+config.port+', NODE.JS : '+execSync("node -v"));
 
 s={child_help:false,platform:os.platform()};
 s.disc=function(){
@@ -49,8 +49,8 @@ s.disc=function(){
     sql.on('error',function(err) {console.log('DB Lost.. Retrying..');console.log(err);s.disc();return;});
 }
 s.disc();
-exec("ps aux | grep -ie ffmpeg | awk '{print $2}' | xargs kill -9");//kill any ffmpeg running
-
+//kill any ffmpeg running
+exec("ps aux | grep -ie ffmpeg | awk '{print $2}' | xargs kill -9");
 process.on('uncaughtException', function (err) {
     console.error('uncaughtException',err);
 });
@@ -338,15 +338,20 @@ s.ffmpeg=function(e,x){
     //hls segment time
     if(e.details.hls_time&&e.details.hls_time!==''){x.hls_time=e.details.hls_time}else{x.hls_time='3'}
     //pipe to client streams, check for custom flags
-    if(e.details.stream_flags&&e.details.stream_flags!==''){x.pipe=' '+e.details.stream_flags}else{x.pipe=''}
+    if(e.details.stream_flags&&e.details.stream_flags!==''){x.stream_flags=' '+e.details.stream_flags}else{x.stream_flags=''}
     switch(e.details.stream_type){
         case'hls':
-            x.pipe+=x.stream_fps+x.stream_acodec+' -s '+e.ratio+' -c:v '+x.stream_vcodec+' -flags +global_header -hls_time '+x.hls_time+' -hls_list_size 3 -hls_wrap 3 -start_number 0 -hls_allow_cache 0 -hls_flags omit_endlist '+e.sdir+'s.m3u8';
+            x.pipe=x.stream_acodec+' -c:v '+x.stream_vcodec+x.stream_fps+' -f hls -s '+e.ratio+x.stream_flags+' -flags +global_header -hls_time '+x.hls_time+' -hls_list_size 3 -hls_wrap 3 -start_number 0 -hls_allow_cache 0 -hls_flags omit_endlist '+e.sdir+'s.m3u8';
         break;
         default://base64//mjpeg
-            x.pipe+=' -f singlejpeg'+x.svf+x.stream_quality+x.stream_fps+' -s '+e.ratio+' pipe:1';
+            x.pipe=' -f singlejpeg'+x.stream_flags+x.svf+x.stream_quality+x.stream_fps+' -s '+e.ratio+' pipe:1';
         break;
     }
+    //motion detector
+    if(s.ocv&&e.details.detector==='1'){
+        x.pipe+=' -f singlejpeg -r 0.5 -s '+e.ratio+' pipe:0';
+    }
+    //custom output
     if(e.details.custom_output&&e.details.custom_output!==''){x.pipe+=' '+e.details.custom_output;}
     //custom input flags
     if(e.details.cust_input&&e.details.cust_input!==''){x.cust_input+=e.details.cust_input+' ';}
@@ -603,7 +608,7 @@ s.camera=function(x,e,cn,tx){
                                                        }
                                                           return;
                                                 }
-                                               if(s.group[e.ke].mon[e.id].spawn&&s.group[e.ke].mon[e.id].spawn.stdin){
+                                                if(s.group[e.ke].mon[e.id].spawn&&s.group[e.ke].mon[e.id].spawn.stdin){
                                                    s.group[e.ke].mon[e.id].spawn.stdin.write(data.body);
                                                }
                                                if(s.group[e.ke].mon[e.id].started===1){
@@ -625,6 +630,13 @@ s.camera=function(x,e,cn,tx){
                                 }
                                 if(!s.group[e.ke]||!s.group[e.ke].mon[e.id]){s.init(0,e)}
                                 s.group[e.ke].mon[e.id].spawn.on('error',function(er){e.error({type:'Spawn Error',msg:er})})
+                                //frames from motion detect
+                                if(s.ocv&&e.details.detector==='1'){
+                                    s.group[e.ke].mon[e.id].spawn.stdin.on('data',function(d){
+                                        s.tx({f:'frame',ke:e.ke,id:e.id,time:s.moment(),frame:d},s.ocv.id);
+                                    })
+                                };
+                                //frames to stream
                                 s.group[e.ke].mon[e.id].spawn.stdout.on('data',function(d){
 
                                    ++e.frames;
@@ -1003,6 +1015,19 @@ var tx;
         }
     });
     //functions for retrieving cron announcements
+    cn.on('ocv',function(d){
+        switch(d.f){
+            case'init':
+                s.ocv={started:moment(),id:cn.id};
+                cn.ocv=1;
+                console.log('connected to opencv')
+            break;
+            case'frame':
+                console.log('Look!',d.frame)
+            break;
+        }
+    })
+    //functions for retrieving cron announcements
     cn.on('cron',function(d){
         switch(d.f){
             case'init':
@@ -1147,6 +1172,9 @@ var tx;
                 delete(s.group[cn.ke].users[cn.auth]);
             }
 //            delete(s.group[cn.ke].vid[cn.id]);
+        }
+        if(cn.ocv){
+            delete(s.ocv);
         }
         if(cn.cron){
             delete(s.cron);
