@@ -43,7 +43,11 @@ var df = require('node-df');
 var config = require('./conf.json');
 
 server.listen(config.port);
-console.log('Shinobi - PORT : '+config.port+', NODE.JS : '+execSync("node -v"));
+try{
+    console.log('Shinobi - PORT : '+config.port+', NODE.JS : '+execSync("node -v"));
+}catch(err){
+    console.log('Shinobi - PORT : '+config.port);
+}
 
 s={child_help:false,platform:os.platform()};
 s.disc=function(){
@@ -336,12 +340,13 @@ s.ffmpeg=function(e,x){
         x.stream_acodec=' -an';
     }
     //hls segment time
-    if(e.details.hls_time&&e.details.hls_time!==''){x.hls_time=e.details.hls_time}else{x.hls_time='3'}
+    if(e.details.hls_time&&e.details.hls_time!==''){x.hls_time=e.details.hls_time}else{x.hls_time=2}    //hls list size
+    if(e.details.hls_list_size&&e.details.hls_list_size!==''){x.hls_list_size=e.details.hls_list_size}else{x.hls_list_size=2}
     //pipe to client streams, check for custom flags
     if(e.details.stream_flags&&e.details.stream_flags!==''){x.stream_flags=' '+e.details.stream_flags}else{x.stream_flags=''}
     switch(e.details.stream_type){
         case'hls':
-            x.pipe=x.stream_acodec+' -c:v '+x.stream_vcodec+x.stream_fps+' -f hls -s '+e.ratio+x.stream_flags+' -flags +global_header -hls_time '+x.hls_time+' -hls_list_size 3 -hls_wrap 3 -start_number 0 -hls_allow_cache 0 -hls_flags omit_endlist '+e.sdir+'s.m3u8';
+            x.pipe=x.stream_acodec+' -c:v '+x.stream_vcodec+x.stream_fps+' -f hls -s '+e.ratio+x.stream_flags+' -hls_time '+x.hls_time+' -hls_list_size '+x.hls_list_size+' -start_number 0 -hls_allow_cache 0 -hls_flags +delete_segments+omit_endlist '+e.sdir+'s.m3u8';
         break;
         default://base64//mjpeg
             x.pipe=' -f singlejpeg'+x.stream_flags+x.svf+x.stream_quality+x.stream_fps+' -s '+e.ratio+' pipe:1';
@@ -349,14 +354,15 @@ s.ffmpeg=function(e,x){
     }
     //motion detector
     if(e.details.detector==='1'){
-        x.pipe+=' -f singlejpeg -r 0.5 -s '+e.ratio+' pipe:0';
+        if(!e.details.detector_fps||e.details.detector_fps===''){e.details.detector_fps=0.5}
+        x.pipe+=' -f singlejpeg -r '+e.details.detector_fps+' -s '+e.ratio+' pipe:0';
     }
     //custom output
     if(e.details.custom_output&&e.details.custom_output!==''){x.pipe+=' '+e.details.custom_output;}
     //custom input flags
     if(e.details.cust_input&&e.details.cust_input!==''){x.cust_input+=e.details.cust_input+' ';}
     //loglevel
-    if(e.details.loglevel&&e.details.loglevel!==''){x.loglevel=e.details.loglevel;}else{x.loglevel='error'}
+    if(e.details.loglevel&&e.details.loglevel!==''){x.loglevel='-loglevel '+e.details.loglevel;}else{x.loglevel='-loglevel error'}
     //custom record flags
     if(e.details.cust_record&&e.details.cust_record!==''&&e.mode=='record'){x.watch+=' '+e.details.cust_record;}
 //        if(e.details.svf){'-vf "rotate=45*(PI/180)'}
@@ -364,25 +370,25 @@ s.ffmpeg=function(e,x){
     switch(e.type){
         case'socket':case'jpeg':case'pipe':
             if(e.mode==='record'){x.watch=x.vcodec+x.time+x.framerate+x.vf+' -s '+e.width+'x'+e.height+x.segment;}
-            x.tmp='-loglevel '+x.loglevel+' -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg -i -'+x.watch+x.pipe;
+            x.tmp=x.loglevel+' -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg -i -'+x.watch+x.pipe;
         break;
         case'mjpeg':
             if(e.mode=='record'){
                 x.watch+=x.vcodec+x.vf+x.framerate+' -s '+e.width+'x'+e.height+x.segment;
             }
-            x.tmp='-loglevel '+x.loglevel+' -reconnect 1 -r '+e.details.sfps+' -f mjpeg'+x.cust_input+'-i '+e.url+''+x.watch+x.pipe;
+            x.tmp=x.loglevel+' -reconnect 1 -r '+e.details.sfps+' -f mjpeg'+x.cust_input+'-i '+e.url+''+x.watch+x.pipe;
         break;
         case'h264':
             if(e.mode=='record'){
                 x.watch+=x.vcodec+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+x.vf+' '+x.segment;
             }
-            x.tmp='-loglevel '+x.loglevel+x.cust_input+'-i '+e.url+x.watch+x.pipe;
+            x.tmp=x.loglevel+x.cust_input+'-i '+e.url+x.watch+x.pipe;
         break;
         case'local':
             if(e.mode=='record'){
                 x.watch+=x.vcodec+x.time+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+x.vf+' '+x.segment;
             }
-            x.tmp='-loglevel '+x.loglevel+x.cust_input+'-i '+e.path+''+x.watch+x.pipe;
+            x.tmp=x.loglevel+x.cust_input+'-i '+e.path+''+x.watch+x.pipe;
         break;
     }
     s.group[e.ke].mon[e.mid].ffmpeg=x.tmp;
@@ -523,6 +529,8 @@ s.camera=function(x,e,cn,tx){
             e.sdir=s.dir.streams+e.ke+'/'+e.id+'/';
             if (!fs.existsSync(e.sdir)){
                 fs.mkdirSync(e.sdir);
+            }else{
+                exec('rm -rf '+e.sdir+'*')
             }
             s.group[e.ke].mon[e.id].fswatch=fs.watch(e.dir,{encoding:'utf8'},function(eventType,filename){
                 if(eventType==='rename'&&s.group[e.ke].mon[e.id].started===1){
@@ -755,6 +763,9 @@ var tx;
                     if(!s.group[d.ke].mon){
                         s.group[d.ke].mon={}
                         if(!s.group[d.ke].mon){s.group[d.ke].mon={}}
+                    }
+                    if(s.ocv){
+                        tx({f:'opencv_plugged'})
                     }
                     s.init('apps',d)
                     sql.query('SELECT * FROM API WHERE ke=? && uid=?',[d.ke,d.uid],function(err,rrr) {
@@ -1020,6 +1031,7 @@ var tx;
             case'init':
                 s.ocv={started:moment(),id:cn.id};
                 cn.ocv=1;
+                s.tx({f:'opencv_plugged'},'CPU')
                 console.log('connected to opencv')
             break;
             case'frame':
@@ -1179,6 +1191,7 @@ var tx;
         }
         if(cn.ocv){
             delete(s.ocv);
+            s.tx({f:'opencv_unplugged'},'CPU')
         }
         if(cn.cron){
             delete(s.cron);

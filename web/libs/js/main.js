@@ -335,6 +335,12 @@ $.ccio.ws.on('f',function (d){
             $.ccio.init('id',d.form);
             $('#custom_css').append(d.form.details.css)
         break;
+        case'opencv_plugged':
+            $('.shinobi-opencv').show()
+        break;
+        case'opencv_unplugged':
+            $('.shinobi-opencv').hide()
+        break;
         case'log':
             $.ccio.tm(4,d,'#logs,.monitor_item[mid="'+d.mid+'"][ke="'+d.ke+'"] .logs')
         break;

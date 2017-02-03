@@ -1,10 +1,3 @@
-var fs = require('fs');
-var path = require('path');
-var mysql = require('mysql');
-var moment = require('moment');
-var exec = require('child_process').exec;
-var spawn = require('child_process').spawn;
-const del = require('del');
 var cv=require('opencv');
 var config=require('./conf.json');
 s={}
@@ -13,18 +6,7 @@ sql={
         s.cx({f:'sql',query:x,values:y});if(typeof z==='function'){z();}
     }
 }
-s.moment=function(e,x){
-    if(!e){e=new Date};if(!x){x='YYYY-MM-DDTHH-mm-ss'};
-    e=moment(e);if(config.utcOffset){e=e.utcOffset(config.utcOffset)}
-    return e.format(x);
-}
-s.moment_noOffset=function(e,x){
-    if(!e){e=new Date};if(!x){x='YYYY-MM-DDTHH-mm-ss'};
-    return moment(e).format(x);
-}
-s.nameToTime=function(x){x=x.replace('.webm','').replace('.mp4','').split('T'),x[1]=x[1].replace(/-/g,':');x=x.join(' ');return x;}
 io = require('socket.io-client')('ws://'+config.host+':'+config.port);//connect to master
-
 s.cx=function(x){return io.emit('ocv',x)}
 s.cx({f:'init'});
 
@@ -44,21 +26,21 @@ io.on('f',function(d){
                   if(err){console.log(err);return false;}
                   if(faces&&faces.length>0){
                       d.details.EYE_CASCADE=faces;
-                    for (var i=0;i<faces.length; i++){
-                      var x = faces[i];
-                      im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
-                    }
+//                    for (var i=0;i<faces.length; i++){
+//                      var x = faces[i];
+//                      im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
+//                    }
                   }
                   im.detectObject(cv.FACE_CASCADE, {}, function(err, faces){
                       if(err){console.log(err);return false;}
                       if(faces&&faces.length>0){
                           d.details.FACE_CASCADE=faces;
-                        for (var i=0;i<faces.length; i++){
-                          var x = faces[i];
-                          im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
-                        }
+//                        for (var i=0;i<faces.length; i++){
+//                          var x = faces[i];
+//                          im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
+//                        }
                           sql.query('INSERT INTO Events (ke,mid,details) VALUES (?,?,?)',[d.ke,d.id,JSON.stringify(d.details)])
-                          s.cx({f:'frame',frame:im.toBuffer(),id:d.id,ke:d.ke})
+//                          s.cx({f:'frame',frame:im.toBuffer(),id:d.id,ke:d.ke})
                       }
                   });
               });

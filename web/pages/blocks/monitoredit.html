@@ -94,6 +94,24 @@
               </div>
           </div>
 <!--     END of Input     -->
+<!--     START of Motion     -->
+          <div class="form-group-group warning shinobi-opencv" style="display:none">
+          <h4>Motion</h4>
+              <div class="form-group">
+                <label><span>Face Detection</span>
+                    <select class="form-control" detail="detector">
+                        <option value="0" selected>No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Detector Rate <small>(FPS)</small></span>
+                <input class="form-control" detail="detector_fps" placeholder="0.5">
+                </label>
+              </div>
+          </div>
+<!--     END of Motion     -->
 <!--     START of Stream     -->
           <div class="form-group-group navy">
           <h4>Stream</h4>
@@ -132,7 +150,12 @@
                   </div>
                   <div class="form-group">
                     <label><span>HLS Segment Length <small>In Seconds</small></span>
-                        <input class="form-control" detail="hls_time" placeholder="3">
+                        <input class="form-control" detail="hls_time" placeholder="2">
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>HLS List Size</span>
+                        <input class="form-control" detail="hls_list_size" placeholder="2">
                     </label>
                   </div>
               </div>
@@ -370,7 +393,7 @@
               </div>
               <div class="form-group">
                 <label><span>Output Method</span>
-                    <input class="form-control" detail="custom_output" placeholder="-f rtmp rtmp://..">
+                    <input class="form-control" detail="custom_output" placeholder="-f flv rtmp://..">
                 </label>
               </div>
           </div>
