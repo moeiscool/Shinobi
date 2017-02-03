@@ -34,7 +34,7 @@ echo "finally download and install opencv"
 wget "https://github.com/opencv/opencv/archive/2.4.9.zip"
 unzip opencv-2.4.9.zip.1 build
 
-cd opencv
+cd build
 cmake -DCMAKE_BUILD_TYPE=RELEASE \
  -DCMAKE_INSTALL_PREFIX=/usr/local \
  -DINSTALL_C_EXAMPLES=ON \

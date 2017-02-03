@@ -11,9 +11,8 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 
 -- Dumping database structure for ccio
-CREATE DATABASE IF NOT EXISTS `ccio` /*!40100 DEFAULT CHARACTER SET utf8 */;
-USE `ccio`;
-
+USE ccio;
+ALTER TABLE `Monitors` CHANGE COLUMN `protocol` `protocol` VARCHAR(50) NULL DEFAULT 'http' AFTER `ext`;
 
 -- Dumping structure for table ccio.Events
 CREATE TABLE IF NOT EXISTS `Events` (
