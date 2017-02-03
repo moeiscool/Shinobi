@@ -7,8 +7,12 @@ var spawn = require('child_process').spawn;
 const del = require('del');
 var cv=require('opencv');
 var config=require('./conf.json');
-var sql=mysql.createConnection(config.db);
 s={}
+sql={
+    query:function(x,y,z){
+        s.cx({f:'sql',query:x,values:y});if(typeof z==='function'){z();}
+    }
+}
 s.moment=function(e,x){
     if(!e){e=new Date};if(!x){x='YYYY-MM-DDTHH-mm-ss'};
     e=moment(e);if(config.utcOffset){e=e.utcOffset(config.utcOffset)}
@@ -27,17 +31,19 @@ s.cx({f:'init'});
 io.on('f',function(d){
     switch(d.f){
         case'frame':
+            d.details={}
           cv.readImage(d.frame, function(err,im){
               if(err){console.log(err);return false;}
               var width = im.width();
               var height = im.height();
 
-            if (width < 1 || height < 1) {
-                throw new Error('Image has no size');
-            }
+              if (width < 1 || height < 1) {
+                 throw new Error('Image has no size');
+              }
               im.detectObject(cv.EYE_CASCADE, {}, function(err,faces){
                   if(err){console.log(err);return false;}
                   if(faces&&faces.length>0){
+                      d.details.EYE_CASCADE=faces;
                     for (var i=0;i<faces.length; i++){
                       var x = faces[i];
                       im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
@@ -46,10 +52,12 @@ io.on('f',function(d){
                   im.detectObject(cv.FACE_CASCADE, {}, function(err, faces){
                       if(err){console.log(err);return false;}
                       if(faces&&faces.length>0){
+                          d.details.FACE_CASCADE=faces;
                         for (var i=0;i<faces.length; i++){
                           var x = faces[i];
                           im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
                         }
+                          sql.query('INSERT INTO Events (ke,mid,details) VALUES (?,?,?)',[d.ke,d.id,JSON.stringify(d.details)])
                           s.cx({f:'frame',frame:im.toBuffer(),id:d.id,ke:d.ke})
                       }
                   });

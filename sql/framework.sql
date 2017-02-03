@@ -28,6 +28,17 @@ CREATE TABLE IF NOT EXISTS `API` (
 -- Data exporting was unselected.
 
 
+-- Dumping structure for table ccio.Events
+CREATE TABLE IF NOT EXISTS `Events` (
+  `ke` varchar(50) DEFAULT NULL,
+  `mid` varchar(50) DEFAULT NULL,
+  `details` text,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+-- Data exporting was unselected.
+
+
 -- Dumping structure for table ccio.Logs
 CREATE TABLE IF NOT EXISTS `Logs` (
   `ke` varchar(50) DEFAULT NULL,

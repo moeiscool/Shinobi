@@ -17,6 +17,9 @@
 // If you like what I am doing here and want me to continue please consider donating :)
 // PayPal : paypal@m03.a
 //
+process.on('uncaughtException', function (err) {
+    console.error('uncaughtException',err);
+});
 var fs = require('fs');
 var os = require('os');
 var path = require('path');
@@ -51,9 +54,6 @@ s.disc=function(){
 s.disc();
 //kill any ffmpeg running
 exec("ps aux | grep -ie ffmpeg | awk '{print $2}' | xargs kill -9");
-process.on('uncaughtException', function (err) {
-    console.error('uncaughtException',err);
-});
 ////close open videos
 sql.query('SELECT * FROM Videos WHERE status=?',[0],function(err,r){
     if(r&&r[0]){
@@ -348,7 +348,7 @@ s.ffmpeg=function(e,x){
         break;
     }
     //motion detector
-    if(s.ocv&&e.details.detector==='1'){
+    if(e.details.detector==='1'){
         x.pipe+=' -f singlejpeg -r 0.5 -s '+e.ratio+' pipe:0';
     }
     //custom output
@@ -633,7 +633,6 @@ s.camera=function(x,e,cn,tx){
                                 //frames from motion detect
                                 s.group[e.ke].mon[e.id].spawn.stdin.on('data',function(d){
                                     if(s.ocv&&e.details.detector==='1'){
-
                                         s.tx({f:'frame',ke:e.ke,id:e.id,time:s.moment(),frame:d},s.ocv.id);
                                     };
                                 })
@@ -1024,7 +1023,11 @@ var tx;
                 console.log('connected to opencv')
             break;
             case'frame':
-                console.log('Look!',d.frame)
+                //got a frame rendered with a marker
+//                console.log('Look!',d.frame)
+            break;
+            case'sql':
+                sql.query(d.query,d.values);
             break;
         }
     })
