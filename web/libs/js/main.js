@@ -891,13 +891,11 @@ $('body')
             e.m.find('.selected').toggleClass(e.classes);
             if(!e.e.hasClass('selected')){e.e.toggleClass(e.classes)}
             e.m.find('.monitor_item').resize();
-            if(e.e.find('.stream-element')[0].play){
-                e.e.find('.stream-element')[0].play();
-            }
             e.e=$('#files_recent .videos_list.glM'+e.mid);
             if(e.e.length>1){
                 e.e.eq(2).remove();
             }
+            $.ccio.cx({f:'monitor',ff:'watch_on',id:e.mid})
         break;
         case'watch_on':
             $.ccio.cx({f:'monitor',ff:'watch_on',id:e.mid})

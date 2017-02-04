@@ -10,6 +10,9 @@ io = require('socket.io-client')('ws://'+config.host+':'+config.port);//connect 
 s.cx=function(x){return io.emit('ocv',x)}
 s.cx({f:'init'});
 
+io.on('disconnect',function(d){
+    io.connect()
+})
 io.on('f',function(d){
     switch(d.f){
         case'frame':
@@ -22,28 +25,34 @@ io.on('f',function(d){
               if (width < 1 || height < 1) {
                  throw new Error('Image has no size');
               }
-              im.detectObject(cv.EYE_CASCADE, {}, function(err,faces){
-                  if(err){console.log(err);return false;}
-                  if(faces&&faces.length>0){
-                      d.details.EYE_CASCADE=faces;
-//                    for (var i=0;i<faces.length; i++){
-//                      var x = faces[i];
-//                      im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
-//                    }
-                  }
-                  im.detectObject(cv.FACE_CASCADE, {}, function(err, faces){
+              if(d.mon.details.detector_face==='1'){
+                  im.detectObject(cv.EYE_CASCADE, {}, function(err,faces){
                       if(err){console.log(err);return false;}
                       if(faces&&faces.length>0){
-                          d.details.FACE_CASCADE=faces;
-//                        for (var i=0;i<faces.length; i++){
-//                          var x = faces[i];
-//                          im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
-//                        }
-                          sql.query('INSERT INTO Events (ke,mid,details) VALUES (?,?,?)',[d.ke,d.id,JSON.stringify(d.details)])
-//                          s.cx({f:'frame',frame:im.toBuffer(),id:d.id,ke:d.ke})
+                          d.details.EYE_CASCADE=faces;
+    //                    for (var i=0;i<faces.length; i++){
+    //                      var x = faces[i];
+    //                      im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
+    //                    }
+                          s.cx({f:'trigger',id:d.id,ke:d.ke})
                       }
+                      im.detectObject(cv.FACE_CASCADE, {}, function(err, faces){
+                          if(err){console.log(err);return false;}
+                          if(faces&&faces.length>0){
+                              d.details.FACE_CASCADE=faces;
+    //                        for (var i=0;i<faces.length; i++){
+    //                          var x = faces[i];
+    //                          im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
+    //                        }
+                              if(d.mon.details.detector_save==='1'){
+                                  sql.query('INSERT INTO Events (ke,mid,details) VALUES (?,?,?)',[d.ke,d.id,JSON.stringify(d.details)])
+                              }
+                              s.cx({f:'trigger',id:d.id,ke:d.ke})
+    //                          s.cx({f:'frame',frame:im.toBuffer(),id:d.id,ke:d.ke})
+                          }
+                      });
                   });
-              });
+              }
           });
         break;
     }

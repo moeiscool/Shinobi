@@ -286,6 +286,18 @@ s.ffmpeg=function(e,x){
     }else{
         x.segment+=e.dir+'%Y-%m-%dT%H-%M-%S.'+e.ext;
     }
+    //resolution
+    switch(s.ratio(e.width,e.height)){
+        case'16:9':
+            e.ratio='640x360';
+        break;
+        default:
+            e.ratio='640x480';
+        break;
+    }
+    if(e.details.stream_scale_x&&e.details.stream_scale_x!==''&&e.details.stream_scale_y&&e.details.stream_scale_y!==''){
+        e.ratio=e.details.stream_scale_x+'x'+e.details.stream_scale_y;
+    }
     //timestamp
     if(!e.details.timestamp||e.details.timestamp==1){x.time=' -vf drawtext=fontfile=/usr/share/fonts/truetype/freefont/FreeSans.ttf:text=\'%{localtime}\':x=(w-tw)/2:y=0:fontcolor=white:box=1:boxcolor=0x00000000@1:fontsize=10';}else{x.time=''}
     //get video and audio codec defaults based on extension
@@ -546,24 +558,15 @@ s.camera=function(x,e,cn,tx){
             s.camera('snapshot',{mid:e.id,ke:e.ke,mon:e})
             e.error_fatal_count=0;
             e.error_count=0;
-            switch(s.ratio(e.width,e.height)){
-                case'16:9':
-                    e.ratio='640x360';
-                break;
-                default:
-                    e.ratio='640x480';
-                break;
-            }
             //check host to see if has password and user in it
             e.hosty=e.host.split('@');if(e.hosty[1]){e.hosty=e.hosty[1];}else{e.hosty=e.hosty[0];};
-            if(e.details.stream_scale_x&&e.details.stream_scale_x!==''&&e.details.stream_scale_y&&e.details.stream_scale_y!==''){
-                    e.ratio=e.details.stream_scale_x+'x'+e.details.stream_scale_y;
-                }
+            
                 e.error_fatal=function(x){
                     clearTimeout(e.err_fatal_timeout);
                     ++e.error_fatal_count;
                     e.err_fatal_timeout=setTimeout(function(){
-                        if(e.error_fatal_count>10){
+                        if(!e.details.fatal_max||e.details.fatal_max===''){e.details.fatal_max=10}else{e.details.fatal_max=parseFloat(e.details.fatal_max)}
+                        if(e.error_fatal_count>e.details.fatal_max){
                             s.camera('stop',{id:e.id,ke:e.ke})
                         }else{
                             e.fn()
@@ -641,7 +644,7 @@ s.camera=function(x,e,cn,tx){
                                 //frames from motion detect
                                 s.group[e.ke].mon[e.id].spawn.stdin.on('data',function(d){
                                     if(s.ocv&&e.details.detector==='1'){
-                                        s.tx({f:'frame',ke:e.ke,id:e.id,time:s.moment(),frame:d},s.ocv.id);
+                                        s.tx({f:'frame',mon:s.group[e.ke].mon_conf[e.id],ke:e.ke,id:e.id,time:s.moment(),frame:d},s.ocv.id);
                                     };
                                 })
                                 //frames to stream
@@ -1033,6 +1036,26 @@ var tx;
                 cn.ocv=1;
                 s.tx({f:'opencv_plugged'},'CPU')
                 console.log('connected to opencv')
+            break;
+            case'trigger':
+                //got a frame rendered with a marker
+                if(d.ke&&d.id&&s.group[d.ke]&&s.group[d.ke].mon_conf[d.id]&&s.group[d.ke].mon_conf[d.id].details.detector_trigger=='1'){
+                    d.mon=s.group[d.ke].mon_conf[d.id];
+                    if(!s.group[d.ke].mon[d.id].watchdog_stop){
+                        d.mon.mode='stop';s.camera('stop',d.mon)
+                        setTimeout(function(){d.mon.mode='record';s.camera('record',d.mon)},3000)
+                    }
+                        if(!d.mon.details.detector_timeout||d.mon.details.detector_timeout===''){d.mon.details.detector_timeout=10}
+                        d.detector_timeout=parseFloat(d.mon.details.detector_timeout)*1000*60;
+                    clearTimeout(s.group[d.ke].mon[d.id].watchdog_stop);
+                    s.group[d.ke].mon[d.id].watchdog_stop=setTimeout(function(){
+                        d.mon.mode='stop';s.camera('stop',d.mon)
+                        setTimeout(function(){
+                            d.mon.mode='start';s.camera('start',d.mon);
+                            delete(s.group[d.ke].mon[d.id].watchdog_stop);
+                        },3000)
+                    },d.detector_timeout)
+                }
             break;
             case'frame':
                 //got a frame rendered with a marker

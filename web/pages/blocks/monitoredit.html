@@ -31,6 +31,11 @@
                     <input class="form-control" name="name">
                 </label>
               </div>
+                <div class="form-group">
+                <label><span>Retry Connection <small>Number of times allowed to fail</small></span>
+                    <input class="form-control" detail="fatal_max" placeholder="10">
+                </label>
+              </div>
           </div>
 <!--     START of Input     -->
           <div class="form-group-group forestgreen">
@@ -98,7 +103,15 @@
           <div class="form-group-group orange shinobi-opencv" style="display:none">
           <h4>Motion</h4>
               <div class="form-group">
-                <label><span>Trigger Record with <b>Watch Only</b></span>
+                <label><span>Enabled</span>
+                    <select class="form-control" detail="detector">
+                        <option value="0" selected>No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Trigger Record on Detection</span>
                     <select class="form-control" detail="detector_trigger">
                         <option value="0" selected>No</option>
                         <option value="1">Yes</option>
@@ -107,10 +120,15 @@
               </div>
               <div class="form-group">
                 <label><span>Face Detection</span>
-                    <select class="form-control" detail="detector">
+                    <select class="form-control" detail="detector_face">
                         <option value="0" selected>No</option>
                         <option value="1">Yes</option>
                     </select>
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Recording Timeout <small>in Minutes</small></span>
+                <input class="form-control" detail="detector_timeout" placeholder="10">
                 </label>
               </div>
               <div class="form-group">
@@ -157,7 +175,7 @@
                       </div>
                   </div>
                   <div class="form-group">
-                    <label><span>HLS Segment Length <small>In Seconds</small></span>
+                    <label><span>HLS Segment Length <small>in Seconds</small></span>
                         <input class="form-control" detail="hls_time" placeholder="2">
                     </label>
                   </div>
@@ -169,7 +187,7 @@
               </div>
               <div class="row">
                   <div class="form-group col-md-6">
-                    <label><span>Check Signal Interval <small>In Minutes</small></span>
+                    <label><span>Check Signal Interval <small>in Minutes</small></span>
                         <input class="form-control" detail="signal_check" placeholder="Set to 0 to Disable">
                     </label>
                   </div>
