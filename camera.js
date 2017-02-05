@@ -275,7 +275,7 @@ s.video=function(x,e){
 }
 s.ffmpeg=function(e,x){
     if(!x){x={tmp:''}}
-    x.watch='',x.cust_input=' ';
+    x.watch='',x.cust_input=' ',x.cust_detect=' ';
     //segment cutoff
     if(!e.details.cutoff||e.details.cutoff===''){x.cutoff=15}else{x.cutoff=parseFloat(e.details.cutoff)};
     if(isNaN(x.cutoff)===true){x.cutoff=15}
@@ -372,7 +372,8 @@ s.ffmpeg=function(e,x){
     if(e.details.detector==='1'){
         if(!e.details.detector_fps||e.details.detector_fps===''){e.details.detector_fps=0.5}
         if(e.details.detector_scale_x&&e.details.detector_scale_x!==''&&e.details.detector_scale_y&&e.details.detector_scale_y!==''){x.dratio=' -s '+e.details.detector_scale_x+'x'+e.details.detector_scale_y}else{x.dratio=''}
-        x.pipe+=' -c:v mjpeg -f image2pipe -r '+e.details.detector_fps+x.dratio+' pipe:0';
+        if(e.details.cust_detect&&e.details.cust_detect!==''){x.cust_detect+=e.details.cust_detect;}
+        x.pipe+=' -c:v mjpeg -f image2pipe -r '+e.details.detector_fps+x.cust_detect+x.dratio+' pipe:0';
     }
     //custom output
     if(e.details.custom_output&&e.details.custom_output!==''){x.pipe+=' '+e.details.custom_output;}
