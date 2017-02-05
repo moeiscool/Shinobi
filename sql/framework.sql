@@ -1,6 +1,6 @@
 -- --------------------------------------------------------
--- Host:                         66.51.132.100
--- Server version:               5.7.16-0ubuntu0.16.04.1 - (Ubuntu)
+-- Host:                         192.168.88.58
+-- Server version:               5.7.17-0ubuntu0.16.04.1 - (Ubuntu)
 -- Server OS:                    Linux
 -- HeidiSQL Version:             9.3.0.4984
 -- --------------------------------------------------------
@@ -28,6 +28,17 @@ CREATE TABLE IF NOT EXISTS `API` (
 -- Data exporting was unselected.
 
 
+-- Dumping structure for table ccio.Events
+CREATE TABLE IF NOT EXISTS `Events` (
+  `ke` varchar(50) DEFAULT NULL,
+  `mid` varchar(50) DEFAULT NULL,
+  `details` text,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+-- Data exporting was unselected.
+
+
 -- Dumping structure for table ccio.Logs
 CREATE TABLE IF NOT EXISTS `Logs` (
   `ke` varchar(50) DEFAULT NULL,
@@ -49,7 +60,7 @@ CREATE TABLE IF NOT EXISTS `Monitors` (
   `details` longtext,
   `type` varchar(50) DEFAULT 'jpeg',
   `ext` varchar(50) DEFAULT 'webm',
-  `protocol` enum('http','https','rtmp','rtsp','axrtsp','axrtpu','axrtsphttp','axrtpm') DEFAULT 'http',
+  `protocol` varchar(50) DEFAULT 'http',
   `host` varchar(100) DEFAULT '0.0.0.0',
   `path` varchar(100) DEFAULT '/',
   `port` int(8) DEFAULT '80',

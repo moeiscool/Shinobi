@@ -17,6 +17,9 @@
 // If you like what I am doing here and want me to continue please consider donating :)
 // PayPal : paypal@m03.a
 //
+process.on('uncaughtException', function (err) {
+    console.error('uncaughtException',err);
+});
 var fs = require('fs');
 var os = require('os');
 var path = require('path');
@@ -40,20 +43,21 @@ var df = require('node-df');
 var config = require('./conf.json');
 
 server.listen(config.port);
-console.log('Shinobi is listening :',config.port);
+try{
+    console.log('Shinobi - PORT : '+config.port+', NODE.JS : '+execSync("node -v"));
+}catch(err){
+    console.log('Shinobi - PORT : '+config.port);
+}
 
-s={child_help:false,platform:os.platform()};
+s={child_help:false,platform:os.platform(),s:JSON.stringify};
 s.disc=function(){
     sql = mysql.createConnection(config.db);
     sql.connect(function(err){if(err){console.log('Error Connecting : DB',err);setTimeout(s.disc, 2000);}});
     sql.on('error',function(err) {console.log('DB Lost.. Retrying..');console.log(err);s.disc();return;});
 }
 s.disc();
-exec("ps aux | grep -ie ffmpeg | awk '{print $2}' | xargs kill -9");//kill any ffmpeg running
-
-process.on('uncaughtException', function (err) {
-    console.error('uncaughtException',err);
-});
+//kill any ffmpeg running
+exec("ps aux | grep -ie ffmpeg | awk '{print $2}' | xargs kill -9");
 ////close open videos
 sql.query('SELECT * FROM Videos WHERE status=?',[0],function(err,r){
     if(r&&r[0]){
@@ -107,7 +111,7 @@ s.kill=function(x,e,p){
 s.log=function(e,x){
     if(!x||!e.mid){return}
     if(e.details&&e.details.sqllog==1){
-        sql.query('INSERT INTO Logs (ke,mid,info) VALUES (?,?,?)',[e.ke,e.mid,JSON.stringify(x)]);
+        sql.query('INSERT INTO Logs (ke,mid,info) VALUES (?,?,?)',[e.ke,e.mid,s.s(x)]);
     }
     s.tx({f:'log',ke:e.ke,mid:e.mid,log:x,time:moment()},'GRP_'+e.ke);
 //    console.log('s.log : ',{f:'log',ke:e.ke,mid:e.mid,log:x,time:moment()},'GRP_'+e.ke)
@@ -282,6 +286,18 @@ s.ffmpeg=function(e,x){
     }else{
         x.segment+=e.dir+'%Y-%m-%dT%H-%M-%S.'+e.ext;
     }
+    //resolution
+    switch(s.ratio(e.width,e.height)){
+        case'16:9':
+            x.ratio='640x360';
+        break;
+        default:
+            x.ratio='640x480';
+        break;
+    }
+    if(e.details.stream_scale_x&&e.details.stream_scale_x!==''&&e.details.stream_scale_y&&e.details.stream_scale_y!==''){
+        x.ratio=e.details.stream_scale_x+'x'+e.details.stream_scale_y;
+    }
     //timestamp
     if(!e.details.timestamp||e.details.timestamp==1){x.time=' -vf drawtext=fontfile=/usr/share/fonts/truetype/freefont/FreeSans.ttf:text=\'%{localtime}\':x=(w-tw)/2:y=0:fontcolor=white:box=1:boxcolor=0x00000000@1:fontsize=10';}else{x.time=''}
     //get video and audio codec defaults based on extension
@@ -328,7 +344,11 @@ s.ffmpeg=function(e,x){
     //stream quality
     if(e.details.stream_quality&&e.details.stream_quality!==''){x.stream_quality=' -q:v '+e.details.stream_quality}else{x.stream_quality=''}
     //hls vcodec
-    if(e.details.stream_vcodec&&e.details.stream_vcodec!==''){x.stream_vcodec=e.details.stream_vcodec}else{x.stream_vcodec='libx264'}
+    if(e.details.stream_vcodec&&e.details.stream_vcodec!=='no'){
+        if(e.details.stream_vcodec!==''){x.stream_vcodec=' -c:v '+e.details.stream_vcodec}else{x.stream_vcodec='libx264'}
+    }else{
+        x.stream_vcodec='';
+    }
     //hls acodec
     if(e.details.stream_acodec!=='no'){
     if(e.details.stream_acodec&&e.details.stream_acodec!==''){x.stream_acodec=' -c:a '+e.details.stream_acodec}else{x.stream_acodec=''}
@@ -336,22 +356,30 @@ s.ffmpeg=function(e,x){
         x.stream_acodec=' -an';
     }
     //hls segment time
-    if(e.details.hls_time&&e.details.hls_time!==''){x.hls_time=e.details.hls_time}else{x.hls_time='3'}
+    if(e.details.hls_time&&e.details.hls_time!==''){x.hls_time=e.details.hls_time}else{x.hls_time=2}    //hls list size
+    if(e.details.hls_list_size&&e.details.hls_list_size!==''){x.hls_list_size=e.details.hls_list_size}else{x.hls_list_size=2}
     //pipe to client streams, check for custom flags
-    if(e.details.stream_flags&&e.details.stream_flags!==''){x.pipe=' '+e.details.stream_flags}else{x.pipe=''}
+    if(e.details.stream_flags&&e.details.stream_flags!==''){x.stream_flags=' '+e.details.stream_flags}else{x.stream_flags=''}
     switch(e.details.stream_type){
         case'hls':
-            x.pipe+=x.stream_fps+x.stream_acodec+' -s '+e.ratio+' -c:v '+x.stream_vcodec+' -flags +global_header -hls_time '+x.hls_time+' -hls_list_size 3 -hls_wrap 3 -start_number 0 -hls_allow_cache 0 -hls_flags omit_endlist '+e.sdir+'s.m3u8';
+            x.pipe=x.stream_acodec+x.stream_vcodec+x.stream_fps+' -f hls -s '+x.ratio+x.stream_flags+' -hls_time '+x.hls_time+' -hls_list_size '+x.hls_list_size+' -start_number 0 -hls_allow_cache 0 -hls_flags +delete_segments+omit_endlist '+e.sdir+'s.m3u8';
         break;
         default://base64//mjpeg
-            x.pipe+=' -f singlejpeg'+x.svf+x.stream_quality+x.stream_fps+' -s '+e.ratio+' pipe:1';
+            x.pipe=' -c:v mjpeg -f image2pipe'+x.stream_flags+x.svf+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
         break;
     }
+    //motion detector
+    if(e.details.detector==='1'){
+        if(!e.details.detector_fps||e.details.detector_fps===''){e.details.detector_fps=0.5}
+        if(e.details.detector_scale_x&&e.details.detector_scale_x!==''&&e.details.detector_scale_y&&e.details.detector_scale_y!==''){x.dratio=' -s '+e.details.detector_scale_x+'x'+e.details.detector_scale_y}else{x.dratio=''}
+        x.pipe+=' -c:v mjpeg -f image2pipe -r '+e.details.detector_fps+x.dratio+' pipe:0';
+    }
+    //custom output
     if(e.details.custom_output&&e.details.custom_output!==''){x.pipe+=' '+e.details.custom_output;}
     //custom input flags
     if(e.details.cust_input&&e.details.cust_input!==''){x.cust_input+=e.details.cust_input+' ';}
     //loglevel
-    if(e.details.loglevel&&e.details.loglevel!==''){x.loglevel=e.details.loglevel;}else{x.loglevel='error'}
+    if(e.details.loglevel&&e.details.loglevel!==''){x.loglevel='-loglevel '+e.details.loglevel;}else{x.loglevel='-loglevel error'}
     //custom record flags
     if(e.details.cust_record&&e.details.cust_record!==''&&e.mode=='record'){x.watch+=' '+e.details.cust_record;}
 //        if(e.details.svf){'-vf "rotate=45*(PI/180)'}
@@ -359,25 +387,25 @@ s.ffmpeg=function(e,x){
     switch(e.type){
         case'socket':case'jpeg':case'pipe':
             if(e.mode==='record'){x.watch=x.vcodec+x.time+x.framerate+x.vf+' -s '+e.width+'x'+e.height+x.segment;}
-            x.tmp='-loglevel '+x.loglevel+' -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg -i -'+x.watch+x.pipe;
+            x.tmp=x.loglevel+' -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg'+x.cust_input+'-i -'+x.watch+x.pipe;
         break;
         case'mjpeg':
             if(e.mode=='record'){
                 x.watch+=x.vcodec+x.vf+x.framerate+' -s '+e.width+'x'+e.height+x.segment;
             }
-            x.tmp='-loglevel '+x.loglevel+' -reconnect 1 -r '+e.details.sfps+' -f mjpeg'+x.cust_input+'-i '+e.url+''+x.watch+x.pipe;
+            x.tmp=x.loglevel+' -reconnect 1 -r '+e.details.sfps+' -f mjpeg'+x.cust_input+'-i '+e.url+''+x.watch+x.pipe;
         break;
         case'h264':
             if(e.mode=='record'){
                 x.watch+=x.vcodec+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+x.vf+' '+x.segment;
             }
-            x.tmp='-loglevel '+x.loglevel+x.cust_input+'-i '+e.url+x.watch+x.pipe;
+            x.tmp=x.loglevel+x.cust_input+'-i '+e.url+x.watch+x.pipe;
         break;
         case'local':
             if(e.mode=='record'){
                 x.watch+=x.vcodec+x.time+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+x.vf+' '+x.segment;
             }
-            x.tmp='-loglevel '+x.loglevel+x.cust_input+'-i '+e.path+''+x.watch+x.pipe;
+            x.tmp=x.loglevel+x.cust_input+'-i '+e.path+''+x.watch+x.pipe;
         break;
     }
     s.group[e.ke].mon[e.mid].ffmpeg=x.tmp;
@@ -518,6 +546,8 @@ s.camera=function(x,e,cn,tx){
             e.sdir=s.dir.streams+e.ke+'/'+e.id+'/';
             if (!fs.existsSync(e.sdir)){
                 fs.mkdirSync(e.sdir);
+            }else{
+                exec('rm -rf '+e.sdir+'*')
             }
             s.group[e.ke].mon[e.id].fswatch=fs.watch(e.dir,{encoding:'utf8'},function(eventType,filename){
                 if(eventType==='rename'&&s.group[e.ke].mon[e.id].started===1){
@@ -533,24 +563,15 @@ s.camera=function(x,e,cn,tx){
             s.camera('snapshot',{mid:e.id,ke:e.ke,mon:e})
             e.error_fatal_count=0;
             e.error_count=0;
-            switch(s.ratio(e.width,e.height)){
-                case'16:9':
-                    e.ratio='640x360';
-                break;
-                default:
-                    e.ratio='640x480';
-                break;
-            }
             //check host to see if has password and user in it
             e.hosty=e.host.split('@');if(e.hosty[1]){e.hosty=e.hosty[1];}else{e.hosty=e.hosty[0];};
-            if(e.details.stream_scale_x&&e.details.stream_scale_x!==''&&e.details.stream_scale_y&&e.details.stream_scale_y!==''){
-                    e.ratio=e.details.stream_scale_x+'x'+e.details.stream_scale_y;
-                }
+            
                 e.error_fatal=function(x){
                     clearTimeout(e.err_fatal_timeout);
                     ++e.error_fatal_count;
                     e.err_fatal_timeout=setTimeout(function(){
-                        if(e.error_fatal_count>10){
+                        if(!e.details.fatal_max||e.details.fatal_max===''){e.details.fatal_max=10}else{e.details.fatal_max=parseFloat(e.details.fatal_max)}
+                        if(e.error_fatal_count>e.details.fatal_max){
                             s.camera('stop',{id:e.id,ke:e.ke})
                         }else{
                             e.fn()
@@ -603,7 +624,7 @@ s.camera=function(x,e,cn,tx){
                                                        }
                                                           return;
                                                 }
-                                               if(s.group[e.ke].mon[e.id].spawn&&s.group[e.ke].mon[e.id].spawn.stdin){
+                                                if(s.group[e.ke].mon[e.id].spawn&&s.group[e.ke].mon[e.id].spawn.stdin){
                                                    s.group[e.ke].mon[e.id].spawn.stdin.write(data.body);
                                                }
                                                if(s.group[e.ke].mon[e.id].started===1){
@@ -625,6 +646,13 @@ s.camera=function(x,e,cn,tx){
                                 }
                                 if(!s.group[e.ke]||!s.group[e.ke].mon[e.id]){s.init(0,e)}
                                 s.group[e.ke].mon[e.id].spawn.on('error',function(er){e.error({type:'Spawn Error',msg:er})})
+                                //frames from motion detect
+                                s.group[e.ke].mon[e.id].spawn.stdin.on('data',function(d){
+                                    if(s.ocv&&e.details.detector==='1'){
+                                        s.tx({f:'frame',mon:s.group[e.ke].mon_conf[e.id].details,ke:e.ke,id:e.id,time:s.moment(),frame:d},s.ocv.id);
+                                    };
+                                })
+                                //frames to stream
                                 s.group[e.ke].mon[e.id].spawn.stdout.on('data',function(d){
 
                                    ++e.frames;
@@ -677,7 +705,7 @@ s.camera=function(x,e,cn,tx){
                                     s.log(e,{type:"Can't Connect",msg:'Retrying...'});e.error_fatal();return;
                                 }
                         }
-                        if(e.type!=='socket'){
+                        if(e.type!=='socket'&&e.protocol!=='udp'){
                             connectionTester.test(e.hosty,e.port,2000,e.draw);
                         }else{
                             e.draw(null,{success:true})
@@ -743,6 +771,9 @@ var tx;
                     if(!s.group[d.ke].mon){
                         s.group[d.ke].mon={}
                         if(!s.group[d.ke].mon){s.group[d.ke].mon={}}
+                    }
+                    if(s.ocv){
+                        tx({f:'opencv_plugged'})
                     }
                     s.init('apps',d)
                     sql.query('SELECT * FROM API WHERE ke=? && uid=?',[d.ke,d.uid],function(err,rrr) {
@@ -1003,6 +1034,44 @@ var tx;
         }
     });
     //functions for retrieving cron announcements
+    cn.on('ocv',function(d){
+        switch(d.f){
+            case'init':
+                s.ocv={started:moment(),id:cn.id};
+                cn.ocv=1;
+                s.tx({f:'opencv_plugged'},'CPU')
+                console.log('connected to opencv')
+            break;
+            case'trigger':
+                //got a frame rendered with a marker
+                if(d.ke&&d.id&&s.group[d.ke]&&s.group[d.ke].mon_conf[d.id]&&s.group[d.ke].mon_conf[d.id].details.detector_trigger=='1'){
+                    d.mon=s.group[d.ke].mon_conf[d.id];
+                    if(!s.group[d.ke].mon[d.id].watchdog_stop){
+                        d.mon.mode='stop';s.camera('stop',d.mon)
+                        setTimeout(function(){d.mon.mode='record';s.camera('record',d.mon)},3000)
+                    }
+                        if(!d.mon.details.detector_timeout||d.mon.details.detector_timeout===''){d.mon.details.detector_timeout=10}
+                        d.detector_timeout=parseFloat(d.mon.details.detector_timeout)*1000*60;
+                    clearTimeout(s.group[d.ke].mon[d.id].watchdog_stop);
+                    s.group[d.ke].mon[d.id].watchdog_stop=setTimeout(function(){
+                        d.mon.mode='stop';s.camera('stop',d.mon)
+                        setTimeout(function(){
+                            d.mon.mode='start';s.camera('start',d.mon);
+                            delete(s.group[d.ke].mon[d.id].watchdog_stop);
+                        },3000)
+                    },d.detector_timeout)
+                }
+            break;
+            case'frame':
+                //got a frame rendered with a marker
+//                console.log('Look!',d.frame)
+            break;
+            case'sql':
+                sql.query(d.query,d.values);
+            break;
+        }
+    })
+    //functions for retrieving cron announcements
     cn.on('cron',function(d){
         switch(d.f){
             case'init':
@@ -1148,6 +1217,10 @@ var tx;
             }
 //            delete(s.group[cn.ke].vid[cn.id]);
         }
+        if(cn.ocv){
+            delete(s.ocv);
+            s.tx({f:'opencv_unplugged'},'CPU')
+        }
         if(cn.cron){
             delete(s.cron);
         }
@@ -1173,7 +1246,7 @@ s.auth=function(xx,x,res,req){
                     if(req){
                         if(!req.ret){req.ret={ok:false}}
                         req.ret.msg='Not Authorized';
-                        res.send(JSON.stringify(req.ret, null, 3));
+                        res.send(s.s(req.ret, null, 3));
                     }
                 }
             })
@@ -1210,7 +1283,7 @@ app.get('/:auth/update/:key', function (req,res){
         }else{
             req.ret.msg='"updateKey" is incorrect.';
         }
-        res.send(JSON.stringify(req.ret, null, 3));
+        res.send(s.s(req.ret, null, 3));
     }
     s.auth(req.params,req.fn,res,req);
 });
@@ -1232,7 +1305,7 @@ app.post('/:auth/register/:ke/:uid',function (req,res){
                                 sql.query('INSERT INTO Users (ke,uid,mail,pass,details) VALUES (?,?,?,?,?)',[req.params.ke,req.gid,req.body.mail,s.md5(req.body.pass),'{"sub":"1"}'])
                                 s.tx({f:'add_sub_account',ke:req.params.ke,uid:req.gid,mail:req.body.mail},'ADM_'+req.params.ke);
                             }
-                            res.send(JSON.stringify(req.resp,null,3));
+                            res.send(s.s(req.resp,null,3));
                         })
                     }else{
                         req.resp.msg='Passwords Don\'t Match';
@@ -1244,7 +1317,7 @@ app.post('/:auth/register/:ke/:uid',function (req,res){
                 req.resp.msg='Not an Administrator Account';
             }
             if(req.resp.msg){
-                res.send(JSON.stringify(req.resp,null,3));
+                res.send(s.s(req.resp,null,3));
             }
         })
     },res,req);
@@ -1379,24 +1452,75 @@ app.get(['/:auth/monitor/:ke','/:auth/monitor/:ke/:id'], function (req,res){
         if(req.params.id){req.sql+=' and mid=?';req.ar.push(req.params.id)}
         sql.query(req.sql,req.ar,function(err,r){
             if(r.length===1){r=r[0];}
-            res.send(JSON.stringify(r, null, 3));
+            res.send(s.s(r, null, 3));
         })
     }
     s.auth(req.params,req.fn,res,req);
 });
-// Get logs json
-app.get(['/:auth/logs/:ke','/:auth/logs/:ke/:id'], function (req,res){
+// Get videos json
+app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id','/:auth/videos/:ke/:id'], function (req,res){
+    s.auth(req.params,function(){
+        req.sql='SELECT * FROM Videos WHERE ke=?';req.ar=[req.params.ke];
+        if(req.params.id){req.sql+='and mid=?';req.ar.push(req.params.id)}
+        if(!req.body.limit||req.body.limit==''){req.body.limit=100}
+        req.sql+=' ORDER BY `time` DESC LIMIT '+req.body.limit+'';
+        sql.query(req.sql,req.ar,function(err,r){
+            r.forEach(function(v){
+                v.href='/'+req.params.auth+'/videos/'+v.ke+'/'+v.mid+'/'+s.moment_noOffset(v.time)+'.'+v.ext;
+            })
+            res.send(s.s(r, null, 3));
+        })
+    },res,req);
+});
+// Get events json (motion logs)
+app.get(['/:auth/events/:ke','/:auth/events/:ke/:id','/:auth/events/:ke/:id/:limit','/:auth/events/:ke/:id/:limit/:start','/:auth/events/:ke/:id/:limit/:start/:end'], function (req,res){
     req.ret={ok:false};
     res.setHeader('Content-Type', 'application/json');
-    req.fn=function(){
+    s.auth(req.params,function(){
+        req.sql='SELECT * FROM Events WHERE ke=?';req.ar=[req.params.ke];
+        if(req.params.id){req.sql+=' and mid=?';req.ar.push(req.params.id)}
+        if(req.params.start&&req.params.start!==''){
+            req.params.start=req.params.start.replace('T',' ')
+            if(req.params.end&&req.params.end!==''){
+                req.params.end=req.params.end.replace('T',' ')
+                req.sql+=' AND `time` >= ? AND `time` <= ?';
+                req.ar.push(decodeURIComponent(req.params.start))
+                req.ar.push(decodeURIComponent(req.params.end))
+            }else{
+                req.sql+=' AND `time` >= ?';
+                req.ar.push(decodeURIComponent(req.params.start))
+            }
+        }
+        if(!req.params.limit||req.params.limit==''){req.params.limit=100}
+        req.sql+=' ORDER BY `time` DESC LIMIT '+req.params.limit+'';
+        sql.query(req.sql,req.ar,function(err,r){
+            if(err){err.sql=req.sql;return res.send(s.s(err, null, 3));}
+            if(!r){r=[]}
+            r.forEach(function(v,n){
+                r[n].details=JSON.parse(v.details);
+            })
+            res.send(s.s(r, null, 3));
+        })
+    },res,req);
+});
+// Get logs json
+app.get(['/:auth/logs/:ke','/:auth/logs/:ke/:id','/:auth/logs/:ke/:limit','/:auth/logs/:ke/:id/:limit'], function (req,res){
+    req.ret={ok:false};
+    res.setHeader('Content-Type', 'application/json');
+    s.auth(req.params,function(){
         req.sql='SELECT * FROM Logs WHERE ke=?';req.ar=[req.params.ke];
         if(req.params.id){req.sql+=' and mid=?';req.ar.push(req.params.id)}
+        if(!req.params.limit||req.params.limit==''){req.params.limit=100}
+        req.sql+=' ORDER BY `time` DESC LIMIT '+req.params.limit+'';
         sql.query(req.sql,req.ar,function(err,r){
+            if(err){err.sql=req.sql;return res.send(s.s(err, null, 3));}
             if(!r){r=[]}
-            res.send(JSON.stringify(r, null, 3));
+            r.forEach(function(v,n){
+                r[n].info=JSON.parse(v.info)
+            })
+            res.send(s.s(r, null, 3));
         })
-    }
-    s.auth(req.params,req.fn,res,req);
+    },res,req);
 });
 // Get monitors online json
 app.get('/:auth/smonitor/:ke', function (req,res){
@@ -1414,7 +1538,7 @@ app.get('/:auth/smonitor/:ke', function (req,res){
             }else{
                 req.ar=[];
             }
-            res.send(JSON.stringify(req.ar, null, 3));
+            res.send(s.s(req.ar, null, 3));
         })
     }
     s.auth(req.params,req.fn,res,req);
@@ -1424,10 +1548,10 @@ app.get(['/:auth/monitor/:ke/:mid/:f','/:auth/monitor/:ke/:mid/:f/:ff','/:auth/m
     req.ret={ok:false};
     res.setHeader('Content-Type', 'application/json');
     req.fn=function(){
-        if(req.params.f===''){req.ret.msg='incomplete request, remove last slash in URL or put acceptable value.';res.send(JSON.stringify(req.ret, null, 3));return}
+        if(req.params.f===''){req.ret.msg='incomplete request, remove last slash in URL or put acceptable value.';res.send(s.s(req.ret, null, 3));return}
         if(req.params.f!=='stop'&&req.params.f!=='start'&&req.params.f!=='record'){
             req.ret.msg='Mode not recognized.';
-            res.send(JSON.stringify(req.ret, null, 3));
+            res.send(s.s(req.ret, null, 3));
             return;
         }
         sql.query('SELECT * FROM Monitors WHERE ke=? AND mid=?',[req.params.ke,req.params.mid],function(err,r){
@@ -1476,21 +1600,10 @@ app.get(['/:auth/monitor/:ke/:mid/:f','/:auth/monitor/:ke/:mid/:f/:ff','/:auth/m
             }else{
                 req.ret.msg='Monitor or Key does not exist.';
             }
-            res.send(JSON.stringify(req.ret, null, 3));
+            res.send(s.s(req.ret, null, 3));
         })
     }
-    if(s.group[req.params.ke]&&s.group[req.params.ke].users[req.params.auth]){
-        req.fn();
-    }else{
-        sql.query('SELECT * FROM API WHERE code=? AND ke=?',[req.params.auth,req.params.ke],function(err,r){
-            if(r&&r[0]){
-                req.fn();
-            }else{
-                req.ret.msg='Not Authorized';
-                res.send(JSON.stringify(req.ret, null, 3));
-            }
-        })
-    }
+    s.auth(req.params,req.fn,res,req);
 })
 // Get lib files
 app.get(['/libs/:f/:f2','/libs/:f/:f2/:f3'], function (req,res){
@@ -1513,17 +1626,7 @@ app.get('/:auth/videos/:ke/:id/:file', function (req,res){
             res.send('File Not Found')
         }
     }
-    if(s.group[req.params.ke]&&s.group[req.params.ke].users[req.params.auth]){
-        req.fn();
-    }else{
-        sql.query('SELECT * FROM API WHERE code=? AND ke=?',[req.params.auth,req.params.ke],function(err,r){
-            if(r&&r[0]){
-                req.fn();
-            }else{
-                res.send('Not Authorized')
-            }
-        })
-    }
+    s.auth(req.params,req.fn,res,req);
 });
 //modify video file
 app.get(['/:auth/videos/:ke/:id/:file/:mode','/:auth/videos/:ke/:id/:file/:mode/:f'], function (req,res){
@@ -1557,23 +1660,10 @@ app.get(['/:auth/videos/:ke/:id/:file/:mode','/:auth/videos/:ke/:id/:file/:mode/
             }else{
                 req.ret.msg='No such file';
             }
-            res.send(JSON.stringify(req.ret, null, 3));
+            res.send(s.s(req.ret, null, 3));
         })
     },res,req);
 })
-// Get videos json
-app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
-    s.auth(req.params,function(){
-    req.sql='SELECT * FROM Videos WHERE ke=?';req.ar=[req.params.ke];
-    if(req.params.id){req.sql+='and mid=?';req.ar.push(req.params.id)}
-    sql.query(req.sql,req.ar,function(err,r){
-        r.forEach(function(v){
-            v.href='/'+req.params.auth+'/videos/'+v.ke+'/'+v.mid+'/'+s.moment_noOffset(v.time)+'.'+v.ext;
-        })
-        res.send(JSON.stringify(r, null, 3));
-    })
-    },res,req);
-});
 //preliminary monitor start
 setTimeout(function(){
 sql.query('SELECT * FROM Monitors WHERE mode != "stop"', function(err,r) {

@@ -7,7 +7,7 @@ var spawn = require('child_process').spawn;
 const del = require('del');
 var config=require('./conf.json');
 var sql=mysql.createConnection(config.db);
-s={dir:{events:__dirname+'/events/',frames:__dirname+'/frames/'}};
+s={dir:{events:__dirname+'/videos/',frames:__dirname+'/frames/'}};
 s.moment=function(e,x){
     if(!e){e=new Date};if(!x){x='YYYY-MM-DDTHH-mm-ss'};
     e=moment(e);if(config.utcOffset){e=e.utcOffset(config.utcOffset)}
@@ -18,7 +18,7 @@ s.moment_noOffset=function(e,x){
     return moment(e).format(x);
 }
 s.nameToTime=function(x){x=x.replace('.webm','').replace('.mp4','').split('T'),x[1]=x[1].replace(/-/g,':');x=x.join(' ');return x;}
-io = require('socket.io-client')('ws://66.51.132.100:80');//connect to master
+io = require('socket.io-client')('ws://localhost:'+config.port);//connect to master
 s.cx=function(x){return io.emit('cron',x)}
 //Cron Job
 s.cx({f:'init',time:moment()})

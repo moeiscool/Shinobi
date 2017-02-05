@@ -106,7 +106,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .side-menu table{color:#fff;}
 #main_canvas>.scrollable{background:#333;color:#fff}
 #main_header{background:#b59f00;color:#fff;padding-left:0;}
-
+#logs_modal table tr td:first-child{width:10%}
 #files_recent{}
 [class_toggle]{cursor:pointer}
 
