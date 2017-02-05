@@ -344,7 +344,11 @@ s.ffmpeg=function(e,x){
     //stream quality
     if(e.details.stream_quality&&e.details.stream_quality!==''){x.stream_quality=' -q:v '+e.details.stream_quality}else{x.stream_quality=''}
     //hls vcodec
-    if(e.details.stream_vcodec&&e.details.stream_vcodec!==''){x.stream_vcodec=e.details.stream_vcodec}else{x.stream_vcodec='libx264'}
+    if(e.details.stream_vcodec&&e.details.stream_vcodec!=='no'){
+        if(e.details.stream_vcodec!==''){x.stream_vcodec=' -c:v '+e.details.stream_vcodec}else{x.stream_vcodec='libx264'}
+    }else{
+        x.stream_vcodec='';
+    }
     //hls acodec
     if(e.details.stream_acodec!=='no'){
     if(e.details.stream_acodec&&e.details.stream_acodec!==''){x.stream_acodec=' -c:a '+e.details.stream_acodec}else{x.stream_acodec=''}
@@ -358,7 +362,7 @@ s.ffmpeg=function(e,x){
     if(e.details.stream_flags&&e.details.stream_flags!==''){x.stream_flags=' '+e.details.stream_flags}else{x.stream_flags=''}
     switch(e.details.stream_type){
         case'hls':
-            x.pipe=x.stream_acodec+' -c:v '+x.stream_vcodec+x.stream_fps+' -f hls -s '+x.ratio+x.stream_flags+' -hls_time '+x.hls_time+' -hls_list_size '+x.hls_list_size+' -start_number 0 -hls_allow_cache 0 -hls_flags +delete_segments+omit_endlist '+e.sdir+'s.m3u8';
+            x.pipe=x.stream_acodec+x.stream_vcodec+x.stream_fps+' -f hls -s '+x.ratio+x.stream_flags+' -hls_time '+x.hls_time+' -hls_list_size '+x.hls_list_size+' -start_number 0 -hls_allow_cache 0 -hls_flags +delete_segments+omit_endlist '+e.sdir+'s.m3u8';
         break;
         default://base64//mjpeg
             x.pipe=' -c:v mjpeg -f image2pipe'+x.stream_flags+x.svf+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
@@ -383,7 +387,7 @@ s.ffmpeg=function(e,x){
     switch(e.type){
         case'socket':case'jpeg':case'pipe':
             if(e.mode==='record'){x.watch=x.vcodec+x.time+x.framerate+x.vf+' -s '+e.width+'x'+e.height+x.segment;}
-            x.tmp=x.loglevel+' -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg -i -'+x.watch+x.pipe;
+            x.tmp=x.loglevel+' -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg'+x.cust_input+'-i -'+x.watch+x.pipe;
         break;
         case'mjpeg':
             if(e.mode=='record'){
@@ -1454,12 +1458,12 @@ app.get(['/:auth/monitor/:ke','/:auth/monitor/:ke/:id'], function (req,res){
     s.auth(req.params,req.fn,res,req);
 });
 // Get videos json
-app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id','/:auth/videos/:ke/:id/:limit'], function (req,res){
+app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id','/:auth/videos/:ke/:id'], function (req,res){
     s.auth(req.params,function(){
         req.sql='SELECT * FROM Videos WHERE ke=?';req.ar=[req.params.ke];
         if(req.params.id){req.sql+='and mid=?';req.ar.push(req.params.id)}
-        if(!req.params.limit||req.params.limit==''){req.params.limit=100}
-        req.sql+=' ORDER BY `time` DESC LIMIT '+req.params.limit+'';
+        if(!req.body.limit||req.body.limit==''){req.body.limit=100}
+        req.sql+=' ORDER BY `time` DESC LIMIT '+req.body.limit+'';
         sql.query(req.sql,req.ar,function(err,r){
             r.forEach(function(v){
                 v.href='/'+req.params.auth+'/videos/'+v.ke+'/'+v.mid+'/'+s.moment_noOffset(v.time)+'.'+v.ext;
