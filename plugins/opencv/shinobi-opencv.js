@@ -48,22 +48,22 @@ io.on('f',function(d){
                  throw new Error('Image has no size');
               }
               if(d.mon.detector_face==='1'){
-                  im.detectObject(cv.EYE_CASCADE, {}, function(err,faces){
+                  im.detectObject(cv.EYE_CASCADE, {}, function(err,mats){
                       if(err){console.log(err);return false;}
-                      if(faces&&faces.length>0){
-                          d.details.EYE_CASCADE=faces;
-    //                    for (var i=0;i<faces.length; i++){
-    //                      var x = faces[i];
+                      if(mats&&mats.length>0){
+                          d.details.EYE_CASCADE=mats;
+    //                    for (var i=0;i<mats.length; i++){
+    //                      var x = mats[i];
     //                      im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
     //                    }
                           s.cx({f:'trigger',id:d.id,ke:d.ke})
                       }
-                      im.detectObject(cv.FACE_CASCADE, {}, function(err, faces){
+                      im.detectObject(cv.FACE_CASCADE, {}, function(err, mats){
                           if(err){console.log(err);return false;}
-                          if(faces&&faces.length>0){
-                              d.details.FACE_CASCADE=faces;
-    //                        for (var i=0;i<faces.length; i++){
-    //                          var x = faces[i];
+                          if(mats&&mats.length>0){
+                              d.details.FACE_CASCADE=mats;
+    //                        for (var i=0;i<mats.length; i++){
+    //                          var x = mats[i];
     //                          im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
     //                        }
                               if(d.mon.detector_save==='1'){
@@ -74,6 +74,30 @@ io.on('f',function(d){
                           }
                       });
                   });
+              }
+              if(d.mon.detector_fullbody==='1'){
+                  im.detectObject(cv.FULLBODY_CASCADE,{}, function(err,mats){
+                      if(err){console.log(err);return false;}
+                      if(mats&&mats.length>0){
+                          d.details.FULLBODY_CASCADE=mats;
+                          if(d.mon.detector_save==='1'){
+                              sql.query('INSERT INTO Events (ke,mid,details) VALUES (?,?,?)',[d.ke,d.id,JSON.stringify(d.details)])
+                          }
+                          s.cx({f:'trigger',id:d.id,ke:d.ke})
+                      }
+                  })
+              }
+              if(d.mon.detector_car==='1'){
+                  im.detectObject(cv.CAR_SIDE_CASCADE,{}, function(err,mats){
+                      if(err){console.log(err);return false;}
+                      if(mats&&mats.length>0){
+                          d.details.CAR_SIDE_CASCADE=mats;
+                          if(d.mon.detector_save==='1'){
+                              sql.query('INSERT INTO Events (ke,mid,details) VALUES (?,?,?)',[d.ke,d.id,JSON.stringify(d.details)])
+                          }
+                          s.cx({f:'trigger',id:d.id,ke:d.ke})
+                      }
+                  })
               }
           });
         break;
