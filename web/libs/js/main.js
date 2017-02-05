@@ -238,6 +238,9 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                     if(v.find('.log-item').length>10){v.find('.log-item:last').remove()}
                 })
             break;
+            case'option':
+                tmp+='<option value="'+d.id+'">'+d.name+'</option>'
+            break;
         }
         if(z){
             $(z).prepend(tmp)
@@ -281,6 +284,11 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 $(z).empty();
                 $.each(d,function(n,v){
                     tmp+=$.ccio.tm(3,v);
+                })
+            break;
+            case'option':
+                $.each(d,function(n,v){
+                    tmp+=$.ccio.tm('option',v);
                 })
             break;
         }
@@ -562,6 +570,27 @@ $.pB.f.submit(function(e){
         $.pB.o.append(d.output)
     })
     return false;
+});
+//log viewer
+$.log={e:$('#logs_modal'),lm:$('#log_monitors')};$.log.o=$.log.e.find('table tbody');
+$.log.e.on('shown.bs.modal', function () {
+    $.each($.ccio.mon,function(n,v){
+        v.id=v.mid;
+        $.ccio.tm('option',v,'#log_monitors')
+    })
+    $.log.lm.change()
+});
+$.log.lm.change(function(e){
+    e.v=$(this).val();
+    if(e.v==='all'){e.v=''}
+    $.get('/'+$user.auth_token+'/logs/'+$user.ke+'/'+e.v,function(d){
+        e.tmp='';
+        $.each(d,function(n,v){
+            e.tmp+='<tr class="search-row"><td title="'+v.time+'" class="livestamp"></td><td>'+v.time+'</td><td>'+$.ccio.mon[v.mid].name+'</td><td>'+v.mid+'</td><td>'+$.ccio.init('jsontoblock',v.info)+'</td></tr>'
+        })
+        $.log.o.html(e.tmp)
+        $.ccio.init('ls')
+    })
 });
 //add Monitor
 $.aM={e:$('#add_monitor')};$.aM.f=$.aM.e.find('form')
@@ -884,9 +913,10 @@ $('body')
             e.e=e.e.parents('.monitor_item');
             $('.videos_list.glM'+e.mid).clone().appendTo(e.e.find('.hud .videos_monitor_list')).find('h3').remove()
             if(!e.e.is(':first')){
-                e.m.find('.monitor_item').first().insertAfter(e.e.prev())
+                e.f=e.m.find('.monitor_item').first().insertAfter(e.e.prev())
                 e.e.prependTo('#monitors_live');
                 $('#main_canvas .scrollable').animate({scrollTop: $("#monitor_live_"+e.mid).position().top},1000);
+                $.ccio.cx({f:'monitor',ff:'watch_on',id:e.f.attr('mid')})
             }
             e.m.find('.selected').toggleClass(e.classes);
             if(!e.e.hasClass('selected')){e.e.toggleClass(e.classes)}
@@ -972,3 +1002,12 @@ $('body')
     e.c.attr('height',e.e.height());
     e.c.attr('width',e.e.width());
 })
+.on('keyup','.search-parent .search-controller',function(){
+    _this = this;
+    $.each($(".search-parent .search-body .search-row"), function() {
+        if($(this).text().toLowerCase().indexOf($(_this).val().toLowerCase()) === -1)
+           $(this).hide();
+        else
+           $(this).show();
+    });
+}); 

@@ -49,7 +49,7 @@ try{
     console.log('Shinobi - PORT : '+config.port);
 }
 
-s={child_help:false,platform:os.platform()};
+s={child_help:false,platform:os.platform(),s:JSON.stringify};
 s.disc=function(){
     sql = mysql.createConnection(config.db);
     sql.connect(function(err){if(err){console.log('Error Connecting : DB',err);setTimeout(s.disc, 2000);}});
@@ -111,7 +111,7 @@ s.kill=function(x,e,p){
 s.log=function(e,x){
     if(!x||!e.mid){return}
     if(e.details&&e.details.sqllog==1){
-        sql.query('INSERT INTO Logs (ke,mid,info) VALUES (?,?,?)',[e.ke,e.mid,JSON.stringify(x)]);
+        sql.query('INSERT INTO Logs (ke,mid,info) VALUES (?,?,?)',[e.ke,e.mid,s.s(x)]);
     }
     s.tx({f:'log',ke:e.ke,mid:e.mid,log:x,time:moment()},'GRP_'+e.ke);
 //    console.log('s.log : ',{f:'log',ke:e.ke,mid:e.mid,log:x,time:moment()},'GRP_'+e.ke)
@@ -1241,7 +1241,7 @@ s.auth=function(xx,x,res,req){
                     if(req){
                         if(!req.ret){req.ret={ok:false}}
                         req.ret.msg='Not Authorized';
-                        res.send(JSON.stringify(req.ret, null, 3));
+                        res.send(s.s(req.ret, null, 3));
                     }
                 }
             })
@@ -1278,7 +1278,7 @@ app.get('/:auth/update/:key', function (req,res){
         }else{
             req.ret.msg='"updateKey" is incorrect.';
         }
-        res.send(JSON.stringify(req.ret, null, 3));
+        res.send(s.s(req.ret, null, 3));
     }
     s.auth(req.params,req.fn,res,req);
 });
@@ -1300,7 +1300,7 @@ app.post('/:auth/register/:ke/:uid',function (req,res){
                                 sql.query('INSERT INTO Users (ke,uid,mail,pass,details) VALUES (?,?,?,?,?)',[req.params.ke,req.gid,req.body.mail,s.md5(req.body.pass),'{"sub":"1"}'])
                                 s.tx({f:'add_sub_account',ke:req.params.ke,uid:req.gid,mail:req.body.mail},'ADM_'+req.params.ke);
                             }
-                            res.send(JSON.stringify(req.resp,null,3));
+                            res.send(s.s(req.resp,null,3));
                         })
                     }else{
                         req.resp.msg='Passwords Don\'t Match';
@@ -1312,7 +1312,7 @@ app.post('/:auth/register/:ke/:uid',function (req,res){
                 req.resp.msg='Not an Administrator Account';
             }
             if(req.resp.msg){
-                res.send(JSON.stringify(req.resp,null,3));
+                res.send(s.s(req.resp,null,3));
             }
         })
     },res,req);
@@ -1447,24 +1447,48 @@ app.get(['/:auth/monitor/:ke','/:auth/monitor/:ke/:id'], function (req,res){
         if(req.params.id){req.sql+=' and mid=?';req.ar.push(req.params.id)}
         sql.query(req.sql,req.ar,function(err,r){
             if(r.length===1){r=r[0];}
-            res.send(JSON.stringify(r, null, 3));
+            res.send(s.s(r, null, 3));
         })
     }
     s.auth(req.params,req.fn,res,req);
 });
-// Get logs json
-app.get(['/:auth/logs/:ke','/:auth/logs/:ke/:id'], function (req,res){
+// Get events json (motion logs)
+app.get(['/:auth/events/:ke','/:auth/events/:ke/:id'], function (req,res){
     req.ret={ok:false};
     res.setHeader('Content-Type', 'application/json');
-    req.fn=function(){
+    s.auth(req.params,function(){
+        req.sql='SELECT * FROM Events WHERE ke=?';req.ar=[req.params.ke];
+        if(req.params.id){req.sql+=' and mid=?';req.ar.push(req.params.id)}
+        if(req.body.limit&&!req.body.limit==''){req.body.limit=100}
+        req.sql+=' ORDER BY `time` DESC LIMIT '+req.params.limit+'';
+        sql.query(req.sql,req.ar,function(err,r){
+            if(err){err.sql=req.sql;return res.send(s.s(err, null, 3));}
+            if(!r){r=[]}
+            r.forEach(function(v,n){
+                r[n].details=JSON.parse(v.details);
+            })
+            res.send(s.s(r, null, 3));
+        })
+    },res,req);
+});
+// Get logs json
+app.get(['/:auth/logs/:ke','/:auth/logs/:ke/:id','/:auth/logs/:ke/:limit','/:auth/logs/:ke/:id/:limit'], function (req,res){
+    req.ret={ok:false};
+    res.setHeader('Content-Type', 'application/json');
+    s.auth(req.params,function(){
         req.sql='SELECT * FROM Logs WHERE ke=?';req.ar=[req.params.ke];
         if(req.params.id){req.sql+=' and mid=?';req.ar.push(req.params.id)}
+        if(!req.params.limit||req.params.limit==''){req.params.limit=100}
+        req.sql+=' ORDER BY `time` DESC LIMIT '+req.params.limit+'';
         sql.query(req.sql,req.ar,function(err,r){
+            if(err){err.sql=req.sql;return res.send(s.s(err, null, 3));}
             if(!r){r=[]}
-            res.send(JSON.stringify(r, null, 3));
+            r.forEach(function(v,n){
+                r[n].info=JSON.parse(v.info)
+            })
+            res.send(s.s(r, null, 3));
         })
-    }
-    s.auth(req.params,req.fn,res,req);
+    },res,req);
 });
 // Get monitors online json
 app.get('/:auth/smonitor/:ke', function (req,res){
@@ -1482,7 +1506,7 @@ app.get('/:auth/smonitor/:ke', function (req,res){
             }else{
                 req.ar=[];
             }
-            res.send(JSON.stringify(req.ar, null, 3));
+            res.send(s.s(req.ar, null, 3));
         })
     }
     s.auth(req.params,req.fn,res,req);
@@ -1492,10 +1516,10 @@ app.get(['/:auth/monitor/:ke/:mid/:f','/:auth/monitor/:ke/:mid/:f/:ff','/:auth/m
     req.ret={ok:false};
     res.setHeader('Content-Type', 'application/json');
     req.fn=function(){
-        if(req.params.f===''){req.ret.msg='incomplete request, remove last slash in URL or put acceptable value.';res.send(JSON.stringify(req.ret, null, 3));return}
+        if(req.params.f===''){req.ret.msg='incomplete request, remove last slash in URL or put acceptable value.';res.send(s.s(req.ret, null, 3));return}
         if(req.params.f!=='stop'&&req.params.f!=='start'&&req.params.f!=='record'){
             req.ret.msg='Mode not recognized.';
-            res.send(JSON.stringify(req.ret, null, 3));
+            res.send(s.s(req.ret, null, 3));
             return;
         }
         sql.query('SELECT * FROM Monitors WHERE ke=? AND mid=?',[req.params.ke,req.params.mid],function(err,r){
@@ -1544,21 +1568,10 @@ app.get(['/:auth/monitor/:ke/:mid/:f','/:auth/monitor/:ke/:mid/:f/:ff','/:auth/m
             }else{
                 req.ret.msg='Monitor or Key does not exist.';
             }
-            res.send(JSON.stringify(req.ret, null, 3));
+            res.send(s.s(req.ret, null, 3));
         })
     }
-    if(s.group[req.params.ke]&&s.group[req.params.ke].users[req.params.auth]){
-        req.fn();
-    }else{
-        sql.query('SELECT * FROM API WHERE code=? AND ke=?',[req.params.auth,req.params.ke],function(err,r){
-            if(r&&r[0]){
-                req.fn();
-            }else{
-                req.ret.msg='Not Authorized';
-                res.send(JSON.stringify(req.ret, null, 3));
-            }
-        })
-    }
+    s.auth(req.params,req.fn,res,req);
 })
 // Get lib files
 app.get(['/libs/:f/:f2','/libs/:f/:f2/:f3'], function (req,res){
@@ -1581,17 +1594,7 @@ app.get('/:auth/videos/:ke/:id/:file', function (req,res){
             res.send('File Not Found')
         }
     }
-    if(s.group[req.params.ke]&&s.group[req.params.ke].users[req.params.auth]){
-        req.fn();
-    }else{
-        sql.query('SELECT * FROM API WHERE code=? AND ke=?',[req.params.auth,req.params.ke],function(err,r){
-            if(r&&r[0]){
-                req.fn();
-            }else{
-                res.send('Not Authorized')
-            }
-        })
-    }
+    s.auth(req.params,req.fn,res,req);
 });
 //modify video file
 app.get(['/:auth/videos/:ke/:id/:file/:mode','/:auth/videos/:ke/:id/:file/:mode/:f'], function (req,res){
@@ -1625,7 +1628,7 @@ app.get(['/:auth/videos/:ke/:id/:file/:mode','/:auth/videos/:ke/:id/:file/:mode/
             }else{
                 req.ret.msg='No such file';
             }
-            res.send(JSON.stringify(req.ret, null, 3));
+            res.send(s.s(req.ret, null, 3));
         })
     },res,req);
 })
@@ -1638,7 +1641,7 @@ app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
         r.forEach(function(v){
             v.href='/'+req.params.auth+'/videos/'+v.ke+'/'+v.mid+'/'+s.moment_noOffset(v.time)+'.'+v.ext;
         })
-        res.send(JSON.stringify(r, null, 3));
+        res.send(s.s(r, null, 3));
     })
     },res,req);
 });
