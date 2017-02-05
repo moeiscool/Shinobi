@@ -32,9 +32,9 @@ sudo apt-get install libtbb-dev -y
 
 echo "finally download and install opencv"
 wget "https://github.com/opencv/opencv/archive/2.4.9.zip"
-unzip opencv-2.4.9.zip.1 build
+unzip 2.4.9.zip
 
-cd build
+cd opencv-2.4.9
 cmake -DCMAKE_BUILD_TYPE=RELEASE \
  -DCMAKE_INSTALL_PREFIX=/usr/local \
  -DINSTALL_C_EXAMPLES=ON \
