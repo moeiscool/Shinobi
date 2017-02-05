@@ -99,9 +99,9 @@
               </div>
           </div>
 <!--     END of Input     -->
-<!--     START of Motion     -->
-          <div class="form-group-group orange shinobi-opencv" style="display:none">
-          <h4>Motion</h4>
+<!--     START of Detector     -->
+          <div class="form-group-group orange">
+          <h4>Detector<span class="pull-right shinobi-opencv" style="display:none">OpenCV Connected</span></h4>
               <div class="form-group">
                 <label><span>Enabled</span>
                     <select class="form-control" detail="detector">
@@ -110,31 +110,45 @@
                     </select>
                 </label>
               </div>
-              <div class="form-group">
-                <label><span>Trigger Record on Detection</span>
-                    <select class="form-control" detail="detector_trigger">
-                        <option value="0" selected>No</option>
-                        <option value="1">Yes</option>
-                    </select>
-                </label>
-              </div>
-              <div class="form-group">
-                <label><span>Face Detection</span>
-                    <select class="form-control" detail="detector_face">
-                        <option value="0" selected>No</option>
-                        <option value="1">Yes</option>
-                    </select>
-                </label>
-              </div>
-              <div class="form-group">
-                <label><span>Recording Timeout <small>in Minutes</small></span>
-                <input class="form-control" detail="detector_timeout" placeholder="10">
-                </label>
-              </div>
-              <div class="form-group">
-                <label><span>Detector Rate <small>(FPS)</small></span>
-                <input class="form-control" detail="detector_fps" placeholder="0.5">
-                </label>
+              <div class="shinobi-opencv" style="display:none">
+                  <div class="form-group">
+                    <label><span>Trigger Record</span>
+                        <select class="form-control" detail="detector_trigger">
+                            <option value="0" selected>No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Face Detection</span>
+                        <select class="form-control" detail="detector_face">
+                            <option value="0" selected>No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Recording Timeout <small>in Minutes</small></span>
+                    <input class="form-control" detail="detector_timeout" placeholder="10">
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Detector Rate <small>(FPS)</small></span>
+                    <input class="form-control" detail="detector_fps" placeholder="0.5">
+                    </label>
+                  </div>
+                  <div class="row">
+                      <div class="form-group col-md-6">
+                        <label><span>Feed-in Image Width</span>
+                        <input class="form-control" detail="detector_scale_x" placeholder="">
+                        </label>
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label><span>Feed-in Image Height</span>
+                        <input class="form-control" detail="detector_scale_y" placeholder="">
+                        </label>
+                      </div>
+                  </div>
               </div>
           </div>
 <!--     END of Motion     -->

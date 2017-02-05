@@ -289,14 +289,14 @@ s.ffmpeg=function(e,x){
     //resolution
     switch(s.ratio(e.width,e.height)){
         case'16:9':
-            e.ratio='640x360';
+            x.ratio='640x360';
         break;
         default:
-            e.ratio='640x480';
+            x.ratio='640x480';
         break;
     }
     if(e.details.stream_scale_x&&e.details.stream_scale_x!==''&&e.details.stream_scale_y&&e.details.stream_scale_y!==''){
-        e.ratio=e.details.stream_scale_x+'x'+e.details.stream_scale_y;
+        x.ratio=e.details.stream_scale_x+'x'+e.details.stream_scale_y;
     }
     //timestamp
     if(!e.details.timestamp||e.details.timestamp==1){x.time=' -vf drawtext=fontfile=/usr/share/fonts/truetype/freefont/FreeSans.ttf:text=\'%{localtime}\':x=(w-tw)/2:y=0:fontcolor=white:box=1:boxcolor=0x00000000@1:fontsize=10';}else{x.time=''}
@@ -358,16 +358,17 @@ s.ffmpeg=function(e,x){
     if(e.details.stream_flags&&e.details.stream_flags!==''){x.stream_flags=' '+e.details.stream_flags}else{x.stream_flags=''}
     switch(e.details.stream_type){
         case'hls':
-            x.pipe=x.stream_acodec+' -c:v '+x.stream_vcodec+x.stream_fps+' -f hls -s '+e.ratio+x.stream_flags+' -hls_time '+x.hls_time+' -hls_list_size '+x.hls_list_size+' -start_number 0 -hls_allow_cache 0 -hls_flags +delete_segments+omit_endlist '+e.sdir+'s.m3u8';
+            x.pipe=x.stream_acodec+' -c:v '+x.stream_vcodec+x.stream_fps+' -f hls -s '+x.ratio+x.stream_flags+' -hls_time '+x.hls_time+' -hls_list_size '+x.hls_list_size+' -start_number 0 -hls_allow_cache 0 -hls_flags +delete_segments+omit_endlist '+e.sdir+'s.m3u8';
         break;
         default://base64//mjpeg
-            x.pipe=' -f singlejpeg'+x.stream_flags+x.svf+x.stream_quality+x.stream_fps+' -s '+e.ratio+' pipe:1';
+            x.pipe=' -c:v mjpeg -f image2pipe'+x.stream_flags+x.svf+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
         break;
     }
     //motion detector
     if(e.details.detector==='1'){
         if(!e.details.detector_fps||e.details.detector_fps===''){e.details.detector_fps=0.5}
-        x.pipe+=' -f singlejpeg -r '+e.details.detector_fps+' -s '+e.ratio+' pipe:0';
+        if(e.details.detector_scale_x&&e.details.detector_scale_x!==''&&e.details.detector_scale_y&&e.details.detector_scale_y!==''){x.dratio=' -s '+e.details.detector_scale_x+'x'+e.details.detector_scale_y}else{x.dratio=''}
+        x.pipe+=' -c:v mjpeg -f image2pipe -r '+e.details.detector_fps+x.dratio+' pipe:0';
     }
     //custom output
     if(e.details.custom_output&&e.details.custom_output!==''){x.pipe+=' '+e.details.custom_output;}
@@ -644,7 +645,7 @@ s.camera=function(x,e,cn,tx){
                                 //frames from motion detect
                                 s.group[e.ke].mon[e.id].spawn.stdin.on('data',function(d){
                                     if(s.ocv&&e.details.detector==='1'){
-                                        s.tx({f:'frame',mon:s.group[e.ke].mon_conf[e.id],ke:e.ke,id:e.id,time:s.moment(),frame:d},s.ocv.id);
+                                        s.tx({f:'frame',mon:s.group[e.ke].mon_conf[e.id].details,ke:e.ke,id:e.id,time:s.moment(),frame:d},s.ocv.id);
                                     };
                                 })
                                 //frames to stream
@@ -1452,14 +1453,41 @@ app.get(['/:auth/monitor/:ke','/:auth/monitor/:ke/:id'], function (req,res){
     }
     s.auth(req.params,req.fn,res,req);
 });
+// Get videos json
+app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id','/:auth/videos/:ke/:id/:limit'], function (req,res){
+    s.auth(req.params,function(){
+        req.sql='SELECT * FROM Videos WHERE ke=?';req.ar=[req.params.ke];
+        if(req.params.id){req.sql+='and mid=?';req.ar.push(req.params.id)}
+        if(!req.params.limit||req.params.limit==''){req.params.limit=100}
+        req.sql+=' ORDER BY `time` DESC LIMIT '+req.params.limit+'';
+        sql.query(req.sql,req.ar,function(err,r){
+            r.forEach(function(v){
+                v.href='/'+req.params.auth+'/videos/'+v.ke+'/'+v.mid+'/'+s.moment_noOffset(v.time)+'.'+v.ext;
+            })
+            res.send(s.s(r, null, 3));
+        })
+    },res,req);
+});
 // Get events json (motion logs)
-app.get(['/:auth/events/:ke','/:auth/events/:ke/:id'], function (req,res){
+app.get(['/:auth/events/:ke','/:auth/events/:ke/:id','/:auth/events/:ke/:id/:limit','/:auth/events/:ke/:id/:limit/:start','/:auth/events/:ke/:id/:limit/:start/:end'], function (req,res){
     req.ret={ok:false};
     res.setHeader('Content-Type', 'application/json');
     s.auth(req.params,function(){
         req.sql='SELECT * FROM Events WHERE ke=?';req.ar=[req.params.ke];
         if(req.params.id){req.sql+=' and mid=?';req.ar.push(req.params.id)}
-        if(req.body.limit&&!req.body.limit==''){req.body.limit=100}
+        if(req.params.start&&req.params.start!==''){
+            req.params.start=req.params.start.replace('T',' ')
+            if(req.params.end&&req.params.end!==''){
+                req.params.end=req.params.end.replace('T',' ')
+                req.sql+=' AND `time` >= ? AND `time` <= ?';
+                req.ar.push(decodeURIComponent(req.params.start))
+                req.ar.push(decodeURIComponent(req.params.end))
+            }else{
+                req.sql+=' AND `time` >= ?';
+                req.ar.push(decodeURIComponent(req.params.start))
+            }
+        }
+        if(!req.params.limit||req.params.limit==''){req.params.limit=100}
         req.sql+=' ORDER BY `time` DESC LIMIT '+req.params.limit+'';
         sql.query(req.sql,req.ar,function(err,r){
             if(err){err.sql=req.sql;return res.send(s.s(err, null, 3));}
@@ -1632,19 +1660,6 @@ app.get(['/:auth/videos/:ke/:id/:file/:mode','/:auth/videos/:ke/:id/:file/:mode/
         })
     },res,req);
 })
-// Get videos json
-app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
-    s.auth(req.params,function(){
-    req.sql='SELECT * FROM Videos WHERE ke=?';req.ar=[req.params.ke];
-    if(req.params.id){req.sql+='and mid=?';req.ar.push(req.params.id)}
-    sql.query(req.sql,req.ar,function(err,r){
-        r.forEach(function(v){
-            v.href='/'+req.params.auth+'/videos/'+v.ke+'/'+v.mid+'/'+s.moment_noOffset(v.time)+'.'+v.ext;
-        })
-        res.send(s.s(r, null, 3));
-    })
-    },res,req);
-});
 //preliminary monitor start
 setTimeout(function(){
 sql.query('SELECT * FROM Monitors WHERE mode != "stop"', function(err,r) {

@@ -94,7 +94,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                                         },d.speed)
                                     }else{
                                         if(d.d.signal_check_log==1){
-                                            d.log={type:'Signal Check',msg:'Failed, Attempting reconnect.'}
+                                            d.log={type:'Stream Check',msg:'Client side ctream check failed, attempting reconnect.'}
                                             $.ccio.tm(4,d,'#logs,.monitor_item[mid="'+d.id+'"][ke="'+d.ke+'"] .logs')
                                         }
                                         delete(d.check)
@@ -102,7 +102,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                                     }
                                 }else{
                                     if(d.d.signal_check_log==1){
-                                        d.log={type:'Signal Check',msg:'Success'}
+                                        d.log={type:'Stream Check',msg:'Success'}
                                         $.ccio.tm(4,d,'#logs,.monitor_item[mid="'+d.id+'"][ke="'+d.ke+'"] .logs')
                                     }
                                     delete(d.check)
@@ -382,6 +382,9 @@ $.ccio.ws.on('f',function (d){
                 $.ccio.mon[v.mid]=v;
                 $.ccio.tm(1,v,'#monitors_list')
                 $.ccio.cx({f:'get',ff:'videos',limit:10,mid:v.mid})
+                $.getJSON('/'+$user.auth_token+'/videos/'+v.ke+'/'+v.mid+'/10',function(d){
+                    $.ccio.pm(0,d)
+                })
                 if(d.o[v.ke]&&d.o[v.ke][v.mid]===1){$.ccio.cx({f:'monitor',ff:'watch_on',id:v.mid})}
             });
             $.ccio.pm(3,d.apis);
@@ -487,6 +490,7 @@ $.ccio.ws.on('f',function (d){
             d.e.find('.monitor_mode').text(d.mode)
         break;
         case'monitor_watch_off':case'monitor_stopping':
+            clearTimeout($.ccio.mon[d.id].sk)
             d.o=$.ccio.op().watch_on;if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=0;$.ccio.op('watch_on',d.o);
             if($.ccio.mon[d.id]){
                 clearInterval($.ccio.mon[d.id].signal);delete($.ccio.mon[d.id].signal);
@@ -521,6 +525,10 @@ $.ccio.ws.on('f',function (d){
                             }
                         });
                     }
+                    clearTimeout($.ccio.mon[d.id].sk)
+                    $.ccio.mon[d.id].sk=setTimeout(function(){
+                        $.ccio.init('signal-check',d)
+                    },15000)
                 break;
                 case'mjpeg':
                     $('#monitor_live_'+d.id+' .stream-element').attr('src',$user.auth_token+'/mjpeg/'+d.ke+'/'+d.id+'/full')

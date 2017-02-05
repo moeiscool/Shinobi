@@ -1,3 +1,25 @@
+//
+// Shinobi - OpenCV Plugin
+// Copyright (C) 2016-2025 Moe Alam, moeiscool
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// # Donate
+//
+// If you like what I am doing here and want me to continue please consider donating :)
+// PayPal : paypal@m03.a
+//
+process.on('uncaughtException', function (err) {
+    console.error('uncaughtException',err);
+});
 var cv=require('opencv');
 var config=require('./conf.json');
 s={}
@@ -25,7 +47,7 @@ io.on('f',function(d){
               if (width < 1 || height < 1) {
                  throw new Error('Image has no size');
               }
-              if(d.mon.details.detector_face==='1'){
+              if(d.mon.detector_face==='1'){
                   im.detectObject(cv.EYE_CASCADE, {}, function(err,faces){
                       if(err){console.log(err);return false;}
                       if(faces&&faces.length>0){
@@ -44,7 +66,7 @@ io.on('f',function(d){
     //                          var x = faces[i];
     //                          im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
     //                        }
-                              if(d.mon.details.detector_save==='1'){
+                              if(d.mon.detector_save==='1'){
                                   sql.query('INSERT INTO Events (ke,mid,details) VALUES (?,?,?)',[d.ke,d.id,JSON.stringify(d.details)])
                               }
                               s.cx({f:'trigger',id:d.id,ke:d.ke})
