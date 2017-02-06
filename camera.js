@@ -359,13 +359,13 @@ s.ffmpeg=function(e,x){
     if(e.details.hls_time&&e.details.hls_time!==''){x.hls_time=e.details.hls_time}else{x.hls_time=2}    //hls list size
     if(e.details.hls_list_size&&e.details.hls_list_size!==''){x.hls_list_size=e.details.hls_list_size}else{x.hls_list_size=2}
     //pipe to client streams, check for custom flags
-    if(e.details.stream_flags&&e.details.stream_flags!==''){x.stream_flags=' '+e.details.stream_flags}else{x.stream_flags=''}
+    if(e.details.cust_stream&&e.details.cust_stream!==''){x.cust_stream=' '+e.details.cust_stream}else{x.cust_stream=''}
     switch(e.details.stream_type){
         case'hls':
-            x.pipe=x.stream_acodec+x.stream_vcodec+x.stream_fps+' -f hls -s '+x.ratio+x.stream_flags+' -hls_time '+x.hls_time+' -hls_list_size '+x.hls_list_size+' -start_number 0 -hls_allow_cache 0 -hls_flags +delete_segments+omit_endlist '+e.sdir+'s.m3u8';
+            x.pipe=x.stream_acodec+x.stream_vcodec+x.stream_fps+' -f hls -s '+x.ratio+x.cust_stream+' -hls_time '+x.hls_time+' -hls_list_size '+x.hls_list_size+' -start_number 0 -hls_allow_cache 0 -hls_flags +delete_segments+omit_endlist '+e.sdir+'s.m3u8';
         break;
         default://base64//mjpeg
-            x.pipe=' -c:v mjpeg -f image2pipe'+x.stream_flags+x.svf+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
+            x.pipe=' -c:v mjpeg -f image2pipe'+x.cust_stream+x.svf+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
         break;
     }
     //motion detector

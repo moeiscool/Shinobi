@@ -924,7 +924,7 @@ $('body')
                 e.f=e.m.find('.monitor_item').first().insertAfter(e.e.prev())
                 e.e.prependTo('#monitors_live');
                 $('#main_canvas .scrollable').animate({scrollTop: $("#monitor_live_"+e.mid).position().top},1000);
-                $.ccio.cx({f:'monitor',ff:'watch_on',id:e.f.attr('mid')})
+//                $.ccio.cx({f:'monitor',ff:'watch_on',id:e.f.attr('mid')})
             }
             e.m.find('.selected').toggleClass(e.classes);
             if(!e.e.hasClass('selected')){e.e.toggleClass(e.classes)}
@@ -933,7 +933,7 @@ $('body')
             if(e.e.length>1){
                 e.e.eq(2).remove();
             }
-            $.ccio.cx({f:'monitor',ff:'watch_on',id:e.mid})
+            $('video').each(function(n,v){if(v.paused){v.play()}})
         break;
         case'watch_on':
             $.ccio.cx({f:'monitor',ff:'watch_on',id:e.mid})
