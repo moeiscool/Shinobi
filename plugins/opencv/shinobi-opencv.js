@@ -66,7 +66,7 @@ io.on('f',function(d){
     //                          var x = mats[i];
     //                          im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
     //                        }
-                              if(d.mon.detector_save==='1'){
+                              if(d.mon.detector_trigger==='1'){
                                   sql.query('INSERT INTO Events (ke,mid,details) VALUES (?,?,?)',[d.ke,d.id,JSON.stringify(d.details)])
                               }
                               s.cx({f:'trigger',id:d.id,ke:d.ke})
@@ -80,7 +80,7 @@ io.on('f',function(d){
                       if(err){console.log(err);return false;}
                       if(mats&&mats.length>0){
                           d.details.FULLBODY_CASCADE=mats;
-                          if(d.mon.detector_save==='1'){
+                          if(d.mon.detector_trigger==='1'){
                               sql.query('INSERT INTO Events (ke,mid,details) VALUES (?,?,?)',[d.ke,d.id,JSON.stringify(d.details)])
                           }
                           s.cx({f:'trigger',id:d.id,ke:d.ke})
@@ -92,7 +92,7 @@ io.on('f',function(d){
                       if(err){console.log(err);return false;}
                       if(mats&&mats.length>0){
                           d.details.CAR_SIDE_CASCADE=mats;
-                          if(d.mon.detector_save==='1'){
+                          if(d.mon.detector_trigger==='1'){
                               sql.query('INSERT INTO Events (ke,mid,details) VALUES (?,?,?)',[d.ke,d.id,JSON.stringify(d.details)])
                           }
                           s.cx({f:'trigger',id:d.id,ke:d.ke})
