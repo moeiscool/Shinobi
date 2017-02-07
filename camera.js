@@ -275,7 +275,9 @@ s.video=function(x,e){
 }
 s.ffmpeg=function(e,x){
     if(!x){x={tmp:''}}
-    x.watch='',x.cust_input=' ',x.cust_detect=' ';
+    x.watch='',x.cust_input='',x.cust_detect=' ';
+    //analyze duration
+    if(e.details.aduration&&e.details.aduration!==''){x.cust_input+=' -analyzeduration '+e.details.aduration};
     //segment cutoff
     if(!e.details.cutoff||e.details.cutoff===''){x.cutoff=15}else{x.cutoff=parseFloat(e.details.cutoff)};
     if(isNaN(x.cutoff)===true){x.cutoff=15}
@@ -341,8 +343,6 @@ s.ffmpeg=function(e,x){
     }
     //stream video filter
     if(e.details.svf&&e.details.svf!==''){x.svf=' -vf '+e.details.svf;}else{x.svf='';}
-    //stream quality
-    if(e.details.stream_quality&&e.details.stream_quality!==''){x.stream_quality=' -q:v '+e.details.stream_quality}else{x.stream_quality=''}
     //hls vcodec
     if(e.details.stream_vcodec&&e.details.stream_vcodec!=='no'){
         if(e.details.stream_vcodec!==''){x.stream_vcodec=' -c:v '+e.details.stream_vcodec}else{x.stream_vcodec='libx264'}
@@ -360,11 +360,18 @@ s.ffmpeg=function(e,x){
     if(e.details.hls_list_size&&e.details.hls_list_size!==''){x.hls_list_size=e.details.hls_list_size}else{x.hls_list_size=2}
     //pipe to client streams, check for custom flags
     if(e.details.cust_stream&&e.details.cust_stream!==''){x.cust_stream=' '+e.details.cust_stream}else{x.cust_stream=''}
+    //stream preset
+    if(e.details.preset_stream&&e.details.preset_stream!==''){x.preset_stream=' -preset '+e.details.preset_stream;}else{x.preset_stream=''}
+    //stream quality
+    if(e.details.stream_quality&&e.details.stream_quality!==''){x.stream_quality=e.details.stream_quality}else{x.stream_quality=''}
     switch(e.details.stream_type){
         case'hls':
-            x.pipe=x.stream_acodec+x.stream_vcodec+x.stream_fps+' -f hls -s '+x.ratio+x.cust_stream+' -hls_time '+x.hls_time+' -hls_list_size '+x.hls_list_size+' -start_number 0 -hls_allow_cache 0 -hls_flags +delete_segments+omit_endlist '+e.sdir+'s.m3u8';
+    //stream quality
+            if(x.stream_quality)x.stream_quality=' -crf '+x.stream_quality;
+            x.pipe=x.preset_stream+x.stream_quality+x.stream_acodec+x.stream_vcodec+x.stream_fps+' -f hls -s '+x.ratio+x.cust_stream+' -hls_time '+x.hls_time+' -hls_list_size '+x.hls_list_size+' -start_number 0 -hls_allow_cache 0 -hls_flags +delete_segments+omit_endlist '+e.sdir+'s.m3u8';
         break;
         default://base64//mjpeg
+            if(x.stream_quality)x.stream_quality=' -q:v '+x.stream_quality;
             x.pipe=' -c:v mjpeg -f image2pipe'+x.cust_stream+x.svf+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
         break;
     }
@@ -378,35 +385,39 @@ s.ffmpeg=function(e,x){
     //custom output
     if(e.details.custom_output&&e.details.custom_output!==''){x.pipe+=' '+e.details.custom_output;}
     //custom input flags
-    if(e.details.cust_input&&e.details.cust_input!==''){x.cust_input+=e.details.cust_input+' ';}
+    if(e.details.cust_input&&e.details.cust_input!==''){x.cust_input+=' '+e.details.cust_input;}
     //loglevel
     if(e.details.loglevel&&e.details.loglevel!==''){x.loglevel='-loglevel '+e.details.loglevel;}else{x.loglevel='-loglevel error'}
-    //custom record flags
-    if(e.details.cust_record&&e.details.cust_record!==''&&e.mode=='record'){x.watch+=' '+e.details.cust_record;}
+    if(e.mode=='record'){
+        //custom record flags
+        if(e.details.cust_record&&e.details.cust_record!==''){x.watch+=' '+e.details.cust_record;}
+        //record preset
+        if(e.details.preset_record&&e.details.preset_record!==''){x.watch+=' -preset '+e.details.preset_record;}
+    }
 //        if(e.details.svf){'-vf "rotate=45*(PI/180)'}
     if(!x.vf||x.vf===','){x.vf=''}
     switch(e.type){
         case'socket':case'jpeg':case'pipe':
-            if(e.mode==='record'){x.watch=x.vcodec+x.time+x.framerate+x.vf+' -s '+e.width+'x'+e.height+x.segment;}
-            x.tmp=x.loglevel+' -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg'+x.cust_input+'-i -'+x.watch+x.pipe;
+            if(e.mode==='record'){x.watch+=x.vcodec+x.time+x.framerate+x.vf+' -s '+e.width+'x'+e.height+x.segment;}
+            x.tmp=x.loglevel+' -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg'+x.cust_input+' -i -'+x.watch+x.pipe;
         break;
         case'mjpeg':
             if(e.mode=='record'){
                 x.watch+=x.vcodec+x.vf+x.framerate+' -s '+e.width+'x'+e.height+x.segment;
             }
-            x.tmp=x.loglevel+' -reconnect 1 -r '+e.details.sfps+' -f mjpeg'+x.cust_input+'-i '+e.url+''+x.watch+x.pipe;
+            x.tmp=x.loglevel+' -reconnect 1 -r '+e.details.sfps+' -f mjpeg'+x.cust_input+' -i '+e.url+''+x.watch+x.pipe;
         break;
         case'h264':
             if(e.mode=='record'){
                 x.watch+=x.vcodec+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+x.vf+' '+x.segment;
             }
-            x.tmp=x.loglevel+x.cust_input+'-i '+e.url+x.watch+x.pipe;
+            x.tmp=x.loglevel+x.cust_input+' -i '+e.url+x.watch+x.pipe;
         break;
         case'local':
             if(e.mode=='record'){
                 x.watch+=x.vcodec+x.time+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+x.vf+' '+x.segment;
             }
-            x.tmp=x.loglevel+x.cust_input+'-i '+e.path+''+x.watch+x.pipe;
+            x.tmp=x.loglevel+x.cust_input+' -i '+e.path+''+x.watch+x.pipe;
         break;
     }
     s.group[e.ke].mon[e.mid].ffmpeg=x.tmp;
@@ -871,40 +882,55 @@ var tx;
                 case'settings':
                     switch(d.ff){
                         case'edit':
-                            d.set=[],d.ar=[];
-                            if(d.form.pass&&d.form.pass!==''){d.form.pass=s.md5(d.form.pass);}else{delete(d.form.pass)};
-                            delete(d.form.password_again);
-                            d.for=Object.keys(d.form);
-                            d.for.forEach(function(v){
-                                d.set.push(v+'=?'),d.ar.push(d.form[v]);
-                            });
-                            d.ar.push(d.ke),d.ar.push(d.uid);
-                            sql.query('UPDATE Users SET '+d.set.join(',')+' WHERE ke=? AND uid=?',d.ar,function(err,r){
-                                tx({f:'user_settings_change',uid:d.uid,ke:d.ke,form:d.form});
-                            });
-                            d.form.details=JSON.parse(d.form.details);
-                            if(!d.form.details.sub){
-                                if(d.form.details.webdav_user&&
-                                   d.form.details.webdav_user!==''&&
-                                   d.form.details.webdav_pass&&
-                                   d.form.details.webdav_pass!==''&&
-                                   d.form.details.webdav_url&&
-                                   d.form.details.webdav_url!==''
-                                  ){
-                                    if(!d.form.details.webdav_dir||d.form.details.webdav_dir===''){
-                                        d.form.details.webdav_dir='/';
-                                        if(d.form.details.webdav_dir.slice(-1)!=='/'){d.form.details.webdav_dir+='/';}
-                                    }
-                                    s.group[d.ke].webdav = webdav(
-                                        d.form.details.webdav_url,
-                                        d.form.details.webdav_user,
-                                        d.form.details.webdav_pass
-                                    );
-                                    s.group[d.ke].init=d.form.details;
-                                }else{
-                                    delete(s.group[d.ke].webdav);
+                            sql.query('SELECT details FROM Users WHERE ke=? AND uid=?',[d.ke,d.uid],function(err,r){
+                                if(r&&r[0]){
+                                    r=r[0];
+                                d.d=JSON.parse(r.details);
+                                ///unchangeable from client side, so reset them incase they did.
+                                if(d.d.sub){
+                                    d.form.details=JSON.parse(d.form.details)
+                                    if(d.d.sub){d.form.details.sub=d.d.sub;}
+                                    if(d.d.size){d.form.details.size=d.d.size;}
+                                    if(d.d.super){d.form.details.super=d.d.super;}
+                                    d.form.details=JSON.stringify(d.form.details)
                                 }
-                            }
+                                ///
+                                d.set=[],d.ar=[];
+                                if(d.form.pass&&d.form.pass!==''){d.form.pass=s.md5(d.form.pass);}else{delete(d.form.pass)};
+                                delete(d.form.password_again);
+                                d.for=Object.keys(d.form);
+                                d.for.forEach(function(v){
+                                    d.set.push(v+'=?'),d.ar.push(d.form[v]);
+                                });
+                                d.ar.push(d.ke),d.ar.push(d.uid);
+                                sql.query('UPDATE Users SET '+d.set.join(',')+' WHERE ke=? AND uid=?',d.ar,function(err,r){
+                                    tx({f:'user_settings_change',uid:d.uid,ke:d.ke,form:d.form});
+                                });
+                                d.form.details=JSON.parse(d.form.details);
+                                if(!d.form.details.sub){
+                                    if(d.form.details.webdav_user&&
+                                       d.form.details.webdav_user!==''&&
+                                       d.form.details.webdav_pass&&
+                                       d.form.details.webdav_pass!==''&&
+                                       d.form.details.webdav_url&&
+                                       d.form.details.webdav_url!==''
+                                      ){
+                                        if(!d.form.details.webdav_dir||d.form.details.webdav_dir===''){
+                                            d.form.details.webdav_dir='/';
+                                            if(d.form.details.webdav_dir.slice(-1)!=='/'){d.form.details.webdav_dir+='/';}
+                                        }
+                                        s.group[d.ke].webdav = webdav(
+                                            d.form.details.webdav_url,
+                                            d.form.details.webdav_user,
+                                            d.form.details.webdav_pass
+                                        );
+                                        s.group[d.ke].init=d.form.details;
+                                    }else{
+                                        delete(s.group[d.ke].webdav);
+                                    }
+                                }
+                                }
+                            })
                         break;
                     }
                 break;

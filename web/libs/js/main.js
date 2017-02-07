@@ -71,7 +71,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 }
             break;
             case'signal':
-                d.e=$('#monitor_live_'+d.id+' .signal').addClass('btn-success').removeClass('btn-danger');d.signal=parseFloat(JSON.parse(d.mon.details).signal_check);
+                d.mon=$.ccio.mon[d.id];d.e=$('#monitor_live_'+d.id+' .signal').addClass('btn-success').removeClass('btn-danger');d.signal=parseFloat(JSON.parse(d.mon.details).signal_check);
                 if(!d.signal||d.signal==NaN){d.signal=10;};d.signal=d.signal*1000*60;
                 clearTimeout($.ccio.mon[d.id]._signal);$.ccio.mon[d.id]._signal=setTimeout(function(){d.e.addClass('btn-danger').removeClass('btn-success');},d.signal)
             break;
@@ -82,35 +82,54 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 d.check={c:0};
                 d.fn=function(){
                     if(!d.speed){d.speed=1000}
-                    $.ccio.snapshot(d,function(e,url){
-                        d.check.f=url;
-                        setTimeout(function(){
-                            $.ccio.snapshot(d,function(e,url){
-                                if(d.check.f===url){
-                                    if(d.check.c<3){
-                                        ++d.check.c;
-                                        setTimeout(function(){
-                                            d.fn();
-                                        },d.speed)
-                                    }else{
-                                        if(d.d.signal_check_log==1){
-                                            d.log={type:'Stream Check',msg:'Client side ctream check failed, attempting reconnect.'}
-                                            $.ccio.tm(4,d,'#logs,.monitor_item[mid="'+d.id+'"][ke="'+d.ke+'"] .logs')
-                                        }
-                                        delete(d.check)
-                                        $.ccio.cx({f:'monitor',ff:'watch_on',id:d.id});
-                                    }
-                                }else{
-                                    if(d.d.signal_check_log==1){
-                                        d.log={type:'Stream Check',msg:'Success'}
-                                        $.ccio.tm(4,d,'#logs,.monitor_item[mid="'+d.id+'"][ke="'+d.ke+'"] .logs')
-                                    }
-                                    delete(d.check)
-                                    $.ccio.init('signal',d);
+                    switch(d.d.stream_type){
+                        case'hls':
+                            if(d.p.find('video')[0].paused){
+                                if(d.d.signal_check_log==1){
+                                    d.log={type:'Stream Check',msg:'Client side ctream check failed, attempting reconnect.'}
+                                    $.ccio.tm(4,d,'#logs,.monitor_item[mid="'+d.id+'"][ke="'+d.ke+'"] .logs')
                                 }
+                                $.ccio.cx({f:'monitor',ff:'watch_on',id:d.id});
+                            }else{
+                                if(d.d.signal_check_log==1){
+                                    d.log={type:'Stream Check',msg:'Success'}
+                                    $.ccio.tm(4,d,'#logs,.monitor_item[mid="'+d.id+'"][ke="'+d.ke+'"] .logs')
+                                }
+                                $.ccio.init('signal',d);
+                            }
+                        break;
+                        default:
+                            $.ccio.snapshot(d,function(e,url){
+                                d.check.f=url;
+                                setTimeout(function(){
+                                    $.ccio.snapshot(d,function(e,url){
+                                        if(d.check.f===url){
+                                            if(d.check.c<3){
+                                                ++d.check.c;
+                                                setTimeout(function(){
+                                                    d.fn();
+                                                },d.speed)
+                                            }else{
+                                                if(d.d.signal_check_log==1){
+                                                    d.log={type:'Stream Check',msg:'Client side ctream check failed, attempting reconnect.'}
+                                                    $.ccio.tm(4,d,'#logs,.monitor_item[mid="'+d.id+'"][ke="'+d.ke+'"] .logs')
+                                                }
+                                                delete(d.check)
+                                                $.ccio.cx({f:'monitor',ff:'watch_on',id:d.id});
+                                            }
+                                        }else{
+                                            if(d.d.signal_check_log==1){
+                                                d.log={type:'Stream Check',msg:'Success'}
+                                                $.ccio.tm(4,d,'#logs,.monitor_item[mid="'+d.id+'"][ke="'+d.ke+'"] .logs')
+                                            }
+                                            delete(d.check)
+                                            $.ccio.init('signal',d);
+                                        }
+                                    });
+                                },d.speed)
                             });
-                        },d.speed)
-                    });
+                        break;
+                    }
                 }
                 d.fn();
                 }catch(er){
@@ -490,9 +509,9 @@ $.ccio.ws.on('f',function (d){
             d.e.find('.monitor_mode').text(d.mode)
         break;
         case'monitor_watch_off':case'monitor_stopping':
-            clearTimeout($.ccio.mon[d.id].sk)
             d.o=$.ccio.op().watch_on;if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=0;$.ccio.op('watch_on',d.o);
             if($.ccio.mon[d.id]){
+                clearTimeout($.ccio.mon[d.id].sk)
                 clearInterval($.ccio.mon[d.id].signal);delete($.ccio.mon[d.id].signal);
                 $.ccio.mon[d.id].watch=0;
                 $('#monitor_live_'+d.id).remove();
@@ -525,10 +544,12 @@ $.ccio.ws.on('f',function (d){
                             }
                         });
                     }
-                    clearTimeout($.ccio.mon[d.id].sk)
-                    $.ccio.mon[d.id].sk=setTimeout(function(){
-                        $.ccio.init('signal-check',d)
-                    },15000)
+                    clearTimeout($.ccio.mon[d.id].sk);
+                    if(d.d.signal_check!=='0'){
+                        $.ccio.mon[d.id].sk=setTimeout(function(){
+                            $.ccio.init('signal-check',d)
+                        },15000)
+                    }
                 break;
                 case'mjpeg':
                     $('#monitor_live_'+d.id+' .stream-element').attr('src',$user.auth_token+'/mjpeg/'+d.ke+'/'+d.id+'/full')
@@ -551,6 +572,7 @@ $.ccio.ws.on('f',function (d){
             };
             image.src='data:image/jpeg;base64,'+d.frame;
             $.ccio.mon[d.id].last_frame='data:image/jpeg;base64,'+d.frame;
+            $.ccio.init('signal',d);
         break;
     }
     delete(d);
