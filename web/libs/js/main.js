@@ -364,9 +364,11 @@ $.ccio.ws.on('f',function (d){
         break;
         case'opencv_plugged':
             $('.shinobi-opencv').show()
+            $('.shinobi-opencv-invert').hide()
         break;
         case'opencv_unplugged':
             $('.shinobi-opencv').hide()
+            $('.shinobi-opencv-invert').show()
         break;
         case'log':
             $.ccio.tm(4,d,'#logs,.monitor_item[mid="'+d.mid+'"][ke="'+d.ke+'"] .logs')
