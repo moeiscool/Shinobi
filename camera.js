@@ -366,7 +366,8 @@ s.ffmpeg=function(e,x){
     if(e.details.stream_quality&&e.details.stream_quality!==''){x.stream_quality=e.details.stream_quality}else{x.stream_quality=''}
     switch(e.details.stream_type){
         case'hls':
-    //stream quality
+            if(x.cust_stream.indexOf('-tune')===-1){x.cust_stream+=' -tune zerolatency'}
+            if(x.cust_stream.indexOf('-g ')===-1){x.cust_stream+=' -g 1'}
             if(x.stream_quality)x.stream_quality=' -crf '+x.stream_quality;
             x.pipe=x.preset_stream+x.stream_quality+x.stream_acodec+x.stream_vcodec+x.stream_fps+' -f hls -s '+x.ratio+x.cust_stream+' -hls_time '+x.hls_time+' -hls_list_size '+x.hls_list_size+' -start_number 0 -hls_allow_cache 0 -hls_flags +delete_segments+omit_endlist '+e.sdir+'s.m3u8';
         break;
