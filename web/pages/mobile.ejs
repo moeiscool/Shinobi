@@ -20,30 +20,44 @@
   </head>
   <body>
     <div class="demo-layout demo-blog mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
-      <header class="demo-header mdl-layout__header mdl-color--grey-100 mdl-color-text--grey-600">
+      <header id="main_header" class="demo-header mdl-layout__header">
         <div class="mdl-layout__header-row">
-          <span class="mdl-layout-title">Home</span>
+        <ul class="nav navbar-nav hidden-xs">
+            <li mid="" ke=""><a class="info-number" monitor="edit">&nbsp;<i class="fa fa-plus"></i>&nbsp;</a></li>
+            <li class="os_bars">
+                <div class="display-table">
+                    <div class="cpu_load display-table-cell">
+                        <span class="pull-right percent"></span>
+                        <label><span class="os_cpuCount"></span> CPU<span class="os_cpuCount_trailer"></span> on <span class="os_platform" style="text-transform:capitalize"></span></label>
+                      <div class="progress">
+                        <div class="progress-bar progress-bar-warning" role="progressbar" style="width:0%"></div>
+                      </div>
+                    </div>
+                    <div class="ram_load display-table-cell">
+                        <span class="pull-right percent"></span>
+                       <label><span class="os_totalmem" style="letter-spacing:2px;font-weight:100"></span> MB RAM</label>
+                      <div class="progress">
+                        <div class="progress-bar progress-bar-warning" role="progressbar" style="width:0%"></div>
+                      </div>
+                    </div>
+                </div>
+            </li>
+        </ul>
           <div class="mdl-layout-spacer"></div>
-          <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
-            <label class="mdl-button mdl-js-button mdl-button--icon" for="search">
-              <i class="material-icons">search</i>
-            </label>
-            <div class="mdl-textfield__expandable-holder">
-              <input class="mdl-textfield__input" type="text" id="search">
-              <label class="mdl-textfield__label" for="search">Enter your query...</label>
-            </div>
-          </div>
-          <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon" id="hdrbtn">
-            <i class="material-icons">more_vert</i>
-          </button>
-          <ul class="mdl-menu mdl-js-menu mdl-js-ripple-effect mdl-menu--bottom-right" for="hdrbtn">
-            <li class="mdl-menu__item">About</li>
-            <li class="mdl-menu__item">Contact</li>
-            <li class="mdl-menu__item">Legal information</li>
-          </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li role="presentation" class="dropdown">
+                  <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown" aria-expanded="true">&nbsp;<i class="fa fa-hdd-o"></i>&nbsp;</a>
+                  <ul id="disk" class="dropdown-menu list-unstyled msg_list scrollable" role="menu"></ul>
+                </li>
+                <li role="presentation" class="dropdown">
+                  <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown" aria-expanded="true">&nbsp;<i class="fa fa-exclamation-triangle"></i>&nbsp;</a>
+                  <ul id="logs" class="dropdown-menu list-unstyled msg_list scrollable" role="menu">
+                  </ul>
+                </li>
+              </ul>
         </div>
       </header>
-      <div class="demo-drawer mdl-layout__drawer mdl-color--blue-grey-900 mdl-color-text--blue-grey-50">
+      <div class="demo-drawer mdl-layout__drawer">
         <header class="demo-drawer-header">
           <div class="demo-avatar-dropdown">
             <span class="usermail"></span>
@@ -53,17 +67,16 @@
               <span class="visuallyhidden">Accounts</span>
             </button>
             <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="accbtn">
-              <li class="mdl-menu__item">hello@example.com</li>
-              <li class="mdl-menu__item">info@example.com</li>
-              <li class="mdl-menu__item"><i class="material-icons">add</i>Add another account...</li>
+                <li class="mdl-menu__item" data-toggle="modal" data-target="#settings"><i class="fa fa-gears"></i> &nbsp; Settings</li>
+                <li class="mdl-menu__item" data-toggle="modal" data-target="#apis"><i class="fa fa-code"></i> &nbsp; API</li>
+                <li class="mdl-menu__item" data-toggle="modal" data-target="#logs_modal"><i class="fa fa-exclamation-triangle"></i> &nbsp; Logs</li>
+                <li class="mdl-menu__item" class_toggle="list-blocks" data-target="#left_menu"><i class="fa fa-camera"></i>&nbsp; List Toggle</li>
+                <li class="mdl-menu__item" class_toggle="mosaic" data-target="#monitors_live"><i class="fa fa-th"></i>&nbsp; Montage</li>
+                <li class="mdl-menu__item logout"><i class="fa fa-sign-out"></i>&nbsp; Log Out</li>
             </ul>
           </div>
         </header>
-        <nav class="demo-navigation mdl-navigation side-menu list-blocks">
-            <a class="mdl-navigation__link" data-toggle="modal" data-target="#settings"><i class="fa fa-gears"></i> &nbsp; Settings</a>
-            <a class="mdl-navigation__link" data-toggle="modal" data-target="#apis"><i class="fa fa-code"></i> &nbsp; API</a>
-            <a class="mdl-navigation__link" data-toggle="modal" data-target="#logs_modal"><i class="fa fa-exclamation-triangle"></i> &nbsp; Logs</a>
-            <h4>Monitors</h4>
+        <nav class="demo-navigation mdl-navigation side-menu" id="left_menu">
             <div id="monitors_list" class="display-table"></div>
           <div class="mdl-layout-spacer"></div>
         </nav>
@@ -72,34 +85,6 @@
           <div class="demo-blog__posts mdl-grid" id="monitors_live">
 
           </div>
-          <nav class="demo-nav mdl-cell mdl-cell--12-col">
-            <div class="section-spacer"></div>
-            <a href="entry.html" class="demo-nav__button" title="show more">
-              More
-              <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
-                <i class="material-icons" role="presentation">arrow_forward</i>
-              </button>
-            </a>
-          </nav>
-        <footer class="mdl-mini-footer">
-          <div class="mdl-mini-footer--left-section">
-            <button class="mdl-mini-footer--social-btn social-btn social-btn__twitter">
-              <span class="visuallyhidden">Twitter</span>
-            </button>
-            <button class="mdl-mini-footer--social-btn social-btn social-btn__blogger">
-              <span class="visuallyhidden">Facebook</span>
-            </button>
-            <button class="mdl-mini-footer--social-btn social-btn social-btn__gplus">
-              <span class="visuallyhidden">Google Plus</span>
-            </button>
-          </div>
-          <div class="mdl-mini-footer--right-section">
-            <button class="mdl-mini-footer--social-btn social-btn__share">
-              <i class="material-icons" role="presentation">share</i>
-              <span class="visuallyhidden">share</span>
-            </button>
-          </div>
-        </footer>
       </main>
     </div>
       <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" style="position: fixed; left: -1000px; height: -1000px;">

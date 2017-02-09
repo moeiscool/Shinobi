@@ -234,7 +234,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                         tmp+='<iframe class="stream-element"></iframe>';
                     break;
                     case'hls':
-                        tmp+='<video controls class="stream-element" autoplay></video>';
+                        tmp+='<video class="stream-element" autoplay></video>';
                     break;
                     default://base64
                         tmp+='<canvas class="stream-element"></canvas>';
@@ -252,7 +252,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 tmp+='</div>';
                 tmp+='</div>';
                 tmp+='</div>';
-                tmp+='<div class="mdl-card something-else mdl-cell mdl-cell--8-col mdl-cell--4-col-desktop">';
+                tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col mdl-cell--4-col-desktop">';
                 tmp+='<div class="mdl-card__media mdl-color--white mdl-color-text--grey-600">';
                 tmp+='<div class="side-menu logs scrollable"></div>';
                 tmp+='<div class="side-menu videos_monitor_list glM'+d.mid+' scrollable"><ul></ul></div>';
