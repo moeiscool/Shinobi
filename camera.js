@@ -1360,24 +1360,28 @@ app.post('/',function (req,res){
             sql.query("UPDATE Users SET auth=? WHERE ke=? AND uid=?",[r.auth,r.ke,r.uid])
             req.resp={ok:true,auth_token:r.auth,ke:r.ke,uid:r.uid,mail:r.mail,details:r.details,dropbox:config.dropbox};
             r.details=JSON.parse(r.details);
-            if(req.body.admin){
-                //admin checkbox selected
-                if(!r.details.sub){
-                    sql.query('SELECT uid,mail,details FROM Users WHERE ke=? AND details LIKE \'%"sub"%\'',[r.ke],function(err,r) {
-                        res.render("admin",{$user:req.resp,$subs:r});
-                    })
-                }
+            if(req.body.mobile){
+                res.render("mobile",{$user:req.resp});
             }else{
-                //no admin checkbox selected
-                if(!req.body.recorder){
-                    //dashboard
-                    res.render("home",{$user:req.resp});
+                if(req.body.admin){
+                    //admin checkbox selected
+                    if(!r.details.sub){
+                        sql.query('SELECT uid,mail,details FROM Users WHERE ke=? AND details LIKE \'%"sub"%\'',[r.ke],function(err,r) {
+                            res.render("admin",{$user:req.resp,$subs:r});
+                        })
+                    }
                 }else{
-                    //streamer
-                    sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
-                        req.resp.mons=rr;
-                        res.render("streamer",{$user:req.resp});
-                    })
+                    //no admin checkbox selected
+                    if(!req.body.recorder){
+                        //dashboard
+                        res.render("home",{$user:req.resp});
+                    }else{
+                        //streamer
+                        sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
+                            req.resp.mons=rr;
+                            res.render("streamer",{$user:req.resp});
+                        })
+                    }
                 }
             }
         }else{
