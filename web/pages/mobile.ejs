@@ -22,9 +22,10 @@
     <div class="demo-layout demo-blog mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
       <header id="main_header" class="demo-header mdl-layout__header">
         <div class="mdl-layout__header-row">
-        <ul class="nav navbar-nav hidden-xs">
-            <li mid="" ke=""><a class="info-number" monitor="edit">&nbsp;<i class="fa fa-plus"></i>&nbsp;</a></li>
-            <li class="os_bars">
+        <ul class="nav navbar-nav">
+            <li class_toggle="mosaic" data-target="#monitors_live"><a>&nbsp;<i class="fa fa-th"></i>&nbsp;</a></li>
+            <li mid="" ke="" class="hidden-xs"><a monitor="edit">&nbsp;<i class="fa fa-plus"></i>&nbsp;</a></li>
+            <li class="os_bars hidden-xs">
                 <div class="display-table">
                     <div class="cpu_load display-table-cell">
                         <span class="pull-right percent"></span>
@@ -60,12 +61,7 @@
       <div class="demo-drawer mdl-layout__drawer">
         <header class="demo-drawer-header">
           <div class="demo-avatar-dropdown">
-            <span class="usermail"></span>
-            <div class="mdl-layout-spacer"></div>
-            <button id="accbtn" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
-              <i class="material-icons" role="presentation">arrow_drop_down</i>
-              <span class="visuallyhidden">Accounts</span>
-            </button>
+            <button id="accbtn" style="color:#fff" class="usermail mdl-button mdl-js-button mdl-js-ripple-effect"></button>
             <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="accbtn">
                 <li class="mdl-menu__item" data-toggle="modal" data-target="#settings"><i class="fa fa-gears"></i> &nbsp; Settings</li>
                 <li class="mdl-menu__item" data-toggle="modal" data-target="#apis"><i class="fa fa-code"></i> &nbsp; API</li>
@@ -74,6 +70,10 @@
                 <li class="mdl-menu__item" class_toggle="mosaic" data-target="#monitors_live"><i class="fa fa-th"></i>&nbsp; Montage</li>
                 <li class="mdl-menu__item logout"><i class="fa fa-sign-out"></i>&nbsp; Log Out</li>
             </ul>
+            <div class="mdl-layout-spacer"></div>
+            <button class_toggle="list-blocks" data-target="#left_menu" class="mdl-button mdl-button--icon">
+              <i class="fa fa-camera"></i>
+            </button>
           </div>
         </header>
         <nav class="demo-navigation mdl-navigation side-menu" id="left_menu">
@@ -82,7 +82,7 @@
         </nav>
       </div>
       <main class="mdl-layout__content selected" id="main_canvas">
-          <div class="demo-blog__posts mdl-grid" id="monitors_live">
+          <div class="demo-blog__posts mdl-grid mosaic" id="monitors_live">
 
           </div>
       </main>

@@ -20,6 +20,8 @@ s.moment_noOffset=function(e,x){
 s.nameToTime=function(x){x=x.replace('.webm','').replace('.mp4','').split('T'),x[1]=x[1].replace(/-/g,':');x=x.join(' ');return x;}
 io = require('socket.io-client')('ws://localhost:'+config.port);//connect to master
 s.cx=function(x){return io.emit('cron',x)}
+//emulate master socket emitter
+s.tx=function(x,y){s.cx({f:'s.tx',data:x,to:y})}
 //Cron Job
 s.cx({f:'init',time:moment()})
 s.cron=function(){
@@ -44,57 +46,62 @@ s.cron=function(){
                         evs.forEach(function(ev){
                             es.qu.push('(mid=? AND time=?)');es.ar.push(ev.mid),es.ar.push(ev.time);
                             es.del.push(s.dir.events+v.ke+'/'+ev.mid+'/'+s.moment_noOffset(ev.time)+'.'+ev.ext);
+                            exec('rm '+ev.dir);
+                            s.tx({f:'video_delete',filename:s.moment_noOffset(ev.time)+'.'+ev.ext,mid:ev.mid,ke:ev.ke,time:ev.time,end:s.moment_noOffset(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+ev.ke);
                         });
                         if(es.del.length>0){
-                            sql.query('DELETE FROM Videos WHERE ke =? AND ('+es.qu+')',es.ar,function(){
-                                del(es.del).then(paths => {
-                                    s.cx({f:'did',msg:es.del.length+' old events deleted',ke:v.ke,time:moment()})
-                                });
-                            })
+                            sql.query('DELETE FROM Videos WHERE ke =? AND ('+es.qu+')',es.ar)
                         }else{
                             s.cx({f:'did',msg:'0 old events deleted',time:moment()})
                         }
                     }
-                    es.size={};
                     //purge SQL rows with no file
-                    es.size[v.ke]=0;
-                    sql.query('SELECT * FROM Videos WHERE ke = ?;',[v.ke],function(err,evs){
-                        if(evs&&evs[0]){
-                            es.del=[];es.ar=[v.ke];
-                            evs.forEach(function(ev){
-                               es.size[v.ke]+=ev.size/1000000;
-                                ev.dir=s.dir.events+v.ke+'/'+ev.mid+'/'+s.moment_noOffset(ev.time)+'.'+ev.ext;
-                                if(!fs.existsSync(ev.dir)){
-                                    es.del.push('(mid=? AND time=?)');
-                                    es.ar.push(ev.mid),es.ar.push(ev.time);
-                                }
-                            })
-                            if(es.del.length>0){
-                                s.cx({f:'did',msg:es.del.length+' SQL rows with no file deleted',ke:v.ke,time:moment()})
-                                es.del=es.del.join(' OR ');
-                                sql.query('DELETE FROM Videos WHERE ke =? AND ('+es.del+')',es.ar)
-                            }else{
-                                s.cx({f:'did',msg:'0 SQL rows with no file deleted',ke:v.ke,time:moment()})
-                            }
-                        }
-                        if(es.size[v.ke]>v.d.size){
-                            sql.query('SELECT * FROM Videos WHERE ke=? ORDER BY `time` ASC LIMIT 10',[v.ke],function(err,evs){
-                            es.del=[];es.ar=[v.ke];
-                            evs.forEach(function(ev){
-                                ev.dir=s.dir.events+v.ke+'/'+ev.mid+'/'+s.moment_noOffset(ev.time)+'.'+ev.ext;
-                                if(!fs.existsSync(ev.dir)){
-                                    es.del.push('(mid=? AND time=?)');
-                                    es.ar.push(ev.mid),es.ar.push(ev.time);
-                                }
-                            })
-                                sql.query('DELETE FROM Videos WHERE ke =? AND ('+es.del+')',es.ar,function(){
-                                    del(es.del).then(paths => {
-                                        s.cx({f:'did',msg:es.del.length+' old events deleted',ke:v.ke,time:moment()})
-                                    });
+                    es.fn=function(){
+                        es.size=0;
+                        sql.query('SELECT * FROM Videos WHERE ke = ?;',[v.ke],function(err,evs){
+                            if(evs&&evs[0]){
+                                es.del=[];es.ar=[v.ke];
+                                evs.forEach(function(ev){
+                                   es.size+=ev.size/1000000;
+                                    ev.dir=s.dir.events+v.ke+'/'+ev.mid+'/'+s.moment_noOffset(ev.time)+'.'+ev.ext;
+                                    if(!fs.existsSync(ev.dir)){
+                                        es.del.push('(mid=? AND time=?)');
+                                        es.ar.push(ev.mid),es.ar.push(ev.time);
+                                        exec('rm '+ev.dir);
+                                        s.tx({f:'video_delete',filename:s.moment_noOffset(ev.time)+'.'+ev.ext,mid:ev.mid,ke:ev.ke,time:ev.time,end:s.moment_noOffset(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+ev.ke);
+                                    }
                                 })
-                            })
-                        }
-                    })
+                                if(es.del.length>0){
+                                    s.cx({f:'did',msg:es.del.length+' SQL rows with no file deleted',ke:v.ke,time:moment()})
+                                    es.del=es.del.join(' OR ');
+                                    sql.query('DELETE FROM Videos WHERE ke =? AND ('+es.del+')',es.ar)
+                                }else{
+                                    s.cx({f:'did',msg:'0 SQL rows with no file deleted',ke:v.ke,time:moment()})
+                                }
+                            }
+                            if(es.size>v.d.size){
+                                sql.query('SELECT * FROM Videos WHERE ke=? ORDER BY `time` ASC LIMIT 10',[v.ke],function(err,evs){
+                                es.del=[];es.ar=[v.ke];
+                                    evs.forEach(function(ev){
+                                        ev.dir=s.dir.events+v.ke+'/'+ev.mid+'/'+s.moment_noOffset(ev.time)+'.'+ev.ext;
+                                        es.del.push('(mid=? AND time=?)');
+                                        es.ar.push(ev.mid),es.ar.push(ev.time);
+                                        exec('rm '+ev.dir);
+                                        s.tx({f:'video_delete',filename:s.moment_noOffset(ev.time)+'.'+ev.ext,mid:ev.mid,ke:ev.ke,time:ev.time,end:s.moment_noOffset(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+ev.ke);
+
+                                    });
+                                    if(es.del.length>0){
+                                        es.qu=es.del.join(' OR ');
+                                        sql.query('DELETE FROM Videos WHERE ke =? AND ('+es.qu+')',es.ar,function(){
+                                            es.fn()
+                                        })
+                                        s.cx({f:'did',msg:es.del.length+' old events deleted because over max of '+v.d.size+' MB',ke:v.ke,time:moment()})
+                                    }
+                                })
+                            }
+                        })
+                    };
+                    es.fn();
                 })
             })
         }

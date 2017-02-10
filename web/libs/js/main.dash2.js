@@ -83,6 +83,9 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 d.fn=function(){
                     if(!d.speed){d.speed=1000}
                     switch(d.d.stream_type){
+                        case'b64':
+                            d.p.resize()
+                        break;
                         case'hls':
                             if(d.p.find('video')[0].paused){
                                 if(d.d.signal_check_log==1){
@@ -253,7 +256,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 tmp+='</div>';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col mdl-cell--4-col-desktop">';
-                tmp+='<div class="mdl-card__media mdl-color--white mdl-color-text--grey-600">';
+                tmp+='<div class="mdl-card__media">';
                 tmp+='<div class="side-menu logs scrollable"></div>';
                 tmp+='<div class="side-menu videos_monitor_list glM'+d.mid+' scrollable"><ul></ul></div>';
                 tmp+='</div>';
@@ -868,7 +871,15 @@ $('body')
     }
 })
 .on('click','[class_toggle]',function(e){
-    e.e=$(this);$(e.e.attr('data-target')).toggleClass(e.e.attr('class_toggle'))
+    e.e=$(this);
+    e.n=e.e.attr('data-target');
+    e.v=e.e.attr('class_toggle');
+    e.o=$.ccio.op().class_toggle;
+    if($(e.n).hasClass(e.v)){e.t=0}else{e.t=1}
+    if(!e.o)e.o={};
+    e.o[e.n]=[e.v,e.t];
+    $.ccio.op('class_toggle',e.o)
+    $(e.n).toggleClass(e.v);
 })
 .on('click','[monitor]',function(e){
     e.e=$(this),e.a=e.e.attr('monitor'),e.p=e.e.parents('[mid]'),e.ke=e.p.attr('ke'),e.mid=e.p.attr('mid'),e.mon=$.ccio.mon[e.mid]
@@ -967,6 +978,7 @@ $('body')
         break;
         case'bigify':
             e.m=$('#monitors_live')
+            if(e.p.hasClass('selected')){e.m.find('.monitor_item').resize();return}
             $('.monitor_item .videos_list').remove();
             e.e=e.e.parents('.monitor_item');
             $('.videos_list.glM'+e.mid).clone().appendTo(e.e.find('.hud .videos_monitor_list')).find('h3').remove()
@@ -1045,7 +1057,6 @@ $('body')
 //                .find('[detail="timestamp"]').val('0').change()
         break;
     }
-    e.e=$(this);$(e.e.attr('data-target')).toggleClass(e.e.attr('class_toggle'))
 })
 
 $('#video_viewer,#confirm_window').on('hidden.bs.modal',function(){
@@ -1067,3 +1078,17 @@ $('body')
            $(this).show();
     });
 }); 
+
+////
+$(document).ready(function(e){
+    e.o=$.ccio.op().class_toggle;
+    if(e.o){
+        $.each(e.o,function(n,v){
+            if(v[1]===1){
+                $(n).addClass(v[0])
+            }else{
+                $(n).removeClass(v[0])
+            }
+        })
+    }
+})

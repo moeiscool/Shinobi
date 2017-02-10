@@ -253,7 +253,7 @@ _:-ms-input-placeholder, :root .demo-graph {
   padding:10px 16px;min-height:auto;
 }
 .demo-blog:not(.demo-blog--blogpost) .mdl-card__supporting-text ~ .mdl-card__supporting-text {
-  border-top: 1px solid rgba(0,0,0,0.1);
+  border-top: 1px solid #54502d;
 }
 
 .demo-blog .mdl-card__actions:first-child {

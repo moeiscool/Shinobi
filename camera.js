@@ -119,14 +119,24 @@ s.log=function(e,x){
 //directories
 s.group={};
 if(!config.defaultMjpeg){config.defaultMjpeg=__dirname+'/web/libs/img/bg.jpg'}
-if(!config.videosDir){config.videosDir=__dirname+'/videos/'}
-if(!config.streamDir){config.streamDir=__dirname+'/streams/'}
-s.dir={videos:config.videosDir,streams:config.streamDir};
-if(!fs.existsSync(s.dir.videos)){
-    fs.mkdirSync(s.dir.videos);
+//default stream folder check
+if(!config.streamDir){
+    config.streamDir='/dev/shm'
+    if(!fs.existsSync(config.streamDir)){
+        config.streamDir=__dirname+'/streams/'
+    }else{
+        config.streamDir+='/streams/'
+    }
 }
+if(!config.videosDir){config.videosDir=__dirname+'/videos/'}
+s.dir={videos:config.videosDir,streams:config.streamDir};
+//streams dir
 if(!fs.existsSync(s.dir.streams)){
     fs.mkdirSync(s.dir.streams);
+}
+//videos dir
+if(!fs.existsSync(s.dir.videos)){
+    fs.mkdirSync(s.dir.videos);
 }
 ////Camera Controller
 s.init=function(x,e){
@@ -1108,11 +1118,16 @@ var tx;
             case'msg':
 
             break;
+            case's.tx':
+                s.tx(d.data,d.to)
+            break;
             case'start':case'end':
                 d.mid='_cron';s.log(d,{type:'cron',msg:d.msg})
             break;
+            default:
+                console.log('CRON : ',d)
+            break;
         }
-        console.log('CRON : ',d)
     })
     // admin page socket functions
     cn.on('a',function(d){
@@ -1451,7 +1466,7 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
                   res.write("Content-Type: image/jpeg\r\n");
                   res.write("Content-Length: " + content.length + "\r\n");
                   res.write("\r\n");
-                  res.write(content, 'binary');
+                  res.write(content,'binary');
                   res.write("\r\n");
                   setTimeout(send_next,1000/r.details.stream_fps);
                 };
