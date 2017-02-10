@@ -30,7 +30,7 @@ img{max-width:100%}
 }
 .mosaic .monitor_item .mdl-cell--8-col{width:100%;border:0;border-radius:0;margin:0;position:relative}
 .mosaic .monitor_item .mdl-cell--4-col-desktop,.mosaic .monitor_item .mdl-card__supporting-text{display:none}
-.mosaic .monitor_item .mdl-card__supporting-text:not(.meta){display:flex;position:absolute;bottom:0;left:0;opacity:0;}
+.mosaic .monitor_item .mdl-card__supporting-text:not(.meta){display:block;position:absolute;bottom:0;left:0;opacity:0;}
 .mosaic .monitor_item:hover .mdl-card__supporting-text:not(.meta){opacity:1}
 .mdl-layout__header-row{padding-left:10!important}
 .mdl-layout__header-row .nav>li>a{border-radius:50%;}
