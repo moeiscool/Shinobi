@@ -1375,8 +1375,8 @@ app.post('/',function (req,res){
             sql.query("UPDATE Users SET auth=? WHERE ke=? AND uid=?",[r.auth,r.ke,r.uid])
             req.resp={ok:true,auth_token:r.auth,ke:r.ke,uid:r.uid,mail:r.mail,details:r.details,dropbox:config.dropbox};
             r.details=JSON.parse(r.details);
-            if(req.body.mobile){
-                res.render("mobile",{$user:req.resp});
+            if(req.body.classic){
+                res.render("classic",{$user:req.resp});
             }else{
                 if(req.body.admin){
                     //admin checkbox selected

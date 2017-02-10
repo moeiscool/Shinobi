@@ -591,8 +591,9 @@ $.ccio.ws.on('f',function (d){
             d.signal=parseFloat(d.d.signal_check);
             if(!d.signal||d.signal==NaN){d.signal=10;};d.signal=d.signal*1000*60;
             if(d.signal>0){
-//                $.ccio.mon[d.id].signal=setInterval(function(){$.ccio.init('signal-check',{id:d.id,ke:d.ke})},d.signal);
+                $.ccio.mon[d.id].signal=setInterval(function(){$.ccio.init('signal-check',{id:d.id,ke:d.ke})},d.signal);
             }
+            $('.monitor_item[mid="'+d.id+'"][ke="'+d.ke+'"]').resize()
         break;
         case'monitor_mjpeg_url':
             $('#monitor_live_'+d.id+' iframe').attr('src',location.protocol+'//'+location.host+d.watch_url);
@@ -1064,7 +1065,7 @@ $('#video_viewer,#confirm_window').on('hidden.bs.modal',function(){
 });
 $('body')
 .on('resize','#monitors_live .monitor_item',function(e){
-    e.e=$(this);
+    e.e=$(this).find('.mdl-card__media');
     e.c=e.e.find('canvas');
     e.c.attr('height',e.e.height());
     e.c.attr('width',e.e.width());
