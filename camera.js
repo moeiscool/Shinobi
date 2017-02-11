@@ -152,7 +152,6 @@ s.init=function(x,e){
             if(e.type==='record'){e.record=1}else{e.record=0}
             if(!s.group[e.ke].mon[e.mid].record){s.group[e.ke].mon[e.mid].record={yes:e.record}};
             if(!s.group[e.ke].mon[e.mid].started){s.group[e.ke].mon[e.mid].started=0};
-            if(!s.group[e.ke].mon[e.mid].emitlist){s.group[e.ke].mon[e.mid].emitlist=0};
             if(s.group[e.ke].mon[e.mid].delete){clearTimeout(s.group[e.ke].mon[e.mid].delete)}
             s.init('apps',e)
         break;
@@ -1447,7 +1446,7 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
                     r.details.stream_fps=r.details.stream_fps=parseFloat(r.details.stream_fps);
                 }
                 res.writeHead(200, {
-                'Content-Type': 'multipart/x-mixed-replace; boundary=ShinobiBOUNDARY',
+                'Content-Type': 'multipart/x-mixed-replace; boundary=shinobi',
                 'Cache-Control': 'no-cache',
                 'Connection': 'close',
                 'Pragma': 'no-cache'
@@ -1456,30 +1455,30 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
                 var stop = false;
                 res.connection.on('close',function(){ stop = true; });
                 var content;
-                ++s.group[req.params.ke].mon[req.params.id].emitlist;
-                s.group[req.params.ke].mon[req.params.id].emitter.removeListener('data',function(){})
-                s.group[req.params.ke].mon[req.params.id].emitter.on('data',function(d){
-                    if (stop)
-                      return;
-                    if(!d){
-                        content = fs.readFileSync(config.defaultMjpeg,'binary');
-                        res.write("--shinobi\r\n");
-                        res.write("Content-Type: image/jpeg\r\n");
-                        res.write("Content-Length: " + content.length + "\r\n");
-                        res.write("\r\n");
+                if(s.group[req.params.ke]&&s.group[req.params.ke].mon[req.params.id]){
+                    s.group[req.params.ke].mon[req.params.id].emitter.removeListener('data',function(){})
+                    s.group[req.params.ke].mon[req.params.id].emitter.on('data',function(d){
+                        if (stop)
+                          return;
+                        if(!d){
+                            content = fs.readFileSync(config.defaultMjpeg,'binary');
+                            res.write("--shinobi\r\n");
+                            res.write("Content-Type: image/jpeg\r\n");
+                            res.write("Content-Length: " + content.length + "\r\n");
+                            res.write("\r\n");
+                            res.write(content,'binary');
+                            res.write("\r\n");
+                        }else{
+                            content = d;
+                        }
                         res.write(content,'binary');
-                        res.write("\r\n");
-                    }else{
-                        content = d;
-                    }
-                    res.write(content,'binary');
-                })
-                res.on('close', function () {
-                    s.group[req.params.ke].mon[req.params.id].emitlist=s.group[req.params.ke].mon[req.params.id].emitlist-1;
-                    if(s.group[req.params.ke].mon[req.params.id].emitlist<1){
+                    })
+                    res.on('close', function () {
                         s.group[req.params.ke].mon[req.params.id].emitter.removeListener('data',function(){})
-                    }
-                });
+                    });
+                }else{
+                    res.end();
+                }
             }else{
                 res.send('No Camera Found');
                 res.end();
