@@ -1,3 +1,25 @@
+(function( $ ){
+    $.fn.fullscreen=function(){
+        var x=function(c){
+            if (c.requestFullscreen) {
+              c.requestFullscreen();
+            } else if (c.mozRequestFullScreen) {
+              c.mozRequestFullScreen();
+            } else if (c.webkitRequestFullscreen) {
+              c.webkitRequestFullscreen();
+            }
+        }
+        if(this instanceof Array){
+            $.each(function(n,v){
+                x(v)
+            })
+        }else{
+            x(this)
+        }
+        return this;
+    }
+})( jQuery );
+
 $.ccio={fr:$('#files_recent'),mon:{}};
     
     $.ccio.gid=function(x){
@@ -245,7 +267,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 }
                 tmp+='</div>';
                 tmp+='<div class="mdl-card__supporting-text text-center">';
-                tmp+='<div class="btn-group btn-group-lg"><a title="Snapshot" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="Show Logs" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="Enlarge" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="Status Indicator, Click to Recconnect" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-circle"></i></a> <a title="Calendar" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="Videos List" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a class="btn btn-default" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Enlarge" monitor="bigify" class="btn btn-default"><i class="fa fa-expand"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
+                tmp+='<div class="btn-group btn-group-lg"><a title="Snapshot" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="Show Logs" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="Enlarge" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="Status Indicator, Click to Recconnect" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-circle"></i></a> <a title="Calendar" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="Videos List" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a class="btn btn-default" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Enlarge" monitor="bigify" class="btn btn-default"><i class="fa fa-expand"></i></a> <a title="Fullscreen" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
                 tmp+='</div>';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col mdl-cell--4-col-desktop">';
@@ -967,6 +989,10 @@ $('body')
                     break;
                 }
             })
+        break;
+        case'fullscreen':
+            e.e=e.e.parents('.monitor_item');
+            e.e.find('video').fullscreen()
         break;
         case'bigify':
             e.m=$('#monitors_live')
