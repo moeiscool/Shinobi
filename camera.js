@@ -153,6 +153,7 @@ s.init=function(x,e){
             if(!s.group[e.ke].mon[e.mid].record){s.group[e.ke].mon[e.mid].record={yes:e.record}};
             if(!s.group[e.ke].mon[e.mid].started){s.group[e.ke].mon[e.mid].started=0};
             if(s.group[e.ke].mon[e.mid].delete){clearTimeout(s.group[e.ke].mon[e.mid].delete)}
+            if(!s.group[e.ke].mon[e.mid].emitlist)s.group[e.ke].mon[e.mid].emitlist={};
             s.init('apps',e)
         break;
         case'apps':
@@ -619,6 +620,12 @@ s.camera=function(x,e,cn,tx){
                                //launch ffmpeg
                                 s.group[e.ke].mon[e.id].spawn = s.ffmpeg(e); 
                                 s.group[e.ke].mon[e.id].emitter = new events.EventEmitter();
+                                s.group[e.ke].mon[e.id].emitter.on('data',function(d){
+                                    x={keys:Object.keys(s.group[e.ke].mon[e.id].emitlist)};
+                                    x.keys.forEach(function(v,n){
+                                        s.group[e.ke].mon[e.id].emitlist[v].emit('data',d)
+                                    });
+                                })
                                 s.log(e,{type:'FFMPEG Process Started',msg:{cmd:s.group[e.ke].mon[e.id].ffmpeg}});
                                 s.tx({f:'monitor_starting',mode:x,mid:e.id,time:s.moment()},'GRP_'+e.ke);
                                 //start workers
@@ -1440,13 +1447,15 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
         sql.query('SELECT * FROM Monitors WHERE ke=? AND mid=?',[req.params.ke,req.params.id],function(err,r){
             if(r&&r[0]){
                 r=r[0],r.details=JSON.parse(r.details);
+                r.gid=s.gid();
+                s.group[req.params.ke].mon[req.params.id].emitlist[r.gid]=new events.EventEmitter();
                 if(!r.details.stream_fps||r.details.stream_fps===''){
                     r.details.stream_fps=2;
                 }else{
                     r.details.stream_fps=r.details.stream_fps=parseFloat(r.details.stream_fps);
                 }
                 res.writeHead(200, {
-                'Content-Type': 'multipart/x-mixed-replace; boundary=shinobi',
+                'Content-Type': 'multipart/x-mixed-replace; boundary=ShinobiBOUNDARY',
                 'Cache-Control': 'no-cache',
                 'Connection': 'close',
                 'Pragma': 'no-cache'
@@ -1455,7 +1464,7 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
                 var stop = false;
                 res.connection.on('close',function(){ stop = true; });
                 var content;
-                s.group[req.params.ke].mon[req.params.id].emitter.on('data',function(d){
+                s.group[req.params.ke].mon[req.params.id].emitlist[r.gid].on('data',function(d){
                     if (stop)
                       return;
                     if(!d){
@@ -1471,6 +1480,9 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
                     }
                     res.write(content,'binary');
                 })
+                res.on('close', function () {
+                    delete(s.group[req.params.ke].mon[req.params.id].emitlist[r.gid])
+                });
             }else{
                 res.send('No Camera Found');
                 res.end();
