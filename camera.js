@@ -39,6 +39,7 @@ var spawn = require('child_process').spawn;
 var crypto = require('crypto');
 var webdav = require("webdav");
 var connectionTester = require('connection-tester');
+var events = require('events');
 var df = require('node-df');
 var config = require('./conf.json');
 
@@ -617,6 +618,7 @@ s.camera=function(x,e,cn,tx){
                                 if(!s.group[e.ke].mon[e.id].record){s.group[e.ke].mon[e.id].record={yes:1}};
                                //launch ffmpeg
                                 s.group[e.ke].mon[e.id].spawn = s.ffmpeg(e); 
+                                s.group[e.ke].mon[e.id].emitter = new events.EventEmitter();
                                 s.log(e,{type:'FFMPEG Process Started',msg:{cmd:s.group[e.ke].mon[e.id].ffmpeg}});
                                 s.tx({f:'monitor_starting',mode:x,mid:e.id,time:s.moment()},'GRP_'+e.ke);
                                 //start workers
@@ -681,7 +683,8 @@ s.camera=function(x,e,cn,tx){
                                    ++e.frames;
                                    switch(e.details.stream_type){
                                         case'mjpeg':
-                                           s.group[e.ke].mon[e.id].last_frame=d;
+//                                           s.group[e.ke].mon[e.id].last_frame=d;
+                                           s.group[e.ke].mon[e.id].emitter.emit('data',d);
                                         break;
                                        case'b64':case undefined:case null:
                                            if(s.group[e.ke]&&s.group[e.ke].mon[e.id]&&s.group[e.ke].mon[e.id].watch&&Object.keys(s.group[e.ke].mon[e.id].watch).length>0){
@@ -1443,7 +1446,7 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
                     r.details.stream_fps=r.details.stream_fps=parseFloat(r.details.stream_fps);
                 }
                 res.writeHead(200, {
-                'Content-Type': 'multipart/x-mixed-replace; boundary=myboundary',
+                'Content-Type': 'multipart/x-mixed-replace; boundary=ShinobiBOUNDARY',
                 'Cache-Control': 'no-cache',
                 'Connection': 'close',
                 'Pragma': 'no-cache'
@@ -1453,24 +1456,26 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
                 var stop = false;
                 res.connection.on('close',function(){ stop = true; });
                 var content;
-                var send_next = function() {
-                if (stop)
-                  return;
-                if(!s.group[req.params.ke]||!s.group[req.params.ke].mon[req.params.id].last_frame){
-                    content = fs.readFileSync(config.defaultMjpeg,'binary');
-                }else{
-                    content = s.group[req.params.ke].mon[req.params.id].last_frame;
-                }
-                i = (i+1) % 100;
-                  res.write("--myboundary\r\n");
-                  res.write("Content-Type: image/jpeg\r\n");
-                  res.write("Content-Length: " + content.length + "\r\n");
-                  res.write("\r\n");
-                  res.write(content,'binary');
-                  res.write("\r\n");
-                  setTimeout(send_next,1000/r.details.stream_fps);
-                };
-                send_next();
+//                var send_next = function() {
+                s.group[req.params.ke].mon[req.params.id].emitter.on('data',function(d){
+                    if (stop)
+                      return;
+                    if(!d){
+                        content = fs.readFileSync(config.defaultMjpeg,'binary');
+                    }else{
+                        content = d;
+                    }
+                    i = (i+1) % 100;
+                    res.write("--ShinobiBOUNDARY\r\n");
+                    res.write("Content-Type: image/jpeg\r\n");
+                    res.write("Content-Length: " + content.length + "\r\n");
+                    res.write("\r\n");
+                    res.write(content,'binary');
+                    res.write("\r\n");
+                })
+//                  setTimeout(send_next,1000/r.details.stream_fps);
+//                };
+//                send_next();
             }else{
                 res.send('No Camera Found');
                 res.end();
