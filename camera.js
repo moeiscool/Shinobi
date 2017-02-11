@@ -382,9 +382,13 @@ s.ffmpeg=function(e,x){
             if(x.stream_quality)x.stream_quality=' -crf '+x.stream_quality;
             x.pipe=x.preset_stream+x.stream_quality+x.stream_acodec+x.stream_vcodec+x.stream_fps+' -f hls -s '+x.ratio+x.cust_stream+' -hls_time '+x.hls_time+' -hls_list_size '+x.hls_list_size+' -start_number 0 -hls_allow_cache 0 -hls_flags +delete_segments+omit_endlist '+e.sdir+'s.m3u8';
         break;
-        default://base64//mjpeg
+        case'mjpeg':
             if(x.stream_quality)x.stream_quality=' -q:v '+x.stream_quality;
             x.pipe=' -c:v mjpeg -f mpjpeg -boundary_tag shinobi'+x.cust_stream+x.svf+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
+        break;
+        default://base64
+            if(x.stream_quality)x.stream_quality=' -q:v '+x.stream_quality;
+            x.pipe=' -c:v mjpeg -f image2pipe'+x.cust_stream+x.svf+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
         break;
     }
     //motion detector
