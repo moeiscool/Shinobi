@@ -580,10 +580,12 @@ $.ccio.ws.on('f',function (d){
             if(d.signal>0){
                 $.ccio.mon[d.id].signal=setInterval(function(){$.ccio.init('signal-check',{id:d.id,ke:d.ke})},d.signal);
             }
-            $('.monitor_item[mid="'+d.id+'"][ke="'+d.ke+'"]').resize()
-            $.getJSON('/'+$user.auth_token+'/videos/'+d.ke+'/'+d.id+'?limit=10',function(f){
-                $.ccio.pm(0,{videos:f,ke:d.ke,mid:d.id})
-            })
+            d.e=$('.monitor_item[mid="'+d.id+'"][ke="'+d.ke+'"]').resize()
+            if(d.e.find('.videos_monitor_list li').length===0){
+                $.getJSON('/'+$user.auth_token+'/videos/'+d.ke+'/'+d.id+'?limit=10',function(f){
+                    $.ccio.pm(0,{videos:f,ke:d.ke,mid:d.id})
+                })
+            }
         break;
         case'monitor_mjpeg_url':
             $('#monitor_live_'+d.id+' iframe').attr('src',location.protocol+'//'+location.host+d.watch_url);
