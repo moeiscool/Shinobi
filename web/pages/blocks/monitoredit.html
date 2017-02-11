@@ -97,11 +97,16 @@
                 <input class="form-control" detail="sfps">
                 </label>
               </div>
+              <div class="form-group">
+                <label><span>Analyzation Duration</span>
+                <input class="form-control" detail="aduration">
+                </label>
+              </div>
           </div>
 <!--     END of Input     -->
 <!--     START of Detector     -->
           <div class="form-group-group orange">
-          <h4>Detector<span class="pull-right shinobi-opencv" style="display:none">OpenCV Connected</span></h4>
+          <h4>Detector<span class="pull-right">OpenCV <b class="shinobi-opencv-invert">not </b>Connected</span></h4>
               <div class="form-group">
                 <label><span>Enabled</span>
                     <select class="form-control" detail="detector">
@@ -114,6 +119,14 @@
                   <div class="form-group">
                     <label><span>Trigger Record</span>
                         <select class="form-control" detail="detector_trigger">
+                            <option value="0" selected>No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Save Events to SQL</span>
+                        <select class="form-control" detail="detector_save">
                             <option value="0" selected>No</option>
                             <option value="1">Yes</option>
                         </select>
@@ -174,10 +187,15 @@
               <div class="form-group">
                 <label><span>Stream Type</span>
                     <select class="form-control" detail="stream_type">
-                        <option value="b64" selected>Base64</option>
+                        <option value="hls" selected>HLS</option>
+                        <option value="b64">Base64</option>
                         <option value="mjpeg">MJPEG</option>
-                        <option value="hls">HLS (Experimental)</option>
                     </select>
+                </label>
+              </div>
+              <div class="form-group h_st_input h_st_mjpeg">
+                <label><span># of Allow MJPEG Clients <small>0 for infinite</small></span>
+                    <input class="form-control" detail="stream_mjpeg_clients" placeholder="20">
                 </label>
               </div>
               <div class="h_st_input h_st_hls">
@@ -208,6 +226,11 @@
                   <div class="form-group">
                     <label><span>HLS Segment Length <small>in Seconds</small></span>
                         <input class="form-control" detail="hls_time" placeholder="2">
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>HLS Preset</span>
+                        <input class="form-control" detail="preset_stream" placeholder="ultrafast">
                     </label>
                   </div>
                   <div class="form-group">
@@ -294,6 +317,11 @@
               <div class="form-group h_f_input h_f_mp4">
                 <label><span>crf</span>
                 <input class="form-control" detail="crf" placeholder="">
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Preset</span>
+                    <input class="form-control" detail="preset_record" placeholder="ultrafast">
                 </label>
               </div>
               <div class="form-group">
@@ -438,9 +466,14 @@
                 <input class="form-control" detail="cust_input" placeholder="">
                 </label>
               </div>
+              <div class="form-group shinobi-opencv" style="display:none">
+                <label><span>Detector Flags</span>
+                <input class="form-control" detail="cust_detect">
+                </label>
+              </div>
               <div class="form-group">
                 <label><span>Stream Flags</span>
-                <input class="form-control" detail="stream_flags">
+                <input class="form-control" detail="cust_stream">
                 </label>
               </div>
               <div class="form-group h_m_input h_m_record">

@@ -1,5 +1,7 @@
 <% include blocks/header %>
 <script>var $user=<%- JSON.stringify($user) %>;</script>
+<link rel="stylesheet" href="libs/css/material.min.css">
+<link rel="stylesheet" href="libs/css/material.style.css">
 <link rel="stylesheet" href="libs/css/pnotify.custom.min.css">
 <link rel="stylesheet" href="libs/css/vbox.css">
 <link rel="stylesheet" href="libs/css/circles.css">
@@ -7,75 +9,23 @@
 <link rel="stylesheet" href="libs/css/font-awesome.min.css">
 <link rel="stylesheet" href="libs/css/fullcalendar.min.css">
 <link rel="stylesheet" href="libs/css/bootstrap-table.min.css">
-<link rel="stylesheet" href="libs/css/main.css">
+<link rel="stylesheet" href="libs/css/main.dash2.css">
 <style id="custom_css"><%= JSON.parse($user.details).css %></style>
-<div id="cd-nav" class="hidden-lg">
-    <a href="#0" class="cd-nav-trigger">Menu<span></span></a>
-
-    <nav id="cd-main-nav">
-        <ul>
-            <li mid="" ke=""><a monitor="edit"><i class="fa fa-plus"></i> &nbsp; Add Monitor</a></li>
-            <li><a data-toggle="modal" data-target="#settings"><i class="fa fa-gears"></i> &nbsp; Settings</a></li>
-            <li><a data-toggle="modal" data-target="#apis"><i class="fa fa-code"></i> &nbsp; API</a></li>
-            <li><a data-toggle="modal" data-target="#logs_modal"><i class="fa fa-exclamation-triangle"></i> &nbsp; Logs</a></li>
-            <li><a class_toggle="list-blocks" data-target="#side_menu"><i class="fa fa-camera"></i> &nbsp; Monitor List <small>Toggle</small></a></li>
-            <li><a class_toggle="nav-xs" data-target="#side_menu_right"><i class="fa fa-film"></i> &nbsp; Event Pane <small>Toggle</small></a></li>
-            <li><a class_toggle="nav-xs" data-target="#side_menu"><i class="fa fa-bars"></i> &nbsp; Monitor Pane <small>Toggle</small></a></li>
-        </ul>
-    </nav>
-</div>
-<section class="app">
-    <section class="hbox stretch">
-    <section class="vbox">
-        <header id="main_header" class="header">
-            <div class="pull-right">
-<ul class="nav navbar-nav navbar-right">
-                <li role="presentation" class="dropdown">
-                  <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown" aria-expanded="true">&nbsp;<i class="fa fa-hdd-o"></i>&nbsp;</a>
-                  <ul id="disk" class="dropdown-menu list-unstyled msg_list scrollable" role="menu"></ul>
-                </li>
-                <li role="presentation" class="dropdown">
-                  <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown" aria-expanded="true">&nbsp;<i class="fa fa-exclamation-triangle"></i>&nbsp;</a>
-                  <ul id="logs" class="dropdown-menu list-unstyled msg_list scrollable" role="menu">
-<!--
-                    <li>
-                      <div class="text-center">
-                        <a>
-                          <strong>See All Alerts</strong>
-                          <i class="fa fa-angle-right"></i>
-                        </a>
-                      </div>
-                    </li>
--->
-                  </ul>
-                </li>
-                <li role="presentation" class="dropdown">
-                    <a class="info-number" class_toggle="nav-xs" data-target="#side_menu_right">&nbsp;<i class="fa fa-reorder"></i>&nbsp;</a>
-                </li>
-                <li class="">
-                  <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                    <span class="usermail"></span>
-                    <span class=" fa fa-angle-down"></span>
-                  </a>
-                  <ul class="dropdown-menu dropdown-usermenu pull-right">
-                    <li><a data-toggle="modal" data-target="#settings"><i class="fa fa-gears pull-right"></i> Settings</a></li>
-                    <li><a data-toggle="modal" data-target="#apis"><i class="fa fa-code pull-right"></i> API</a></li>
-                    <li><a data-toggle="modal" data-target="#logs_modal"><i class="fa fa-exclamation-triangle pull-right"></i> Logs</a></li>
-                    <li><a class="logout"><i class="fa fa-sign-out pull-right"></i> Log Out</a></li>
-                  </ul>
-                </li>
-              </ul>
-<!--
-                <div class="btn-group" mid="" ke="">
-                    <a class="btn btn-default" class_toggle="nav-xs" data-target="#side_menu_right"><i class="fa fa-reorder"></i></a>
-                </div>
--->
-            </div>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<!--    <link rel="stylesheet" href="$$hosted_libs_prefix$$/$$version$$/material.cyan-light_blue.min.css">-->
+  </head>
+  <body>
+    <div class="demo-layout demo-blog mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
+      <header id="main_header" class="demo-header mdl-layout__header">
+        <div class="mdl-layout__header-row">
         <ul class="nav navbar-nav">
-            <li class="hidden-xs"><a class="info-number" class_toggle="nav-xs" data-target="#side_menu">&nbsp;<i class="fa fa-reorder"></i>&nbsp;</a>&nbsp;</li>
-            <li class="hidden-xs"><a class="info-number" class_toggle="list-blocks" data-target="#side_menu">&nbsp;<i class="fa fa-camera"></i>&nbsp;</a></li>
-            <li class="hidden-xs" mid="" ke=""><a class="info-number" monitor="edit">&nbsp;<i class="fa fa-plus"></i>&nbsp;</a></li>
-            <li class="os_bars">
+            <li class_toggle="mosaic" data-target="#monitors_live"><a>&nbsp;<i class="fa fa-th"></i>&nbsp;</a></li>
+            <li mid="" ke="" class="hidden-xs"><a monitor="edit">&nbsp;<i class="fa fa-plus"></i>&nbsp;</a></li>
+            <li class="os_bars hidden-xs">
                 <div class="display-table">
                     <div class="cpu_load display-table-cell">
                         <span class="pull-right percent"></span>
@@ -94,33 +44,99 @@
                 </div>
             </li>
         </ul>
-            <div class="pull-left">
-                
-            </div>
+          <div class="mdl-layout-spacer"></div>
+            <ul class="nav navbar-nav navbar-right">
+                <li role="presentation" class="dropdown">
+                  <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown" aria-expanded="true">&nbsp;<i class="fa fa-hdd-o"></i>&nbsp;</a>
+                  <ul id="disk" class="dropdown-menu list-unstyled msg_list scrollable" role="menu"></ul>
+                </li>
+                <li role="presentation" class="dropdown">
+                  <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown" aria-expanded="true">&nbsp;<i class="fa fa-exclamation-triangle"></i>&nbsp;</a>
+                  <ul id="logs" class="dropdown-menu list-unstyled msg_list scrollable" role="menu">
+                  </ul>
+                </li>
+              </ul>
+        </div>
+      </header>
+      <div class="demo-drawer mdl-layout__drawer">
+        <header class="demo-drawer-header">
+          <div class="demo-avatar-dropdown">
+            <button id="accbtn" style="color:#fff" class="usermail mdl-button mdl-js-button mdl-js-ripple-effect"></button>
+            <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="accbtn">
+                <li class="mdl-menu__item" data-toggle="modal" data-target="#settings"><i class="fa fa-gears"></i> &nbsp; Settings</li>
+                <li class="mdl-menu__item" data-toggle="modal" data-target="#apis"><i class="fa fa-code"></i> &nbsp; API</li>
+                <li class="mdl-menu__item" data-toggle="modal" data-target="#logs_modal"><i class="fa fa-exclamation-triangle"></i> &nbsp; Logs</li>
+                <li class="mdl-menu__item" class_toggle="list-blocks" data-target="#left_menu"><i class="fa fa-camera"></i>&nbsp; List Toggle</li>
+                <li class="mdl-menu__item" class_toggle="mosaic" data-target="#monitors_live"><i class="fa fa-th"></i>&nbsp; Montage</li>
+                <li class="mdl-menu__item logout"><i class="fa fa-sign-out"></i>&nbsp; Log Out</li>
+            </ul>
+            <div class="mdl-layout-spacer"></div>
+            <button class_toggle="list-blocks" data-target="#left_menu" class="mdl-button mdl-button--icon">
+              <i class="fa fa-camera"></i>
+            </button>
+          </div>
         </header>
-        <section>
-        <section class="hbox stretch">
-            <aside class="aside-lg vbox side-menu" id="side_menu">
-                <section class="scrollable">
-                    <div id="monitors_list" class="display-table"></div>
-                </section>
-            </aside>
-            <aside class="vbox" id="main_canvas">
-                <section class="scrollable">
-                    <div id="monitors_live"></div>
-                </section>
-            </aside>
-            <aside class="aside-lg vbox side-menu" id="side_menu_right">
-                <section class="scrollable w-f">
-                    <div id="files_recent"></div>
-                </section>
-                <footer class="footer dker"></footer>
-            </aside>
-        </section>
-        </section>
-    </section>
-    </section>
-</section>
+        <nav class="demo-navigation mdl-navigation side-menu" id="left_menu">
+            <div id="monitors_list" class="display-table"></div>
+          <div class="mdl-layout-spacer"></div>
+        </nav>
+      </div>
+      <main class="mdl-layout__content selected" id="main_canvas">
+          <div class="demo-blog__posts mdl-grid" id="monitors_live">
+
+          </div>
+      </main>
+    </div>
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" style="position: fixed; left: -1000px; height: -1000px;">
+        <defs>
+          <mask id="piemask" maskContentUnits="objectBoundingBox">
+            <circle cx=0.5 cy=0.5 r=0.49 fill="white" />
+            <circle cx=0.5 cy=0.5 r=0.40 fill="black" />
+          </mask>
+          <g id="piechart">
+            <circle cx=0.5 cy=0.5 r=0.5 />
+            <path d="M 0.5 0.5 0.5 0 A 0.5 0.5 0 0 1 0.95 0.28 z" stroke="none" fill="rgba(255, 255, 255, 0.75)" />
+          </g>
+        </defs>
+      </svg>
+      <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 500 250" style="position: fixed; left: -1000px; height: -1000px;">
+        <defs>
+          <g id="chart">
+            <g id="Gridlines">
+              <line fill="#888888" stroke="#888888" stroke-miterlimit="10" x1="0" y1="27.3" x2="468.3" y2="27.3" />
+              <line fill="#888888" stroke="#888888" stroke-miterlimit="10" x1="0" y1="66.7" x2="468.3" y2="66.7" />
+              <line fill="#888888" stroke="#888888" stroke-miterlimit="10" x1="0" y1="105.3" x2="468.3" y2="105.3" />
+              <line fill="#888888" stroke="#888888" stroke-miterlimit="10" x1="0" y1="144.7" x2="468.3" y2="144.7" />
+              <line fill="#888888" stroke="#888888" stroke-miterlimit="10" x1="0" y1="184.3" x2="468.3" y2="184.3" />
+            </g>
+            <g id="Numbers">
+              <text transform="matrix(1 0 0 1 485 29.3333)" fill="#888888" font-family="'Roboto'" font-size="9">500</text>
+              <text transform="matrix(1 0 0 1 485 69)" fill="#888888" font-family="'Roboto'" font-size="9">400</text>
+              <text transform="matrix(1 0 0 1 485 109.3333)" fill="#888888" font-family="'Roboto'" font-size="9">300</text>
+              <text transform="matrix(1 0 0 1 485 149)" fill="#888888" font-family="'Roboto'" font-size="9">200</text>
+              <text transform="matrix(1 0 0 1 485 188.3333)" fill="#888888" font-family="'Roboto'" font-size="9">100</text>
+              <text transform="matrix(1 0 0 1 0 249.0003)" fill="#888888" font-family="'Roboto'" font-size="9">1</text>
+              <text transform="matrix(1 0 0 1 78 249.0003)" fill="#888888" font-family="'Roboto'" font-size="9">2</text>
+              <text transform="matrix(1 0 0 1 154.6667 249.0003)" fill="#888888" font-family="'Roboto'" font-size="9">3</text>
+              <text transform="matrix(1 0 0 1 232.1667 249.0003)" fill="#888888" font-family="'Roboto'" font-size="9">4</text>
+              <text transform="matrix(1 0 0 1 309 249.0003)" fill="#888888" font-family="'Roboto'" font-size="9">5</text>
+              <text transform="matrix(1 0 0 1 386.6667 249.0003)" fill="#888888" font-family="'Roboto'" font-size="9">6</text>
+              <text transform="matrix(1 0 0 1 464.3333 249.0003)" fill="#888888" font-family="'Roboto'" font-size="9">7</text>
+            </g>
+            <g id="Layer_5">
+              <polygon opacity="0.36" stroke-miterlimit="10" points="0,223.3 48,138.5 154.7,169 211,88.5
+              294.5,80.5 380,165.2 437,75.5 469.5,223.3 	"/>
+            </g>
+            <g id="Layer_4">
+              <polygon stroke-miterlimit="10" points="469.3,222.7 1,222.7 48.7,166.7 155.7,188.3 212,132.7
+              296.7,128 380.7,184.3 436.7,125 	"/>
+            </g>
+          </g>
+        </defs>
+      </svg>
+  </body>
+</html>
+<!---->
 <div class="hidden" id="temp"></div>
 <% include blocks/probe.html %>
 <% include blocks/api.html %>
@@ -132,6 +148,7 @@
 <!--Dropbox Library, Change data-app-key to your app key. -->
 <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="<%= $user.DropboxAppKey %>"></script>
 <!--Dropbox End-->
+<script src="libs/js/material.min.js"></script>
 <script src="libs/js/pnotify.custom.min.js"></script>
 <script src="libs/js/moment.js"></script>
 <script src="libs/js/livestamp.min.js"></script>
@@ -142,4 +159,4 @@
 <script src="libs/js/fullcalendar.min.js"></script>
 <script src="libs/js/hls.min.js"></script>
 <script src="libs/js/menu.js"></script>
-<script src="libs/js/main.js"></script>
+<script src="libs/js/main.dash2.js"></script>

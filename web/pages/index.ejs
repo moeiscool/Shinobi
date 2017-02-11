@@ -30,15 +30,21 @@
 									</div>
 									<div class="form-group text-center">
                                         <label>
-                                            <input type="checkbox" tabindex="3" class="" name="admin">
-                                            <span> Admin</span>
-                                        </label> &nbsp; <label>
-                                            <input type="checkbox" tabindex="3" class="" name="remember">
+                                            <input type="checkbox" value="1" name="remember">
                                             <span> Remember Me</span>
-                                        </label> &nbsp; <label>
-                                            <input type="checkbox" tabindex="3" class="" value="1" name="recorder">
-                                            <span> Shinobi Streamer</span>
                                         </label>
+                                        <div>
+                                            <label>
+                                                <input type="checkbox" value="1" name="classic">
+                                                <span> Classic Dashboard</span>
+                                            </label> &nbsp; <label>
+                                                <input type="checkbox" value="1" name="admin">
+                                                <span> Admin</span>
+                                            </label> &nbsp; <label>
+                                                <input type="checkbox" value="1" name="recorder">
+                                                <span> Shinobi Streamer</span>
+                                            </label>
+                                        </div>
 									</div>
 									<div class="form-group">
 										<div class="row">
@@ -92,9 +98,23 @@
     $.ccio.f.submit(function(e){
         $('input').css('border-color','')
         e.e=$(this),e.s=e.e.serializeObject(),e.inputs=e.e.find('input,button');
-        if(e.s.remember){localStorage.setItem('ShinobiLogin_'+location.host,JSON.stringify({mail:e.s.mail,pass:e.s.pass}))}else{localStorage.removeItem('ShinobiLogin_'+location.host)}
+        if(e.s.remember){
+            localStorage.setItem('ShinobiLogin_'+location.host,JSON.stringify({mail:e.s.mail,pass:e.s.pass,admin:e.s.admin,recorder:e.s.recorder,mobile:e.s.mobile}))
+        }else{localStorage.removeItem('ShinobiLogin_'+location.host)}
     })
-    if($.ccio.ls){$.ccio.ls=JSON.parse($.ccio.ls);$.each($.ccio.ls,function(n,v){$.ccio.f.find('[name="'+n+'"]').val(v)});$.ccio.f.find('[name="remember"]').prop('checked',true);$.ccio.f.submit()}
+    if($.ccio.ls){
+        $.ccio.ls=JSON.parse($.ccio.ls);
+        $.each($.ccio.ls,function(n,v){
+            n=$.ccio.f.find('[name="'+n+'"]')
+            if(n.attr('type')==='checkbox'){
+                n.prop('checked',true)
+            }else{
+                n.val(v)
+            }
+        });
+        $.ccio.f.find('[name="remember"]').prop('checked',true);
+        $.ccio.f.submit()
+    }
 
 $(function() {
     $('#login-form-link').click(function(e) {
