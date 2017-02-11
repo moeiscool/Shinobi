@@ -384,7 +384,7 @@ s.ffmpeg=function(e,x){
         break;
         default://base64//mjpeg
             if(x.stream_quality)x.stream_quality=' -q:v '+x.stream_quality;
-            x.pipe=' -c:v mjpeg -f mpjpeg -boundary_tag ShinobiBOUNDARY'+x.cust_stream+x.svf+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
+            x.pipe=' -c:v mjpeg -f mpjpeg -boundary_tag shinobi'+x.cust_stream+x.svf+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
         break;
     }
     //motion detector
