@@ -384,7 +384,7 @@ s.ffmpeg=function(e,x){
         break;
         default://base64//mjpeg
             if(x.stream_quality)x.stream_quality=' -q:v '+x.stream_quality;
-            x.pipe=' -c:v mjpeg -f image2pipe'+x.cust_stream+x.svf+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
+            x.pipe=' -c:v mjpeg -f mpjpeg -boundary_tag ShinobiBOUNDARY'+x.cust_stream+x.svf+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
         break;
     }
     //motion detector
@@ -1446,36 +1446,31 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
                     r.details.stream_fps=r.details.stream_fps=parseFloat(r.details.stream_fps);
                 }
                 res.writeHead(200, {
-                'Content-Type': 'multipart/x-mixed-replace; boundary=ShinobiBOUNDARY',
+                'Content-Type': 'multipart/x-mixed-replace; boundary=shinobi',
                 'Cache-Control': 'no-cache',
                 'Connection': 'close',
                 'Pragma': 'no-cache'
                 });
 
-                var i = 0;
                 var stop = false;
                 res.connection.on('close',function(){ stop = true; });
                 var content;
-//                var send_next = function() {
                 s.group[req.params.ke].mon[req.params.id].emitter.on('data',function(d){
                     if (stop)
                       return;
                     if(!d){
                         content = fs.readFileSync(config.defaultMjpeg,'binary');
+                        res.write("--shinobi\r\n");
+                        res.write("Content-Type: image/jpeg\r\n");
+                        res.write("Content-Length: " + content.length + "\r\n");
+                        res.write("\r\n");
+                        res.write(content,'binary');
+                        res.write("\r\n");
                     }else{
                         content = d;
                     }
-                    i = (i+1) % 100;
-                    res.write("--ShinobiBOUNDARY\r\n");
-                    res.write("Content-Type: image/jpeg\r\n");
-                    res.write("Content-Length: " + content.length + "\r\n");
-                    res.write("\r\n");
                     res.write(content,'binary');
-                    res.write("\r\n");
                 })
-//                  setTimeout(send_next,1000/r.details.stream_fps);
-//                };
-//                send_next();
             }else{
                 res.send('No Camera Found');
                 res.end();
