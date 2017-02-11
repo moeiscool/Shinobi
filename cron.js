@@ -1,3 +1,6 @@
+process.on('uncaughtException', function (err) {
+    console.error('uncaughtException',err);
+});
 var fs = require('fs');
 var path = require('path');
 var mysql = require('mysql');
@@ -50,6 +53,7 @@ s.cron=function(){
                             s.tx({f:'video_delete',filename:s.moment_noOffset(ev.time)+'.'+ev.ext,mid:ev.mid,ke:ev.ke,time:ev.time,end:s.moment_noOffset(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+ev.ke);
                         });
                         if(es.del.length>0){
+                            es.qu=es.qu.join(' OR ');
                             sql.query('DELETE FROM Videos WHERE ke =? AND ('+es.qu+')',es.ar)
                         }else{
                             s.cx({f:'did',msg:'0 old events deleted',time:moment()})
