@@ -1008,7 +1008,7 @@ $('body')
             if($("#monitor_live_"+e.mid).length===0||$.ccio.mon[e.mid].watch!==1){
                 $.ccio.cx({f:'monitor',ff:'watch_on',id:e.mid})
             }else{
-                $("#monitor_live_"+e.mid+' [monitor="bigify"]').click()
+//                $("#monitor_live_"+e.mid+' [monitor="bigify"]').click()
             }
         break;
         case'watch_off':

@@ -1517,8 +1517,8 @@ app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id','/:auth/videos/:ke/:id'], f
     s.auth(req.params,function(){
         req.sql='SELECT * FROM Videos WHERE ke=?';req.ar=[req.params.ke];
         if(req.params.id){req.sql+='and mid=?';req.ar.push(req.params.id)}
-        if(!req.body.limit||req.body.limit==''){req.body.limit=100}
-        req.sql+=' ORDER BY `time` DESC LIMIT '+req.body.limit+'';
+        if(!req.query.limit||req.query.limit==''){req.query.limit=100}
+        req.sql+=' ORDER BY `time` DESC LIMIT '+req.query.limit+'';
         sql.query(req.sql,req.ar,function(err,r){
             r.forEach(function(v){
                 v.href='/'+req.params.auth+'/videos/'+v.ke+'/'+v.mid+'/'+s.moment_noOffset(v.time)+'.'+v.ext;
