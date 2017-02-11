@@ -618,7 +618,7 @@ s.camera=function(x,e,cn,tx){
                                 if(!s.group[e.ke].mon[e.id].record){s.group[e.ke].mon[e.id].record={yes:1}};
                                //launch ffmpeg
                                 s.group[e.ke].mon[e.id].spawn = s.ffmpeg(e); 
-                                s.group[e.ke].mon[e.id].emitter = new events.EventEmitter();
+                                s.group[e.ke].mon[e.id].emitter = new events.EventEmitter().setMaxListeners(0);
                                 s.log(e,{type:'FFMPEG Process Started',msg:{cmd:s.group[e.ke].mon[e.id].ffmpeg}});
                                 s.tx({f:'monitor_starting',mode:x,mid:e.id,time:s.moment()},'GRP_'+e.ke);
                                 //start workers
@@ -1453,11 +1453,12 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
                 });
 
                 var stop = false;
-                res.connection.on('close',function(){ stop = true; });
-                var content;
+                var content,contentWriter;
                 if(s.group[req.params.ke]&&s.group[req.params.ke].mon[req.params.id]){
-                    s.group[req.params.ke].mon[req.params.id].emitter.removeListener('data',function(){})
-                    s.group[req.params.ke].mon[req.params.id].emitter.on('data',function(d){
+                   if(contentWriter){ 
+                       s.group[req.params.ke].mon[req.params.id].emitter.removeListener('data',contentWriter)
+                   }
+                    s.group[req.params.ke].mon[req.params.id].emitter.on('data',contentWriter=function(d){
                         if (stop)
                           return;
                         if(!d){
@@ -1474,7 +1475,7 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
                         res.write(content,'binary');
                     })
                     res.on('close', function () {
-                        s.group[req.params.ke].mon[req.params.id].emitter.removeListener('data',function(){})
+                       stop = true; s.group[req.params.ke].mon[req.params.id].emitter.removeListener('data',contentWriter)
                     });
                 }else{
                     res.end();
