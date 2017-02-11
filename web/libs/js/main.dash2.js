@@ -970,13 +970,13 @@ $('body')
         break;
         case'fullscreen':
             e.e=e.e.parents('.monitor_item');
-            e.vid=e.e.find('video')[0]
+            e.vid=e.e.find('.stream-element')[0]
             if (e.vid.requestFullscreen) {
               e.vid.requestFullscreen();
             } else if (e.vid.mozRequestFullScreen) {
               e.vid.mozRequestFullScreen();
             } else if (e.vid.webkitRequestFullscreen) {
-              e.vid.webkitRequestFullscreen();
+              e.vid.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
             }
         break;
         case'bigify':
