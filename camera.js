@@ -617,8 +617,10 @@ s.camera=function(x,e,cn,tx){
                                 e.frames=0;
                                 if(!s.group[e.ke].mon[e.id].record){s.group[e.ke].mon[e.id].record={yes:1}};
                                //launch ffmpeg
-                                s.group[e.ke].mon[e.id].spawn = s.ffmpeg(e); 
-                                s.group[e.ke].mon[e.id].emitter = new events.EventEmitter().setMaxListeners(0);
+                                s.group[e.ke].mon[e.id].spawn = s.ffmpeg(e);
+                                //emitter for mjpeg
+                                if(!e.details.stream_mjpeg_clients||e.details.stream_mjpeg_clients===''||isNaN(e.details.stream_mjpeg_clients)===false){e.details.stream_mjpeg_clients=20;}else{e.details.stream_mjpeg_clients=parseInt(e.details.stream_mjpeg_clients)}
+                                s.group[e.ke].mon[e.id].emitter = new events.EventEmitter().setMaxListeners(e.details.stream_mjpeg_clients);
                                 s.log(e,{type:'FFMPEG Process Started',msg:{cmd:s.group[e.ke].mon[e.id].ffmpeg}});
                                 s.tx({f:'monitor_starting',mode:x,mid:e.id,time:s.moment()},'GRP_'+e.ke);
                                 //start workers
@@ -1448,16 +1450,13 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
                 res.writeHead(200, {
                 'Content-Type': 'multipart/x-mixed-replace; boundary=shinobi',
                 'Cache-Control': 'no-cache',
-                'Connection': 'close',
+                'Connection': 'keep-alive',
                 'Pragma': 'no-cache'
                 });
 
                 var stop = false;
                 var content,contentWriter;
                 if(s.group[req.params.ke]&&s.group[req.params.ke].mon[req.params.id]){
-                   if(contentWriter){ 
-                       s.group[req.params.ke].mon[req.params.id].emitter.removeListener('data',contentWriter)
-                   }
                     s.group[req.params.ke].mon[req.params.id].emitter.on('data',contentWriter=function(d){
                         if (stop)
                           return;
