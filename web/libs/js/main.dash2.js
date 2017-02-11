@@ -1,25 +1,3 @@
-(function( $ ){
-    $.fn.fullscreen=function(){
-        var x=function(c){
-            if (c.requestFullscreen) {
-              c.requestFullscreen();
-            } else if (c.mozRequestFullScreen) {
-              c.mozRequestFullScreen();
-            } else if (c.webkitRequestFullscreen) {
-              c.webkitRequestFullscreen();
-            }
-        }
-        if(this instanceof Array){
-            $.each(function(n,v){
-                x(v)
-            })
-        }else{
-            x(this)
-        }
-        return this;
-    }
-})( jQuery );
-
 $.ccio={fr:$('#files_recent'),mon:{}};
     
     $.ccio.gid=function(x){
@@ -895,8 +873,8 @@ $('body')
     $.ccio.op('class_toggle',e.o)
     $(e.n).toggleClass(e.v);
 })
-.on('click','[monitor]',function(e){
-    e.e=$(this),e.a=e.e.attr('monitor'),e.p=e.e.parents('[mid]'),e.ke=e.p.attr('ke'),e.mid=e.p.attr('mid'),e.mon=$.ccio.mon[e.mid]
+.on('click','[monitor]',function(){
+   e={}; e.e=$(this),e.a=e.e.attr('monitor'),e.p=e.e.parents('[mid]'),e.ke=e.p.attr('ke'),e.mid=e.p.attr('mid'),e.mon=$.ccio.mon[e.mid]
     switch(e.a){
         case'snapshot':
             $.ccio.snapshot(e,function(url){
@@ -992,7 +970,14 @@ $('body')
         break;
         case'fullscreen':
             e.e=e.e.parents('.monitor_item');
-            e.e.find('video').fullscreen()
+            e.vid=e.e.find('video')[0]
+            if (e.vid.requestFullscreen) {
+              e.vid.requestFullscreen();
+            } else if (e.vid.mozRequestFullScreen) {
+              e.vid.mozRequestFullScreen();
+            } else if (e.vid.webkitRequestFullscreen) {
+              e.vid.webkitRequestFullscreen();
+            }
         break;
         case'bigify':
             e.m=$('#monitors_live')
