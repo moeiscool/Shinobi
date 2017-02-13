@@ -657,8 +657,13 @@ $.aM.f.submit(function(e){
     e.s.mid=e.s.mid.replace(/[^\w\s]/gi,'').replace(/ /g,'')
     if(e.s.mid.length<3){e.er.push('Monitor ID too short')}
     if(e.s.port==''){e.s.port=80}
+    if(e.s.name==''){e.er.push('Monitor Name cannot be blank')}
 //    if(e.s.protocol=='rtsp'){e.s.ext='mp4',e.s.type='rtsp'}
-    if(e.er.length>0){$.sM.e.find('.msg').html(e.er.join('<br>'));return;}
+    if(e.er.length>0){
+        $.sM.e.find('.msg').html(e.er.join('<br>'));
+        new PNotify({title:'Configuration Invalid',text:e.er.join('<br>'),type:'error'});
+        return;
+    }
         $.ccio.cx({f:'monitor',ff:'add',mon:e.s})
         if(!$.ccio.mon[e.s.mid]){$.ccio.mon[e.s.mid]={}}
         $.each(e.s,function(n,v){$.ccio.mon[e.s.mid][n]=v;})

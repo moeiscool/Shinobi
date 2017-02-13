@@ -98,6 +98,12 @@ s.moment_noOffset=function(e,x){
 }
 s.kill=function(x,e,p){
     if(s.group[e.ke]&&s.group[e.ke].mon[e.id]){
+        if(s.group[e.ke].mon[e.id].spawn){
+            try{
+            s.group[e.ke].mon[e.id].spawn.removeListener('exit',s.group[e.ke].mon[e.id].spawn_exit);
+            delete(s.group[e.ke].mon[e.id].spawn_exit);
+            }catch(er){}
+        }
         if(e&&s.group[e.ke].mon[e.id].record){
             clearTimeout(s.group[e.ke].mon[e.id].record.capturing);
 //            if(s.group[e.ke].mon[e.id].record.request){s.group[e.ke].mon[e.id].record.request.abort();delete(s.group[e.ke].mon[e.id].record.request);}
@@ -323,7 +329,7 @@ s.ffmpeg=function(e,x){
         case'webm':
             x.acodec='libvorbis',x.vcodec='libvpx';
             //video quality
-            x.vcodec+=' -q:v 1';
+            if(e.details.crf&&e.details.crf!==''){x.vcodec+=' -q:v '+e.details.crf}else{x.vcodec+=' -q:v 1';}
         break;
     }
     //use custom video codec
@@ -622,6 +628,14 @@ s.camera=function(x,e,cn,tx){
                                 if(!s.group[e.ke].mon[e.id].record){s.group[e.ke].mon[e.id].record={yes:1}};
                                //launch ffmpeg
                                 s.group[e.ke].mon[e.id].spawn = s.ffmpeg(e);
+                                //on unexpected exit restart
+                                s.group[e.ke].mon[e.id].spawn_exit=function(){
+                                    if(e.details.loglevel!=='quiet'){
+                                        s.log(e,{type:'FFMPEG Unexpected Exit',msg:{msg:'Process Crashed for Monitor : '+e.id,cmd:s.group[e.ke].mon[e.id].ffmpeg}});
+                                    }
+                                    e.fn();
+                                }
+                                s.group[e.ke].mon[e.id].spawn.on('exit',s.group[e.ke].mon[e.id].spawn_exit)
                                 //emitter for mjpeg
                                 if(!e.details.stream_mjpeg_clients||e.details.stream_mjpeg_clients===''||isNaN(e.details.stream_mjpeg_clients)===false){e.details.stream_mjpeg_clients=20;}else{e.details.stream_mjpeg_clients=parseInt(e.details.stream_mjpeg_clients)}
                                 s.group[e.ke].mon[e.id].emitter = new events.EventEmitter().setMaxListeners(e.details.stream_mjpeg_clients);
@@ -1022,8 +1036,6 @@ var tx;
                                     }else{
                                         s.camera('stop',d.mon);setTimeout(function(){s.camera(d.mon.mode,d.mon);},5000)
                                     };
-                                    s.camera('stop',d.mon);
-                                    setTimeout(function(){s.camera(d.mon.mode,d.mon);},5000)
                                     s.tx(d.tx,'GRP_'+d.mon.ke);
                                     s.tx(d.tx,'STR_'+d.mon.ke);
                                 })
