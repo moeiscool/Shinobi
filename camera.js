@@ -709,14 +709,14 @@ s.camera=function(x,e,cn,tx){
                                        break;
                                        case'b64':case undefined:case null:
                                            if(s.group[e.ke]&&s.group[e.ke].mon[e.id]&&s.group[e.ke].mon[e.id].watch&&Object.keys(s.group[e.ke].mon[e.id].watch).length>0){
-                                              if((d[d.length-2] === 0xFF && d[d.length-1] === 0xD9)){
-                                                  s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:e.buffer.toString('base64'),frame_format:'b64'},'MON_'+e.id);e.buffer=null;
+                                              if(!e.buffer){
+                                                  e.buffer=d
                                               }else{
-                                                  if(!e.buffer){
-                                                      e.buffer=d
-                                                  }else{
-                                                      e.buffer=Buffer.concat([e.buffer,d],(e.buffer.length+d.length));
-                                                  }
+                                                  e.buffer=Buffer.concat([e.buffer,d]);
+                                              }
+                                              if((d[d.length-2] === 0xFF && d[d.length-1] === 0xD9)){
+                                                  s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:e.buffer.toString('base64'),frame_format:'b64'},'MON_'+e.id);
+                                                  e.buffer=null;
                                               }
                                             }
                                        break;
