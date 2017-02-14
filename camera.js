@@ -101,6 +101,7 @@ s.kill=function(x,e,p){
         if(s.group[e.ke].mon[e.id].spawn){
             try{
             s.group[e.ke].mon[e.id].spawn.removeListener('exit',s.group[e.ke].mon[e.id].spawn_exit);
+            s.group[e.ke].mon[e.id].spawn.removeListener('close',s.group[e.ke].mon[e.id].spawn_exit);
             delete(s.group[e.ke].mon[e.id].spawn_exit);
             }catch(er){}
         }
@@ -474,16 +475,17 @@ s.camera=function(x,e,cn,tx){
             if(e.mon.mode!=='stop'){
                 e.url=s.init('url',e.mon);
                 switch(e.mon.type){
-//                    case'mjpeg':case'h264':case'local':
-//                        e.snap=spawn('ffmpeg',('-loglevel quiet -i "'+e.url+'" -vframes 1 -f singlejpeg pipe:1').split(' ')).on('data',function(err,data){
-//                            e.snap.kill();
-//                           if(err){
-//                               s.tx({f:'monitor_snapshot',snapshot:'...',snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
-//                               return;
-//                           };
-//                            s.tx({f:'monitor_snapshot',snapshot:data.toString('base64'),snapshot_format:'b64',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
-//                        });
-//                    break;
+                    case'mjpeg':case'h264':case'local':
+                        if(e.mon.type==='local'){e.url=e.mon.path;}
+                        exec('ffmpeg -loglevel quiet -i "'+e.url+'" -r 25 -ss 1.8 -frames:v 1 -f singlejpeg pipe:1 -y',function(err,data){
+                           if(err){
+                               s.log(e,{type:'Snapshot Error',msg:err});
+                               s.tx({f:'monitor_snapshot',snapshot:'Error',snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
+                               return;
+                           };
+                            s.tx({f:'monitor_snapshot',snapshot:data.toString('base64'),snapshot_format:'b64',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
+                        });
+                    break;
                     case'jpeg':
                         request({url:e.url,method:'GET',encoding:null},function(err,data){
                             if(err){s.tx({f:'monitor_snapshot',snapshot:'No Image',snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke);return};
@@ -595,8 +597,6 @@ s.camera=function(x,e,cn,tx){
                 }
             })
             s.camera('snapshot',{mid:e.id,ke:e.ke,mon:e})
-            e.error_fatal_count=0;
-            e.error_count=0;
             //check host to see if has password and user in it
             e.hosty=e.host.split('@');if(e.hosty[1]){e.hosty=e.hosty[1];}else{e.hosty=e.hosty[0];};
             
@@ -612,14 +612,9 @@ s.camera=function(x,e,cn,tx){
                         };
                     },5000);
                 }
-                e.error=function(x){
-//                    clearTimeout(e.err_timeout);
-//                    e.err_timeout=setTimeout(function(){
-//                        ++e.error_count;
-//                        if(e.error_count>10){if(x){x.stop=1;s.log(e,x)};s.camera('stop',{id:e.id,ke:e.ke})}else{e.fn()};//stop after 4 errors
-//                    },5000);
-                }
                 e.fn=function(){//this function loops to create new files
+                    e.error_fatal_count=0;
+                    e.error_count=0;
                     try{
                         s.kill(s.group[e.ke].mon[e.id].spawn,e);
                         e.draw=function(err,o){
@@ -633,8 +628,13 @@ s.camera=function(x,e,cn,tx){
                                     if(e.details.loglevel!=='quiet'){
                                         s.log(e,{type:'FFMPEG Unexpected Exit',msg:{msg:'Process Crashed for Monitor : '+e.id,cmd:s.group[e.ke].mon[e.id].ffmpeg}});
                                     }
-                                    e.fn();
+                                    if(s.group[e.ke].mon[e.id].started===1){
+                                        e.fn();
+                                    }else{
+                                        s.kill(s.group[e.ke].mon[e.id].spawn,e);
+                                    }
                                 }
+                                s.group[e.ke].mon[e.id].spawn.on('close',s.group[e.ke].mon[e.id].spawn_exit)
                                 s.group[e.ke].mon[e.id].spawn.on('exit',s.group[e.ke].mon[e.id].spawn_exit)
                                 //emitter for mjpeg
                                 if(!e.details.stream_mjpeg_clients||e.details.stream_mjpeg_clients===''||isNaN(e.details.stream_mjpeg_clients)===false){e.details.stream_mjpeg_clients=20;}else{e.details.stream_mjpeg_clients=parseInt(e.details.stream_mjpeg_clients)}
@@ -690,7 +690,9 @@ s.camera=function(x,e,cn,tx){
                                     break;
                                 }
                                 if(!s.group[e.ke]||!s.group[e.ke].mon[e.id]){s.init(0,e)}
-                                s.group[e.ke].mon[e.id].spawn.on('error',function(er){e.error({type:'Spawn Error',msg:er})})
+                                s.group[e.ke].mon[e.id].spawn.on('error',function(er){
+                                    s.log(e,{type:'Spawn Error',msg:er});e.error_fatal()
+                                })
                                 //frames from motion detect
                                 s.group[e.ke].mon[e.id].spawn.stdin.on('data',function(d){
                                     if(s.ocv&&e.details.detector==='1'){
@@ -699,18 +701,25 @@ s.camera=function(x,e,cn,tx){
                                 })
                                 //frames to stream
                                 s.group[e.ke].mon[e.id].spawn.stdout.on('data',function(d){
-
                                    ++e.frames;
                                    switch(e.details.stream_type){
-                                        case'mjpeg':
+                                       case'mjpeg':
 //                                           s.group[e.ke].mon[e.id].last_frame=d;
                                            s.group[e.ke].mon[e.id].emitter.emit('data',d);
-                                        break;
+                                       break;
                                        case'b64':case undefined:case null:
                                            if(s.group[e.ke]&&s.group[e.ke].mon[e.id]&&s.group[e.ke].mon[e.id].watch&&Object.keys(s.group[e.ke].mon[e.id].watch).length>0){
-                                               s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:d.toString('base64'),frame_format:'b64'},'MON_'+e.id);
+                                              if((d[d.length-2] === 0xFF && d[d.length-1] === 0xD9)){
+                                                  s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:e.buffer.toString('base64'),frame_format:'b64'},'MON_'+e.id);e.buffer=null;
+                                              }else{
+                                                  if(!e.buffer){
+                                                      e.buffer=d
+                                                  }else{
+                                                      e.buffer=Buffer.concat([e.buffer,d],(e.buffer.length+d.length));
+                                                  }
+                                              }
                                             }
-                                        break;
+                                       break;
                                    }
                                 });
                                 if(x==='record'||e.type==='mjpeg'||e.type==='h264'||e.type==='local'){
@@ -739,6 +748,9 @@ s.camera=function(x,e,cn,tx){
                                             case e.chk('Immediate exit requested'):
                                             case e.chk('reset by peer'):
                                                if(e.frames===0&&x==='record'){s.video('delete',e)};
+                                                setTimeout(function(){
+                                                    if(!s.group[e.ke].mon[e.id].spawn){e.fn()}
+                                                },2000)
                                             break;
                                             case /T[0-9][0-9]-[0-9][0-9]-[0-9][0-9]./.test(d):
                                                 return s.log(e,{type:"Video Finished",msg:{filename:d}})
