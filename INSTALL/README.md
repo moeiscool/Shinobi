@@ -1,0 +1,1 @@
+`ubuntu.sh` wass originally `INSTALL.sh`.

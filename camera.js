@@ -613,6 +613,7 @@ s.camera=function(x,e,cn,tx){
                     },5000);
                 }
                 e.fn=function(){//this function loops to create new files
+                    if(s.group[e.ke].mon[e.id].started===1){
                     e.error_fatal_count=0;
                     e.error_count=0;
                     try{
@@ -628,11 +629,7 @@ s.camera=function(x,e,cn,tx){
                                     if(e.details.loglevel!=='quiet'){
                                         s.log(e,{type:'FFMPEG Unexpected Exit',msg:{msg:'Process Crashed for Monitor : '+e.id,cmd:s.group[e.ke].mon[e.id].ffmpeg}});
                                     }
-                                    if(s.group[e.ke].mon[e.id].started===1){
-                                        e.fn();
-                                    }else{
-                                        s.kill(s.group[e.ke].mon[e.id].spawn,e);
-                                    }
+                                    e.fn();
                                 }
                                 s.group[e.ke].mon[e.id].spawn.on('close',s.group[e.ke].mon[e.id].spawn_exit)
                                 s.group[e.ke].mon[e.id].spawn.on('exit',s.group[e.ke].mon[e.id].spawn_exit)
@@ -700,14 +697,16 @@ s.camera=function(x,e,cn,tx){
                                     };
                                 })
                                 //frames to stream
-                                s.group[e.ke].mon[e.id].spawn.stdout.on('data',function(d){
                                    ++e.frames;
-                                   switch(e.details.stream_type){
-                                       case'mjpeg':
+                               switch(e.details.stream_type){
+                                   case'mjpeg':
+                                       e.frame_to_stream=function(d){
 //                                           s.group[e.ke].mon[e.id].last_frame=d;
                                            s.group[e.ke].mon[e.id].emitter.emit('data',d);
-                                       break;
-                                       case'b64':case undefined:case null:
+                                       }
+                                   break;
+                                   case'b64':case undefined:case null:
+                                       e.frame_to_stream=function(d){
                                            if(s.group[e.ke]&&s.group[e.ke].mon[e.id]&&s.group[e.ke].mon[e.id].watch&&Object.keys(s.group[e.ke].mon[e.id].watch).length>0){
                                               if(!e.buffer){
                                                   e.buffer=d
@@ -719,9 +718,10 @@ s.camera=function(x,e,cn,tx){
                                                   e.buffer=null;
                                               }
                                             }
-                                       break;
-                                   }
-                                });
+                                        }
+                                   break;
+                               }
+                                s.group[e.ke].mon[e.id].spawn.stdout.on('data',e.frame_to_stream);
                                 if(x==='record'||e.type==='mjpeg'||e.type==='h264'||e.type==='local'){
                                     s.group[e.ke].mon[e.id].spawn.stderr.on('data',function(d){
                                         d=d.toString();
@@ -769,6 +769,9 @@ s.camera=function(x,e,cn,tx){
                             e.draw(null,{success:true})
                         }
                     }catch(err){++e.error_count;console.error('Frame Capture Error '+e.id,err);s.tx({f:'error',data:err},'GRP_2Df5hBE');}
+                }else{
+                    s.kill(s.group[e.ke].mon[e.id].spawn,e);
+                }
                 }
                 //start drawing files
                 if(s.child_help===true){
