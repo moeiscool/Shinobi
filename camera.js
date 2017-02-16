@@ -41,6 +41,8 @@ var webdav = require("webdav");
 var connectionTester = require('connection-tester');
 var events = require('events');
 var df = require('node-df');
+var Cam = require('onvif').Cam;
+var flow = require('nimble');
 var config = require('./conf.json');
 
 server.listen(config.port);
@@ -96,6 +98,45 @@ s.moment_noOffset=function(e,x){
     if(!e){e=new Date};if(!x){x='YYYY-MM-DDTHH-mm-ss'};
     return moment(e).format(x);
 }
+s.ipRange=function(start_ip, end_ip) {
+  var start_long = s.toLong(start_ip);
+  var end_long = s.toLong(end_ip);
+  if (start_long > end_long) {
+    var tmp=start_long;
+    start_long=end_long
+    end_long=tmp;
+  }
+  var range_array = [];
+  var i;
+  for (i=start_long; i<=end_long;i++) {
+    range_array.push(s.fromLong(i));
+  }
+  return range_array;
+}
+s.portRange=function(lowEnd,highEnd){
+    var list = [];
+    for (var i = lowEnd; i <= highEnd; i++) {
+        list.push(i);
+    }
+    return list;
+}
+//toLong taken from NPM package 'ip' 
+s.toLong=function(ip) {
+  var ipl = 0;
+  ip.split('.').forEach(function(octet) {
+    ipl <<= 8;
+    ipl += parseInt(octet);
+  });
+  return(ipl >>> 0);
+};
+
+//fromLong taken from NPM package 'ip' 
+s.fromLong=function(ipl) {
+  return ((ipl >>> 24) + '.' +
+      (ipl >> 16 & 255) + '.' +
+      (ipl >> 8 & 255) + '.' +
+      (ipl & 255) );
+};
 s.kill=function(x,e,p){
     if(s.group[e.ke]&&s.group[e.ke].mon[e.id]){
         if(s.group[e.ke].mon[e.id].spawn){
@@ -398,7 +439,7 @@ s.ffmpeg=function(e,x){
             x.pipe=' -c:v mjpeg -f image2pipe'+x.cust_stream+x.svf+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
         break;
     }
-    //motion detector
+    //motion detector, opencv
     if(e.details.detector==='1'){
         if(!e.details.detector_fps||e.details.detector_fps===''){e.details.detector_fps=0.5}
         if(e.details.detector_scale_x&&e.details.detector_scale_x!==''&&e.details.detector_scale_y&&e.details.detector_scale_y!==''){x.dratio=' -s '+e.details.detector_scale_x+'x'+e.details.detector_scale_y}else{x.dratio=''}
@@ -693,7 +734,14 @@ s.camera=function(x,e,cn,tx){
                                 //frames from motion detect
                                 s.group[e.ke].mon[e.id].spawn.stdin.on('data',function(d){
                                     if(s.ocv&&e.details.detector==='1'){
-                                        s.tx({f:'frame',mon:s.group[e.ke].mon_conf[e.id].details,ke:e.ke,id:e.id,time:s.moment(),frame:d},s.ocv.id);
+                                          if(!e.buffer){
+                                              e.buffer=d
+                                          }else{
+                                              e.buffer=Buffer.concat([e.buffer,d]);
+                                          }
+                                          if((d[d.length-2] === 0xFF && d[d.length-1] === 0xD9)){
+                                              s.tx({f:'frame',mon:s.group[e.ke].mon_conf[e.id].details,ke:e.ke,id:e.id,time:s.moment(),frame:d},s.ocv.id);
+                                          }
                                     };
                                 })
                                 //frames to stream
@@ -1727,6 +1775,109 @@ app.get(['/:auth/videos/:ke/:id/:file/:mode','/:auth/videos/:ke/:id/:file/:mode/
             }
             res.send(s.s(req.ret, null, 3));
         })
+    },res,req);
+})
+//onvif probe
+app.get(['/:auth/onvif/:ke/:ip/:port','/:auth/onvif/:ke/:ip/:port/:user','/:auth/onvif/:ke/:ip/:port/:user/:pass'],function(req,res){
+    req.ret={ok:false};
+    res.setHeader('Content-Type', 'application/json');
+    s.auth(req.params,function(){
+        //check ip
+        req.params.ip=decodeURIComponent(req.params.ip).trim();
+        if(req.params.ip.indexOf('-')>-1){
+            req.params.ip=req.params.ip.split('-');
+            req.IP_RANGE_START = req.params.ip[0],
+            req.IP_RANGE_END = req.params.ip[1];
+        }else{
+            req.IP_RANGE_START = req.params.ip;
+            req.IP_RANGE_END = req.params.ip;
+        }
+        req.IP_LIST = s.ipRange(req.IP_RANGE_START,req.IP_RANGE_END);
+        //check port
+        req.params.port=decodeURIComponent(req.params.port).trim();
+        if(req.params.port.indexOf('-')>-1){
+            req.params.port=req.params.port.split('-');
+            req.PORT_RANGE_START = req.params.port[0];
+            req.PORT_RANGE_END = req.params.port[1];
+            req.PORT_LIST = s.portRange(req.PORT_RANGE_START,req.PORT_RANGE_END);
+        }else{
+            if(req.params.port.indexOf(',')>-1){
+                req.PORT_LIST = req.params.port.split(',');
+            }else{
+                req.PORT_RANGE_START = req.params.port;
+                req.PORT_RANGE_END = req.params.port;
+                req.PORT_LIST = s.portRange(req.PORT_RANGE_START,req.PORT_RANGE_END);
+            }
+        }
+        req.PORT_LIST = s.portRange(req.PORT_RANGE_START,req.PORT_RANGE_END);
+        //check user name and pass
+        req.params.port=decodeURIComponent(req.params.port).trim();
+        req.USERNAME='';
+        if(req.params.user){
+            req.USERNAME = req.params.user
+        }
+        req.PASSWORD='';
+        if(req.params.pass){
+            req.PASSWORD = req.params.pass
+        }
+
+
+        req.ret.cams={}
+        req.count=0;
+        req.count2=0;
+        // try each IP address and each Port
+        req.IP_LIST.forEach(function(ip_entry,n) {
+            ++req.count;
+            ++req.count2;
+            req.PORT_LIST.forEach(function(port_entry,nn,pe) {
+                pe=ip_entry+':'+port_entry
+                new Cam({
+                    hostname: ip_entry,
+                    username: req.USERNAME,
+                    password: req.PASSWORD,
+                    port: port_entry,
+                    timeout : 5000
+                }, function CamFunc(err) {
+                    if (err) return;
+                    ++req.count;
+                    var cam_obj = this;
+                    if(!req.ret.cams[pe])req.ret.cams[pe]={};
+                    flow.series([
+                        function(callback) {
+                            cam_obj.getSystemDateAndTime(function(err, date, xml) {
+                                if (!err) req.ret.cams[pe].date = date;
+                                callback();
+                            });
+                        },
+                        function(callback) {
+                            cam_obj.getDeviceInformation(function(err, info, xml) {
+                                if (!err) req.ret.cams[pe].info = info;
+                                callback();
+                            });
+                        },
+                        function(callback) {
+                        try {
+                            cam_obj.getStreamUri({
+                                protocol: 'RTSP'
+                            }, function(err, stream, xml) {
+                                if (!err) req.ret.cams[pe].url = stream;
+                                callback();
+                            });
+                        } catch(err) {callback();}
+                        },
+                        function(callback) {
+                            ++req.count2;
+                            if(req.count2===req.count){
+                                req.ret.ok=true;
+                                req.ret.number_found=Object.keys(req.ret.cams).length;
+                                res.send(s.s(req.ret, null, 3));
+                            }
+                        }
+                    ]); // end flow
+
+                });
+            }); // foreach
+        }); // foreach
     },res,req);
 })
 //preliminary monitor start
