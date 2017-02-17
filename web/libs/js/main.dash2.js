@@ -639,7 +639,11 @@ $.oB.f.submit(function(e){
 $.oB.e.on('click','.copy',function(e){
     e.e=$(this).parents('tr');
     $('.hidden-xs [monitor="edit"]').click();
-    $.aM.e.find('[name="host"]').val(e.e.find('.ip').text())
+    e.host=e.e.find('.ip').text();
+    if($.oB.e.find('[name="user"]').val()!==''){
+        e.host=$.oB.e.find('[name="user"]').val()+':'+$.oB.e.find('[name="pass"]').val()+'@'+e.host
+    }
+    $.aM.e.find('[name="host"]').val(e.host)
     $.aM.e.find('[name="port"]').val(e.e.find('.port').text())
     $.aM.e.find('[name="type"] [value="h264"]').prop('selected',true).parent().change()
     $.aM.e.find('[name="path"]').val($.ccio.init('getLocation',e.e.find('.url b:contains("uri")').next().text().trim().replace('rtsp','http')).pathname)
