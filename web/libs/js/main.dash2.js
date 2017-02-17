@@ -9,6 +9,11 @@ $.ccio={fr:$('#files_recent'),mon:{}};
     $.ccio.init=function(x,d,z,k){
         if(!k){k={}};k.tmp='';
         switch(x){
+            case'getLocation':
+                var l = document.createElement("a");
+                l.href = d;
+                return l;
+            break;
             case'ArrayBuffertoB64':
                 var reader = new FileReader();
                 reader.addEventListener("loadend",function(d){return z(reader.result)});
@@ -602,7 +607,7 @@ $.ccio.ws.on('f',function (d){
         break;
         case'onvif':
             if(d.url){d.url=$.ccio.init('jsontoblock',d.url)}else{d.url='URL not Found'}
-            $('#onvif_probe .output_data').append('<tr><td>'+d.ip+'</td><td>'+d.port+'</td><td>'+$.ccio.init('jsontoblock',d.info)+'</td><td>'+d.url+'</td><td>'+d.date+'</td></tr>')
+            $('#onvif_probe .output_data').append('<tr><td class="ip">'+d.ip+'</td><td class="port">'+d.port+'</td><td>'+$.ccio.init('jsontoblock',d.info)+'</td><td class="url">'+d.url+'</td><td class="date">'+d.date+'</td><td><a class="btn btn-sm btn-primary copy">&nbsp;<i class="fa fa-copy"></i>&nbsp;</a></td></tr>')
         break;
     }
     delete(d);
@@ -631,6 +636,14 @@ $.oB.f.submit(function(e){
     },5000)
     return false;
 });
+$.oB.e.on('click','.copy',function(e){
+    e.e=$(this).parents('tr');
+    $('.hidden-xs [monitor="edit"]').click();
+    $.aM.e.find('[name="host"]').val(e.e.find('.ip').text())
+    $.aM.e.find('[name="port"]').val(e.e.find('.port').text())
+    $.aM.e.find('[name="type"] [value="rtsp"]').prop('selected',true).parent().change()
+    $.aM.e.find('[name="path"]').val($.ccio.init('getLocation',e.e.find('.url b:contains("uri")').next().text().trim().replace('rtsp','http')).pathname)
+})
 $.oB.e.find('[name="ip"]').change(function(e){
     $.ccio.op('onvif_probe_ip',$(this).val());
 })
