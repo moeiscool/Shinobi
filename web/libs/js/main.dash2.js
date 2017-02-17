@@ -641,7 +641,7 @@ $.oB.e.on('click','.copy',function(e){
     $('.hidden-xs [monitor="edit"]').click();
     $.aM.e.find('[name="host"]').val(e.e.find('.ip').text())
     $.aM.e.find('[name="port"]').val(e.e.find('.port').text())
-    $.aM.e.find('[name="type"] [value="rtsp"]').prop('selected',true).parent().change()
+    $.aM.e.find('[name="type"] [value="h264"]').prop('selected',true).parent().change()
     $.aM.e.find('[name="path"]').val($.ccio.init('getLocation',e.e.find('.url b:contains("uri")').next().text().trim().replace('rtsp','http')).pathname)
 })
 $.oB.e.find('[name="ip"]').change(function(e){
