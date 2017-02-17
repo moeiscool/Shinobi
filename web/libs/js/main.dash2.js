@@ -600,6 +600,10 @@ $.ccio.ws.on('f',function (d){
             $.ccio.mon[d.id].last_frame='data:image/jpeg;base64,'+d.frame;
             $.ccio.init('signal',d);
         break;
+        case'onvif':
+            if(d.url){d.url=$.ccio.init('jsontoblock',d.url)}else{d.url='URL not Found'}
+            $('#onvif_probe .output_data').append('<tr><td>'+d.ip+'</td><td>'+d.port+'</td><td>'+$.ccio.init('jsontoblock',d.info)+'</td><td>'+d.url+'</td><td>'+d.date+'</td></tr>')
+        break;
     }
     delete(d);
 });
@@ -614,6 +618,19 @@ $.ccio.form.details=function(e){
     });
     e.f.find('[name="details"]').val(JSON.stringify(e.ar));
 };
+//onvif probe
+$.oB={e:$('#onvif_probe')};$.oB.f=$.oB.e.find('form');$.oB.o=$.oB.e.find('.output_data');
+$.oB.f.submit(function(e){
+    e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
+    $.oB.o.empty();
+    $.ccio.cx({f:'onvif',ip:e.s.ip,port:e.s.port,user:e.s.user,pass:e.s.pass})
+    setTimeout(function(){
+        if($.oB.o.find('tr').length===0){
+            $.oB.o.append('<td class="text-center">Sorry, nothing was found.</td>')
+        }
+    },5000)
+    return false;
+});
 //probe
 $.pB={e:$('#probe')};$.pB.f=$.pB.e.find('form');$.pB.o=$.pB.e.find('.output_data');
 $.pB.f.submit(function(e){

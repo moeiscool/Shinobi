@@ -1,4 +1,4 @@
-<!--PROBE Window-->
+<!--ffPROBE Window-->
 <div class="modal fade" id="probe" tabindex="-1" role="dialog" aria-labelledby="probeLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <form class="modal-content">
@@ -16,6 +16,52 @@
             </label>
         </div>
         <div class="output_data"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-success">Check</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!--onvif PROBE Window-->
+<div class="modal full fade" id="onvif_probe" tabindex="-1" role="dialog" aria-labelledby="onvif_probeLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="onvif_probeLabel"><i class="fa fa-gears"></i> &nbsp; ONVIF Scanner</h4>
+      </div>
+      <div class="modal-body">
+          <div class="container" style="margin-top:20px">
+              <div class="row">
+                  <div class="form-group col-md-6">
+                    <label><span>IP <small>Ranges are allowed</small></span>
+                        <input class="form-control" name="ip">
+                    </label>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label><span>Port <small>Separate by Commas or a Range</small></span>
+                        <input class="form-control" name="port">
+                    </label>
+                  </div>
+              </div>
+              <div class="row">
+                  <div class="form-group col-md-6">
+                    <label><span>Camera Username</span>
+                        <input class="form-control" name="user">
+                    </label>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label><span>Camera Password</span>
+                        <input class="form-control" name="pass">
+                    </label>
+                  </div>
+              </div>
+          </div>
+        <table class="output_data table table-striped"></table>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
