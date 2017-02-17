@@ -631,6 +631,24 @@ $.oB.f.submit(function(e){
     },5000)
     return false;
 });
+$.oB.e.find('[name="ip"]').change(function(e){
+    $.ccio.op('onvif_probe_ip',$(this).val());
+})
+if($.ccio.op().onvif_probe_ip){
+    $.oB.e.find('[name="ip"]').val($.ccio.op().onvif_probe_ip)
+}
+$.oB.e.find('[name="port"]').change(function(e){
+    $.ccio.op('onvif_probe_port',$(this).val());
+})
+if($.ccio.op().onvif_probe_port){
+    $.oB.e.find('[name="port"]').val($.ccio.op().onvif_probe_port)
+}
+$.oB.e.find('[name="user"]').change(function(e){
+    $.ccio.op('onvif_probe_user',$(this).val());
+})
+if($.ccio.op().onvif_probe_user){
+    $.oB.e.find('[name="user"]').val($.ccio.op().onvif_probe_user)
+}
 //probe
 $.pB={e:$('#probe')};$.pB.f=$.pB.e.find('form');$.pB.o=$.pB.e.find('.output_data');
 $.pB.f.submit(function(e){

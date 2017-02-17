@@ -42,7 +42,6 @@ var connectionTester = require('connection-tester');
 var events = require('events');
 var df = require('node-df');
 var Cam = require('onvif').Cam;
-var flow = require('nimble');
 var config = require('./conf.json');
 
 server.listen(config.port);
@@ -1169,10 +1168,7 @@ var tx;
                     d.PORT_RANGE_END = d.port[1];
                     d.PORT_LIST = s.portRange(d.PORT_RANGE_START,d.PORT_RANGE_END);
                 }else{
-                    d.PORT_LIST=[];
-                    d.port.split(',').forEach(function(v,n){
-                        d.PORT_LIST.push(parseInt(v))
-                    })
+                    d.PORT_LIST=d.port.split(',')
                 }
                 //check user name and pass
                 d.USERNAME='';
