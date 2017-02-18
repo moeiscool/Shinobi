@@ -250,23 +250,23 @@ s.init=function(x,e){
             return x.ar;
         break;
         case'url':
-            auth_details='';
+            e.authd='';
             if(!e.details.muser){e.details.muser=''}
             if(!e.details.mpass){e.details.mpass=''}
-            if(e.details.muser!==''&&e.details.mpass!==''&&e.host.indexOf('@')===-1) {                auth_details=e.details.muser+':'+e.details.mpass+'@';
+            if(e.details.muser!==''&&e.details.mpass!==''&&e.host.indexOf('@')===-1) {                e.authd=e.details.muser+':'+e.details.mpass+'@';
             }
             if(e.port==80){e.porty=''}else{e.porty=':'+e.port}
-            e.url=e.protocol+'://'+auth_details+e.host+e.porty+e.path;return e.url;
+            e.url=e.protocol+'://'+e.authd+e.host+e.porty+e.path;return e.url;
         break;
         case'url_no_path':
-            auth_details='';
+            e.authd='';
             if(!e.details.muser){e.details.muser=''}
             if(!e.details.mpass){e.details.mpass=''}
             if(e.details.muser!==''&&e.host.indexOf('@')===-1) {
-                auth_details=e.details.muser+':'+e.details.mpass+'@';
+                e.authd=e.details.muser+':'+e.details.mpass+'@';
             }
             if(e.port==80){e.porty=''}else{e.porty=':'+e.port}
-            e.url=e.protocol+'://'+auth_details+e.host+e.porty;return e.url;
+            e.url=e.protocol+'://'+e.authd+e.host+e.porty;return e.url;
         break;
     }
     if(typeof e.callback==='function'){setTimeout(function(){e.callback()},500);}
