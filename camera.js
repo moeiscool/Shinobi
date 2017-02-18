@@ -142,6 +142,7 @@ s.kill=function(x,e,p){
             try{
             s.group[e.ke].mon[e.id].spawn.removeListener('exit',s.group[e.ke].mon[e.id].spawn_exit);
             s.group[e.ke].mon[e.id].spawn.removeListener('close',s.group[e.ke].mon[e.id].spawn_exit);
+            s.group[e.ke].mon[e.id].spawn.removeListener('SIGTERM',s.group[e.ke].mon[e.id].spawn_exit);
             delete(s.group[e.ke].mon[e.id].spawn_exit);
             }catch(er){}
         }
@@ -377,7 +378,10 @@ s.ffmpeg=function(e,x){
     if(e.details.vcodec&&e.details.vcodec!==''&&e.details.vcodec!=='default'){x.vcodec=e.details.vcodec}
     //use custom audio codec
     if(e.details.acodec&&e.details.acodec!==''&&e.details.acodec!=='default'){x.acodec=e.details.acodec}
-    if(x.acodec=='aac'&&e.details.cust_record&&(e.details.cust_record.indexOf('-strict -2')>-1)===false){e.details.cust_record+=' -strict -2';}
+    if(e.details.cust_record){
+        if(x.acodec=='aac'&&e.details.cust_record.indexOf('-strict -2')===-1){e.details.cust_record+=' -strict -2';}
+        if(e.details.cust_record.indexOf('-threads')===-1){e.details.cust_record+=' -threads 1';}
+    }
 //    if(e.details.cust_input&&(e.details.cust_input.indexOf('-use_wallclock_as_timestamps 1')>-1)===false){e.details.cust_input+=' -use_wallclock_as_timestamps 1';}
     //ready or reset codecs
     if(x.acodec!=='no'){
@@ -517,13 +521,10 @@ s.camera=function(x,e,cn,tx){
                 switch(e.mon.type){
                     case'mjpeg':case'h264':case'local':
                         if(e.mon.type==='local'){e.url=e.mon.path;}
-                        exec('ffmpeg -loglevel quiet -i "'+e.url+'" -r 25 -ss 1.8 -frames:v 1 -f singlejpeg pipe:1 -y',function(err,data){
-                           if(err){
-                               s.log(e,{type:'Snapshot Error',msg:err});
-                               s.tx({f:'monitor_snapshot',snapshot:'Error',snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
-                               return;
-                           };
+                        e.spawn=spawn('ffmpeg',('-loglevel quiet -i '+e.url+' -s 400x400 -r 25 -ss 1.8 -frames:v 1 -f singlejpeg pipe:1').split(' '))
+                        e.spawn.stdout.on('data',function(data){
                             s.tx({f:'monitor_snapshot',snapshot:data.toString('base64'),snapshot_format:'b64',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
+                            e.spawn.kill();
                         });
                     break;
                     case'jpeg':
@@ -673,6 +674,7 @@ s.camera=function(x,e,cn,tx){
                                 }
                                 s.group[e.ke].mon[e.id].spawn.on('close',s.group[e.ke].mon[e.id].spawn_exit)
                                 s.group[e.ke].mon[e.id].spawn.on('exit',s.group[e.ke].mon[e.id].spawn_exit)
+                                s.group[e.ke].mon[e.id].spawn.on('SIGTERM',s.group[e.ke].mon[e.id].spawn_exit)
                                 //emitter for mjpeg
                                 if(!e.details.stream_mjpeg_clients||e.details.stream_mjpeg_clients===''||isNaN(e.details.stream_mjpeg_clients)===false){e.details.stream_mjpeg_clients=20;}else{e.details.stream_mjpeg_clients=parseInt(e.details.stream_mjpeg_clients)}
                                 s.group[e.ke].mon[e.id].emitter = new events.EventEmitter().setMaxListeners(e.details.stream_mjpeg_clients);
