@@ -253,7 +253,7 @@ s.init=function(x,e){
             auth_details='';
             if(!e.details.muser){e.details.muser=''}
             if(!e.details.mpass){e.details.mpass=''}
-            if(e.details.muser!==''&&e.details.mpass!=='') {                auth_details=e.details.muser+':'+e.details.mpass+'@';
+            if(e.details.muser!==''&&e.details.mpass!==''&&e.host.indexOf('@')===-1) {                auth_details=e.details.muser+':'+e.details.mpass+'@';
             }
             if(e.port==80){e.porty=''}else{e.porty=':'+e.port}
             e.url=e.protocol+'://'+auth_details+e.host+e.porty+e.path;return e.url;
@@ -262,7 +262,7 @@ s.init=function(x,e){
             auth_details='';
             if(!e.details.muser){e.details.muser=''}
             if(!e.details.mpass){e.details.mpass=''}
-            if(e.details.muser!=='') {
+            if(e.details.muser!==''&&e.host.indexOf('@')===-1) {
                 auth_details=e.details.muser+':'+e.details.mpass+'@';
             }
             if(e.port==80){e.porty=''}else{e.porty=':'+e.port}
@@ -679,52 +679,47 @@ s.camera=function(x,e,cn,tx){
                                 s.log(e,{type:'FFMPEG Process Started',msg:{cmd:s.group[e.ke].mon[e.id].ffmpeg}});
                                 s.tx({f:'monitor_starting',mode:x,mid:e.id,time:s.moment()},'GRP_'+e.ke);
                                 //start workers
-                                switch(e.type){
-                                    case'jpeg':
-                                        if(!e.details.sfps||e.details.sfps===''){
-                                            e.details.sfps=parseFloat(e.details.sfps);
-                                            if(isNaN(e.details.sfps)){e.details.sfps=1}
-                                        }
-                                        if(s.group[e.ke].mon[e.id].spawn){
-                                            s.group[e.ke].mon[e.id].spawn.stdin.on('error',function(err){
-                                                if(err&&e.details.loglevel!=='quiet'){
-                                                    s.log(e,{type:'STDIN ERROR',msg:err});
-                                                }
-                                            })
-                                        }else{
-                                            if(x==='record'){
-                                                s.log(e,{type:'FFMPEG START',msg:'The recording engine for this snapshot based camera could not start. There may be something wrong with your camera configuration. If there are any logs other than this one please post them in the <b>Issues</b> on Github.'});
-                                                return
+                                if(e.type==='jpeg'){
+                                    if(!e.details.sfps||e.details.sfps===''){
+                                        e.details.sfps=parseFloat(e.details.sfps);
+                                        if(isNaN(e.details.sfps)){e.details.sfps=1}
+                                    }
+                                    if(s.group[e.ke].mon[e.id].spawn){
+                                        s.group[e.ke].mon[e.id].spawn.stdin.on('error',function(err){
+                                            if(err&&e.details.loglevel!=='quiet'){
+                                                s.log(e,{type:'STDIN ERROR',msg:err});
                                             }
+                                        })
+                                    }else{
+                                        if(x==='record'){
+                                            s.log(e,{type:'FFMPEG START',msg:'The recording engine for this snapshot based camera could not start. There may be something wrong with your camera configuration. If there are any logs other than this one please post them in the <b>Issues</b> on Github.'});
+                                            return
                                         }
-                                        e.captureOne=function(f){
-                                            s.group[e.ke].mon[e.id].record.request=request({url:e.url,method:'GET',encoding: null,timeout:3000},function(er,data){
-                                               ++e.frames; 
-                                                if(er){++e.error_count;
-                                                       if(e.details.loglevel!=='quiet'){
-                                                       s.log(e,{type:'Snapshot Error',msg:{msg:'There was an issue getting data from your camera.',info:er}});
-                                                       }
-                                                          return;
-                                                }
-                                                if(s.group[e.ke].mon[e.id].spawn&&s.group[e.ke].mon[e.id].spawn.stdin){
-                                                   s.group[e.ke].mon[e.id].spawn.stdin.write(data.body);
-                                               }
-                                               if(s.group[e.ke].mon[e.id].started===1){
-                                                   s.group[e.ke].mon[e.id].record.capturing=setTimeout(function(){e.captureOne()},1000/e.details.sfps);
+                                    }
+                                    e.captureOne=function(f){
+                                        s.group[e.ke].mon[e.id].record.request=request({url:e.url,method:'GET',encoding: null,timeout:3000},function(er,data){
+                                           ++e.frames; 
+                                            if(er){++e.error_count;
+                                                   if(e.details.loglevel!=='quiet'){
+                                                   s.log(e,{type:'Snapshot Error',msg:{msg:'There was an issue getting data from your camera.',info:er}});
                                                    }
-                                                clearTimeout(e.timeOut),e.timeOut=setTimeout(function(){e.error_count=0;},3000)
-                                            }).on('error', function(err){
+                                                      return;
+                                            }
+                                            if(s.group[e.ke].mon[e.id].spawn&&s.group[e.ke].mon[e.id].spawn.stdin){
+                                               s.group[e.ke].mon[e.id].spawn.stdin.write(data.body);
+                                           }
+                                           if(s.group[e.ke].mon[e.id].started===1){
+                                               s.group[e.ke].mon[e.id].record.capturing=setTimeout(function(){e.captureOne()},1000/e.details.sfps);
+                                               }
+                                            clearTimeout(e.timeOut),e.timeOut=setTimeout(function(){e.error_count=0;},3000)
+                                        }).on('error', function(err){
 //                                                if(s.group[e.ke]&&s.group[e.ke].mon[e.id]&&s.group[e.ke].mon[e.id].record&&s.group[e.ke].mon[e.id].record.request){s.group[e.ke].mon[e.id].record.request.abort();}
-                                                clearTimeout(s.group[e.ke].mon[e.id].record.capturing);
-                                             if(e.error_count>4){e.fn();return}
-                                                e.captureOne();
-                                            });
-                                      }
-                                      e.captureOne()
-                                    break;
-                                    case'mjpeg':case'h264':case'socket':case'local':
-
-                                    break;
+                                            clearTimeout(s.group[e.ke].mon[e.id].record.capturing);
+                                         if(e.error_count>4){e.fn();return}
+                                            e.captureOne();
+                                        });
+                                  }
+                                  e.captureOne()
                                 }
                                 if(!s.group[e.ke]||!s.group[e.ke].mon[e.id]){s.init(0,e)}
                                 s.group[e.ke].mon[e.id].spawn.on('error',function(er){

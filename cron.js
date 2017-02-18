@@ -12,6 +12,7 @@ var config=require('./conf.json');
 var sql=mysql.createConnection(config.db);
 
 //set option defaults
+s={};
 if(!config.cron)config.cron={};
 if(!config.cron.deleteOld)config.cron.deleteOld=true;
 if(!config.cron.deleteNoVideo)config.cron.deleteNoVideo=true;
