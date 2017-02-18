@@ -77,7 +77,8 @@ If you wish to use this software for commercial purposes please consider donatin
     
     # Libraries Used
     
-    vbox.css (the framework that does the vertical panel layout) - I honestly don't know who made this, i found it in a zip.
+    vbox.css (Classic Dashboard) - An unknown but seriously awesome dev
+    Material Design Lite (V2 Dashboard) - https://github.com/google/material-design-lite
     jQuery - http://jquery.com/
     Socket.io - http://socket.io/
     Bootstrap - http://getbootstrap.com/
