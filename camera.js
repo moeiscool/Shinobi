@@ -1240,31 +1240,31 @@ var tx;
                 //got a frame rendered with a marker
                 s.tx({f:'detector_trigger',id:d.id,ke:d.ke,details:d.details},'GRP_'+d.ke);
                 if(d.ke&&d.id&&s.group[d.ke]&&s.group[d.ke].mon_conf[d.id]){
-                if(s.group[d.ke].mon_conf[d.id].details.detector_trigger=='1'){
                     d.mon=s.group[d.ke].mon_conf[d.id];
-                    if(!s.group[d.ke].mon[d.id].watchdog_stop){
-                        d.mon.mode='stop';s.camera('stop',d.mon)
-                        setTimeout(function(){d.mon.mode='record';s.camera('record',d.mon)},3000)
+                    if(s.group[d.ke].mon_conf[d.id].details.detector_trigger=='1'){
+                        if(!s.group[d.ke].mon[d.id].watchdog_stop){
+                            d.mon.mode='stop';s.camera('stop',d.mon)
+                            setTimeout(function(){d.mon.mode='record';s.camera('record',d.mon)},3000)
+                        }
+                        if(!d.mon.details.detector_timeout||d.mon.details.detector_timeout===''){
+                            d.mon.details.detector_timeout=10
+                        }
+                        d.detector_timeout=parseFloat(d.mon.details.detector_timeout)*1000*60;
+
+                        clearTimeout(s.group[d.ke].mon[d.id].watchdog_stop);
+
+                        s.group[d.ke].mon[d.id].watchdog_stop=setTimeout(function(){
+                            d.mon.mode='stop';s.camera('stop',d.mon)
+                            setTimeout(function(){
+                                d.mon.mode='start';s.camera('start',d.mon);
+                                delete(s.group[d.ke].mon[d.id].watchdog_stop);
+                            },3000)
+                        },d.detector_timeout)
                     }
-                    if(!d.mon.details.detector_timeout||d.mon.details.detector_timeout===''){
-                        d.mon.details.detector_timeout=10
+                    if(d.mon.details.detector_save==='1'){
+                        sql.query('INSERT INTO Events (ke,mid,details) VALUES (?,?,?)',[d.ke,d.id,JSON.stringify(d.details)])
                     }
-                    d.detector_timeout=parseFloat(d.mon.details.detector_timeout)*1000*60;
-                    
-                    clearTimeout(s.group[d.ke].mon[d.id].watchdog_stop);
-                    
-                    s.group[d.ke].mon[d.id].watchdog_stop=setTimeout(function(){
-                        d.mon.mode='stop';s.camera('stop',d.mon)
-                        setTimeout(function(){
-                            d.mon.mode='start';s.camera('start',d.mon);
-                            delete(s.group[d.ke].mon[d.id].watchdog_stop);
-                        },3000)
-                    },d.detector_timeout)
                 }
-                if(s.group[d.ke].mon[d.id].details.detector_save==='1'){
-                    sql.query('INSERT INTO Events (ke,mid,details) VALUES (?,?,?)',[d.ke,d.id,JSON.stringify(d.details)])
-                }
-            }
             break;
             case'frame':
                 //got a frame rendered with a marker

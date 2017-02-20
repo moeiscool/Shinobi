@@ -102,7 +102,7 @@ s.checkAreas=function(d,mon){
         }
         // calculate an average between the color values of the spot area
         average = average / (blendedData.data.length * 0.25);
-        console.log(cords[b].name,average);
+//        console.log(cords[b].name,average);
 		if (average > 0.3){
 //			console.log('Possible Motion : '+cords[b].name); // do stuff
             //tell server you got some motion
