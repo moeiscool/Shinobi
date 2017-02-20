@@ -18,11 +18,11 @@ img{max-width:100%}
 .monitor_item .stream-element{width:100%;height:300px;border:0;}
 .monitor_item{position:relative;padding:0;}
 .monitor_item .mdl-card{min-height:auto;border:1px solid #272727;border-radius:0px;overflow:hidden}
-.monitor_item.mdl-grid{width: 100%;}
 .monitor_item .mdl-card__media{position:relative;padding:0!important;display:block!important;background:#000}
 .monitor_item.selected .stream-element{height:600px}
 .monitor_item.selected .fa-expand:before{content:"\f066"}
 .monitor_item .mdl-card__supporting-text{background:#222;color:#fff!important;display:block}
+.monitor_item.detector_triggered .stream-element{border-bottom:3px inset #d9534f}
 
 .demo-blog .demo-blog__posts.mosaic{max-width:100%}
 @media screen and (min-width:1025px){
@@ -50,6 +50,11 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
     .modal.full{padding-left:0!important;}
     .modal.full .modal-dialog{width:calc(100% - 10px)!important;margin: 30px auto;}
 }
+.modal{overflow:auto!important}
+#zone_editor .modal-body{text-align:center;overflow:auto;max-height:800px}
+#zone_editor .canvas_holder{position:relative;display:inline-block}
+#zone_editor .cord_element{position:absolute;background:#ddd;z-index:11;padding:5px;}
+#zone_editor .cord_element .controls{margin-bottom:5px;}
 
 .form-group-group{padding:0 10px 10px 10px;overflow:hidden;margin-bottom:15px;border-radius:5px;border:1px solid #ddd;background:#fff}
 .form-group-group:last-child,.form-group-group .form-group:last-child{margin-bottom:0}

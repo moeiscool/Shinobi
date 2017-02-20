@@ -234,7 +234,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 }
 //                tmp+='<div class="hud super-center"><div class="top_bar"><span class="badge badge-sm badge-danger"><i class="fa fa-eye"></i> <span class="viewers"></span></span></div><div class="bottom_bar"></div></div></div></div>';
                 
-                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" class="monitor_item glM'+d.mid+' mdl-grid">';
+                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" class="monitor_item glM'+d.mid+' mdl-grid col-md-6">';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col">';
                 tmp+='<div class="no-padding mdl-card__media mdl-color-text--grey-50">';
                 switch(k.d.stream_type){
@@ -389,13 +389,26 @@ $.ccio.ws.on('f',function (d){
             $.ccio.init('id',d.form);
             $('#custom_css').append(d.form.details.css)
         break;
-        case'opencv_plugged':
-            $('.shinobi-opencv').show()
-            $('.shinobi-opencv-invert').hide()
+        case'detector_trigger':
+            if($.ccio.mon[d.id]){
+                $('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]').addClass('detector_triggered')
+                clearTimeout($.ccio.mon[d.id].detector_trigger_timeout);
+                $.ccio.mon[d.id].detector_trigger_timeout=setTimeout(function(){
+                    $('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]').removeClass('detector_triggered')
+                },5000)
+            }
         break;
-        case'opencv_unplugged':
-            $('.shinobi-opencv').hide()
-            $('.shinobi-opencv-invert').show()
+        case'detector_plugged':
+            $('.shinobi-detector').show()
+            $('.shinobi-detector_name').text(d.plug)
+            $('.shinobi-detector-'+d.plug).show()
+            $('.shinobi-detector-invert').hide()
+        break;
+        case'detector_unplugged':
+            $('.shinobi-detector').hide()
+            $('.shinobi-detector_name').empty()
+            $('.shinobi-detector_plug').hide()
+            $('.shinobi-detector-invert').show()
         break;
         case'log':
             $.ccio.tm(4,d,'#logs,.monitor_item[mid="'+d.mid+'"][ke="'+d.ke+'"] .logs')
@@ -503,6 +516,7 @@ $.ccio.ws.on('f',function (d){
             
             d.o=$.ccio.op().watch_on;
             if(!d.o){d.o={}}
+            if(d.mon.details.cords instanceof Array){d.mon.details.cords=JSON.stringify(d.mon.details.cords);}
             d.mon.details=JSON.stringify(d.mon.details);
             if(!$.ccio.mon[d.mid]){$.ccio.mon[d.mid]={}}
             $.each(d.mon,function(n,v){
@@ -666,6 +680,27 @@ $.oB.e.find('[name="user"]').change(function(e){
 if($.ccio.op().onvif_probe_user){
     $.oB.e.find('[name="user"]').val($.ccio.op().onvif_probe_user)
 }
+//Zone Editor
+$.zO={e:$('#zone_editor')};$.zO.f=$.zO.e.find('form');$.zO.o=$.zO.e.find('canvas'),$.zO.c=$.zO.e.find('.canvas_holder');
+$.zO.f.submit(function(e){
+    e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
+    
+    return false;
+});
+$.zO.checkCords=function(){
+    e={};e.ar=[];
+    $.zO.c.find('[cord]').each(function(n,v){
+        v=$(v);e.o=v.position();e.n=v.find('input').val().replace(/ /g,'');
+        if(e.n==''){e.n=$.ccio.gid()};
+        e.ar.push({name:e.n,x:e.o.left,y:e.o.top,w:v.width(),h:v.height()});
+    });
+    $.aM.e.find('[detail="cords"]').val(JSON.stringify(e.ar)).change()
+}
+$.zO.c.on('change','input',$.zO.checkCords)
+$.zO.c.on('click','.delete',function(){
+    $(this).parents('[cord]').remove();
+    $.zO.checkCords();
+})
 //probe
 $.pB={e:$('#probe')};$.pB.f=$.pB.e.find('form');$.pB.o=$.pB.e.find('.output_data');
 $.pB.f.submit(function(e){
@@ -934,6 +969,52 @@ $('body')
 .on('click','[monitor]',function(){
    e={}; e.e=$(this),e.a=e.e.attr('monitor'),e.p=e.e.parents('[mid]'),e.ke=e.p.attr('ke'),e.mid=e.p.attr('mid'),e.mon=$.ccio.mon[e.mid]
     switch(e.a){
+        case'zone':
+            e.d=JSON.parse(e.mon.details);
+            e.width=$.aM.e.find('[detail="detector_scale_x"]');
+            e.height=$.aM.e.find('[detail="detector_scale_y"]');
+            e.d.cords=$.aM.e.find('[detail="cords"]').val();
+            if(e.width.val()===''){
+                e.d.detector_scale_x=640;
+                e.d.detector_scale_y=480;
+                $.aM.e.find('[detail="detector_scale_x"]').val(e.d.detector_scale_x);
+                $.aM.e.find('[detail="detector_scale_y"]').val(e.d.detector_scale_y);
+            }else{
+                e.d.detector_scale_x=e.width.val();
+                e.d.detector_scale_y=e.height.val();
+            }
+            
+            $.zO.e.modal('show');
+            $.zO.o.attr('width',e.d.detector_scale_x).attr('height',e.d.detector_scale_y);
+            $.zO.c.css({width:e.d.detector_scale_x,height:e.d.detector_scale_y});
+            var blendContext = $.zO.o[0].getContext('2d');
+            blendContext.fillStyle = '#005337';
+            blendContext.fillRect( 0, 0,e.d.detector_scale_x,e.d.detector_scale_y);
+            if(e.d.cords&&(e.d.cords instanceof Object)===false){
+                try{e.d.cords=JSON.parse(e.d.cords);}catch(er){}
+            }
+            if(!e.d.cords||e.d.cords===''){
+                e.d.cords=[
+                    { name:"red", x:320 - 32 - 10, y:10, w:64, h:64 },
+                    { name:"yellow", x:320 - 32 - 10, y:10, w:64, h:64 },
+                    { name:"green", x:238, y:10, w:64, h:64 }
+                ]
+            }
+            $.zO.c.find('.cord_element').remove()
+            e.contain='#zone_editor .canvas_holder';
+            $.each(e.d.cords,function(n,v){
+                $.zO.c.append('<div class="cord_element" cord="'+v.name+'"><div><a class="controls pull-right btn btn-xs btn-danger delete">&nbsp;<i class="fa fa-times"></i>&nbsp;</a></div><input class="form-control input-sm name" value="'+v.name+'"></div>');
+                $.zO.c.find('[cord="'+v.name+'"]').css({top:v.y,left:v.x,width:v.w,height:v.h})
+                .resizable({
+                    containment:e.contain
+                })
+                .draggable({
+                    containment:e.contain,
+                    stop: $.zO.checkCords
+                })
+                .resize($.zO.checkCords)
+            })
+        break;
         case'snapshot':
             $.ccio.snapshot(e,function(url){
                 $('#temp').html('<a href="'+url+'" download="'+$.ccio.init('tf')+'_'+e.ke+'_'+e.mid+'.jpg">a</a>').find('a')[0].click();

@@ -30,8 +30,10 @@ sql={
 }
 io = require('socket.io-client')('ws://'+config.host+':'+config.port);//connect to master
 s.cx=function(x){return io.emit('ocv',x)}
-s.cx({f:'init'});
 
+io.on('connect',function(d){
+    s.cx({f:'init',plug:'opencv'});
+});
 io.on('disconnect',function(d){
     io.connect()
 })
@@ -39,7 +41,7 @@ io.on('f',function(d){
     switch(d.f){
         case'frame':
             d.details={}
-          cv.readImage(d.frame, function(err,im){
+          cv.readImage(d.frame,function(err,im){
               if(err){console.log(err);return false;}
               var width = im.width();
               var height = im.height();

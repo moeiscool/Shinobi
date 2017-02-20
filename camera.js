@@ -140,12 +140,14 @@ s.kill=function(x,e,p){
     if(s.group[e.ke]&&s.group[e.ke].mon[e.id]){
         if(s.group[e.ke].mon[e.id].spawn){
             try{
+            s.group[e.ke].mon[e.id].spawn.removeListener('end',s.group[e.ke].mon[e.id].spawn_exit);
             s.group[e.ke].mon[e.id].spawn.removeListener('exit',s.group[e.ke].mon[e.id].spawn_exit);
             s.group[e.ke].mon[e.id].spawn.removeListener('close',s.group[e.ke].mon[e.id].spawn_exit);
             s.group[e.ke].mon[e.id].spawn.removeListener('SIGTERM',s.group[e.ke].mon[e.id].spawn_exit);
             delete(s.group[e.ke].mon[e.id].spawn_exit);
             }catch(er){}
         }
+        clearTimeout(s.group[d.ke].mon[d.id].watchdog_stop);
         if(e&&s.group[e.ke].mon[e.id].record){
             clearTimeout(s.group[e.ke].mon[e.id].record.capturing);
 //            if(s.group[e.ke].mon[e.id].record.request){s.group[e.ke].mon[e.id].record.request.abort();delete(s.group[e.ke].mon[e.id].record.request);}
@@ -514,6 +516,14 @@ s.camera=function(x,e,cn,tx){
     if(e.details&&(e.details instanceof Object)===false){
         try{e.details=JSON.parse(e.details)}catch(err){}
     }
+    if(e.details&&e.details.cords&&(e.details.cords instanceof Object)===false){
+        try{
+            e.details.cords=JSON.parse(e.details.cords);
+            if(!e.details.cords)e.details.cords=[];
+        }catch(err){
+            e.details.cords=[];
+        }
+    }
     switch(x){
         case'snapshot'://get snapshot from monitor URL
             if(e.mon.mode!=='stop'){
@@ -627,7 +637,7 @@ s.camera=function(x,e,cn,tx){
                 exec('rm -rf '+e.sdir+'*')
             }
             s.group[e.ke].mon[e.id].fswatch=fs.watch(e.dir,{encoding:'utf8'},function(eventType,filename){
-                if(eventType==='rename'&&s.group[e.ke].mon[e.id].started===1){
+                if(eventType==='rename'){
                     if(s.group[e.ke].mon[e.id].open&&s.group[e.ke].mon[e.id].record.yes===1){
                         s.video('close',e);
                     }
@@ -673,6 +683,7 @@ s.camera=function(x,e,cn,tx){
                                     e.fn();
                                 }
                                 s.group[e.ke].mon[e.id].spawn.on('close',s.group[e.ke].mon[e.id].spawn_exit)
+                                s.group[e.ke].mon[e.id].spawn.on('end',s.group[e.ke].mon[e.id].spawn_exit)
                                 s.group[e.ke].mon[e.id].spawn.on('exit',s.group[e.ke].mon[e.id].spawn_exit)
                                 s.group[e.ke].mon[e.id].spawn.on('SIGTERM',s.group[e.ke].mon[e.id].spawn_exit)
                                 //emitter for mjpeg
@@ -730,14 +741,7 @@ s.camera=function(x,e,cn,tx){
                                 //frames from motion detect
                                 s.group[e.ke].mon[e.id].spawn.stdin.on('data',function(d){
                                     if(s.ocv&&e.details.detector==='1'){
-                                          if(!e.buffer){
-                                              e.buffer=d
-                                          }else{
-                                              e.buffer=Buffer.concat([e.buffer,d]);
-                                          }
-                                          if((d[d.length-2] === 0xFF && d[d.length-1] === 0xD9)){
-                                              s.tx({f:'frame',mon:s.group[e.ke].mon_conf[e.id].details,ke:e.ke,id:e.id,time:s.moment(),frame:d},s.ocv.id);
-                                          }
+                                        s.tx({f:'frame',mon:s.group[e.ke].mon_conf[e.id].details,ke:e.ke,id:e.id,time:s.moment(),frame:d},s.ocv.id);
                                     };
                                 })
                                 //frames to stream
@@ -795,6 +799,11 @@ s.camera=function(x,e,cn,tx){
                                                 setTimeout(function(){
                                                     if(!s.group[e.ke].mon[e.id].spawn){e.fn()}
                                                 },2000)
+                                            break;
+                                            case e.chk('mjpeg_decode_dc'):
+                                            case e.chk('bad vlc'):
+                                            case e.chk('error dc'):
+                                                e.fn()
                                             break;
                                             case /T[0-9][0-9]-[0-9][0-9]-[0-9][0-9]./.test(d):
                                                 return s.log(e,{type:"Video Finished",msg:{filename:d}})
@@ -878,7 +887,7 @@ var tx;
                         if(!s.group[d.ke].mon){s.group[d.ke].mon={}}
                     }
                     if(s.ocv){
-                        tx({f:'opencv_plugged'})
+                        tx({f:'detector_plugged',plug:s.ocv.plug})
                     }
                     s.init('apps',d)
                     sql.query('SELECT * FROM API WHERE ke=? && uid=?',[d.ke,d.uid],function(err,rrr) {
@@ -1222,22 +1231,27 @@ var tx;
     cn.on('ocv',function(d){
         switch(d.f){
             case'init':
-                s.ocv={started:moment(),id:cn.id};
+                s.ocv={started:moment(),id:cn.id,plug:d.plug};
                 cn.ocv=1;
-                s.tx({f:'opencv_plugged'},'CPU')
-                console.log('connected to opencv')
+                s.tx({f:'detector_plugged',plug:d.plug},'CPU')
+                console.log('connected to detector')
             break;
             case'trigger':
                 //got a frame rendered with a marker
+                s.tx({f:'detector_trigger',id:d.id,ke:d.ke,details:d.details},'GRP_'+d.ke);
                 if(d.ke&&d.id&&s.group[d.ke]&&s.group[d.ke].mon_conf[d.id]&&s.group[d.ke].mon_conf[d.id].details.detector_trigger=='1'){
                     d.mon=s.group[d.ke].mon_conf[d.id];
                     if(!s.group[d.ke].mon[d.id].watchdog_stop){
                         d.mon.mode='stop';s.camera('stop',d.mon)
                         setTimeout(function(){d.mon.mode='record';s.camera('record',d.mon)},3000)
                     }
-                        if(!d.mon.details.detector_timeout||d.mon.details.detector_timeout===''){d.mon.details.detector_timeout=10}
-                        d.detector_timeout=parseFloat(d.mon.details.detector_timeout)*1000*60;
+                    if(!d.mon.details.detector_timeout||d.mon.details.detector_timeout===''){
+                        d.mon.details.detector_timeout=10
+                    }
+                    d.detector_timeout=parseFloat(d.mon.details.detector_timeout)*1000*60;
+                    
                     clearTimeout(s.group[d.ke].mon[d.id].watchdog_stop);
+                    
                     s.group[d.ke].mon[d.id].watchdog_stop=setTimeout(function(){
                         d.mon.mode='stop';s.camera('stop',d.mon)
                         setTimeout(function(){
@@ -1408,8 +1422,8 @@ var tx;
 //            delete(s.group[cn.ke].vid[cn.id]);
         }
         if(cn.ocv){
+            s.tx({f:'detector_unplugged',plug:s.ocv.plug},'CPU')
             delete(s.ocv);
-            s.tx({f:'opencv_unplugged'},'CPU')
         }
         if(cn.cron){
             delete(s.cron);

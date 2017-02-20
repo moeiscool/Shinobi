@@ -106,7 +106,7 @@
 <!--     END of Input     -->
 <!--     START of Detector     -->
           <div class="form-group-group orange">
-          <h4>Detector<span class="pull-right">OpenCV <b class="shinobi-opencv-invert">not </b>Connected</span></h4>
+          <h4>Detector<span class="pull-right"><span class="shinobi-detector_name"></span> <b class="shinobi-detector-invert">not </b>Connected</span></h4>
               <div class="form-group">
                 <label><span>Enabled</span>
                     <select class="form-control" detail="detector">
@@ -115,7 +115,7 @@
                     </select>
                 </label>
               </div>
-              <div class="shinobi-opencv" style="display:none">
+              <div class="shinobi-detector" style="display:none">
                   <div class="form-group">
                     <label><span>Trigger Record</span>
                         <select class="form-control" detail="detector_trigger">
@@ -132,6 +132,8 @@
                         </select>
                     </label>
                   </div>
+              </div>
+              <div class="shinobi-detector-opencv shinobi-detector_plug" style="display:none">
                   <div class="form-group">
                     <label><span>Face Detection</span>
                         <select class="form-control" detail="detector_face">
@@ -156,6 +158,8 @@
                         </select>
                     </label>
                   </div>
+              </div>
+              <div class="shinobi-detector" style="display:none">
                   <div class="form-group">
                     <label><span>Recording Timeout <small>in Minutes</small></span>
                     <input class="form-control" detail="detector_timeout" placeholder="10">
@@ -177,6 +181,12 @@
                         <input class="form-control" detail="detector_scale_y" placeholder="">
                         </label>
                       </div>
+                  </div>
+                  <div class="hidden">
+                    <input detail="cords" placeholder="">
+                  </div>
+                  <div>
+                    <a class="btn btn-primary btn-block" monitor="zone">Zone Editor</a>
                   </div>
               </div>
           </div>
@@ -466,7 +476,7 @@
                 <input class="form-control" detail="cust_input" placeholder="">
                 </label>
               </div>
-              <div class="form-group shinobi-opencv" style="display:none">
+              <div class="form-group shinobi-detector" style="display:none">
                 <label><span>Detector Flags</span>
                 <input class="form-control" detail="cust_detect">
                 </label>
