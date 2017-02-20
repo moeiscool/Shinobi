@@ -147,7 +147,7 @@ s.kill=function(x,e,p){
             delete(s.group[e.ke].mon[e.id].spawn_exit);
             }catch(er){}
         }
-        clearTimeout(s.group[d.ke].mon[d.id].watchdog_stop);
+        clearTimeout(s.group[e.ke].mon[e.id].watchdog_stop);
         if(e&&s.group[e.ke].mon[e.id].record){
             clearTimeout(s.group[e.ke].mon[e.id].record.capturing);
 //            if(s.group[e.ke].mon[e.id].record.request){s.group[e.ke].mon[e.id].record.request.abort();delete(s.group[e.ke].mon[e.id].record.request);}
@@ -1239,7 +1239,8 @@ var tx;
             case'trigger':
                 //got a frame rendered with a marker
                 s.tx({f:'detector_trigger',id:d.id,ke:d.ke,details:d.details},'GRP_'+d.ke);
-                if(d.ke&&d.id&&s.group[d.ke]&&s.group[d.ke].mon_conf[d.id]&&s.group[d.ke].mon_conf[d.id].details.detector_trigger=='1'){
+                if(d.ke&&d.id&&s.group[d.ke]&&s.group[d.ke].mon_conf[d.id]){
+                if(s.group[d.ke].mon_conf[d.id].details.detector_trigger=='1'){
                     d.mon=s.group[d.ke].mon_conf[d.id];
                     if(!s.group[d.ke].mon[d.id].watchdog_stop){
                         d.mon.mode='stop';s.camera('stop',d.mon)
@@ -1260,6 +1261,10 @@ var tx;
                         },3000)
                     },d.detector_timeout)
                 }
+                if(s.group[d.ke].mon[d.id].details.detector_save==='1'){
+                    sql.query('INSERT INTO Events (ke,mid,details) VALUES (?,?,?)',[d.ke,d.id,JSON.stringify(d.details)])
+                }
+            }
             break;
             case'frame':
                 //got a frame rendered with a marker

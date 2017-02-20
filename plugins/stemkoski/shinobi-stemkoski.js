@@ -38,6 +38,7 @@ s={
 s.blender=function(mid){
 	var width  = s.img[mid].width;
 	var height = s.img[mid].height;
+    if(width===0||height===0){return}
     var sourceData = s.canvasContext[mid].getImageData(0, 0, width, height);
 	// create an image if the previous image doesn�t exist
 	if (!s.lastImageData[mid]) s.lastImageData[mid] = s.canvasContext[mid].getImageData(0, 0, width, height);
@@ -90,7 +91,8 @@ s.checkAreas=function(d,mon){
     var cords=mon.cords;
 	for (var b = 0; b < cords.length; b++){
 		// get the pixels in a note area from the blended image
-        var blendedData = s.blendContext[d.id].getImageData(cords[b].x, cords[b].y, cords[b].w, cords[b].h);
+        var blendedData = s.blendContext[d.id].getImageData(0, 0,s.img[d.id].width,s.img[d.id].height);
+//        var blendedData = s.blendContext[d.id].getImageData(cords[b].x, cords[b].y, cords[b].w, cords[b].h);
         var i = 0;
         var average = 0;
         while (i < (blendedData.data.length * 0.25)) {
@@ -100,15 +102,11 @@ s.checkAreas=function(d,mon){
         }
         // calculate an average between the color values of the spot area
         average = average / (blendedData.data.length * 0.25);
-//        console.log(cords[b].name,average);
-		if (average > 3){
+        console.log(cords[b].name,average);
+		if (average > 0.3){
 //			console.log('Possible Motion : '+cords[b].name); // do stuff
-
-            d.details={plug:config.plug,reason:'motion',confidence:average};
-            if(mon.detector_save==='1'){
-                sql.query('INSERT INTO Events (ke,mid,details) VALUES (?,?,?)',[d.ke,d.id,JSON.stringify(d.details)])
-            }
-            s.cx({f:'trigger',id:d.id,ke:d.ke,details:d.details})
+            //tell server you got some motion
+            s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,reason:'motion',confidence:average}})
 		}
 	}
 }
