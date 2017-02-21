@@ -51,10 +51,11 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
     .modal.full .modal-dialog{width:calc(100% - 10px)!important;margin: 30px auto;}
 }
 .modal{overflow:auto!important}
-#zone_editor .modal-body{text-align:center;overflow:auto;max-height:800px}
-#zone_editor .canvas_holder{position:relative;display:inline-block}
-#zone_editor .cord_element{position:absolute;background:#ddd;z-index:11;padding:5px;}
-#zone_editor .cord_element .controls{margin-bottom:5px;}
+#region_editor .modal-body{text-align:center;overflow:auto;max-height:800px}
+#region_editor .canvas_holder{position:relative;display:inline-block}
+#region_editor .cord_element{position:absolute;background:rgba(221, 221, 221, 0.8);z-index:11;padding:5px;}
+#region_editor .cord_element.selected{z-index:12;}
+#region_editor .cord_element .controls{margin-bottom:5px;}
 
 .form-group-group{padding:0 10px 10px 10px;overflow:hidden;margin-bottom:15px;border-radius:5px;border:1px solid #ddd;background:#fff}
 .form-group-group:last-child,.form-group-group .form-group:last-child{margin-bottom:0}

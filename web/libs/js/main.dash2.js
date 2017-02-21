@@ -285,6 +285,26 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                     if(v.find('.log-item').length>10){v.find('.log-item:last').remove()}
                 })
             break;
+            case 5://region element
+                k.contain='#region_editor .canvas_holder';
+                if(!d.name){d.name=$.ccio.gid()}
+                if(!d.sensitivity){d.sensitivity=0.5}
+                if(!d.y){d.y=0}
+                if(!d.x){d.x=0}
+                if(!d.w){d.w=200}
+                if(!d.h){d.h=200}
+                $.zO.c.append('<div class="cord_element text-left" cord="'+d.name+'"><div class="controls"><a class="pull-right btn btn-xs btn-danger delete">&nbsp;<i class="fa fa-times"></i>&nbsp;</a></div><div class="form-group"><label><span>Region Name</span><input class="form-control input-sm" detail="name" value="'+d.name+'"></label></div><div class="form-group"><label><span>Sensitivity</span><input class="form-control input-sm" detail="sensitivity" value="'+d.sensitivity+'"></label></div></div>');
+                $.zO.c.find('[cord="'+d.name+'"]')
+                    .css({top:d.y,left:d.x,width:d.w,height:d.h})
+                    .resizable({
+                        containment:k.contain,
+                        handles: "n,e,s,w,ne,nw,se,sw"
+                    })
+                    .draggable({
+                        containment:k.contain,
+                        stop: $.zO.checkCords
+                    })
+            break;
             case'option':
                 tmp+='<option value="'+d.id+'">'+d.name+'</option>'
             break;
@@ -680,8 +700,8 @@ $.oB.e.find('[name="user"]').change(function(e){
 if($.ccio.op().onvif_probe_user){
     $.oB.e.find('[name="user"]').val($.ccio.op().onvif_probe_user)
 }
-//Zone Editor
-$.zO={e:$('#zone_editor')};$.zO.f=$.zO.e.find('form');$.zO.o=$.zO.e.find('canvas'),$.zO.c=$.zO.e.find('.canvas_holder');
+//Region Editor
+$.zO={e:$('#region_editor')};$.zO.f=$.zO.e.find('form');$.zO.o=$.zO.e.find('canvas'),$.zO.c=$.zO.e.find('.canvas_holder');
 $.zO.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
     
@@ -690,16 +710,29 @@ $.zO.f.submit(function(e){
 $.zO.checkCords=function(){
     e={};e.ar=[];
     $.zO.c.find('[cord]').each(function(n,v){
-        v=$(v);e.o=v.position();e.n=v.find('input').val().replace(/ /g,'');
+        v=$(v);e.o=v.position();
+        e.arr={name:e.n,x:e.o.left,y:e.o.top,w:v.width(),h:v.height()};
+        v.find('[detail]').each(function(m,b){
+            b=$(b);
+            e.arr[b.attr('detail')]=b.val().trim();
+        })
         if(e.n==''){e.n=$.ccio.gid()};
-        e.ar.push({name:e.n,x:e.o.left,y:e.o.top,w:v.width(),h:v.height()});
+        e.ar.push(e.arr);
     });
     $.aM.e.find('[detail="cords"]').val(JSON.stringify(e.ar)).change()
 }
 $.zO.c.on('change','input',$.zO.checkCords)
-$.zO.c.on('click','.delete',function(){
+.on('resize','[cord]',$.zO.checkCords)
+.on('mousedown touch','[cord]',function(){
+    $.zO.c.find('[cord]').removeClass('selected');
+    $(this).addClass('selected');
+})
+.on('click','.delete',function(){
     $(this).parents('[cord]').remove();
     $.zO.checkCords();
+});
+$.zO.e.on('click','.add',function(){
+    $.ccio.tm(5)
 })
 //probe
 $.pB={e:$('#probe')};$.pB.f=$.pB.e.find('form');$.pB.o=$.pB.e.find('.output_data');
@@ -969,7 +1002,7 @@ $('body')
 .on('click','[monitor]',function(){
    e={}; e.e=$(this),e.a=e.e.attr('monitor'),e.p=e.e.parents('[mid]'),e.ke=e.p.attr('ke'),e.mid=e.p.attr('mid'),e.mon=$.ccio.mon[e.mid]
     switch(e.a){
-        case'zone':
+        case'region':
             e.d=JSON.parse(e.mon.details);
             e.width=$.aM.e.find('[detail="detector_scale_x"]');
             e.height=$.aM.e.find('[detail="detector_scale_y"]');
@@ -995,24 +1028,14 @@ $('body')
             }
             if(!e.d.cords||e.d.cords===''){
                 e.d.cords=[
-                    { name:"red", x:320 - 32 - 10, y:10, w:64, h:64 },
-                    { name:"yellow", x:320 - 32 - 10, y:10, w:64, h:64 },
-                    { name:"green", x:238, y:10, w:64, h:64 }
+                    { name:"red",sensitivity:0.5, x:320 - 32 - 10, y:10, w:64, h:64 },
+                    { name:"yellow",sensitivity:0.5, x:320 - 32 - 10, y:10, w:64, h:64 },
+                    { name:"green",sensitivity:0.5, x:238, y:10, w:64, h:64 }
                 ]
             }
             $.zO.c.find('.cord_element').remove()
-            e.contain='#zone_editor .canvas_holder';
             $.each(e.d.cords,function(n,v){
-                $.zO.c.append('<div class="cord_element" cord="'+v.name+'"><div><a class="controls pull-right btn btn-xs btn-danger delete">&nbsp;<i class="fa fa-times"></i>&nbsp;</a></div><input class="form-control input-sm name" value="'+v.name+'"></div>');
-                $.zO.c.find('[cord="'+v.name+'"]').css({top:v.y,left:v.x,width:v.w,height:v.h})
-                .resizable({
-                    containment:e.contain
-                })
-                .draggable({
-                    containment:e.contain,
-                    stop: $.zO.checkCords
-                })
-                .resize($.zO.checkCords)
+                $.ccio.tm(5,v)
             })
         break;
         case'snapshot':

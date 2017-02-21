@@ -28,7 +28,8 @@ s={
     img:{},
     lastImageData:{},
     blend:{},
-    blendContext:{}
+    blendContext:{},
+    lastFrames:{}
 }
 //s.cords=[
 //    { name:"red", x:320 - 32 - 10, y:10, w:32, h:32 },
@@ -38,7 +39,6 @@ s={
 s.blender=function(mid){
 	var width  = s.img[mid].width;
 	var height = s.img[mid].height;
-    if(width===0||height===0){return}
     var sourceData = s.canvasContext[mid].getImageData(0, 0, width, height);
 	// create an image if the previous image doesn�t exist
 	if (!s.lastImageData[mid]) s.lastImageData[mid] = s.canvasContext[mid].getImageData(0, 0, width, height);
@@ -89,10 +89,16 @@ s.differenceAccuracy=function(target, data1, data2) {
 
 s.checkAreas=function(d,mon){
     var cords=mon.cords;
+    if(!mon.detector_sensitivity||mon.detector_sensitivity==''||isNaN(mon.detector_sensitivity)){mon.detector_sensitivity=0.5}
+    if(mon.detector_frame==='1'){
+        cords.push({name:'frame',s:mon.detector_sensitivity,x:0,y:0,w:s.img[d.id].width,h:s.img[d.id].height});
+    }
 	for (var b = 0; b < cords.length; b++){
+        if(!cords[b].sensitivity||cords[b].sensitivity===''||isNaN(cords[b].sensitivity)){
+            cords[b].sensitivity=mon.detector_sensitivity;
+        }
 		// get the pixels in a note area from the blended image
-        var blendedData = s.blendContext[d.id].getImageData(0, 0,s.img[d.id].width,s.img[d.id].height);
-//        var blendedData = s.blendContext[d.id].getImageData(cords[b].x, cords[b].y, cords[b].w, cords[b].h);
+        var blendedData = s.blendContext[d.id].getImageData(cords[b].x, cords[b].y, cords[b].w, cords[b].h);
         var i = 0;
         var average = 0;
         while (i < (blendedData.data.length * 0.25)) {
@@ -101,12 +107,13 @@ s.checkAreas=function(d,mon){
             ++i;
         }
         // calculate an average between the color values of the spot area
-        average = average / (blendedData.data.length * 0.25);
+        average = (average / (blendedData.data.length * 0.25))*100;
 //        console.log(cords[b].name,average);
-		if (average > 0.3){
+		if (average > cords[b].sensitivity){
 //			console.log('Possible Motion : '+cords[b].name); // do stuff
             //tell server you got some motion
-            s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,reason:'motion',confidence:average}})
+            s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:cords[b].name,reason:'motion',confidence:average}})
+
 		}
 	}
 }
@@ -136,6 +143,13 @@ io.on('f',function(d){
             if(d.frame[d.frame.length-2] === 0xFF && d.frame[d.frame.length-1] === 0xD9){
                 if(!s.img[d.id]){
                     s.img[d.id] = new Canvas.Image;
+                }
+                if(d.mon.detector_scale_x===''||d.mon.detector_scale_y===''){
+                    console.log('Must set detector image size')
+                    return
+                }else{
+                    s.img[d.id].width=d.mon.detector_scale_x;
+                    s.img[d.id].height=d.mon.detector_scale_y;
                 }
                 s.img[d.id].src = d.buffer;
                 if(!s.canvas[d.id]){

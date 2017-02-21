@@ -1234,7 +1234,7 @@ var tx;
                 s.ocv={started:moment(),id:cn.id,plug:d.plug};
                 cn.ocv=1;
                 s.tx({f:'detector_plugged',plug:d.plug},'CPU')
-                console.log('connected to detector')
+                console.log('Connected to plugin : Detector - '+d.plug)
             break;
             case'trigger':
                 //got a frame rendered with a marker

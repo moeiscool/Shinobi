@@ -132,6 +132,51 @@
                         </select>
                     </label>
                   </div>
+                  <div class="form-group">
+                    <label><span>Recording Timeout <small>in Minutes</small></span>
+                    <input class="form-control" detail="detector_timeout" placeholder="10">
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Detector Rate <small>(FPS)</small></span>
+                    <input class="form-control" detail="detector_fps" placeholder="0.5">
+                    </label>
+                  </div>
+                  <div class="row">
+                      <div class="form-group col-md-6">
+                        <label><span>Feed-in Image Width</span>
+                        <input class="form-control" detail="detector_scale_x" placeholder="">
+                        </label>
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label><span>Feed-in Image Height</span>
+                        <input class="form-control" detail="detector_scale_y" placeholder="">
+                        </label>
+                      </div>
+                  </div>
+              </div>
+              <div class="shinobi-detector-stemkoski shinobi-detector_plug" style="display:none">
+                  <div class="row">
+                      <div class="form-group col-md-6">
+                        <label><span>Full Frame Detection</span>
+                            <select class="form-control" detail="detector_frame">
+                                <option value="0" selected>No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </label>
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label><span>Sensitivity</span>
+                        <input class="form-control" detail="detector_sensitivity" placeholder="0.5">
+                        </label>
+                      </div>
+                  </div>
+                  <div class="hidden">
+                    <input detail="cords" placeholder="">
+                  </div>
+                  <div class="form-group">
+                    <a class="btn btn-primary btn-block" monitor="region">Region Editor (Experimental)</a>
+                  </div>
               </div>
               <div class="shinobi-detector-opencv shinobi-detector_plug" style="display:none">
                   <div class="form-group">
@@ -157,36 +202,6 @@
                             <option value="1">Yes</option>
                         </select>
                     </label>
-                  </div>
-              </div>
-              <div class="shinobi-detector" style="display:none">
-                  <div class="form-group">
-                    <label><span>Recording Timeout <small>in Minutes</small></span>
-                    <input class="form-control" detail="detector_timeout" placeholder="10">
-                    </label>
-                  </div>
-                  <div class="form-group">
-                    <label><span>Detector Rate <small>(FPS)</small></span>
-                    <input class="form-control" detail="detector_fps" placeholder="0.5">
-                    </label>
-                  </div>
-                  <div class="row">
-                      <div class="form-group col-md-6">
-                        <label><span>Feed-in Image Width</span>
-                        <input class="form-control" detail="detector_scale_x" placeholder="">
-                        </label>
-                      </div>
-                      <div class="form-group col-md-6">
-                        <label><span>Feed-in Image Height</span>
-                        <input class="form-control" detail="detector_scale_y" placeholder="">
-                        </label>
-                      </div>
-                  </div>
-                  <div class="hidden">
-                    <input detail="cords" placeholder="">
-                  </div>
-                  <div>
-                    <a class="btn btn-primary btn-block" monitor="zone">Zone Editor</a>
                   </div>
               </div>
           </div>
