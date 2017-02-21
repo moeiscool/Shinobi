@@ -303,7 +303,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                     .draggable({
                         containment:k.contain,
                         stop: $.zO.checkCords
-                    })
+                    }).click()
             break;
             case'option':
                 tmp+='<option value="'+d.id+'">'+d.name+'</option>'
@@ -1196,11 +1196,88 @@ $('body')
         case'edit':
             e.p=$('#add_monitor'),e.mt=e.p.attr('mid',e.mid).attr('ke',e.ke).find('.modal-title')
             if(!$.ccio.mon[e.mid]){
+                //new monitor
                 e.p.find('[monitor="delete"]').hide()
                 e.mt.find('span').text('Add'),e.mt.find('i').attr('class','fa fa-plus');
-                e.values={"mode":"stop","mid":$.ccio.gid(),"name":"","protocol":"http","ext":"webm","type":"jpeg","host":"","path":"","port":"","fps":"1","width":"640","height":"480","details":JSON.stringify({"detector_frame":"1","fatal_max":"","muser":"","mpass":"","sfps":"1","aduration":"","detector":"0","detector_trigger":null,"detector_save":null,"detector_face":null,"detector_fullbody":null,"detector_car":null,"detector_timeout":"","detector_fps":"","detector_scale_x":"","detector_scale_y":"","stream_type":"mjpeg","stream_vcodec":"libx264","stream_acodec":"","hls_time":"2","preset_stream":"ultrafast","hls_list_size":"3","signal_check":"10","signal_check_log":"0","stream_quality":"15","stream_fps":"","stream_scale_x":"","stream_scale_y":"","svf":"","vcodec":"copy","crf":"","preset_record":"","acodec":"libvorbis","timestamp":"0","dqf":"0","cutoff":"15","vf":"","control":"0","control_stop":"0","control_url_stop_timeout":"","control_url_center":"","control_url_left":"","control_url_left_stop":"","control_url_right":"","control_url_right_stop":"","control_url_up":"","control_url_up_stop":"","control_url_down":"","control_url_down_stop":"","cust_input":"","cust_detect":"","cust_stream":"","cust_record":"","custom_output":"","loglevel":"error","sqllog":"0"}),"shto":"[]","shfr":"[]"}
+                //default values
+                e.values={
+                    "mode":"stop",
+                    "mid":$.ccio.gid(),
+                    "name":"",
+                    "protocol":"http",
+                    "ext":"webm",
+                    "type":"jpeg",
+                    "host":"",
+                    "path":"",
+                    "port":"",
+                    "fps":"1",
+                    "width":"640",
+                    "height":"480",
+                    "details":JSON.stringify(
+                        {
+                            "detector_frame":"1",
+                            "fatal_max":"",
+                            "muser":"",
+                            "mpass":"",
+                            "sfps":"1",
+                            "aduration":"",
+                            "detector":"0",
+                            "detector_trigger":null,
+                            "detector_save":null,
+                            "detector_face":null,
+                            "detector_fullbody":null,
+                            "detector_car":null,
+                            "detector_timeout":"",
+                            "detector_fps":"",
+                            "detector_scale_x":"",
+                            "detector_scale_y":"",
+                            "stream_type":"mjpeg",
+                            "stream_vcodec":"libx264",
+                            "stream_acodec":"",
+                            "hls_time":"2",
+                            "preset_stream":"ultrafast",
+                            "hls_list_size":"3",
+                            "signal_check":"10",
+                            "signal_check_log":"0",
+                            "stream_quality":"15",
+                            "stream_fps":"",
+                            "stream_scale_x":"",
+                            "stream_scale_y":"",
+                            "svf":"",
+                            "vcodec":"copy",
+                            "crf":"",
+                            "preset_record":"",
+                            "acodec":"libvorbis",
+                            "timestamp":"0",
+                            "dqf":"0",
+                            "cutoff":"15",
+                            "vf":"",
+                            "control":"0",
+                            "control_stop":"0",
+                            "control_url_stop_timeout":"",
+                            "control_url_center":"",
+                            "control_url_left":"",
+                            "control_url_left_stop":"",
+                            "control_url_right":"",
+                            "control_url_right_stop":"",
+                            "control_url_up":"",
+                            "control_url_up_stop":"",
+                            "control_url_down":"",
+                            "control_url_down_stop":"",
+                            "cust_input":"",
+                            "cust_detect":"",
+                            "cust_stream":"",
+                            "cust_record":"",
+                            "custom_output":"",
+                            "loglevel":"error",
+                            "sqllog":"0"
+                        }),
+                    "shto":"[]",
+                    "shfr":"[]"
+                }
                 e.mt.find('.edit_id').text(e.values.mid);
             }else{
+                //edit monitor
                 e.p.find('[monitor="delete"]').show()
                 e.mt.find('.edit_id').text(e.mid);
                 e.mt.find('span').text('Edit');
