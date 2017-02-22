@@ -6,19 +6,23 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-        <h4 class="modal-title" id="probeLabel"><i class="fa fa-gears"></i> &nbsp; Probe</h4>
+        <h4 class="modal-title" id="probeLabel"><i class="fa fa-search"></i> &nbsp; FFprobe</h4>
       </div>
       <div class="modal-body">
           <div class="text-center msg"></div>
         <div class="form-group">
+            <i>"ffprobe is a simple multimedia streams analyzer. You can use it to output all kinds of information about an input including duration, frame rate, frame size, etc."</i> - FFmpegTips
+        </div>
+        <div class="form-group">
             <label><span>Complete Stream URL</span>
-                <input class="form-control" name="url">
+                <input class="form-control" name="url" placeholder="Example : http://192.168.88.126/videostream.cgi or /dev/video0">
             </label>
         </div>
         <div class="output_data"></div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+        <a class="btn btn-danger stop" style="display:none">Stop</a> 
         <button type="submit" class="btn btn-success">Check</button>
       </div>
     </form>
@@ -39,19 +43,19 @@
               <div class="row">
                   <div class="form-group col-md-6">
                     <label><span>IP <small>Range or Single</small></span>
-                        <input class="form-control" name="ip" placeholder="10.1.100.1-10.1.100.254">
+                        <input class="form-control" name="ip" placeholder="Example : 10.1.100.1-10.1.100.254">
                     </label>
                   </div>
                   <div class="form-group col-md-6">
                     <label><span>Port <small>Separate by Commas or a Range</small></span>
-                        <input class="form-control" name="port" placeholder="80,7575,8000,8080,8081">
+                        <input class="form-control" name="port" placeholder="Example : 80,7575,8000,8080,8081">
                     </label>
                   </div>
               </div>
               <div class="row">
                   <div class="form-group col-md-6">
                     <label><span>Camera Username</span>
-                        <input class="form-control" name="user">
+                        <input class="form-control" name="user" placeholder="Can be left blank.">
                     </label>
                   </div>
                   <div class="form-group col-md-6">

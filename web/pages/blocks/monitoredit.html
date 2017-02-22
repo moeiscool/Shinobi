@@ -106,9 +106,9 @@
 <!--     END of Input     -->
 <!--     START of Detector     -->
           <div class="form-group-group orange">
-          <h4>Detector<span class="pull-right"><span class="shinobi-detector_name"></span> <b class="shinobi-detector-invert">not </b>Connected</span></h4>
+          <h4>Detector<span class="pull-right"><b class="shinobi-detector_name"></b> <b class="shinobi-detector-invert">Not </b>Connected</span></h4>
               <div class="form-group">
-                <label><span>Enabled</span>
+                <label><span>Enabled <small>Only do this if you have a Detector plugin running.</small></span>
                     <select class="form-control" detail="detector">
                         <option value="0" selected>No</option>
                         <option value="1">Yes</option>
@@ -127,6 +127,14 @@
                   <div class="form-group">
                     <label><span>Save Events to SQL</span>
                         <select class="form-control" detail="detector_save">
+                            <option value="0" selected>No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Email on Trigger <small>Max 1 Email Every 10 minutes</small></span>
+                        <select class="form-control" detail="detector_mail">
                             <option value="0" selected>No</option>
                             <option value="1">Yes</option>
                         </select>
@@ -166,7 +174,7 @@
                         </label>
                       </div>
                       <div class="form-group col-md-6">
-                        <label><span>Sensitivity</span>
+                        <label><span title="Opposite of Sensitivity">Indifference</span>
                         <input class="form-control" detail="detector_sensitivity" placeholder="0.5">
                         </label>
                       </div>

@@ -677,10 +677,14 @@ s.camera=function(x,e,cn,tx){
                                 s.group[e.ke].mon[e.id].spawn = s.ffmpeg(e);
                                 //on unexpected exit restart
                                 s.group[e.ke].mon[e.id].spawn_exit=function(){
-                                    if(e.details.loglevel!=='quiet'){
-                                        s.log(e,{type:'FFMPEG Unexpected Exit',msg:{msg:'Process Crashed for Monitor : '+e.id,cmd:s.group[e.ke].mon[e.id].ffmpeg}});
+                                    if(s.group[e.ke].mon[e.id].started===1){
+                                        if(e.details.loglevel!=='quiet'){
+                                            s.log(e,{type:'FFMPEG Unexpected Exit',msg:{msg:'Process Crashed for Monitor : '+e.id,cmd:s.group[e.ke].mon[e.id].ffmpeg}});
+                                        }
+                                        e.fn();
+                                    }else{
+                                        s.kill(s.group[e.ke].mon[e.id].spawn,e);
                                     }
-                                    e.fn();
                                 }
                                 s.group[e.ke].mon[e.id].spawn.on('close',s.group[e.ke].mon[e.id].spawn_exit)
                                 s.group[e.ke].mon[e.id].spawn.on('end',s.group[e.ke].mon[e.id].spawn_exit)
@@ -1154,6 +1158,32 @@ var tx;
                         break;
                     }
                 break;
+                case'ffprobe':
+                    if(s.group[cn.ke].users[cn.auth]){
+                        switch(d.ff){
+                            case'stop':
+                                exec('kill -9 '+s.group[cn.ke].users[cn.auth].ffprobe.pid)
+                            break;
+                            default:
+                                if(s.group[cn.ke].users[cn.auth].ffprobe){
+                                    exec('kill -9 '+s.group[cn.ke].users[cn.auth].ffprobe.pid)
+                                }
+                                s.group[cn.ke].users[cn.auth].ffprobe=spawn('ffprobe',d.query.split(' '))
+                                tx({f:'ffprobe_start',pid:s.group[cn.ke].users[cn.auth].ffprobe.pid})
+                                s.group[cn.ke].users[cn.auth].ffprobe.on('exit',function(data){
+                                    tx({f:'ffprobe_stop',pid:s.group[cn.ke].users[cn.auth].ffprobe.pid})
+                                });
+                                s.group[cn.ke].users[cn.auth].ffprobe.stderr.on('data',function(data){
+                                    tx({f:'ffprobe_data',data:data.toString('utf8'),pid:s.group[cn.ke].users[cn.auth].ffprobe.pid})
+                                });
+                                //auto kill in 30 seconds
+                                setTimeout(function(){
+                                    exec('kill -9 '+d.pid)
+                                },30000)
+                            break;
+                        }
+                    }
+                break;
                 case'onvif':
                 //check ip
                 d.ip=d.ip.replace(/ /g,'');
@@ -1572,16 +1602,6 @@ app.post('/',function (req,res){
     })
     }
 });
-//ffprobe
-//app.get('/:auth/probe/:ke', function (req,res){
-//    s.auth(req.params,function(){
-//        exec('ffprobe '+decodeURI(req.body.cmd),function(err,d,ster){
-//            res.write(err)
-//            res.write(d)
-//            res.write(ster)
-//        });
-//    },res,req);
-//});
 // Get HLS stream (m3u8)
 app.get('/:auth/hls/:ke/:id/:file', function (req,res){
     req.fn=function(){

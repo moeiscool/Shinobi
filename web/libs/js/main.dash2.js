@@ -391,7 +391,7 @@ $.ccio.ws.on('ping', function(d){
     $.ccio.ws.emit('pong',{beat:1});
 });
 $.ccio.ws.on('f',function (d){
-    if(d.f!=='monitor_frame'&&d.f!=='os'&&d.f!=='video_delete'){console.log(d);}
+    if(d.f!=='monitor_frame'&&d.f!=='os'&&d.f!=='video_delete'&&d.f!=='detector_trigger'){console.log(d);}
     if(d.viewers){
         $('#monitor_live_'+d.id+' .viewers').html(d.viewers);
     }
@@ -409,9 +409,23 @@ $.ccio.ws.on('f',function (d){
             $.ccio.init('id',d.form);
             $('#custom_css').append(d.form.details.css)
         break;
+        case'ffprobe_stop':
+            $.pB.o.append('<div><b>END</b></div>');
+            $.pB.e.find('.stop').hide();
+            $.pB.e.find('[type="submit"]').show();
+        break;
+        case'ffprobe_start':
+            $.pB.o.empty();
+            $.pB.e.find('.stop').show();
+            $.pB.e.find('[type="submit"]').hide();
+        break;
+        case'ffprobe_data':
+            $.pB.o.append(d.data+'<br>')
+        break;
         case'detector_trigger':
-            if($.ccio.mon[d.id]){
-                $('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]').addClass('detector_triggered')
+            d.e=$('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]')
+            if($.ccio.mon[d.id]&&d.e.length>0){
+                d.e.addClass('detector_triggered')
                 clearTimeout($.ccio.mon[d.id].detector_trigger_timeout);
                 $.ccio.mon[d.id].detector_trigger_timeout=setTimeout(function(){
                     $('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]').removeClass('detector_triggered')
@@ -738,14 +752,16 @@ $.zO.e.on('click','.add',function(){
 $.pB={e:$('#probe')};$.pB.f=$.pB.e.find('form');$.pB.o=$.pB.e.find('.output_data');
 $.pB.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
-    $.pB.o.empty();
-    $.getJSON('/'+$user.auth_token+'/probe/'+$user.ke+'/'+e.s.url,function(d){
-        if(d.ok===false){
-            d.output='<center>No data could be displayed. Check your command.</center>'
-        }
-        $.pB.o.append(d.output)
-    })
+    e.s.url=e.s.url.trim();
+    if(e.s.url.indexOf('-i ')===-1){
+        e.s.url='-i '+e.s.url
+    }
+    $.ccio.cx({f:'ffprobe',query:e.s.url})
     return false;
+});
+$.pB.e.find('.stop').click(function(e){
+    e.e=$(this);
+    $.ccio.cx({f:'ffprobe',ff:'stop'})
 });
 //log viewer
 $.log={e:$('#logs_modal'),lm:$('#log_monitors')};$.log.o=$.log.e.find('table tbody');
@@ -840,18 +856,6 @@ $.aM.f.find('[name="type"]').change(function(e){
         break;
     }
 });
-$.aM.f.find('[name="protocol"]').change(function(e){
-    e.e=$(this);e.v=e.e.val(),e.t=$.aM.f.find('[name="type"]');
-//    $.aM.f.find('[name="ext"],[name="type"]').prop('disabled',false)
-    switch(e.v){
-        case'rtsp':
-//            e.t.val('h264').prop('disabled',true)
-        break;
-        case'http':case'https':
-            if(e.t.val()==='h264'){e.t.val('jpeg')}
-        break;
-    }
-})
 $.aM.e.on('dblclick','.edit_id',function(e){
     $.aM.e.find('[name="mid"]').parents('.form-group').toggle('show')
 })
@@ -1213,9 +1217,9 @@ $('body')
                     "fps":"1",
                     "width":"640",
                     "height":"480",
-                    "details":JSON.stringify(
-                        {
+                    "details":JSON.stringify({
                             "detector_frame":"1",
+                            "detector_mail":"0",
                             "fatal_max":"",
                             "muser":"",
                             "mpass":"",
