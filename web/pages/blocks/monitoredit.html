@@ -8,7 +8,7 @@
         </button>
         <h4 class="modal-title" id="add_monitorLabel"><i class="fa fa-plus"></i> &nbsp; <span>Add</span> Monitor &nbsp; <small>Monitor ID : <t class="edit_id"></t></small></h4>
       </div>
-      <div class="modal-body">
+      <div class="modal-body" style="max-height:650px;overflow:auto">
           <div class="text-center msg"></div>
         <div class="form-group-group grey">
           <h4>Identity</h4>
@@ -551,8 +551,10 @@
           </div>
       </div>
       <div class="modal-footer">
-        <a class="btn btn-danger pull-left" monitor="delete" data-dismiss="modal">Delete</a>
         <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+        <a class="btn btn-danger pull-left" monitor="delete" data-dismiss="modal">Delete</a>
+        <button type="button" class="btn btn-default pull-left save_config">Export</button>
+        <button type="button" class="btn btn-default pull-left import_config">Import</button>
         <button type="submit" class="btn btn-success">Save changes</button>
       </div>
     </form>

@@ -107,7 +107,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .side-menu.list-blocks .monitor_block .box{width:calc(100% - 70px);display:inline-block}
 .nav-xs.side-menu.list-blocks .monitor_block .list-data{display:none}
 .dropdown-menu.scrollable{max-height:300px}
-
+.upload_file input{display:none}
 .monitor_item .hud .side-menu{top:0;right:0;margin:auto;width:40%;height:100%;padding:15px;background:rgba(0,0,0,0.6);padding-bottom:60px;}
 .monitor_item .side-menu{position:absolute;height:100%;width:100%;left:0;top:0;}
 .monitor_item .side-menu.logs{right:auto;left:0;list-style:none;display:none}

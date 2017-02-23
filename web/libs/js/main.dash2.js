@@ -391,7 +391,7 @@ $.ccio.ws.on('ping', function(d){
     $.ccio.ws.emit('pong',{beat:1});
 });
 $.ccio.ws.on('f',function (d){
-    if(d.f!=='monitor_frame'&&d.f!=='os'&&d.f!=='video_delete'&&d.f!=='detector_trigger'){console.log(d);}
+    if(d.f!=='monitor_frame'&&d.f!=='os'&&d.f!=='video_delete'&&d.f!=='detector_trigger'&&d.f!=='log'){console.log(d);}
     if(d.viewers){
         $('#monitor_live_'+d.id+' .viewers').html(d.viewers);
     }
@@ -805,6 +805,53 @@ $.aM.f.submit(function(e){
         $.each(e.s,function(n,v){$.ccio.mon[e.s.mid][n]=v;})
         $.aM.e.modal('hide')
     return false;
+});
+$.aM.e.find('.import_config').click(function(e){
+    e={};e.e=$(this);e.mid=e.e.parents('[mid]').attr('mid');
+    $.confirm.e.modal('show');
+    $.confirm.title.text('Import Monitor Configuration')
+    e.html='Doing this will overrwrite any changes currently not saved. Imported changes will only be applied when you press <b>Save</b>.<div style="margin-top:15px"><div class="form-group"><textarea placeholder="Paste JSON here." class="form-control"></textarea></div><label class="upload_file btn btn-primary btn-block"> Upload Files <input class="upload" type=file name="files[]"></label></div>';
+    $.confirm.body.html(e.html)
+    $.confirm.e.find('.upload').change(function(e){
+        var files = e.target.files; // FileList object
+        f = files[0];
+        var reader = new FileReader();
+        reader.onload = function(ee) {
+            $.confirm.e.find('textarea').val(ee.target.result);
+        }
+        reader.readAsText(f);
+    });
+    $.confirm.click({title:'Import',class:'btn-primary'},function(){
+        try{
+            e.values=JSON.parse($.confirm.e.find('textarea').val());
+            $.each(e.values,function(n,v){
+                $.aM.e.find('[name="'+n+'"]').val(v).change()
+            })
+            e.ss=JSON.parse(e.values.details);
+            $.aM.f.find('[detail]').each(function(n,v){
+                v=$(v).attr('detail');if(!e.ss[v]){e.ss[v]=''}
+            })
+            $.each(e.ss,function(n,v){
+                $.aM.e.find('[detail="'+n+'"]').val(v).change();
+            })
+            $.aM.e.modal('show')
+        }catch(err){
+            console.log(err)
+            new PNotify({title:'Invalid JSON',text:'Please ensure this is a valid JSON string for Shinobi monitor configuration.',type:'error'})
+        }
+    });
+});
+$.aM.e.find('.save_config').click(function(e){
+    e={};e.e=$(this);e.mid=e.e.parents('[mid]').attr('mid');e.s=$.aM.f.serializeObject();
+    if(!e.mid||e.mid===''){
+        e.mid='NewMonitor'
+    }
+    e.dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(e.s));
+    $('#temp').html('<a></a>')
+        .find('a')
+        .attr('href',e.dataStr)
+        .attr('download','Shinobi_'+e.mid+'_config.json')
+        [0].click()
 });
 $.aM.f.find('[name="type"]').change(function(e){
     e.e=$(this);

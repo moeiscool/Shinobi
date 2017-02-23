@@ -59,7 +59,9 @@ s.disc=function(){
 }
 s.disc();
 //kill any ffmpeg running
-exec("ps aux | grep -ie ffmpeg | awk '{print $2}' | xargs kill -9");
+s.ffmpegKill=function(){exec("ps aux | grep -ie ffmpeg | awk '{print $2}' | xargs kill -9")};
+process.on('exit',s.ffmpegKill.bind(null,{cleanup:true}));
+process.on('SIGINT',s.ffmpegKill.bind(null, {exit:true}));
 ////close open videos
 sql.query('SELECT * FROM Videos WHERE status=?',[0],function(err,r){
     if(r&&r[0]){
@@ -362,7 +364,7 @@ s.ffmpeg=function(e,x){
         x.ratio=e.details.stream_scale_x+'x'+e.details.stream_scale_y;
     }
     //timestamp
-    if(!e.details.timestamp||e.details.timestamp==1){x.time=' -vf drawtext=fontfile=/usr/share/fonts/truetype/freefont/FreeSans.ttf:text=\'%{localtime}\':x=(w-tw)/2:y=0:fontcolor=white:box=1:boxcolor=0x00000000@1:fontsize=10';}else{x.time=''}
+    if(e.details.timestamp&&e.details.timestamp=="1"){x.time=' -vf drawtext=fontfile=/usr/share/fonts/truetype/freefont/FreeSans.ttf:text=\'%{localtime}\':x=(w-tw)/2:y=0:fontcolor=white:box=1:boxcolor=0x00000000@1:fontsize=10';}else{x.time=''}
     //get video and audio codec defaults based on extension
     switch(e.ext){
         case'mp4':
