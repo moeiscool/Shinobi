@@ -657,7 +657,6 @@ s.camera=function(x,e,cn,tx){
                     clearTimeout(e.err_fatal_timeout);
                     ++e.error_fatal_count;
                     e.err_fatal_timeout=setTimeout(function(){
-                        if(!e.details.fatal_max||e.details.fatal_max===''){e.details.fatal_max=10}else{e.details.fatal_max=parseFloat(e.details.fatal_max)}
                         if(e.error_fatal_count>e.details.fatal_max){
                             s.camera('stop',{id:e.id,ke:e.ke})
                         }else{
@@ -670,6 +669,7 @@ s.camera=function(x,e,cn,tx){
                     e.error_fatal_count=0;
                     e.error_count=0;
                     try{
+                        if(!e.details.fatal_max||e.details.fatal_max===''){e.details.fatal_max=10}else{e.details.fatal_max=parseFloat(e.details.fatal_max)}
                         s.kill(s.group[e.ke].mon[e.id].spawn,e);
                         e.draw=function(err,o){
                             if(o.success===true){
@@ -716,26 +716,43 @@ s.camera=function(x,e,cn,tx){
                                         }
                                     }
                                     e.captureOne=function(f){
-                                        s.group[e.ke].mon[e.id].record.request=request({url:e.url,method:'GET',encoding: null,timeout:3000},function(er,data){
-                                           ++e.frames; 
-                                            if(er){++e.error_count;
-                                                   if(e.details.loglevel!=='quiet'){
-                                                   s.log(e,{type:'Snapshot Error',msg:{msg:'There was an issue getting data from your camera.',info:er}});
-                                                   }
-                                                      return;
+                                        s.group[e.ke].mon[e.id].record.request=request({url:e.url,method:'GET',encoding: null,timeout:3000},function(err,data){
+                                            if(err){
+
+                                                return;
                                             }
-                                            if(s.group[e.ke].mon[e.id].spawn&&s.group[e.ke].mon[e.id].spawn.stdin){
-                                               s.group[e.ke].mon[e.id].spawn.stdin.write(data.body);
-                                           }
-                                           if(s.group[e.ke].mon[e.id].started===1){
-                                               s.group[e.ke].mon[e.id].record.capturing=setTimeout(function(){e.captureOne()},1000/e.details.sfps);
-                                               }
-                                            clearTimeout(e.timeOut),e.timeOut=setTimeout(function(){e.error_count=0;},3000)
+                                        }).on('data',function(d){
+                                              if(!e.buffer0){
+                                                  e.buffer0=d
+                                              }else{
+                                                  e.buffer0=Buffer.concat([e.buffer0,d]);
+                                              }
+                                              if((d[d.length-2] === 0xFF && d[d.length-1] === 0xD9)){
+                                                  ++e.frames; 
+                                                if(s.group[e.ke].mon[e.id].spawn&&s.group[e.ke].mon[e.id].spawn.stdin){
+                                                    s.group[e.ke].mon[e.id].spawn.stdin.write(e.buffer0);
+                                                }
+                                                if(s.group[e.ke].mon[e.id].started===1){
+                                                    s.group[e.ke].mon[e.id].record.capturing=setTimeout(function(){
+                                                       e.captureOne()
+                                                    },1000/e.details.sfps);
+                                                }
+                                                  e.buffer0=null;
+                                            }
+                                            if(!e.timeOut){
+                                                e.timeOut=setTimeout(function(){e.error_count=0;delete(e.timeOut);},3000);
+                                            }
+
                                         }).on('error', function(err){
-//                                                if(s.group[e.ke]&&s.group[e.ke].mon[e.id]&&s.group[e.ke].mon[e.id].record&&s.group[e.ke].mon[e.id].record.request){s.group[e.ke].mon[e.id].record.request.abort();}
-                                            clearTimeout(s.group[e.ke].mon[e.id].record.capturing);
-                                         if(e.error_count>4){e.fn();return}
-                                            e.captureOne();
+                                            ++e.error_count;
+                                            clearTimeout(e.timeOut);delete(e.timeOut);
+                                            if(e.details.loglevel!=='quiet'){
+                                                s.log(e,{type:'Snapshot Error',msg:{msg:'There was an issue getting data from your camera.',info:err}});
+                                            }
+                                            if(e.error_count>e.details.fatal_max){
+                                                clearTimeout(s.group[e.ke].mon[e.id].record.capturing);
+                                                e.fn();
+                                            }
                                         });
                                   }
                                   e.captureOne()
