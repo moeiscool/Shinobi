@@ -20,7 +20,7 @@ echo "Shinobi - Database Installation"
 echo "What is your SQL Password?"
 echo "**You set this just a few moments ago if MySQL was installed during this installer."
 read sqlpass
-
+cd ..
 mysql -u root -p$sqlpass -e "source sql/user.sql" || true
 mysql -u root -p$sqlpass -e "source sql/framework.sql" || true
 mysql -u root -p$sqlpass --database ccio -e "source sql/default_data.sql" || true

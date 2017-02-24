@@ -256,9 +256,8 @@ s.init=function(x,e){
         break;
         case'url':
             e.authd='';
-            if(!e.details.muser){e.details.muser=''}
-            if(!e.details.mpass){e.details.mpass=''}
-            if(e.details.muser!==''&&e.details.mpass!==''&&e.host.indexOf('@')===-1) {                e.authd=e.details.muser+':'+e.details.mpass+'@';
+            if(e.details.muser&&e.details.muser!==''&&e.details.mpass&&e.details.mpass!==''&&e.host.indexOf('@')===-1) {
+                e.authd=e.details.muser+':'+e.details.mpass+'@';
             }
             if(e.port==80){e.porty=''}else{e.porty=':'+e.port}
             e.url=e.protocol+'://'+e.authd+e.host+e.porty+e.path;return e.url;
@@ -729,7 +728,7 @@ s.camera=function(x,e,cn,tx){
                                               }
                                               if((d[d.length-2] === 0xFF && d[d.length-1] === 0xD9)){
                                                   ++e.frames; 
-                                                if(s.group[e.ke].mon[e.id].spawn&&s.group[e.ke].mon[e.id].spawn.stdin){
+                                                  if(s.group[e.ke].mon[e.id].spawn&&s.group[e.ke].mon[e.id].spawn.stdin){
                                                     s.group[e.ke].mon[e.id].spawn.stdin.write(e.buffer0);
                                                 }
                                                 if(s.group[e.ke].mon[e.id].started===1){
@@ -792,7 +791,9 @@ s.camera=function(x,e,cn,tx){
                                         }
                                    break;
                                }
-                                s.group[e.ke].mon[e.id].spawn.stdout.on('data',e.frame_to_stream);
+                                if(e.frame_to_stream){
+                                    s.group[e.ke].mon[e.id].spawn.stdout.on('data',e.frame_to_stream);
+                                }
                                 if(x==='record'||e.type==='mjpeg'||e.type==='h264'||e.type==='local'){
                                     s.group[e.ke].mon[e.id].spawn.stderr.on('data',function(d){
                                         d=d.toString();

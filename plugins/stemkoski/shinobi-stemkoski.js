@@ -31,11 +31,6 @@ s={
     blendContext:{},
     lastFrames:{}
 }
-//s.cords=[
-//    { name:"red", x:320 - 32 - 10, y:10, w:32, h:32 },
-//    { name:"yellow", x:320 - 32 - 10, y:10, w:32, h:32 },
-//    { name:"green", x:238, y:10, w:32, h:32 }
-//]
 s.blender=function(mid){
 	var width  = s.img[mid].width;
 	var height = s.img[mid].height;
@@ -116,6 +111,8 @@ s.checkAreas=function(d,mon){
 
 		}
 	}
+    s.canvasContext[d.id].clearRect(0, 0, s.img[d.id].width, s.img[d.id].height);
+    s.blendContext[d.id].clearRect(0, 0, s.img[d.id].width, s.img[d.id].height);
 }
 
 

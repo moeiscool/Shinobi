@@ -35,9 +35,20 @@ Edit it the new file. Host should be `localhost` and port should match the `list
 nano conf.json
 ```
 
+Start the plugin.
 
 ```
-Thanks to Cairo and others for these dependencies. Thanks to stemkoski as the JS image comparing is based on their research.
+node shinobi-stemkoski.js
+```
+
+Or to daemonize with PM2.
+
+```
+pm2 start shinobi-stemkoski.js
+```
+
+Doing this will reveal options in the monitor configuration. Shinobi does not need to be restarted when a plugin is initiated or stopped.
+
+*Thanks to Cairo and others for these dependencies. Thanks to stemkoski as the JS image comparing is based on their research. I or Shinobi are not affiliated with stemkoski or Cairo.*
 
 Shinobi Plugin by : Moe Alam
-```
