@@ -85,6 +85,9 @@
 </div>
 </div>
 <script>
+    <% var failedLogin;if(failedLogin===true){ %>
+        localStorage.removeItem('ShinobiLogin_'+location.host)
+    <% } %>
     $.ccio={f:$('#login-form'),rf:$('#register-form'),ls:localStorage.getItem('ShinobiLogin_'+location.host)}
     $.ccio.rf.submit(function(e){
         e.preventDefault();$('input').css('border-color','')

@@ -810,7 +810,7 @@ $.aM.e.find('.import_config').click(function(e){
     e={};e.e=$(this);e.mid=e.e.parents('[mid]').attr('mid');
     $.confirm.e.modal('show');
     $.confirm.title.text('Import Monitor Configuration')
-    e.html='Doing this will overrwrite any changes currently not saved. Imported changes will only be applied when you press <b>Save</b>.<div style="margin-top:15px"><div class="form-group"><textarea placeholder="Paste JSON here." class="form-control"></textarea></div><label class="upload_file btn btn-primary btn-block"> Upload Files <input class="upload" type=file name="files[]"></label></div>';
+    e.html='Doing this will overrwrite any changes currently not saved. Imported changes will only be applied when you press <b>Save</b>.<div style="margin-top:15px"><div class="form-group"><textarea placeholder="Paste JSON here." class="form-control"></textarea></div><label class="upload_file btn btn-primary btn-block"> Upload File <input class="upload" type=file name="files[]"></label></div>';
     $.confirm.body.html(e.html)
     $.confirm.e.find('.upload').change(function(e){
         var files = e.target.files; // FileList object

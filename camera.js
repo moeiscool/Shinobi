@@ -144,8 +144,6 @@ s.kill=function(x,e,p){
             try{
             s.group[e.ke].mon[e.id].spawn.removeListener('end',s.group[e.ke].mon[e.id].spawn_exit);
             s.group[e.ke].mon[e.id].spawn.removeListener('exit',s.group[e.ke].mon[e.id].spawn_exit);
-            s.group[e.ke].mon[e.id].spawn.removeListener('close',s.group[e.ke].mon[e.id].spawn_exit);
-            s.group[e.ke].mon[e.id].spawn.removeListener('SIGTERM',s.group[e.ke].mon[e.id].spawn_exit);
             delete(s.group[e.ke].mon[e.id].spawn_exit);
             }catch(er){}
         }
@@ -655,13 +653,17 @@ s.camera=function(x,e,cn,tx){
                 e.error_fatal=function(x){
                     clearTimeout(e.err_fatal_timeout);
                     ++e.error_fatal_count;
-                    e.err_fatal_timeout=setTimeout(function(){
-                        if(e.error_fatal_count>e.details.fatal_max){
-                            s.camera('stop',{id:e.id,ke:e.ke})
-                        }else{
-                            e.fn()
-                        };
-                    },5000);
+                    if(s.group[e.ke].mon[e.id].started===1){
+                        e.err_fatal_timeout=setTimeout(function(){
+                            if(e.error_fatal_count>e.details.fatal_max){
+                                s.camera('stop',{id:e.id,ke:e.ke})
+                            }else{
+                                e.fn()
+                            };
+                        },5000);
+                    }else{
+                        s.kill(s.group[e.ke].mon[e.id].spawn,e);
+                    }
                 }
                 e.fn=function(){//this function loops to create new files
                     if(s.group[e.ke].mon[e.id].started===1){
@@ -678,19 +680,13 @@ s.camera=function(x,e,cn,tx){
                                 s.group[e.ke].mon[e.id].spawn = s.ffmpeg(e);
                                 //on unexpected exit restart
                                 s.group[e.ke].mon[e.id].spawn_exit=function(){
-                                    if(s.group[e.ke].mon[e.id].started===1){
-                                        if(e.details.loglevel!=='quiet'){
-                                            s.log(e,{type:'FFMPEG Unexpected Exit',msg:{msg:'Process Crashed for Monitor : '+e.id,cmd:s.group[e.ke].mon[e.id].ffmpeg}});
-                                        }
-                                        e.fn();
-                                    }else{
-                                        s.kill(s.group[e.ke].mon[e.id].spawn,e);
+                                    if(e.details.loglevel!=='quiet'){
+                                        s.log(e,{type:'FFMPEG Unexpected Exit',msg:{msg:'Process Crashed for Monitor : '+e.id,cmd:s.group[e.ke].mon[e.id].ffmpeg}});
                                     }
+                                    e.error_fatal();
                                 }
-                                s.group[e.ke].mon[e.id].spawn.on('close',s.group[e.ke].mon[e.id].spawn_exit)
                                 s.group[e.ke].mon[e.id].spawn.on('end',s.group[e.ke].mon[e.id].spawn_exit)
                                 s.group[e.ke].mon[e.id].spawn.on('exit',s.group[e.ke].mon[e.id].spawn_exit)
-                                s.group[e.ke].mon[e.id].spawn.on('SIGTERM',s.group[e.ke].mon[e.id].spawn_exit)
                                 //emitter for mjpeg
                                 if(!e.details.stream_mjpeg_clients||e.details.stream_mjpeg_clients===''||isNaN(e.details.stream_mjpeg_clients)===false){e.details.stream_mjpeg_clients=20;}else{e.details.stream_mjpeg_clients=parseInt(e.details.stream_mjpeg_clients)}
                                 s.group[e.ke].mon[e.id].emitter = new events.EventEmitter().setMaxListeners(e.details.stream_mjpeg_clients);
@@ -722,11 +718,12 @@ s.camera=function(x,e,cn,tx){
                                             }
                                         }).on('data',function(d){
                                               if(!e.buffer0){
-                                                  e.buffer0=d
+                                                  e.buffer0=[d]
                                               }else{
-                                                  e.buffer0=Buffer.concat([e.buffer0,d]);
+                                                  e.buffer0.push(d);
                                               }
                                               if((d[d.length-2] === 0xFF && d[d.length-1] === 0xD9)){
+                                                  e.buffer0=Buffer.concat(e.buffer0);
                                                   ++e.frames; 
                                                   if(s.group[e.ke].mon[e.id].spawn&&s.group[e.ke].mon[e.id].spawn.stdin){
                                                     s.group[e.ke].mon[e.id].spawn.stdin.write(e.buffer0);
@@ -779,11 +776,12 @@ s.camera=function(x,e,cn,tx){
                                        e.frame_to_stream=function(d){
                                            if(s.group[e.ke]&&s.group[e.ke].mon[e.id]&&s.group[e.ke].mon[e.id].watch&&Object.keys(s.group[e.ke].mon[e.id].watch).length>0){
                                               if(!e.buffer){
-                                                  e.buffer=d
+                                                  e.buffer=[d]
                                               }else{
-                                                  e.buffer=Buffer.concat([e.buffer,d]);
+                                                  e.buffer.push(d);
                                               }
                                               if((d[d.length-2] === 0xFF && d[d.length-1] === 0xD9)){
+                                                  e.buffer=Buffer.concat(e.buffer);
                                                   s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:e.buffer.toString('base64'),frame_format:'b64'},'MON_'+e.id);
                                                   e.buffer=null;
                                               }
@@ -1616,7 +1614,7 @@ app.post('/',function (req,res){
                 }
             }
         }else{
-            res.render("index");
+            res.render("index",{failedLogin:true});
             res.end();
         }
     })

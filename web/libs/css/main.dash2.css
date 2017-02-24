@@ -96,7 +96,8 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .side-menu .monitor_block .title{bottom:auto;top:0;color:#fff}
 .nav-xs.side-menu .monitor_block{width:100%}
 .side-menu .monitor_block .list-data{display:none}
-
+.output_data:empty{display:none}
+.output_data{max-height:500px;font-family:monospace;padding:10px;border-radius:5px;background:#f3f3f3;overflow:auto}
 .side-menu.list-blocks .monitor_block .icons,.side-menu.list-blocks .monitor_block .title{position:inherit;opacity:1;background:none}
 .side-menu.list-blocks .monitor_block:not(:last-child){border-bottom: 1px solid #54502d;}
 .side-menu.list-blocks .monitor_block:first-child{border-top: 1px solid #54502d;}
@@ -230,6 +231,7 @@ ul.msg_list li .message {
 
 /*Control Pad*/
 .pad {
+  z-index: 111;
   position: absolute;
   height: 120px;
   width: 120px;
