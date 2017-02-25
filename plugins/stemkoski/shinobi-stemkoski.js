@@ -133,11 +133,12 @@ io.on('f',function(d){
     switch(d.f){
         case'frame':
             if(!d.buffer){
-              d.buffer=d.frame;
+              d.buffer=[d.frame];
             }else{
-              d.buffer=Buffer.concat([d.buffer,d.frame]);
+              d.buffer.push(d.frame)
             }
             if(d.frame[d.frame.length-2] === 0xFF && d.frame[d.frame.length-1] === 0xD9){
+                d.buffer=Buffer.concat(d.buffer);
                 if(!s.img[d.id]){
                     s.img[d.id] = new Canvas.Image;
                 }
