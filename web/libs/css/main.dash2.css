@@ -220,6 +220,7 @@ ul.msg_list li .message {
     left: auto;
     width: 220px
 }
+.nav>li{display:inline-block}
 .navbar-nav .open .dropdown-menu li a{padding:7px 15px}
 .navbar-nav .open .dropdown-menu.msg_list {
     width: 300px
@@ -227,8 +228,23 @@ ul.msg_list li .message {
 .nav>li>a{color:#fff}
 .nav>li>a:focus, .nav>li>a:hover,.nav .open>a, .nav .open>a:focus, .nav .open>a:hover{background:#867560}
 
-
-
+.mdl-js-layout.hide-side:not(.is-small-screen){
+    
+}
+@media screen and (min-width: 1025px){
+    .mdl-js-layout.hide-side:not(.is-small-screen)>.mdl-layout__drawer {
+        width: 0px;transition:0.2s
+    }
+}
+.mdl-js-layout.hide-side:not(.is-small-screen) .mdl-layout__header .mdl-layout__drawer-button{
+    display:none;
+}
+.mdl-js-layout.hide-side:not(.is-small-screen)>.mdl-layout__content{
+    margin-left: 0px;transition:0.2s
+}
+.mdl-js-layout.hide-side:not(.is-small-screen)>.mdl-layout__header{
+    margin-left: 0px;width:100%;transition:0.2s
+}
 /*Control Pad*/
 .pad {
   z-index: 111;
