@@ -1,7 +1,7 @@
 # Shinobi
 
 <center>
-<a href="https://www.youtube.com/user/MrMoea92">YouTube</a> - <a href="https://shinobicctv.herokuapp.com/">Slack</a> - <a href="https://twitter.com/ShinobiCCTV">Twitter</a> - <a href="https://www.facebook.com/Shinobi-1223193167773738/?ref=bookmarks">Facebook</a> - <a href="https://www.reddit.com/r/ShinobiCCTV/">Reddit</a> - <a href="https://github.com/moeiscool/Shinobi/wiki/Support-Shinobi"><b>Donate</b></a>
+<a href="https://www.youtube.com/user/MrMoea92">YouTube</a> - <a href="https://shinobicctv.herokuapp.com/">Slack</a> - <a href="https://twitter.com/ShinobiCCTV">Twitter</a> - <a href="https://www.facebook.com/Shinobi-1223193167773738/?ref=bookmarks">Facebook</a> - <a href="https://www.reddit.com/r/ShinobiCCTV/">Reddit</a> - <a href="https://www.youcaring.com/moealamthecreatorofshinobi-759887"><b>Donate</b></a>
 </center>
 
 Shinobi is the Open Source CCTV platform written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. Shinobi can record IP Cameras and Local Cameras.
@@ -77,7 +77,8 @@ If you wish to use this software for commercial purposes please consider donatin
     
     # Libraries Used
     
-    vbox.css (the framework that does the vertical panel layout) - I honestly don't know who made this, i found it in a zip.
+    vbox.css (Classic Dashboard) - An unknown but seriously awesome dev
+    Material Design Lite (V2 Dashboard) - https://github.com/google/material-design-lite
     jQuery - http://jquery.com/
     Socket.io - http://socket.io/
     Bootstrap - http://getbootstrap.com/

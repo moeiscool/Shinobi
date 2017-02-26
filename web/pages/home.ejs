@@ -23,6 +23,7 @@
       <header id="main_header" class="demo-header mdl-layout__header">
         <div class="mdl-layout__header-row">
         <ul class="nav navbar-nav">
+            <li class_toggle="hide-side" data-target=".mdl-js-layout"><a>&nbsp;<i class="fa fa-bars"></i>&nbsp;</a></li>
             <li class_toggle="mosaic" data-target="#monitors_live"><a>&nbsp;<i class="fa fa-th"></i>&nbsp;</a></li>
             <li mid="" ke="" class="hidden-xs"><a monitor="edit">&nbsp;<i class="fa fa-plus"></i>&nbsp;</a></li>
             <li class="os_bars hidden-xs">
@@ -63,12 +64,14 @@
           <div class="demo-avatar-dropdown">
             <button id="accbtn" style="color:#fff" class="usermail mdl-button mdl-js-button mdl-js-ripple-effect"></button>
             <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="accbtn">
+                <li class="mdl-menu__item" class_toggle="mosaic" data-target="#monitors_live"><i class="fa fa-th"></i>&nbsp; Montage</li>
                 <li class="mdl-menu__item" data-toggle="modal" data-target="#settings"><i class="fa fa-gears"></i> &nbsp; Settings</li>
                 <li class="mdl-menu__item" data-toggle="modal" data-target="#apis"><i class="fa fa-code"></i> &nbsp; API</li>
                 <li class="mdl-menu__item" data-toggle="modal" data-target="#onvif_probe"><i class="fa fa-rss"></i> &nbsp; ONVIF</li>
+                <li class="mdl-menu__item" data-toggle="modal" data-target="#probe"><i class="fa fa-search"></i> &nbsp; FFprobe</li>
                 <li class="mdl-menu__item" data-toggle="modal" data-target="#logs_modal"><i class="fa fa-exclamation-triangle"></i> &nbsp; Logs</li>
                 <li class="mdl-menu__item" class_toggle="list-blocks" data-target="#left_menu"><i class="fa fa-camera"></i>&nbsp; List Toggle</li>
-                <li class="mdl-menu__item" class_toggle="mosaic" data-target="#monitors_live"><i class="fa fa-th"></i>&nbsp; Montage</li>
+                <li class="mdl-menu__item" class_toggle="hide-side" data-target=".mdl-js-layout"><i class="fa fa-bars"></i>&nbsp; Hide List</li>
                 <li class="mdl-menu__item logout"><i class="fa fa-sign-out"></i>&nbsp; Log Out</li>
             </ul>
             <div class="mdl-layout-spacer"></div>
@@ -139,12 +142,13 @@
 </html>
 <!---->
 <div class="hidden" id="temp"></div>
-<% include blocks/probe.html %>
 <% include blocks/api.html %>
 <% include blocks/logs.html %>
 <% include blocks/settings.html %>
 <% include blocks/videoview.html %>
 <% include blocks/monitoredit.html %>
+<% include blocks/probe.html %>
+<% include blocks/region.html %>
 <% include blocks/confirm.html %>
 <!--Dropbox Library, Change data-app-key to your app key. -->
 <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="<%= $user.DropboxAppKey %>"></script>

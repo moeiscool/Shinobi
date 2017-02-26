@@ -8,7 +8,7 @@
         </button>
         <h4 class="modal-title" id="add_monitorLabel"><i class="fa fa-plus"></i> &nbsp; <span>Add</span> Monitor &nbsp; <small>Monitor ID : <t class="edit_id"></t></small></h4>
       </div>
-      <div class="modal-body">
+      <div class="modal-body" style="max-height:650px;overflow:auto">
           <div class="text-center msg"></div>
         <div class="form-group-group grey">
           <h4>Identity</h4>
@@ -106,16 +106,16 @@
 <!--     END of Input     -->
 <!--     START of Detector     -->
           <div class="form-group-group orange">
-          <h4>Detector<span class="pull-right">OpenCV <b class="shinobi-opencv-invert">not </b>Connected</span></h4>
+          <h4>Detector<span class="pull-right"><b class="shinobi-detector_name"></b> <b class="shinobi-detector-invert">Not </b>Connected</span></h4>
               <div class="form-group">
-                <label><span>Enabled</span>
+                <label><span>Enabled <small>Only do this if you have a Detector plugin running.</small></span>
                     <select class="form-control" detail="detector">
                         <option value="0" selected>No</option>
                         <option value="1">Yes</option>
                     </select>
                 </label>
               </div>
-              <div class="shinobi-opencv" style="display:none">
+              <div class="shinobi-detector" style="display:none">
                   <div class="form-group">
                     <label><span>Trigger Record</span>
                         <select class="form-control" detail="detector_trigger">
@@ -133,24 +133,8 @@
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Face Detection</span>
-                        <select class="form-control" detail="detector_face">
-                            <option value="0" selected>No</option>
-                            <option value="1">Yes</option>
-                        </select>
-                    </label>
-                  </div>
-                  <div class="form-group">
-                    <label><span>Full Body Detection</span>
-                        <select class="form-control" detail="detector_fullbody">
-                            <option value="0" selected>No</option>
-                            <option value="1">Yes</option>
-                        </select>
-                    </label>
-                  </div>
-                  <div class="form-group">
-                    <label><span>Car Side Detection</span>
-                        <select class="form-control" detail="detector_car">
+                    <label><span>Email on Trigger <small>Max 1 Email Every 10 minutes</small></span>
+                        <select class="form-control" detail="detector_mail">
                             <option value="0" selected>No</option>
                             <option value="1">Yes</option>
                         </select>
@@ -177,6 +161,55 @@
                         <input class="form-control" detail="detector_scale_y" placeholder="">
                         </label>
                       </div>
+                  </div>
+              </div>
+              <div class="shinobi-detector-stemkoski shinobi-detector_plug" style="display:none">
+                  <div class="row">
+                      <div class="form-group col-md-6">
+                        <label><span>Full Frame Detection</span>
+                            <select class="form-control" detail="detector_frame">
+                                <option value="0">No</option>
+                                <option value="1" selected>Yes</option>
+                            </select>
+                        </label>
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label><span title="Opposite of Sensitivity">Indifference</span>
+                        <input class="form-control" detail="detector_sensitivity" placeholder="0.5">
+                        </label>
+                      </div>
+                  </div>
+                  <div class="hidden">
+                    <input detail="cords" placeholder="">
+                  </div>
+                  <div class="form-group">
+                    <a class="btn btn-primary btn-block" monitor="region">Region Editor (Experimental)</a>
+                  </div>
+              </div>
+              <div class="shinobi-detector-opencv shinobi-detector_plug" style="display:none">
+                  <div class="form-group">
+                    <label><span>Face Detection</span>
+                        <select class="form-control" detail="detector_face">
+                            <option value="0" selected>No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Full Body Detection</span>
+                        <select class="form-control" detail="detector_fullbody">
+                            <option value="0" selected>No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Car Side Detection</span>
+                        <select class="form-control" detail="detector_car">
+                            <option value="0" selected>No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </label>
                   </div>
               </div>
           </div>
@@ -466,7 +499,7 @@
                 <input class="form-control" detail="cust_input" placeholder="">
                 </label>
               </div>
-              <div class="form-group shinobi-opencv" style="display:none">
+              <div class="form-group shinobi-detector" style="display:none">
                 <label><span>Detector Flags</span>
                 <input class="form-control" detail="cust_detect">
                 </label>
@@ -518,8 +551,11 @@
           </div>
       </div>
       <div class="modal-footer">
-        <a class="btn btn-danger pull-left" monitor="delete" data-dismiss="modal">Delete</a>
         <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+        <a class="btn btn-danger pull-left" monitor="delete" data-dismiss="modal">Delete</a>
+        <button type="button" class="btn btn-default pull-left save_config">Export</button>
+        <button type="button" class="btn btn-default pull-left import_config">Import</button>
+        <button type="button" class="btn btn-default pull-left probe_config">Probe</button>
         <button type="submit" class="btn btn-success">Save changes</button>
       </div>
     </form>

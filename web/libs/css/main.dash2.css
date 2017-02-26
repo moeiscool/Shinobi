@@ -18,16 +18,17 @@ img{max-width:100%}
 .monitor_item .stream-element{width:100%;height:300px;border:0;}
 .monitor_item{position:relative;padding:0;}
 .monitor_item .mdl-card{min-height:auto;border:1px solid #272727;border-radius:0px;overflow:hidden}
-.monitor_item.mdl-grid{width: 100%;}
 .monitor_item .mdl-card__media{position:relative;padding:0!important;display:block!important;background:#000}
 .monitor_item.selected .stream-element{height:600px}
 .monitor_item.selected .fa-expand:before{content:"\f066"}
 .monitor_item .mdl-card__supporting-text{background:#222;color:#fff!important;display:block}
+.monitor_item.detector_triggered .stream-element{border-bottom:3px inset #d9534f}
 
 .demo-blog .demo-blog__posts.mosaic{max-width:100%}
 @media screen and (min-width:1025px){
     .mosaic .monitor_item{width:33.3%;}
 }
+.mosaic .monitor_item [class_toggle="show_logs"]{display:none}
 .mosaic .monitor_item .mdl-cell--8-col{width:100%;border:0;border-radius:0;margin:0;position:relative}
 .mosaic .monitor_item .mdl-cell--4-col-desktop,.mosaic .monitor_item .mdl-card__supporting-text{display:none}
 .mosaic .monitor_item .mdl-card__supporting-text:not(.meta){display:block;position:absolute;bottom:0;left:0;opacity:0;}
@@ -50,6 +51,12 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
     .modal.full{padding-left:0!important;}
     .modal.full .modal-dialog{width:calc(100% - 10px)!important;margin: 30px auto;}
 }
+.modal{overflow:auto!important}
+#region_editor .modal-body{text-align:center;overflow:auto;max-height:800px}
+#region_editor .canvas_holder{position:relative;display:inline-block}
+#region_editor .cord_element{position:absolute;background:rgba(221, 221, 221, 0.8);z-index:11;padding:5px;}
+#region_editor .cord_element.selected{z-index:12;}
+#region_editor .cord_element .controls{margin-bottom:5px;}
 
 .form-group-group{padding:0 10px 10px 10px;overflow:hidden;margin-bottom:15px;border-radius:5px;border:1px solid #ddd;background:#fff}
 .form-group-group:last-child,.form-group-group .form-group:last-child{margin-bottom:0}
@@ -90,7 +97,8 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .side-menu .monitor_block .title{bottom:auto;top:0;color:#fff}
 .nav-xs.side-menu .monitor_block{width:100%}
 .side-menu .monitor_block .list-data{display:none}
-
+.output_data:empty{display:none}
+.output_data{max-height:500px;font-family:monospace;padding:10px;border-radius:5px;background:#f3f3f3;overflow:auto}
 .side-menu.list-blocks .monitor_block .icons,.side-menu.list-blocks .monitor_block .title{position:inherit;opacity:1;background:none}
 .side-menu.list-blocks .monitor_block:not(:last-child){border-bottom: 1px solid #54502d;}
 .side-menu.list-blocks .monitor_block:first-child{border-top: 1px solid #54502d;}
@@ -101,7 +109,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .side-menu.list-blocks .monitor_block .box{width:calc(100% - 70px);display:inline-block}
 .nav-xs.side-menu.list-blocks .monitor_block .list-data{display:none}
 .dropdown-menu.scrollable{max-height:300px}
-
+.upload_file input{display:none}
 .monitor_item .hud .side-menu{top:0;right:0;margin:auto;width:40%;height:100%;padding:15px;background:rgba(0,0,0,0.6);padding-bottom:60px;}
 .monitor_item .side-menu{position:absolute;height:100%;width:100%;left:0;top:0;}
 .monitor_item .side-menu.logs{right:auto;left:0;list-style:none;display:none}
@@ -213,6 +221,7 @@ ul.msg_list li .message {
     left: auto;
     width: 220px
 }
+.is-small-screen .nav>li{display:inline-block}
 .navbar-nav .open .dropdown-menu li a{padding:7px 15px}
 .navbar-nav .open .dropdown-menu.msg_list {
     width: 300px
@@ -220,10 +229,26 @@ ul.msg_list li .message {
 .nav>li>a{color:#fff}
 .nav>li>a:focus, .nav>li>a:hover,.nav .open>a, .nav .open>a:focus, .nav .open>a:hover{background:#867560}
 
-
-
+.mdl-js-layout.hide-side:not(.is-small-screen){
+    
+}
+@media screen and (min-width: 1025px){
+    .mdl-js-layout.hide-side:not(.is-small-screen)>.mdl-layout__drawer {
+        width: 0px;transition:0.2s
+    }
+}
+.mdl-js-layout.hide-side:not(.is-small-screen) .mdl-layout__header .mdl-layout__drawer-button{
+    display:none;
+}
+.mdl-js-layout.hide-side:not(.is-small-screen)>.mdl-layout__content{
+    margin-left: 0px;transition:0.2s
+}
+.mdl-js-layout.hide-side:not(.is-small-screen)>.mdl-layout__header{
+    margin-left: 0px;width:100%;transition:0.2s
+}
 /*Control Pad*/
 .pad {
+  z-index: 111;
   position: absolute;
   height: 120px;
   width: 120px;

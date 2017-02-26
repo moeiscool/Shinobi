@@ -210,7 +210,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             case 0://video
                 if(!d.filename){d.filename=moment(d.time).format('YYYY-MM-DDTHH-mm-ss')+'.'+d.ext;}
                 k=[d.mid+'-'+d.filename,'href="/'+$user.auth_token+'/videos/'+d.ke+'/'+d.mid+'/'+d.filename+'"'];
-                d.mom=moment(d.time),d.hr=parseInt(d.mom.format('HH'))+1,d.per=parseInt(d.hr/24*100);
+                d.mom=moment(d.time),d.hr=parseInt(d.mom.format('HH')),d.per=parseInt(d.hr/24*100);
                 tmp+='<li class="glM'+d.mid+'" mid="'+d.mid+'" ke="'+d.ke+'" status="'+d.status+'" file="'+d.filename+'"><div title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'" '+k[1]+' video="launch" class="progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div><div><span title="'+d.end+'" class="livestamp"></span></div><div class="small"><b>Start</b> : '+d.time+'</div><div class="small"><b>End</b> : '+d.end+'</div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls"><a class="btn btn-sm btn-primary" video="launch" '+k[1]+'><i class="fa fa-play-circle"></i></a> <a download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a> <a video="download" host="dropbox" download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a> <a title="Delete Video" video="delete" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></a></div></div></li>';
             break;
             case 1://monitor icon
@@ -234,7 +234,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 }
 //                tmp+='<div class="hud super-center"><div class="top_bar"><span class="badge badge-sm badge-danger"><i class="fa fa-eye"></i> <span class="viewers"></span></span></div><div class="bottom_bar"></div></div></div></div>';
                 
-                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" class="monitor_item glM'+d.mid+' mdl-grid">';
+                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" class="monitor_item glM'+d.mid+' mdl-grid col-md-6">';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col">';
                 tmp+='<div class="no-padding mdl-card__media mdl-color-text--grey-50">';
                 switch(k.d.stream_type){
@@ -284,6 +284,26 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                     v=$(v);
                     if(v.find('.log-item').length>10){v.find('.log-item:last').remove()}
                 })
+            break;
+            case 5://region element
+                k.contain='#region_editor .canvas_holder';
+                if(!d.name){d.name=$.ccio.gid()}
+                if(!d.sensitivity){d.sensitivity=0.5}
+                if(!d.y){d.y=0}
+                if(!d.x){d.x=0}
+                if(!d.w){d.w=200}
+                if(!d.h){d.h=200}
+                $.zO.c.append('<div class="cord_element text-left" cord="'+d.name+'"><div class="controls"><a class="pull-right btn btn-xs btn-danger delete">&nbsp;<i class="fa fa-times"></i>&nbsp;</a></div><div class="form-group"><label><span>Region Name</span><input class="form-control input-sm" detail="name" value="'+d.name+'"></label></div><div class="form-group"><label><span>Sensitivity</span><input class="form-control input-sm" detail="sensitivity" value="'+d.sensitivity+'"></label></div></div>');
+                $.zO.c.find('[cord="'+d.name+'"]')
+                    .css({top:d.y,left:d.x,width:d.w,height:d.h})
+                    .resizable({
+                        containment:k.contain,
+                        handles: "n,e,s,w,ne,nw,se,sw"
+                    })
+                    .draggable({
+                        containment:k.contain,
+                        stop: $.zO.checkCords
+                    }).click()
             break;
             case'option':
                 tmp+='<option value="'+d.id+'">'+d.name+'</option>'
@@ -371,7 +391,7 @@ $.ccio.ws.on('ping', function(d){
     $.ccio.ws.emit('pong',{beat:1});
 });
 $.ccio.ws.on('f',function (d){
-    if(d.f!=='monitor_frame'&&d.f!=='os'&&d.f!=='video_delete'){console.log(d);}
+    if(d.f!=='monitor_frame'&&d.f!=='os'&&d.f!=='video_delete'&&d.f!=='detector_trigger'&&d.f!=='log'){console.log(d);}
     if(d.viewers){
         $('#monitor_live_'+d.id+' .viewers').html(d.viewers);
     }
@@ -389,13 +409,40 @@ $.ccio.ws.on('f',function (d){
             $.ccio.init('id',d.form);
             $('#custom_css').append(d.form.details.css)
         break;
-        case'opencv_plugged':
-            $('.shinobi-opencv').show()
-            $('.shinobi-opencv-invert').hide()
+        case'ffprobe_stop':
+            $.pB.o.append('<div><b>END</b></div>');
+            $.pB.e.find('.stop').hide();
+            $.pB.e.find('[type="submit"]').show();
         break;
-        case'opencv_unplugged':
-            $('.shinobi-opencv').hide()
-            $('.shinobi-opencv-invert').show()
+        case'ffprobe_start':
+            $.pB.o.empty();
+            $.pB.e.find('.stop').show();
+            $.pB.e.find('[type="submit"]').hide();
+        break;
+        case'ffprobe_data':
+            $.pB.o.append(d.data+'<br>')
+        break;
+        case'detector_trigger':
+            d.e=$('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]')
+            if($.ccio.mon[d.id]&&d.e.length>0){
+                d.e.addClass('detector_triggered')
+                clearTimeout($.ccio.mon[d.id].detector_trigger_timeout);
+                $.ccio.mon[d.id].detector_trigger_timeout=setTimeout(function(){
+                    $('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]').removeClass('detector_triggered')
+                },5000)
+            }
+        break;
+        case'detector_plugged':
+            $('.shinobi-detector').show()
+            $('.shinobi-detector_name').text(d.plug)
+            $('.shinobi-detector-'+d.plug).show()
+            $('.shinobi-detector-invert').hide()
+        break;
+        case'detector_unplugged':
+            $('.shinobi-detector').hide()
+            $('.shinobi-detector_name').empty()
+            $('.shinobi-detector_plug').hide()
+            $('.shinobi-detector-invert').show()
         break;
         case'log':
             $.ccio.tm(4,d,'#logs,.monitor_item[mid="'+d.mid+'"][ke="'+d.ke+'"] .logs')
@@ -503,6 +550,7 @@ $.ccio.ws.on('f',function (d){
             
             d.o=$.ccio.op().watch_on;
             if(!d.o){d.o={}}
+            if(d.mon.details.cords instanceof Array){d.mon.details.cords=JSON.stringify(d.mon.details.cords);}
             d.mon.details=JSON.stringify(d.mon.details);
             if(!$.ccio.mon[d.mid]){$.ccio.mon[d.mid]={}}
             $.each(d.mon,function(n,v){
@@ -666,18 +714,54 @@ $.oB.e.find('[name="user"]').change(function(e){
 if($.ccio.op().onvif_probe_user){
     $.oB.e.find('[name="user"]').val($.ccio.op().onvif_probe_user)
 }
+//Region Editor
+$.zO={e:$('#region_editor')};$.zO.f=$.zO.e.find('form');$.zO.o=$.zO.e.find('canvas'),$.zO.c=$.zO.e.find('.canvas_holder');
+$.zO.f.submit(function(e){
+    e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
+    
+    return false;
+});
+$.zO.checkCords=function(){
+    e={};e.ar=[];
+    $.zO.c.find('[cord]').each(function(n,v){
+        v=$(v);e.o=v.position();
+        e.arr={name:e.n,x:e.o.left,y:e.o.top,w:v.width(),h:v.height()};
+        v.find('[detail]').each(function(m,b){
+            b=$(b);
+            e.arr[b.attr('detail')]=b.val().trim();
+        })
+        if(e.n==''){e.n=$.ccio.gid()};
+        e.ar.push(e.arr);
+    });
+    $.aM.e.find('[detail="cords"]').val(JSON.stringify(e.ar)).change()
+}
+$.zO.c.on('change','input',$.zO.checkCords)
+.on('resize','[cord]',$.zO.checkCords)
+.on('mousedown touch','[cord]',function(){
+    $.zO.c.find('[cord]').removeClass('selected');
+    $(this).addClass('selected');
+})
+.on('click','.delete',function(){
+    $(this).parents('[cord]').remove();
+    $.zO.checkCords();
+});
+$.zO.e.on('click','.add',function(){
+    $.ccio.tm(5)
+})
 //probe
 $.pB={e:$('#probe')};$.pB.f=$.pB.e.find('form');$.pB.o=$.pB.e.find('.output_data');
 $.pB.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
-    $.pB.o.empty();
-    $.getJSON('/'+$user.auth_token+'/probe/'+$user.ke+'/'+e.s.url,function(d){
-        if(d.ok===false){
-            d.output='<center>No data could be displayed. Check your command.</center>'
-        }
-        $.pB.o.append(d.output)
-    })
+    e.s.url=e.s.url.trim();
+    if(e.s.url.indexOf('-i ')===-1){
+        e.s.url='-i '+e.s.url
+    }
+    $.ccio.cx({f:'ffprobe',query:e.s.url})
     return false;
+});
+$.pB.e.find('.stop').click(function(e){
+    e.e=$(this);
+    $.ccio.cx({f:'ffprobe',ff:'stop'})
 });
 //log viewer
 $.log={e:$('#logs_modal'),lm:$('#log_monitors')};$.log.o=$.log.e.find('table tbody');
@@ -721,6 +805,68 @@ $.aM.f.submit(function(e){
         $.each(e.s,function(n,v){$.ccio.mon[e.s.mid][n]=v;})
         $.aM.e.modal('hide')
     return false;
+});
+$.aM.e.find('.probe_config').click(function(){
+    e={};
+    e.host=$.aM.e.find('[name="host"]').val();
+    e.protocol=$.aM.e.find('[name="protocol"]').val();
+    e.port=$.aM.e.find('[name="port"]').val();
+    e.path=$.aM.e.find('[name="path"]').val();
+    if($.aM.e.find('[name="type"]').val()==='local'){
+        e.url=e.path;
+    }else{
+        e.url=$.ccio.init('url',e)+e.path;
+    }
+    $.pB.e.find('[name="url"]').val(e.url);
+    $.pB.f.submit();
+    $.pB.e.modal('show');
+})
+$.aM.e.find('.import_config').click(function(e){
+    e={};e.e=$(this);e.mid=e.e.parents('[mid]').attr('mid');
+    $.confirm.e.modal('show');
+    $.confirm.title.text('Import Monitor Configuration')
+    e.html='Doing this will overrwrite any changes currently not saved. Imported changes will only be applied when you press <b>Save</b>.<div style="margin-top:15px"><div class="form-group"><textarea placeholder="Paste JSON here." class="form-control"></textarea></div><label class="upload_file btn btn-primary btn-block"> Upload File <input class="upload" type=file name="files[]"></label></div>';
+    $.confirm.body.html(e.html)
+    $.confirm.e.find('.upload').change(function(e){
+        var files = e.target.files; // FileList object
+        f = files[0];
+        var reader = new FileReader();
+        reader.onload = function(ee) {
+            $.confirm.e.find('textarea').val(ee.target.result);
+        }
+        reader.readAsText(f);
+    });
+    $.confirm.click({title:'Import',class:'btn-primary'},function(){
+        try{
+            e.values=JSON.parse($.confirm.e.find('textarea').val());
+            $.each(e.values,function(n,v){
+                $.aM.e.find('[name="'+n+'"]').val(v).change()
+            })
+            e.ss=JSON.parse(e.values.details);
+            $.aM.f.find('[detail]').each(function(n,v){
+                v=$(v).attr('detail');if(!e.ss[v]){e.ss[v]=''}
+            })
+            $.each(e.ss,function(n,v){
+                $.aM.e.find('[detail="'+n+'"]').val(v).change();
+            })
+            $.aM.e.modal('show')
+        }catch(err){
+            console.log(err)
+            new PNotify({title:'Invalid JSON',text:'Please ensure this is a valid JSON string for Shinobi monitor configuration.',type:'error'})
+        }
+    });
+});
+$.aM.e.find('.save_config').click(function(e){
+    e={};e.e=$(this);e.mid=e.e.parents('[mid]').attr('mid');e.s=$.aM.f.serializeObject();
+    if(!e.mid||e.mid===''){
+        e.mid='NewMonitor'
+    }
+    e.dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(e.s));
+    $('#temp').html('<a></a>')
+        .find('a')
+        .attr('href',e.dataStr)
+        .attr('download','Shinobi_'+e.mid+'_config.json')
+        [0].click()
 });
 $.aM.f.find('[name="type"]').change(function(e){
     e.e=$(this);
@@ -772,18 +918,6 @@ $.aM.f.find('[name="type"]').change(function(e){
         break;
     }
 });
-$.aM.f.find('[name="protocol"]').change(function(e){
-    e.e=$(this);e.v=e.e.val(),e.t=$.aM.f.find('[name="type"]');
-//    $.aM.f.find('[name="ext"],[name="type"]').prop('disabled',false)
-    switch(e.v){
-        case'rtsp':
-//            e.t.val('h264').prop('disabled',true)
-        break;
-        case'http':case'https':
-            if(e.t.val()==='h264'){e.t.val('jpeg')}
-        break;
-    }
-})
 $.aM.e.on('dblclick','.edit_id',function(e){
     $.aM.e.find('[name="mid"]').parents('.form-group').toggle('show')
 })
@@ -934,6 +1068,42 @@ $('body')
 .on('click','[monitor]',function(){
    e={}; e.e=$(this),e.a=e.e.attr('monitor'),e.p=e.e.parents('[mid]'),e.ke=e.p.attr('ke'),e.mid=e.p.attr('mid'),e.mon=$.ccio.mon[e.mid]
     switch(e.a){
+        case'region':
+            e.d=JSON.parse(e.mon.details);
+            e.width=$.aM.e.find('[detail="detector_scale_x"]');
+            e.height=$.aM.e.find('[detail="detector_scale_y"]');
+            e.d.cords=$.aM.e.find('[detail="cords"]').val();
+            if(e.width.val()===''){
+                e.d.detector_scale_x=640;
+                e.d.detector_scale_y=480;
+                $.aM.e.find('[detail="detector_scale_x"]').val(e.d.detector_scale_x);
+                $.aM.e.find('[detail="detector_scale_y"]').val(e.d.detector_scale_y);
+            }else{
+                e.d.detector_scale_x=e.width.val();
+                e.d.detector_scale_y=e.height.val();
+            }
+            
+            $.zO.e.modal('show');
+            $.zO.o.attr('width',e.d.detector_scale_x).attr('height',e.d.detector_scale_y);
+            $.zO.c.css({width:e.d.detector_scale_x,height:e.d.detector_scale_y});
+            var blendContext = $.zO.o[0].getContext('2d');
+            blendContext.fillStyle = '#005337';
+            blendContext.fillRect( 0, 0,e.d.detector_scale_x,e.d.detector_scale_y);
+            if(e.d.cords&&(e.d.cords instanceof Object)===false){
+                try{e.d.cords=JSON.parse(e.d.cords);}catch(er){}
+            }
+            if(!e.d.cords||e.d.cords===''){
+                e.d.cords=[
+                    { name:"red",sensitivity:0.5, x:320 - 32 - 10, y:10, w:64, h:64 },
+                    { name:"yellow",sensitivity:0.5, x:320 - 32 - 10, y:10, w:64, h:64 },
+                    { name:"green",sensitivity:0.5, x:238, y:10, w:64, h:64 }
+                ]
+            }
+            $.zO.c.find('.cord_element').remove()
+            $.each(e.d.cords,function(n,v){
+                $.ccio.tm(5,v)
+            })
+        break;
         case'snapshot':
             $.ccio.snapshot(e,function(url){
                 $('#temp').html('<a href="'+url+'" download="'+$.ccio.init('tf')+'_'+e.ke+'_'+e.mid+'.jpg">a</a>').find('a')[0].click();
@@ -1092,11 +1262,88 @@ $('body')
         case'edit':
             e.p=$('#add_monitor'),e.mt=e.p.attr('mid',e.mid).attr('ke',e.ke).find('.modal-title')
             if(!$.ccio.mon[e.mid]){
+                //new monitor
                 e.p.find('[monitor="delete"]').hide()
                 e.mt.find('span').text('Add'),e.mt.find('i').attr('class','fa fa-plus');
-                e.values={"mode":"stop","mid":$.ccio.gid(),"name":"","protocol":"http","ext":"webm","type":"jpeg","host":"","path":"","port":"","fps":"1","width":"640","height":"480","details":JSON.stringify({"fatal_max":"","muser":"","mpass":"","sfps":"1","aduration":"","detector":"0","detector_trigger":null,"detector_save":null,"detector_face":null,"detector_fullbody":null,"detector_car":null,"detector_timeout":"","detector_fps":"","detector_scale_x":"","detector_scale_y":"","stream_type":"mjpeg","stream_vcodec":"libx264","stream_acodec":"","hls_time":"2","preset_stream":"ultrafast","hls_list_size":"3","signal_check":"10","signal_check_log":"0","stream_quality":"15","stream_fps":"","stream_scale_x":"","stream_scale_y":"","svf":"","vcodec":"copy","crf":"","preset_record":"","acodec":"libvorbis","timestamp":"0","dqf":"0","cutoff":"15","vf":"","control":"0","control_stop":"0","control_url_stop_timeout":"","control_url_center":"","control_url_left":"","control_url_left_stop":"","control_url_right":"","control_url_right_stop":"","control_url_up":"","control_url_up_stop":"","control_url_down":"","control_url_down_stop":"","cust_input":"","cust_detect":"","cust_stream":"","cust_record":"","custom_output":"","loglevel":"error","sqllog":"0"}),"shto":"[]","shfr":"[]"}
+                //default values
+                e.values={
+                    "mode":"stop",
+                    "mid":$.ccio.gid(),
+                    "name":"",
+                    "protocol":"http",
+                    "ext":"webm",
+                    "type":"jpeg",
+                    "host":"",
+                    "path":"",
+                    "port":"",
+                    "fps":"1",
+                    "width":"640",
+                    "height":"480",
+                    "details":JSON.stringify({
+                            "detector_frame":"1",
+                            "detector_mail":"0",
+                            "fatal_max":"",
+                            "muser":"",
+                            "mpass":"",
+                            "sfps":"1",
+                            "aduration":"",
+                            "detector":"0",
+                            "detector_trigger":null,
+                            "detector_save":null,
+                            "detector_face":null,
+                            "detector_fullbody":null,
+                            "detector_car":null,
+                            "detector_timeout":"",
+                            "detector_fps":"",
+                            "detector_scale_x":"",
+                            "detector_scale_y":"",
+                            "stream_type":"mjpeg",
+                            "stream_vcodec":"libx264",
+                            "stream_acodec":"",
+                            "hls_time":"2",
+                            "preset_stream":"ultrafast",
+                            "hls_list_size":"3",
+                            "signal_check":"10",
+                            "signal_check_log":"0",
+                            "stream_quality":"15",
+                            "stream_fps":"",
+                            "stream_scale_x":"",
+                            "stream_scale_y":"",
+                            "svf":"",
+                            "vcodec":"copy",
+                            "crf":"",
+                            "preset_record":"",
+                            "acodec":"libvorbis",
+                            "timestamp":"0",
+                            "dqf":"0",
+                            "cutoff":"15",
+                            "vf":"",
+                            "control":"0",
+                            "control_stop":"0",
+                            "control_url_stop_timeout":"",
+                            "control_url_center":"",
+                            "control_url_left":"",
+                            "control_url_left_stop":"",
+                            "control_url_right":"",
+                            "control_url_right_stop":"",
+                            "control_url_up":"",
+                            "control_url_up_stop":"",
+                            "control_url_down":"",
+                            "control_url_down_stop":"",
+                            "cust_input":"",
+                            "cust_detect":"",
+                            "cust_stream":"",
+                            "cust_record":"",
+                            "custom_output":"",
+                            "loglevel":"error",
+                            "sqllog":"0"
+                        }),
+                    "shto":"[]",
+                    "shfr":"[]"
+                }
                 e.mt.find('.edit_id').text(e.values.mid);
             }else{
+                //edit monitor
                 e.p.find('[monitor="delete"]').show()
                 e.mt.find('.edit_id').text(e.mid);
                 e.mt.find('span').text('Edit');

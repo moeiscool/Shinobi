@@ -173,7 +173,6 @@ _:-ms-input-placeholder, :root .demo-graph {
 }
 
 .demo-blog .demo-blog__posts {
-  max-width: 900px;
   padding: 0;
   display: -webkit-flex;
   display: -ms-flexbox;
