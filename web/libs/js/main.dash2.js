@@ -806,6 +806,21 @@ $.aM.f.submit(function(e){
         $.aM.e.modal('hide')
     return false;
 });
+$.aM.e.find('.probe_config').click(function(){
+    e={};
+    e.host=$.aM.e.find('[name="host"]').val();
+    e.protocol=$.aM.e.find('[name="protocol"]').val();
+    e.port=$.aM.e.find('[name="port"]').val();
+    e.path=$.aM.e.find('[name="path"]').val();
+    if($.aM.e.find('[name="type"]').val()==='local'){
+        e.url=e.path;
+    }else{
+        e.url=$.ccio.init('url',e)+e.path;
+    }
+    $.pB.e.find('[name="url"]').val(e.url);
+    $.pB.f.submit();
+    $.pB.e.modal('show');
+})
 $.aM.e.find('.import_config').click(function(e){
     e={};e.e=$(this);e.mid=e.e.parents('[mid]').attr('mid');
     $.confirm.e.modal('show');

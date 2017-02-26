@@ -28,6 +28,7 @@ img{max-width:100%}
 @media screen and (min-width:1025px){
     .mosaic .monitor_item{width:33.3%;}
 }
+.mosaic .monitor_item [class_toggle="show_logs"]{display:none}
 .mosaic .monitor_item .mdl-cell--8-col{width:100%;border:0;border-radius:0;margin:0;position:relative}
 .mosaic .monitor_item .mdl-cell--4-col-desktop,.mosaic .monitor_item .mdl-card__supporting-text{display:none}
 .mosaic .monitor_item .mdl-card__supporting-text:not(.meta){display:block;position:absolute;bottom:0;left:0;opacity:0;}
@@ -220,7 +221,7 @@ ul.msg_list li .message {
     left: auto;
     width: 220px
 }
-.nav>li{display:inline-block}
+.is-small-screen .nav>li{display:inline-block}
 .navbar-nav .open .dropdown-menu li a{padding:7px 15px}
 .navbar-nav .open .dropdown-menu.msg_list {
     width: 300px
