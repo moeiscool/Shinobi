@@ -1,4 +1,0 @@
-#!/bin/bash
-sudo php5dismod xdebug
-sudo service apache2 restart
-
