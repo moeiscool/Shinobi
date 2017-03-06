@@ -346,6 +346,12 @@ s.ffmpeg=function(e,x){
     }else{
         x.segment+=e.dir+'%Y-%m-%dT%H-%M-%S.'+e.ext;
     }
+    //check protocol
+    switch(e.protocol){
+        case'rtsp':
+            if(e.details.rtsp_transport&&e.details.rtsp_transport!==''&&e.details.rtsp_transport!=='no'){x.cust_input+=' -rtsp_transport '+e.details.rtsp_transport;}            
+        break;
+    }
     //resolution
     switch(s.ratio(e.width,e.height)){
         case'16:9':
@@ -358,8 +364,23 @@ s.ffmpeg=function(e,x){
     if(e.details.stream_scale_x&&e.details.stream_scale_x!==''&&e.details.stream_scale_y&&e.details.stream_scale_y!==''){
         x.ratio=e.details.stream_scale_x+'x'+e.details.stream_scale_y;
     }
-    //timestamp
-    if(e.details.timestamp&&e.details.timestamp=="1"){x.time=' -vf drawtext=fontfile=/usr/share/fonts/truetype/freefont/FreeSans.ttf:text=\'%{localtime}\':x=(w-tw)/2:y=0:fontcolor=white:box=1:boxcolor=0x00000000@1:fontsize=10';}else{x.time=''}
+    //timestamp options
+    if(e.details.timestamp&&e.details.timestamp=="1"){
+        //font
+        if(e.details.timestamp_font&&e.details.timestamp_font!==''){x.time_font=e.details.timestamp_font}else{x.time_font='/usr/share/fonts/truetype/freefont/FreeSans.ttf'}
+        //position x
+        if(e.details.timestamp_x&&e.details.timestamp_x!==''){x.timex=e.details.timestamp_x}else{x.timex='(w-tw)/2'}
+        //position y
+        if(e.details.timestamp_y&&e.details.timestamp_y!==''){x.timey=e.details.timestamp_y}else{x.timey='0'}
+        //text color
+        if(e.details.timestamp_color&&e.details.timestamp_color!==''){x.time_color=e.details.timestamp_color}else{x.time_color='white'}
+        //box color
+        if(e.details.timestamp_box_color&&e.details.timestamp_box_color!==''){x.time_box_color=e.details.timestamp_box_color}else{x.time_box_color='0x00000000@1'}
+        //text size
+        if(e.details.timestamp_font_size&&e.details.timestamp_font_size!==''){x.time_font_size=e.details.timestamp_font_size}else{x.time_font_size='10'}
+        
+        x.time=' -vf drawtext=time_font='+x.time_font+':text=\'%{localtime}\':x='+x.timex+':y='+x.timey+':fontcolor='+x.time_color+':box=1:boxcolor='+x.time_box_color+':fontsize='+x.time_font_size;
+    }else{x.time=''}
     //get video and audio codec defaults based on extension
     switch(e.ext){
         case'mp4':
