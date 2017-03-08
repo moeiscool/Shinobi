@@ -8,7 +8,7 @@ Shinobi is the Open Source CCTV platform written in Node.JS. Designed with multi
 
 Yes. I am saying it's **the** platform. It will hopefully be revered like WordPress and Magento in their respective sectors... Hopefully better.
 
-<img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.gif?raw=true">
+<img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo5.jpg?raw=true">
 
 # Key Aspects
 
@@ -30,6 +30,10 @@ $5 from each person that visits the github page would be enough. Currently all h
 **Just a side note:** Paypal is the best way to donate :)
 
 **paypal@m03.ca**
+
+# Why make this?
+
+https://github.com/moeiscool/Shinobi/wiki#why-make-this-other-solutions-already-exist
 
 # More about Shinobi in the Wiki
 

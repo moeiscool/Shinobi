@@ -874,30 +874,10 @@ $.aM.f.find('[name="type"]').change(function(e){
 })
 $.aM.md=$.aM.f.find('[detail]');
 $.aM.md.change($.ccio.form.details)
-$.aM.f.find('[name="mode"]').change(function(e){
-    e.v=$(this).val();
-    $.aM.f.find('.h_m_input').hide()
-    $.aM.f.find('.h_m_'+e.v).show();
-});
-$.aM.f.find('[detail="control"]').change(function(e){
-    e.v=$(this).val();
-    $.aM.f.find('.h_c_input').hide()
-    $.aM.f.find('.h_c_'+e.v).show();
-});
-$.aM.f.find('[detail="control_stop"]').change(function(e){
-    e.v=$(this).val();
-    $.aM.f.find('.h_cs_input').hide()
-    $.aM.f.find('.h_cs_'+e.v).show();
-});
-$.aM.f.find('[detail="stream_type"]').change(function(e){
-    e.v=$(this).val();
-    $.aM.f.find('.h_st_input').hide()
-    $.aM.f.find('.h_st_'+e.v).show();
-});
-$.aM.f.find('[name="ext"]').change(function(e){
-    e.v=$(this).val();
-    $.aM.f.find('.h_f_input').hide()
-    $.aM.f.find('.h_f_'+e.v).show();
+$.aM.f.find('[selector]').change(function(e){
+    e.v=$(this).val();e.a=$(this).attr('selector')
+    $.aM.f.find('.'+e.a+'_input').hide()
+    $.aM.f.find('.'+e.a+'_'+e.v).show();
 });
 $.aM.f.find('[name="type"]').change(function(e){
     e.e=$(this);
@@ -1065,8 +1045,15 @@ $('body')
     $.ccio.op('class_toggle',e.o)
     $(e.n).toggleClass(e.v);
 })
+//monitor functions
 .on('click','[monitor]',function(){
-   e={}; e.e=$(this),e.a=e.e.attr('monitor'),e.p=e.e.parents('[mid]'),e.ke=e.p.attr('ke'),e.mid=e.p.attr('mid'),e.mon=$.ccio.mon[e.mid]
+    e={}; 
+    e.e=$(this),
+        e.a=e.e.attr('monitor'),//the function
+        e.p=e.e.parents('[mid]'),//the parent element for monitor item
+        e.ke=e.p.attr('ke'),//group key
+        e.mid=e.p.attr('mid'),//monitor id
+        e.mon=$.ccio.mon[e.mid];//monitor configuration
     switch(e.a){
         case'region':
             e.d=JSON.parse(e.mon.details);
@@ -1280,6 +1267,12 @@ $('body')
                     "width":"640",
                     "height":"480",
                     "details":JSON.stringify({
+                            "timestamp_x":"(w-tw)/2",
+                            "timestamp_y":"0",
+                            "timestamp_color":"white",
+                            "timestamp_font_size":"10",
+                            "timestamp_box_color":"0x00000000@1",
+                            "rtsp_transport":"no",
                             "detector_frame":"1",
                             "detector_mail":"0",
                             "fatal_max":"",
@@ -1297,9 +1290,9 @@ $('body')
                             "detector_fps":"",
                             "detector_scale_x":"",
                             "detector_scale_y":"",
-                            "stream_type":"mjpeg",
+                            "stream_type":"b64",
                             "stream_vcodec":"libx264",
-                            "stream_acodec":"",
+                            "stream_acodec":"no",
                             "hls_time":"2",
                             "preset_stream":"ultrafast",
                             "hls_list_size":"3",

@@ -14,7 +14,7 @@
           <h4>Identity</h4>
             <div class="form-group">
             <label><span>Mode</span>
-                <select class="form-control" name="mode">
+                <select class="form-control" name="mode" selector="h_m">
                     <option value="stop">Disabled</option>  
                     <option value="start">Watch Only</option>  
                     <option value="record">Record</option>  
@@ -36,6 +36,16 @@
                     <input class="form-control" detail="fatal_max" placeholder="10">
                 </label>
               </div>
+              <div class="form-group h_p_input h_p_rtsp">
+                <label><span>RTSP Transport</span>
+                    <select class="form-control" detail="rtsp_transport">
+                        <option value="no" selected>Auto</option>  
+                        <option value="tcp">TCP</option>  
+                        <option value="udp">UDP</option>  
+                        <option value="http">HTTP</option>  
+                    </select>
+                </label>
+              </div>
           </div>
 <!--     START of Input     -->
           <div class="form-group-group forestgreen">
@@ -54,7 +64,7 @@
                   </div>
                   <div class="form-group col-md-6 h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
                     <label><span>Connection Type</span>
-                        <select class="form-control" name="protocol">
+                        <select class="form-control" name="protocol" selector="h_p">
                             <option value="http" selected>HTTP</option>
                             <option value="https">HTTPS</option>
                             <option value="rtsp">RTSP</option>
@@ -219,7 +229,7 @@
           <h4>Stream</h4>
               <div class="form-group">
                 <label><span>Stream Type</span>
-                    <select class="form-control" detail="stream_type">
+                    <select class="form-control" detail="stream_type" selector="h_st">
                         <option value="mjpeg" selected>MJPEG</option>
                         <option value="hls">HLS</option>
                         <option value="b64">Base64</option>
@@ -323,7 +333,7 @@
           <h4>Recording</h4>
               <div class="form-group">
                 <label><span>Record File Type</span>
-                    <select class="form-control" name="ext">
+                    <select class="form-control" name="ext" selector="h_f">
                         <option value="webm">WebM (libvpx)</option>  
                         <option value="mp4">MP4 (copy, libx264, libx265)</option>  
     <!--                    <option value="mkv">MKV</option>  -->
@@ -394,14 +404,6 @@
                   </div>
               </div>
               <div class="form-group">
-                  <label><span>Timestamp <small>Does not work with copy encoder</small></span>
-                    <select class="form-control" detail="timestamp">
-                        <option value="1">Yes</option>  
-                        <option value="0" selected>No</option>  
-                    </select>
-                  </label>
-              </div>
-              <div class="form-group">
                   <label><span>Double Quote Directory <small>Some directories have spaces. Using this may crash some cameras.</small></span>
                     <select class="form-control" detail="dqf">
                         <option value="0" selected>No</option>
@@ -420,12 +422,61 @@
                 </label>
               </div>
           </div>
+          <div class="form-group-group red h_m_input h_m_record">
+          <h4>Timestamp</h4>
+              <div class="form-group">
+                  <label><span>Enabled <small>Does not work with copy encoder</small></span>
+                    <select class="form-control" detail="timestamp" selector="h_tm">
+                        <option value="1">Yes</option>  
+                        <option value="0" selected>No</option>  
+                    </select>
+                  </label>
+              </div>
+              <div class="h_tm_input h_tm_1">
+                  <div class="row">
+                      <div class="form-group col-md-6">
+                        <label><span>Font Path</span>
+                        <input class="form-control" detail="timestamp_font">
+                        </label>
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label><span>Font Size</span>
+                        <input class="form-control" detail="timestamp_font_size">
+                        </label>
+                      </div>
+                  </div>
+                  <div class="row">
+                      <div class="form-group col-md-6">
+                        <label><span>Text Color</span>
+                        <input class="form-control" detail="timestamp_color">
+                        </label>
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label><span>Text Box Color</span>
+                        <input class="form-control" detail="timestamp_box_color">
+                        </label>
+                      </div>
+                  </div>
+                  <div class="row">
+                      <div class="form-group col-md-6">
+                        <label><span>Position X</span>
+                        <input class="form-control" detail="timestamp_x">
+                        </label>
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label><span>Position Y</span>
+                        <input class="form-control" detail="timestamp_y">
+                        </label>
+                      </div>
+                  </div>
+              </div>
+          </div>
 <!--     END of Record     -->
           <div class="form-group-group blue">
           <h4>Control</h4>
               <div class="form-group">
                 <label><span>Controllable</span>
-                    <select class="form-control" detail="control">
+                    <select class="form-control" detail="control" selector="h_c">
                         <option value="0">No</option>  
                         <option value="1">Yes</option>  
                     </select>
@@ -434,7 +485,7 @@
               <div class="h_c_input h_c_1">
                   <div class="form-group">
                     <label><span>Control <small>Monitor Need a Stop URL?</small></span>
-                        <select class="form-control" detail="control_stop">
+                        <select class="form-control" detail="control_stop" selector="h_cs">
                             <option value="0">No</option>  
                             <option value="1">Yes</option>
                         </select>
