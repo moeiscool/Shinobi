@@ -151,6 +151,10 @@ io.on('f',function(d){
                     s.img[d.id].width=d.mon.detector_scale_x;
                     s.img[d.id].height=d.mon.detector_scale_y;
                 }
+                if(s.img[d.id].width===0||s.img[d.id].height===0){
+                    s.img[d.id].width=d.mon.detector_scale_x;
+                    s.img[d.id].height=d.mon.detector_scale_y;
+                }
                 s.img[d.id].src = d.buffer;
                 if(!s.canvas[d.id]){
                     s.canvas[d.id] = new Canvas(s.img[d.id].width,s.img[d.id].height);

@@ -250,6 +250,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 }
                 tmp+='</div>';
                 tmp+='<div class="mdl-card__supporting-text text-center">';
+                tmp+='<div class="progress indifference"><div class="progress-bar progress-bar-danger" role="progressbar"></div></div>';
                 tmp+='<div class="btn-group btn-group-lg"><a title="Snapshot" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="Show Logs" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="Enlarge" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="Status Indicator, Click to Recconnect" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-circle"></i></a> <a title="Calendar" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="Videos List" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a class="btn btn-default" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Enlarge" monitor="bigify" class="hidden btn btn-default"><i class="fa fa-expand"></i></a> <a title="Fullscreen" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
                 tmp+='</div>';
                 tmp+='</div>';
@@ -429,7 +430,8 @@ $.ccio.ws.on('f',function (d){
                 clearTimeout($.ccio.mon[d.id].detector_trigger_timeout);
                 $.ccio.mon[d.id].detector_trigger_timeout=setTimeout(function(){
                     $('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]').removeClass('detector_triggered')
-                },5000)
+                },5000);
+                d.e.find('.indifference .progress-bar').css('width',d.details.confidence)
             }
         break;
         case'detector_plugged':

@@ -23,7 +23,10 @@ img{max-width:100%}
 .monitor_item.selected .stream-element{height:600px}
 .monitor_item.selected .fa-expand:before{content:"\f066"}
 .monitor_item .mdl-card__supporting-text{background:#222;color:#fff!important;display:block}
-.monitor_item.detector_triggered .stream-element{border-bottom:3px inset #d9534f}
+.monitor_item.detector_triggered .indifference{opacity:1}
+.monitor_item .indifference{opacity:0;position:absolute;width:100%;left:0;top:0;background:#333;box-shadow:0;transition:0.2s}
+
+.demo-blog .mdl-card__media ~ .mdl-card__supporting-text{position:relative}
 
 .demo-blog .demo-blog__posts.mosaic{max-width:100%}
 @media screen and (min-width:1025px){
@@ -139,7 +142,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
     .os_bars label{padding:2.5px 0;margin:0;font-size:8pt}
 }
 .os_bars .display-table .display-table-cell{padding:5px;vertical-align:center}
-.os_bars .progress{height:5px;margin:0;}
+.progress{height:5px;margin:0;}
 .os_bars label,.os_bars .percent{padding:2.5px 0;margin:0;font-size:7.5pt}
 
 /*cool dropdown thing*/
