@@ -492,6 +492,7 @@ $.ccio.ws.on('f',function (d){
         case'video_delete':
             if($('.modal[mid="'+d.mid+'"]').length>0){$('#video_viewer[mid="'+d.mid+'"]').attr('file',null).attr('ke',null).attr('mid',null).modal('hide')}
             $('[file="'+d.filename+'"][mid="'+d.mid+'"][ke="'+d.ke+'"]').remove();
+            $('[data-file="'+d.filename+'"][data-mid="'+d.mid+'"][data-ke="'+d.ke+'"]').remove();
         break;
         case'video_build_success':
             if(!d.mid){d.mid=d.id;};d.status=1;

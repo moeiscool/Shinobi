@@ -54,24 +54,13 @@ io.on('f',function(d){
                       if(err){console.log(err);return false;}
                       if(mats&&mats.length>0){
                           d.details.EYE_CASCADE=mats;
-    //                    for (var i=0;i<mats.length; i++){
-    //                      var x = mats[i];
-    //                      im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
-    //                    }
-                          s.cx({f:'trigger',id:d.id,ke:d.ke})
+                          s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:'opencv',EYE_CASCADE:mats}})
                       }
                       im.detectObject(cv.FACE_CASCADE, {}, function(err, mats){
                           if(err){console.log(err);return false;}
                           if(mats&&mats.length>0){
                               d.details.FACE_CASCADE=mats;
-    //                        for (var i=0;i<mats.length; i++){
-    //                          var x = mats[i];
-    //                          im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
-    //                        }
-                              if(d.mon.detector_save==='1'){
-                                  sql.query('INSERT INTO Events (ke,mid,details) VALUES (?,?,?)',[d.ke,d.id,JSON.stringify(d.details)])
-                              }
-                              s.cx({f:'trigger',id:d.id,ke:d.ke})
+                              s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:'opencv',FACE_CASCADE:mats}})
     //                          s.cx({f:'frame',frame:im.toBuffer(),id:d.id,ke:d.ke})
                           }
                       });
@@ -82,10 +71,7 @@ io.on('f',function(d){
                       if(err){console.log(err);return false;}
                       if(mats&&mats.length>0){
                           d.details.FULLBODY_CASCADE=mats;
-                          if(d.mon.detector_save==='1'){
-                              sql.query('INSERT INTO Events (ke,mid,details) VALUES (?,?,?)',[d.ke,d.id,JSON.stringify(d.details)])
-                          }
-                          s.cx({f:'trigger',id:d.id,ke:d.ke})
+                          s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:'opencv',FULLBODY_CASCADE:mats}})
                       }
                   })
               }
@@ -94,10 +80,7 @@ io.on('f',function(d){
                       if(err){console.log(err);return false;}
                       if(mats&&mats.length>0){
                           d.details.CAR_SIDE_CASCADE=mats;
-                          if(d.mon.detector_save==='1'){
-                              sql.query('INSERT INTO Events (ke,mid,details) VALUES (?,?,?)',[d.ke,d.id,JSON.stringify(d.details)])
-                          }
-                          s.cx({f:'trigger',id:d.id,ke:d.ke})
+                          s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:'opencv',CAR_SIDE_CASCADE:mats}})
                       }
                   })
               }

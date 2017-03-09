@@ -85,6 +85,8 @@ s.differenceAccuracy=function(target, data1, data2) {
 s.checkAreas=function(d,mon){
     var cords=mon.cords;
     if(!mon.detector_sensitivity||mon.detector_sensitivity==''||isNaN(mon.detector_sensitivity)){mon.detector_sensitivity=0.5}
+    try{cords=JSON.parse(mon.cords)}catch(er){cords=[]}
+    if(!cords||mon.cords instanceof Array===false){cords=[]}
     if(mon.detector_frame==='1'){
         cords.push({name:'frame',s:mon.detector_sensitivity,x:0,y:0,w:s.img[d.id].width,h:s.img[d.id].height});
     }
@@ -107,7 +109,7 @@ s.checkAreas=function(d,mon){
 		if (average > cords[b].sensitivity){
 //			console.log('Possible Motion : '+cords[b].name); // do stuff
             //tell server you got some motion
-            s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:cords[b].name,reason:'motion',confidence:average}})
+            s.cx({f:'trigger',id:d.id,ke:d.ke,frame:d.buffer,details:{plug:config.plug,name:cords[b].name,reason:'motion',confidence:average}})
 
 		}
 	}
@@ -168,7 +170,7 @@ io.on('f',function(d){
                     console.log(err)
                 }
                 s.blender(d.id);
-                s.checkAreas({id:d.id,ke:d.ke},d.mon);
+                s.checkAreas({id:d.id,ke:d.ke,buffer:d.buffer},d.mon);
                 d.buffer=null;
             }
         break;
