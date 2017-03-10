@@ -1990,13 +1990,14 @@ sql.query('SELECT * FROM Monitors WHERE mode != "stop"', function(err,r) {
 });
 },1500)
 try{
+if(!config.cpuUsageMarker){config.cpuUsageMarker='%Cpu'}
 s.cpuUsage=function(e,f){
     switch(s.platform){
         case'darwin':
             f="ps -A -o %cpu | awk '{s+=$1} END {print s}'";
         break;
         case'linux':
-            f='top -b -n 2 | grep "^%Cpu" | awk \'{print $2}\' | tail -n1';
+            f='top -b -n 2 | grep "^'+config.cpuUsageMarker+'" | awk \'{print $2}\' | tail -n1';
         break;
     }
      exec(f,{encoding:'utf8'},function(err,d){
@@ -2016,7 +2017,7 @@ s.ramUsage=function(){
         s.cpuUsage(function(d){
             s.tx({f:'os',cpu:d,ram:s.ramUsage()},'CPU');
         })
-    },5000);
+    },10000);
 }catch(err){console.log('CPU indicator will not work. Continuing...')}
 //check disk space every 20 minutes
 s.disk=function(x){
