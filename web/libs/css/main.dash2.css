@@ -27,9 +27,7 @@ img{max-width:100%}
 .monitor_item .indifference{opacity:0}
 .monitor_item .indifference{position:absolute;width:100%;left:0;top:0;transition:0.2s;}
 .monitor_item .indifference .progress{width:100%;background:#333;box-shadow:0;}
-.monitor_item .indifference .popover{transition: 0.2s;display:block;;opacity:0;background:#333;border-color:#222}
-.monitor_item .indifference .popover.bottom>.arrow:after{border-bottom-color:#333;}
-.monitor_item .indifference:hover .popover{opacity:1;top:0;right:0;}
+.monitor_item .indifference:hover .progress{height:20px;transition:0.2s}
 
 .demo-blog .mdl-card__media ~ .mdl-card__supporting-text{position:relative;overflow:hidden}
 
