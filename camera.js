@@ -382,7 +382,7 @@ s.ffmpeg=function(e,x){
         //text size
         if(e.details.timestamp_font_size&&e.details.timestamp_font_size!==''){x.time_font_size=e.details.timestamp_font_size}else{x.time_font_size='10'}
         
-        x.time=' -vf drawtext=time_font='+x.time_font+':text=\'%{localtime}\':x='+x.timex+':y='+x.timey+':fontcolor='+x.time_color+':box=1:boxcolor='+x.time_box_color+':fontsize='+x.time_font_size;
+        x.time=' -vf drawtext=fontfile='+x.time_font+':text=\'%{localtime}\':x='+x.timex+':y='+x.timey+':fontcolor='+x.time_color+':box=1:boxcolor='+x.time_box_color+':fontsize='+x.time_font_size;
     }else{x.time=''}
     //get video and audio codec defaults based on extension
     switch(e.ext){
@@ -2021,7 +2021,9 @@ s.ramUsage=function(){
 }catch(err){console.log('CPU indicator will not work. Continuing...')}
 //check disk space every 20 minutes
 s.disk=function(x){
-    exec('echo 3 > /proc/sys/vm/drop_caches')
+    if(config.autoDropCache===true){
+        exec('echo 3 > /proc/sys/vm/drop_caches')
+    }
     df(function (er,d) {
         if (er) { clearInterval(s.disk_check); }else{er={f:'disk',data:d}}
         s.tx(er,'CPU')

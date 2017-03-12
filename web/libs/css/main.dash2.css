@@ -743,11 +743,17 @@ ul.msg_list li .message {
 .checkbox input[type=checkbox]:checked + label:before { letter-spacing: 5px; } /* allow space for check mark */
 
 /*Clock*/
-#time-date { font-family:'BebasNeueRegular', Arial, Helvetica, sans-serif; font-size:12px; text-align:center; text-shadow: }
+#time-date {font-size:12px; text-align:center;}
 @media screen and (min-width:1025px){
     #clock {padding-right:35px}
 }
 #clock ul { width:150px; margin:0 auto; padding:0px; list-style:none; text-align:center; }
-#clock ul li { display:inline; font-size:2em; text-align:center; font-family:'BebasNeueRegular', Arial, Helvetica, sans-serif; }
+#clock ul li { display:inline; font-size:2em; text-align:center;font-family:monospace;}
 
 #clock .point { position:relative; -moz-animation:mymove 1s ease infinite; -webkit-animation:mymove 1s ease infinite; }
+
+/*custom vis.js css*/
+.vis-timeline{background:#212121;color:#fff;border-color:#444}
+.vis-time-axis .vis-text{color: #dedede}
+.vis-item.vis-range .vis-item-content{background:#333;color:#fff}
+.vis-time-axis .vis-grid.vis-minor{border-color:#444}

@@ -974,6 +974,32 @@ $.vidview.e.find('.delete_selected').click(function(e){
         })
     });
 })
+//POWER videos window
+$.powervid={e:$('#pvideo_viewer')};$.powervid.d=$.powervid.e.find('#vis_powervideo')
+$.powervid.e.on('change','#videos_select_all',function(e){
+    e.e=$(this);
+    e.p=e.e.prop('checked')
+    e.a=$.powervid.e.find('input[type=checkbox][name]')
+    if(e.p===true){
+        e.a.prop('checked',true)
+    }else{
+        e.a.prop('checked',false)
+    }
+});
+$.powervid.e.on('shown.bs.modal',function(){
+    $.getJSON('/'+$user.auth_token+'/videos/'+$user.ke,function(d){
+        if($.powervid.t&&$.powervid.t.destroy){$.powervid.t.destroy()}
+        var items=[];
+        $.each(d,function(n,v){
+            v.mon=$.ccio.mon[v.mid]
+            if(v.status>0){
+                items.push({id:n,content:'<div mid="'+v.mon.mid+'" ke="'+v.mon.ke+'"><a video="launch" href="'+v.href+'" class="btn btn-xs btn-primary">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a> '+v.mon.name+' - '+v.time+' '+v.ext,start:v.time,end:v.end})
+            }
+        })
+        items = new vis.DataSet(items);
+        $.powervid.t = new vis.Timeline($.powervid.d[0], items, {});
+    })
+})
 //dynamic bindings
 $('body')
 .on('click','.logout',function(e){

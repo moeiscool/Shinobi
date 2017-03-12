@@ -4,6 +4,7 @@
 <link rel="stylesheet" href="libs/css/material.style.css">
 <link rel="stylesheet" href="libs/css/pnotify.custom.min.css">
 <link rel="stylesheet" href="libs/css/vbox.css">
+<link rel="stylesheet" href="libs/css/vis.min.css">
 <link rel="stylesheet" href="libs/css/circles.css">
 <link rel="stylesheet" href="libs/css/bootstrap.min.css">
 <link rel="stylesheet" href="libs/css/font-awesome.min.css">
@@ -26,6 +27,7 @@
             <li class_toggle="hide-side" data-target=".mdl-js-layout"><a>&nbsp;<i class="fa fa-bars"></i>&nbsp;</a></li>
             <li class_toggle="mosaic" data-target="#monitors_live"><a>&nbsp;<i class="fa fa-th"></i>&nbsp;</a></li>
             <li mid="" ke="" class="hidden-xs"><a monitor="edit">&nbsp;<i class="fa fa-plus"></i>&nbsp;</a></li>
+            <li class="hidden-xs" data-toggle="modal" data-target="#pvideo_viewer"><a>&nbsp;<i class="fa fa-map-marker"></i>&nbsp;</a></li>
             <li class="os_bars hidden-xs">
                 <div class="display-table">
                     <div class="cpu_load display-table-cell">
@@ -48,7 +50,7 @@
           <div class="mdl-layout-spacer"></div>
             <ul class="nav navbar-nav navbar-right">
                 <li role="presentation" class="dropdown">
-                <div id="clock">
+                <div id="clock" class_toggle="twentyfour" data-target="#time-hours">
                     <div id="time-date"></div>
                     <ul>
                         <li id="time-hours"></li>
@@ -157,6 +159,7 @@
 <% include blocks/api.html %>
 <% include blocks/logs.html %>
 <% include blocks/settings.html %>
+<% include blocks/powervideo.ejs %>
 <% include blocks/videoview.html %>
 <% include blocks/monitoredit.html %>
 <% include blocks/probe.html %>
@@ -177,4 +180,5 @@
 <script src="libs/js/hls.min.js"></script>
 <script src="libs/js/menu.js"></script>
 <script src="libs/js/clock.js"></script>
+<script src="libs/js/vis.min.js"></script>
 <script src="libs/js/main.dash2.js"></script>
