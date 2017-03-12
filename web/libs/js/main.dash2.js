@@ -975,30 +975,64 @@ $.vidview.e.find('.delete_selected').click(function(e){
     });
 })
 //POWER videos window
-$.powervid={e:$('#pvideo_viewer')};$.powervid.d=$.powervid.e.find('#vis_powervideo')
-$.powervid.e.on('change','#videos_select_all',function(e){
+$.pwrvid={e:$('#pvideo_viewer')};
+$.pwrvid.d=$('#vis_pwrvideo'),
+$.pwrvid.m=$('#vis_monitors'),
+$.pwrvid.lv=$('#live_view'),
+$.pwrvid.vp=$('#video_preview');
+$.pwrvid.e.on('click','[launch]',function(e){
     e.e=$(this);
-    e.p=e.e.prop('checked')
-    e.a=$.powervid.e.find('input[type=checkbox][name]')
-    if(e.p===true){
-        e.a.prop('checked',true)
-    }else{
-        e.a.prop('checked',false)
+    e.preventDefault();
+    switch(e.e.attr('launch')){
+        case'video':
+            $.pwrvid.e.find('[launch]').removeClass('active')
+            e.e.addClass('active')
+            e.href=e.e.attr('href');
+            e.mon=$.ccio.mon[e.e.parents('[mid]').attr('mid')];
+            $.pwrvid.vp.html('<video class="video_video" video="'+e.href+'" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"></video>')
+        break;
     }
-});
-$.powervid.e.on('shown.bs.modal',function(){
-    $.getJSON('/'+$user.auth_token+'/videos/'+$user.ke,function(d){
-        if($.powervid.t&&$.powervid.t.destroy){$.powervid.t.destroy()}
+})
+$.pwrvid.e.on('click','[timeline]',function(){
+    e={e:$(this)};
+    e.live=$.pwrvid.lv.find('iframe');
+    e.mid=e.e.attr('timeline');
+    e.JSONurl='/'+$user.auth_token+'/videos/'+$user.ke;
+    if(e.mid!==''){
+        e.JSONurl+='/'+e.mid
+        e.live.attr('src','/'+$user.auth_token+'/embed/'+$user.ke+'/'+e.mid+'/fullscreen|jquery')
+    }else{
+        e.live.attr('src','')
+    }
+    $.getJSON(e.JSONurl,function(d){
+        if($.pwrvid.t&&$.pwrvid.t.destroy){$.pwrvid.t.destroy()}
         var items=[];
         $.each(d,function(n,v){
-            v.mon=$.ccio.mon[v.mid]
+            v.mon=$.ccio.mon[v.mid];
+            v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
             if(v.status>0){
-                items.push({id:n,content:'<div mid="'+v.mon.mid+'" ke="'+v.mon.ke+'"><a video="launch" href="'+v.href+'" class="btn btn-xs btn-primary">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a> '+v.mon.name+' - '+v.time+' '+v.ext,start:v.time,end:v.end})
+                items.push({id:n,content:'<div mid="'+v.mid+'" ke="'+v.ke+'" file="'+v.filename+'"><a launch="video" href="'+v.href+'" class="btn btn-xs btn-primary">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a> '+v.mon.name+' - '+v.filename,start:v.time,end:v.end})
             }
         })
         items = new vis.DataSet(items);
-        $.powervid.t = new vis.Timeline($.powervid.d[0], items, {});
+        $.pwrvid.t = new vis.Timeline($.pwrvid.d[0], items, {});
     })
+})
+$.pwrvid.e.on('hidden.bs.modal',function(e){
+    $(this).find('iframe').attr('src','')
+    $.pwrvid.vp.empty()
+})
+$.pwrvid.e.on('shown.bs.modal',function(e){
+    e.e=$.pwrvid.m.find('ul').empty()
+    e.fn=function(x){return e.e.append('<a timeline="'+x.mid+'" class="btn btn-primary">'+x.name+'</a>')}
+        $.each($.ccio.mon,function(n,v){
+            e.fn(v);
+        })
+        e.fn({mid:'',name:'All Monitors'});
+    $.pwrvid.e.find('[timeline]').first().click()
+    setTimeout(function(){
+        $.pwrvid.e.find('.vis-item-content').first().find('a').click()
+    },3000)
 })
 //dynamic bindings
 $('body')

@@ -6,10 +6,17 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-        <h4 class="modal-title" id="pvideo_viewerLabel"><i class="fa fa-map-marker"></i> &nbsp; <span></span></h4>
+        <h4 class="modal-title" id="pvideo_viewerLabel"><i class="fa fa-map-marker"></i> &nbsp; Power Video Viewer</h4>
       </div>
       <div class="modal-body">
-        <div id="vis_powervideo"></div>  
+          <div class="row text-center">
+            <div id="live_view" class="col-md-4"><iframe></iframe></div>
+            <div id="video_preview" class="col-md-4"></div>
+            <div id="vis_monitors" class="col-md-4"><ul class="btn-group-vertical"></ul></div>
+          </div>
+          <div class="row">
+            <div id="vis_pwrvideo" class="col-md-12"></div>
+          </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
