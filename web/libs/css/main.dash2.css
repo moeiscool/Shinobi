@@ -741,3 +741,13 @@ ul.msg_list li .message {
 
 .checkbox input[type=checkbox]:checked + label:before { content: "\f046"; } /* checked icon */
 .checkbox input[type=checkbox]:checked + label:before { letter-spacing: 5px; } /* allow space for check mark */
+
+/*Clock*/
+#time-date { font-family:'BebasNeueRegular', Arial, Helvetica, sans-serif; font-size:12px; text-align:center; text-shadow: }
+@media screen and (min-width:1025px){
+    #clock {padding-right:35px}
+}
+#clock ul { width:150px; margin:0 auto; padding:0px; list-style:none; text-align:center; }
+#clock ul li { display:inline; font-size:2em; text-align:center; font-family:'BebasNeueRegular', Arial, Helvetica, sans-serif; }
+
+#clock .point { position:relative; -moz-animation:mymove 1s ease infinite; -webkit-animation:mymove 1s ease infinite; }
