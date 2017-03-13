@@ -134,7 +134,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .form-group label{width:100%}
 
 #pvideo_viewer iframe{border:0;width:100%;height:400px;margin-bottom:10px;overflow:hidden}
-#pvideo_viewer video{max-height:400px}
+#pvideo_viewer video{max-height:400px;max-width:100%}
 #pvideo_viewer h3{margin-top:0}
 #vis_monitors{overflow:auto;max-height:400px}
 #vis_monitors .btn-group-vertical{width:100%}
