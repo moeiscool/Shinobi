@@ -23,7 +23,13 @@ img{max-width:100%}
 .monitor_item.selected .stream-element{height:600px}
 .monitor_item.selected .fa-expand:before{content:"\f066"}
 .monitor_item .mdl-card__supporting-text{background:#222;color:#fff!important;display:block}
-.monitor_item.detector_triggered .stream-element{border-bottom:3px inset #d9534f}
+.monitor_item.detector_triggered .indifference{opacity:1}
+.monitor_item .indifference{opacity:0}
+.monitor_item .indifference{position:absolute;width:100%;left:0;top:0;transition:0.2s;}
+.monitor_item .indifference .progress{width:100%;background:#333;box-shadow:0;}
+.monitor_item .indifference:hover .progress{height:20px;transition:0.2s}
+
+.demo-blog .mdl-card__media ~ .mdl-card__supporting-text{position:relative;overflow:hidden}
 
 .demo-blog .demo-blog__posts.mosaic{max-width:100%}
 @media screen and (min-width:1025px){
@@ -127,11 +133,18 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 
 .form-group label{width:100%}
 
+#pvideo_viewer iframe{border:0;width:100%;height:400px;margin-bottom:10px;overflow:hidden}
+#pvideo_viewer video{max-height:400px;max-width:100%}
+#pvideo_viewer h3{margin-top:0}
+#vis_monitors{overflow:auto;max-height:400px}
+#vis_monitors .btn-group-vertical{width:100%}
+
 .dark.modal .modal-header,.dark.modal .modal-footer{background:#333;border-color:#444;}
 .dark.modal .modal-header{color:#fff;}
 .dark.modal .modal-footer>*:not(.btn){color:#fff;}
 .dark.modal .modal-body{background:#333;}
 .dark.modal .close{color:#fff;}
+.dark.modal{color:#fff;}
 
 .os_bars{width:300px;display:inline-block;padding:5px 0 0 10px}
 @media screen and (max-width: 600px){
@@ -139,7 +152,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
     .os_bars label{padding:2.5px 0;margin:0;font-size:8pt}
 }
 .os_bars .display-table .display-table-cell{padding:5px;vertical-align:center}
-.os_bars .progress{height:5px;margin:0;}
+.progress{height:5px;margin:0;}
 .os_bars label,.os_bars .percent{padding:2.5px 0;margin:0;font-size:7.5pt}
 
 /*cool dropdown thing*/
@@ -735,3 +748,19 @@ ul.msg_list li .message {
 
 .checkbox input[type=checkbox]:checked + label:before { content: "\f046"; } /* checked icon */
 .checkbox input[type=checkbox]:checked + label:before { letter-spacing: 5px; } /* allow space for check mark */
+
+/*Clock*/
+#time-date {font-size:12px; text-align:center;}
+@media screen and (min-width:1025px){
+    #clock {padding-right:35px}
+}
+#clock ul { width:150px; margin:0 auto; padding:0px; list-style:none; text-align:center; }
+#clock ul li { display:inline; font-size:1.6em; text-align:center;font-family:monospace;}
+
+#clock .point { position:relative; -moz-animation:mymove 1s ease infinite; -webkit-animation:mymove 1s ease infinite; }
+
+/*custom vis.js css*/
+.vis-timeline{background:#212121;color:#fff;border-color:#444}
+.vis-time-axis .vis-text{color: #dedede}
+.vis-item.vis-range .vis-item-content{background:#333;color:#fff}
+.vis-time-axis .vis-grid.vis-minor{border-color:#444}

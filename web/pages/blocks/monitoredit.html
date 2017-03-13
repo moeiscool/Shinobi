@@ -126,13 +126,20 @@
                 </label>
               </div>
               <div class="shinobi-detector" style="display:none">
-                  <div class="form-group">
-                    <label><span>Trigger Record</span>
-                        <select class="form-control" detail="detector_trigger">
-                            <option value="0" selected>No</option>
-                            <option value="1">Yes</option>
-                        </select>
-                    </label>
+                  <div class="row">
+                      <div class="form-group col-md-6">
+                        <label><span>Trigger Record</span>
+                            <select class="form-control" detail="detector_trigger">
+                                <option value="0" selected>No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </label>
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label><span>Recording Timeout <small>in Minutes</small></span>
+                        <input class="form-control" detail="detector_timeout" placeholder="10">
+                        </label>
+                      </div>
                   </div>
                   <div class="form-group">
                     <label><span>Save Events to SQL</span>
@@ -142,18 +149,20 @@
                         </select>
                     </label>
                   </div>
-                  <div class="form-group">
-                    <label><span>Email on Trigger <small>Max 1 Email Every 10 minutes</small></span>
-                        <select class="form-control" detail="detector_mail">
-                            <option value="0" selected>No</option>
-                            <option value="1">Yes</option>
-                        </select>
-                    </label>
-                  </div>
-                  <div class="form-group">
-                    <label><span>Recording Timeout <small>in Minutes</small></span>
-                    <input class="form-control" detail="detector_timeout" placeholder="10">
-                    </label>
+                  <div class="row">
+                      <div class="form-group col-md-6">
+                        <label><span>Email on Trigger</span>
+                            <select class="form-control" detail="detector_mail">
+                                <option value="0" selected>No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </label>
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label><span>Allow Next Email <small>in Minutes</small></span>
+                        <input class="form-control" detail="detector_mail_timeout" placeholder="10">
+                        </label>
+                      </div>
                   </div>
                   <div class="form-group">
                     <label><span>Detector Rate <small>(FPS)</small></span>

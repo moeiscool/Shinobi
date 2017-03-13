@@ -8,5 +8,12 @@
     "password": "",
     "database": "ccio",
     "port":3306
-  }
+  },
+  "mail":{
+    "service": "gmail",
+    "auth": {
+        "user": "your_email@gmail.com",
+        "pass": "your_password_or_app_specific_password"
+        }
+    }
 }

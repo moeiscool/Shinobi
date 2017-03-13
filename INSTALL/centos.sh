@@ -6,6 +6,9 @@ yum install epel-release -y
 rpm --import http://li.nux.ro/download/nux/RPM-GPG-KEY-nux.ro
 rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-1.el7.nux.noarch.rpm
 yum install ffmpeg ffmpeg-devel nodejs npm mariadb mariadb-server -y
+sudo npm cache clean -f
+sudo npm install -g n
+sudo n stable
 #Start mysql and enable on boot
 systemctl start mariadb
 systemctl enable mariadb

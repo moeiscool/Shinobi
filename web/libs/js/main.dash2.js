@@ -250,6 +250,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 }
                 tmp+='</div>';
                 tmp+='<div class="mdl-card__supporting-text text-center">';
+                tmp+='<div class="indifference"><div class="progress"><div class="progress-bar progress-bar-danger" role="progressbar"><span>70%</span></div></div></div>';
                 tmp+='<div class="btn-group btn-group-lg"><a title="Snapshot" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="Show Logs" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="Enlarge" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="Status Indicator, Click to Recconnect" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-circle"></i></a> <a title="Calendar" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="Videos List" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a class="btn btn-default" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Enlarge" monitor="bigify" class="hidden btn btn-default"><i class="fa fa-expand"></i></a> <a title="Fullscreen" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
                 tmp+='</div>';
                 tmp+='</div>';
@@ -429,7 +430,8 @@ $.ccio.ws.on('f',function (d){
                 clearTimeout($.ccio.mon[d.id].detector_trigger_timeout);
                 $.ccio.mon[d.id].detector_trigger_timeout=setTimeout(function(){
                     $('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]').removeClass('detector_triggered')
-                },5000)
+                },5000);
+                d.e.find('.indifference .progress-bar').css('width',d.details.confidence).find('span').text(d.details.confidence)
             }
         break;
         case'detector_plugged':
@@ -492,6 +494,7 @@ $.ccio.ws.on('f',function (d){
         case'video_delete':
             if($('.modal[mid="'+d.mid+'"]').length>0){$('#video_viewer[mid="'+d.mid+'"]').attr('file',null).attr('ke',null).attr('mid',null).modal('hide')}
             $('[file="'+d.filename+'"][mid="'+d.mid+'"][ke="'+d.ke+'"]').remove();
+            $('[data-file="'+d.filename+'"][data-mid="'+d.mid+'"][data-ke="'+d.ke+'"]').remove();
         break;
         case'video_build_success':
             if(!d.mid){d.mid=d.id;};d.status=1;
@@ -970,6 +973,73 @@ $.vidview.e.find('.delete_selected').click(function(e){
             $.ccio.cx({f:'video',ff:'delete',status:1,filename:n[0],ext:n[1],mid:v});
         })
     });
+})
+//POWER videos window
+$.pwrvid={e:$('#pvideo_viewer')};
+$.pwrvid.d=$('#vis_pwrvideo'),
+$.pwrvid.m=$('#vis_monitors'),
+$.pwrvid.lv=$('#live_view'),
+$.pwrvid.vp=$('#video_preview');
+$.pwrvid.e.on('click','[launch]',function(e){
+    e.e=$(this);
+    e.p=e.e.parents('[mid]');
+    e.preventDefault();
+    switch(e.e.attr('launch')){
+        case'video':
+            $.pwrvid.vp.find('h3').text(e.p.attr('file'))
+            $.pwrvid.e.find('[launch]').removeClass('active')
+            e.e.addClass('active')
+            e.href=e.e.attr('href');
+            e.mon=$.ccio.mon[e.p.attr('mid')];
+            $.pwrvid.vp.find('.holder').html('<video class="video_video" video="'+e.href+'" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"></video>')
+        break;
+    }
+})
+$.pwrvid.e.on('click','[timeline]',function(){
+    e={e:$(this)};
+    e.live_header=$.pwrvid.lv.find('h3 span');
+    e.live=$.pwrvid.lv.find('iframe');
+    e.mid=e.e.attr('timeline');
+    e.JSONurl='/'+$user.auth_token+'/videos/'+$user.ke;
+    if(e.mid!==''){
+        e.JSONurl+='/'+e.mid;
+        e.live_header.text($.ccio.mon[e.mid].name)
+        e.live.attr('src','/'+$user.auth_token+'/embed/'+$user.ke+'/'+e.mid+'/fullscreen|jquery')
+    }else{
+        e.live_header.text('Not available')
+        e.live.attr('src','')
+    }
+    $.getJSON(e.JSONurl,function(d){
+        if($.pwrvid.t&&$.pwrvid.t.destroy){$.pwrvid.t.destroy()}
+        var items=[];
+        $.each(d,function(n,v){
+            v.mon=$.ccio.mon[v.mid];
+            v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
+            if(v.status>0){
+                var t = new Date(v.end);
+                t.setSeconds(t.getSeconds() - 10)
+                items.push({id:n,content:'<div mid="'+v.mid+'" ke="'+v.ke+'" file="'+v.filename+'"><a launch="video" href="'+v.href+'" class="btn btn-xs btn-primary">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a> '+v.mon.name+' - '+v.filename,start:v.time,end:t})
+            }
+        })
+        items = new vis.DataSet(items);
+        $.pwrvid.t = new vis.Timeline($.pwrvid.d[0], items, {});
+    })
+})
+$.pwrvid.e.on('hidden.bs.modal',function(e){
+    $(this).find('iframe').attr('src','')
+    $.pwrvid.vp.find('.holder').empty()
+})
+$.pwrvid.e.on('shown.bs.modal',function(e){
+    e.e=$.pwrvid.m.find('ul').empty()
+    e.fn=function(x){return e.e.append('<a timeline="'+x.mid+'" class="btn btn-primary">'+x.name+'</a>')}
+        $.each($.ccio.mon,function(n,v){
+            e.fn(v);
+        })
+        e.fn({mid:'',name:'All Monitors'});
+    $.pwrvid.e.find('[timeline]').first().click()
+    setTimeout(function(){
+        $.pwrvid.e.find('.vis-item-content').first().find('a').click()
+    },3000)
 })
 //dynamic bindings
 $('body')
