@@ -982,26 +982,31 @@ $.pwrvid.lv=$('#live_view'),
 $.pwrvid.vp=$('#video_preview');
 $.pwrvid.e.on('click','[launch]',function(e){
     e.e=$(this);
+    e.p=e.e.parents('[mid]');
     e.preventDefault();
     switch(e.e.attr('launch')){
         case'video':
+            $.pwrvid.vp.find('h3').text(e.p.attr('file'))
             $.pwrvid.e.find('[launch]').removeClass('active')
             e.e.addClass('active')
             e.href=e.e.attr('href');
-            e.mon=$.ccio.mon[e.e.parents('[mid]').attr('mid')];
-            $.pwrvid.vp.html('<video class="video_video" video="'+e.href+'" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"></video>')
+            e.mon=$.ccio.mon[e.p.attr('mid')];
+            $.pwrvid.vp.find('.holder').html('<video class="video_video" video="'+e.href+'" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"></video>')
         break;
     }
 })
 $.pwrvid.e.on('click','[timeline]',function(){
     e={e:$(this)};
+    e.live_header=$.pwrvid.lv.find('h3 span');
     e.live=$.pwrvid.lv.find('iframe');
     e.mid=e.e.attr('timeline');
     e.JSONurl='/'+$user.auth_token+'/videos/'+$user.ke;
     if(e.mid!==''){
-        e.JSONurl+='/'+e.mid
+        e.JSONurl+='/'+e.mid;
+        e.live_header.text($.ccio.mon[e.mid].name)
         e.live.attr('src','/'+$user.auth_token+'/embed/'+$user.ke+'/'+e.mid+'/fullscreen|jquery')
     }else{
+        e.live_header.text('Not available')
         e.live.attr('src','')
     }
     $.getJSON(e.JSONurl,function(d){
@@ -1011,7 +1016,9 @@ $.pwrvid.e.on('click','[timeline]',function(){
             v.mon=$.ccio.mon[v.mid];
             v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
             if(v.status>0){
-                items.push({id:n,content:'<div mid="'+v.mid+'" ke="'+v.ke+'" file="'+v.filename+'"><a launch="video" href="'+v.href+'" class="btn btn-xs btn-primary">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a> '+v.mon.name+' - '+v.filename,start:v.time,end:v.end})
+                var t = new Date(v.end);
+                t.setSeconds(t.getSeconds() - 10)
+                items.push({id:n,content:'<div mid="'+v.mid+'" ke="'+v.ke+'" file="'+v.filename+'"><a launch="video" href="'+v.href+'" class="btn btn-xs btn-primary">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a> '+v.mon.name+' - '+v.filename,start:v.time,end:t})
             }
         })
         items = new vis.DataSet(items);
@@ -1020,7 +1027,7 @@ $.pwrvid.e.on('click','[timeline]',function(){
 })
 $.pwrvid.e.on('hidden.bs.modal',function(e){
     $(this).find('iframe').attr('src','')
-    $.pwrvid.vp.empty()
+    $.pwrvid.vp.find('.holder').empty()
 })
 $.pwrvid.e.on('shown.bs.modal',function(e){
     e.e=$.pwrvid.m.find('ul').empty()
