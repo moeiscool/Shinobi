@@ -93,12 +93,12 @@ s.gid=function(x){
         t += p.charAt(Math.floor(Math.random() * p.length));
     return t;
 };
-s.moment=function(e,x){
+s.moment_withOffset=function(e,x){
     if(!e){e=new Date};if(!x){x='YYYY-MM-DDTHH-mm-ss'};
     e=moment(e);if(config.utcOffset){e=e.utcOffset(config.utcOffset)}
     return e.format(x);
 }
-s.moment_withOffset=function(e,x){
+s.moment=function(e,x){
     if(!e){e=new Date};if(!x){x='YYYY-MM-DDTHH-mm-ss'};
     return moment(e).format(x);
 }
