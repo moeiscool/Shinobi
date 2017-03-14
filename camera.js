@@ -98,7 +98,7 @@ s.moment=function(e,x){
     e=moment(e);if(config.utcOffset){e=e.utcOffset(config.utcOffset)}
     return e.format(x);
 }
-s.moment_noOffset=function(e,x){
+s.moment_withOffset=function(e,x){
     if(!e){e=new Date};if(!x){x='YYYY-MM-DDTHH-mm-ss'};
     return moment(e).format(x);
 }
@@ -151,7 +151,9 @@ s.kill=function(x,e,p){
             }catch(er){}
         }
         clearTimeout(s.group[e.ke].mon[e.id].checker);
+        delete(s.group[e.ke].mon[e.id].checker);
         clearTimeout(s.group[e.ke].mon[e.id].watchdog_stop);
+        delete(s.group[e.ke].mon[e.id].watchdog_stop);
         if(e&&s.group[e.ke].mon[e.id].record){
             clearTimeout(s.group[e.ke].mon[e.id].record.capturing);
 //            if(s.group[e.ke].mon[e.id].record.request){s.group[e.ke].mon[e.id].record.request.abort();delete(s.group[e.ke].mon[e.id].record.request);}
@@ -304,12 +306,14 @@ s.video=function(x,e){
                     s.cx({f:'close',d:s.init('clean',e)},s.group[e.ke].mon[e.id].child_node_id);
                 }else{
                     if(fs.existsSync(e.dir+e.filename+'.'+e.ext)){
-                        e.filesize=fs.statSync(e.dir+e.filename+'.'+e.ext)["size"];
+                        e.stat=fs.statSync(e.dir+e.filename+'.'+e.ext);
+                        e.filesize=e.stat["size"];
+                        e.end_time=s.moment(e.stat["mtime"],'YYYY-MM-DD HH:mm:ss');
                         if((e.filesize/100000).toFixed(2)>0.25){
-                            e.save=[e.filesize,e.frames,1,e.id,e.ke,s.nameToTime(e.filename)];
+                            e.save=[e.filesize,e.frames,1,e.id,e.ke,s.nameToTime(e.filename),e.end_time];
                             if(!e.status){e.save.push(0)}else{e.save.push(e.status)}
-                            sql.query('UPDATE Videos SET `size`=?,`frames`=?,`status`=? WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save)
-         s.tx({f:'video_build_success',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),size:e.filesize,end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
+                            sql.query('UPDATE Videos SET `size`=?,`frames`=?,`status`=? WHERE `mid`=? AND `ke`=? AND `time`=? AND `end`=? AND `status`=?',e.save)
+                            s.tx({f:'video_build_success',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),size:e.filesize,end:e.end_time},'GRP_'+e.ke);
                             
                             //cloud auto savers
                             //webdav
@@ -631,6 +635,10 @@ s.camera=function(x,e,cn,tx){
             if(!s.group[e.ke].mon_conf[e.id]){s.group[e.ke].mon_conf[e.id]=s.init('clean',e);}
             e.url=s.init('url',e);
             if(s.group[e.ke].mon[e.id].started===1){return}
+            s.group[e.ke].mon[e.id].motion_lock=setTimeout(function(){
+                clearTimeout(s.group[e.ke].mon[e.id].motion_lock);
+                delete(s.group[e.ke].mon[e.id].motion_lock);
+            },10000)
             //every 15 minutes start a new file.
             s.group[e.ke].mon[e.id].started=1;
             if(x==='record'){
@@ -1321,10 +1329,11 @@ var tx;
             break;
             case'trigger':
                 //got a frame rendered with a marker
-                s.tx({f:'detector_trigger',id:d.id,ke:d.ke,details:d.details},'GRP_'+d.ke);
                 if(d.ke&&d.id&&s.group[d.ke]&&s.group[d.ke].mon_conf[d.id]){
+                    if(s.group[d.ke].mon[d.id].motion_lock){return}
+                    s.tx({f:'detector_trigger',id:d.id,ke:d.ke,details:d.details},'GRP_'+d.ke);
                     d.mon=s.group[d.ke].mon_conf[d.id];
-                    if(s.group[d.ke].mon_conf[d.id].details.detector_trigger=='1'){
+                    if(s.group[d.ke].mon_conf[d.id].mode==='start'&&s.group[d.ke].mon_conf[d.id].details.detector_trigger=='1'){
                         if(!s.group[d.ke].mon[d.id].watchdog_stop){
                             d.mon.mode='stop';s.camera('stop',d.mon)
                             setTimeout(function(){d.mon.mode='record';s.camera('record',d.mon)},1200)
@@ -1341,7 +1350,7 @@ var tx;
                             setTimeout(function(){
                                 d.mon.mode='start';s.camera('start',d.mon);
                                 delete(s.group[d.ke].mon[d.id].watchdog_stop);
-                            },3000)
+                            },500)
                         },d.detector_timeout)
                     }
                     //mailer
@@ -1501,7 +1510,7 @@ var tx;
                             if (err) {
                                 return console.error('created_file'+d.d.mid,err);
                             }
-                           tx({f:'delete_file',file:d.filename,ke:d.d.ke,mid:d.d.mid}); s.tx({f:'video_build_success',filename:s.group[d.d.ke].mon[d.d.mid].open+'.'+s.group[d.d.ke].mon[d.d.mid].open_ext,mid:d.d.mid,ke:d.d.ke,time:s.nameToTime(s.group[d.d.ke].mon[d.d.mid].open),end:s.moment_noOffset(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+d.d.ke);
+                           tx({f:'delete_file',file:d.filename,ke:d.d.ke,mid:d.d.mid}); s.tx({f:'video_build_success',filename:s.group[d.d.ke].mon[d.d.mid].open+'.'+s.group[d.d.ke].mon[d.d.mid].open_ext,mid:d.d.mid,ke:d.d.ke,time:s.nameToTime(s.group[d.d.ke].mon[d.d.mid].open),end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+d.d.ke);
                         });
                     break;
                 }
@@ -1775,7 +1784,7 @@ app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id','/:auth/videos/:ke/:id'], f
         req.sql+=' ORDER BY `time` DESC LIMIT '+req.query.limit+'';
         sql.query(req.sql,req.ar,function(err,r){
             r.forEach(function(v){
-                v.href='/'+req.params.auth+'/videos/'+v.ke+'/'+v.mid+'/'+s.moment_noOffset(v.time)+'.'+v.ext;
+                v.href='/'+req.params.auth+'/videos/'+v.ke+'/'+v.mid+'/'+s.moment(v.time)+'.'+v.ext;
             })
             res.send(s.s(r, null, 3));
         })
@@ -1991,6 +2000,7 @@ sql.query('SELECT * FROM Monitors WHERE mode != "stop"', function(err,r) {
 },1500)
 try{
 if(!config.cpuUsageMarker){config.cpuUsageMarker='%Cpu'}
+if(!config.autoDropCache){config.autoDropCache=true}
 s.cpuUsage=function(e,f){
     switch(s.platform){
         case'darwin':

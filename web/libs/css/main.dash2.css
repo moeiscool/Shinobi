@@ -18,6 +18,7 @@ img{max-width:100%}
 .monitor_item.fullscreen .stream-element{position:fixed;left:0;top:0;z-index:1;height:100%;width:100%}
 .monitor_item .stream-element{width:100%;height:300px;border:0;}
 .monitor_item{position:relative;padding:0;}
+.monitor_item{transition:none;}
 .monitor_item .mdl-card{min-height:auto;border:1px solid #272727;border-radius:0px;overflow:hidden}
 .monitor_item .mdl-card__media{position:relative;padding:0!important;display:block!important;background:#000}
 .monitor_item.selected .stream-element{height:600px}
@@ -84,7 +85,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .form-group-group.grey h4{background:#777;color:#fff}
 .videos_list .title{font-size:12pt;padding:0 10px}
 [status="1"] .btn[video="launch"],[data-status="1"] .btn[video="launch"]{background:#337ab7;border-color:#337ab7}
-[status="2"] .btn[video="launch"],[data-status="2"] .btn[video="launch"]{background:#a59100;border-color:#a59100}
+[status="2"] .btn[launch="video"],[status="2"] .btn[video="launch"],[data-status="2"] .btn[video="launch"]{background:#a59100;border-color:#a59100}
 .signal.red{background:#c9302c}
 .signal.green{background:#5cb85c}
 .demo-drawer{background:#2b2a2a;color:#fff;}
@@ -134,7 +135,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .form-group label{width:100%}
 
 #pvideo_viewer iframe{border:0;width:100%;height:400px;margin-bottom:10px;overflow:hidden}
-#pvideo_viewer video{max-height:400px;max-width:100%}
+#pvideo_viewer video{max-height:350px;max-width:100%;margin-bottom:10px;}
 #pvideo_viewer h3{margin-top:0}
 #vis_monitors{overflow:auto;max-height:400px}
 #vis_monitors .btn-group-vertical{width:100%}

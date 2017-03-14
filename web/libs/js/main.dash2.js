@@ -9,6 +9,14 @@ $.ccio={fr:$('#files_recent'),mon:{}};
     $.ccio.init=function(x,d,z,k){
         if(!k){k={}};k.tmp='';
         switch(x){
+            case'dragWindows':
+                k.e=$("#monitors_live");
+                if(k.e.disableSelection){k.e.disableSelection()};
+                k.e.sortable({
+                  handle: ".mdl-card__supporting-text",
+                  placeholder: "ui-state-highlight col-md-6"
+                });
+            break;
             case'getLocation':
                 var l = document.createElement("a");
                 l.href = d;
@@ -533,6 +541,7 @@ $.ccio.ws.on('f',function (d){
             $.ccio.init('data-video',d)
             d.e=$('[file="'+d.filename+'"][mid="'+d.mid+'"][ke="'+d.ke+'"]');
             d.e.attr('status',d.status),d.e.attr('data-status',d.status);
+            console.log('[file="'+d.filename+'"][mid="'+d.mid+'"][ke="'+d.ke+'"]')
         break;
         case'monitor_edit':
             d.e=$('[mid="'+d.mon.mid+'"][ke="'+d.mon.ke+'"]');d.ee=d.e.find('.stream-element');
@@ -599,6 +608,7 @@ $.ccio.ws.on('f',function (d){
             d.e=$('#monitor_live_'+d.id);
             if(d.e.length==0){
                 $.ccio.tm(2,$.ccio.mon[d.id],'#monitors_live');
+                $.ccio.init('dragWindows')
             }
             d.d=JSON.parse($.ccio.mon[d.id].details);
             switch(d.d.stream_type){
@@ -986,12 +996,25 @@ $.pwrvid.e.on('click','[launch]',function(e){
     e.preventDefault();
     switch(e.e.attr('launch')){
         case'video':
-            $.pwrvid.vp.find('h3').text(e.p.attr('file'))
-            $.pwrvid.e.find('[launch]').removeClass('active')
-            e.e.addClass('active')
+            e.filename=e.p.attr('file');
+            $.pwrvid.vp.find('h3').text(e.filename)
             e.href=e.e.attr('href');
+            e.status=e.p.attr('status');
             e.mon=$.ccio.mon[e.p.attr('mid')];
-            $.pwrvid.vp.find('.holder').html('<video class="video_video" video="'+e.href+'" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"></video>')
+            $.pwrvid.vp.find('.holder').html('<video class="video_video" video="'+e.href+'" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"></video>');
+            $.pwrvid.vp
+                .attr('mid',e.mon.mid)
+                .attr('ke',e.mon.ke)
+                .attr('status',e.status)
+                .attr('file',e.filename)
+                .find('[download],[video="download"]')
+                .attr('download',e.filename)
+                .attr('href',e.href)
+            if(e.status==1){
+                $.get(e.href+'/status/2',function(d){
+                    console.log(d)
+                })
+            }
         break;
     }
 })
@@ -1000,14 +1023,13 @@ $.pwrvid.e.on('click','[timeline]',function(){
     e.live_header=$.pwrvid.lv.find('h3 span');
     e.live=$.pwrvid.lv.find('iframe');
     e.mid=e.e.attr('timeline');
+    $.pwrvid.e.find('[timeline]').removeClass('active');
+    e.e.addClass('active');
     e.JSONurl='/'+$user.auth_token+'/videos/'+$user.ke;
     if(e.mid!==''){
         e.JSONurl+='/'+e.mid;
         e.live_header.text($.ccio.mon[e.mid].name)
         e.live.attr('src','/'+$user.auth_token+'/embed/'+$user.ke+'/'+e.mid+'/fullscreen|jquery')
-    }else{
-        e.live_header.text('Not available')
-        e.live.attr('src','')
     }
     $.getJSON(e.JSONurl,function(d){
         if($.pwrvid.t&&$.pwrvid.t.destroy){$.pwrvid.t.destroy()}
@@ -1018,7 +1040,7 @@ $.pwrvid.e.on('click','[timeline]',function(){
             if(v.status>0){
                 var t = new Date(v.end);
                 t.setSeconds(t.getSeconds() - 10)
-                items.push({id:n,content:'<div mid="'+v.mid+'" ke="'+v.ke+'" file="'+v.filename+'"><a launch="video" href="'+v.href+'" class="btn btn-xs btn-primary">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a> '+v.mon.name+' - '+v.filename,start:v.time,end:t})
+                items.push({id:n,content:'<div mid="'+v.mid+'" ke="'+v.ke+'" status="'+v.status+'" file="'+v.filename+'"><a launch="video" href="'+v.href+'" class="btn btn-xs btn-primary">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a> '+v.mon.name+' - '+v.filename,start:v.time,end:t})
             }
         })
         items = new vis.DataSet(items);
