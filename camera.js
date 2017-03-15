@@ -2129,13 +2129,19 @@ s.ramUsage=function(){
     },10000);
 }catch(err){console.log('CPU indicator will not work. Continuing...')}
 //check disk space every 20 minutes
-s.disk=function(x){
+s.disk = function (x) {
     if(config.autoDropCache===true){
         exec('echo 3 > /proc/sys/vm/drop_caches')
     }
-    df(function (er,d) {
+
+     var dfopts = {
+        prefixMultiplier: 'GB',
+        isDisplayPrefixMultiplier: true,
+        precision: 3
+     };
+    df(dfopts, function (er,d) {
         if (er) { clearInterval(s.disk_check); }else{er={f:'disk',data:d}}
-        s.tx(er,'CPU')
+        s.tx(er, 'CPU');
     });
 };
 s.disk_check=setInterval(function(){s.disk()},60000*20);
