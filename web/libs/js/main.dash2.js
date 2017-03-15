@@ -250,7 +250,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                         tmp+='<iframe class="stream-element"></iframe>';
                     break;
                     case'hls':
-                        tmp+='<video class="stream-element" autoplay></video>';
+                        tmp+='<video class="stream-element" controls autoplay></video>';
                     break;
                     default://base64
                         tmp+='<canvas class="stream-element"></canvas>';
@@ -566,7 +566,7 @@ $.ccio.ws.on('f',function (d){
             d.e=$('[mid="'+d.mon.mid+'"][ke="'+d.mon.ke+'"]');d.ee=d.e.find('.stream-element');
             switch(d.mon.details.stream_type){
                 case'hls':
-                    d.ee.after('<video class="stream-element" autoplay></video>').remove()
+                    d.ee.after('<video class="stream-element" controls autoplay></video>').remove()
                 break;
                 case'mjpeg':
                     d.ee.after('<iframe class="stream-element"></iframe>').remove()

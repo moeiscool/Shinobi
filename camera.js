@@ -1326,7 +1326,8 @@ var tx;
             break;
             case'trigger':
                 //got a frame rendered with a marker
-                if(d.ke&&d.id&&s.group[d.ke]&&d.mon){
+                if(d.ke&&d.id&&s.group[d.ke]){
+                    d.mon=s.group[d.ke].mon_conf[d.id]
                     if(s.group[d.ke].mon[d.id].motion_lock){return}
                     d.cx={f:'detector_trigger',id:d.id,ke:d.ke,details:d.details};
                     s.tx(d.cx,'GRP_'+d.ke);
@@ -1457,6 +1458,18 @@ var tx;
                 switch(d.f){
                     case'accounts':
                         switch(d.ff){
+                            case'edit':
+                                d.keys=Object.keys(d.form);
+                                d.condition=[];
+                                d.value=[];
+                                d.keys.forEach(function(v,n){
+                                    d.condition.push(n+'=?')
+                                    d.value.push(v)
+                                })
+                                d.value=d.value.concat([cn.ke,d.$uid])
+                                sql.query("UPDATE Users SET auth=? WHERE ke=? AND uid=?",d.value)
+                                s.tx({f:'edit_sub_account',ke:cn.ke,uid:d.$uid,mail:d.mail,fomr:d.form},'ADM_'+d.ke);
+                            break;
                             case'delete':
                                 sql.query('DELETE FROM Users WHERE uid=? AND ke=? AND mail=?',[d.$uid,cn.ke,d.mail])
                                 s.tx({f:'delete_sub_account',ke:cn.ke,uid:d.$uid,mail:d.mail},'ADM_'+d.ke);
@@ -1688,8 +1701,10 @@ app.post('/',function (req,res){
                 if(req.body.admin){
                     //admin checkbox selected
                     if(!r.details.sub){
-                        sql.query('SELECT uid,mail,details FROM Users WHERE ke=? AND details LIKE \'%"sub"%\'',[r.ke],function(err,r) {
-                            res.render("admin",{$user:req.resp,$subs:r});
+                        sql.query('SELECT uid,mail,details FROM Users WHERE ke=? AND details LIKE \'%"sub"%\'',[r.ke],function(err,rr) {
+                            sql.query('SELECT * FROM Monitors WHERE ke=?',[r.ke],function(err,rrr) {
+                                res.render("admin",{$user:req.resp,$subs:rr,$mons:rrr});
+                            })
                         })
                     }
                 }else{
