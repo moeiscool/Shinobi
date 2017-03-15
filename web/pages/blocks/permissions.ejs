@@ -10,13 +10,21 @@
       </div>
       <div class="modal-body">
           <div class="text-center msg"></div>
-          <div class="form-group-group grey">
+        <div class="form-group">
+            <label><span>All Monitors</span>
+                <select class="form-control" detail="allmonitors">
+                    <option value="0" selected>No</option>  
+                    <option value="1">Yes</option>  
+                </select>
+            </label>
+        </div>
+          <div class="form-group-group grey" id="monitors_section">
               <h4>Monitors</h4>
               <% $mons.forEach(function(v,n){ %>
                 <div class="form-group">
                     <label><span><%- v.name %></span>
                         <select class="form-control" monitor="<%- v.mid %>">
-                            <option value="0">No</option>  
+                            <option value="0" selected>No</option>  
                             <option value="1">Yes</option>  
                         </select>
                     </label>
