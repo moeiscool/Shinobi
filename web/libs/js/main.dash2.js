@@ -314,6 +314,20 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                         stop: $.zO.checkCords
                     }).click()
             break;
+            case 6://notification row
+                if(!d.time){d.time=$.ccio.init('t')}
+                if(!d.note.class){d.note.class=''}
+                tmp+='<li class="note-item '+d.note.class+'" ke="'+d.ke+'" mid="'+d.id+'">'
+                tmp+='<span>'
+                tmp+='<div>'+d.ke+' : <b>'+d.id+'</b></div>'
+                tmp+='<span>'+d.note.type+'</span> '
+                tmp+='<b class="time livestamp" title="'+d.time+'"></b>'
+                tmp+='</span>'
+                tmp+='<div class="message">'
+                tmp+=d.note.msg
+                tmp+='</div>'
+                tmp+='</li>';
+            break;
             case'option':
                 tmp+='<option value="'+d.id+'">'+d.name+'</option>'
             break;
@@ -400,7 +414,7 @@ $.ccio.ws.on('ping', function(d){
     $.ccio.ws.emit('pong',{beat:1});
 });
 $.ccio.ws.on('f',function (d){
-    if(d.f!=='monitor_frame'&&d.f!=='os'&&d.f!=='video_delete'&&d.f!=='detector_trigger'&&d.f!=='log'){console.log(d);}
+    if(d.f!=='monitor_frame'&&d.f!=='os'&&d.f!=='video_delete'&&d.f!=='detector_trigger'&&d.f!=='detector_record_timeout_start'&&d.f!=='log'){console.log(d);}
     if(d.viewers){
         $('#monitor_live_'+d.id+' .viewers').html(d.viewers);
     }
@@ -430,6 +444,11 @@ $.ccio.ws.on('f',function (d){
         break;
         case'ffprobe_data':
             $.pB.o.append(d.data+'<br>')
+        break;
+        case'detector_record_timeout_start':
+            d.note={type:'Detector',msg:'Record Timeout Start',class:'detector_record_timeout_start'}
+            d.e=$('#notifications .note-item.detector_record_timeout_start[ke="'+d.ke+'"][mid="'+d.id+'"]')
+            $.ccio.tm(6,d,'#notifications')
         break;
         case'detector_trigger':
             d.e=$('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]')
@@ -647,6 +666,7 @@ $.ccio.ws.on('f',function (d){
                 $.ccio.mon[d.id].signal=setInterval(function(){$.ccio.init('signal-check',{id:d.id,ke:d.ke})},d.signal);
             }
             d.e=$('.monitor_item[mid="'+d.id+'"][ke="'+d.ke+'"]').resize()
+            console.log('/'+$user.auth_token+'/videos/'+d.ke+'/'+d.id+'?limit=10')
             if(d.e.find('.videos_monitor_list li').length===0){
                 $.getJSON('/'+$user.auth_token+'/videos/'+d.ke+'/'+d.id+'?limit=10',function(f){
                     $.ccio.pm(0,{videos:f,ke:d.ke,mid:d.id})
