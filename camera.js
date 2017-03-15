@@ -307,12 +307,12 @@ s.video=function(x,e){
                 }else{
                     if(fs.existsSync(e.dir+e.filename+'.'+e.ext)){
                         e.stat=fs.statSync(e.dir+e.filename+'.'+e.ext);
-                        e.filesize=e.stat["size"];
-                        e.end_time=s.moment(e.stat["mtime"],'YYYY-MM-DD HH:mm:ss');
+                        e.filesize=e.stat.size;
+                        e.end_time=s.moment(e.stat.mtime,'YYYY-MM-DD HH:mm:ss');
                         if((e.filesize/100000).toFixed(2)>0.25){
-                            e.save=[e.filesize,e.frames,1,e.id,e.ke,s.nameToTime(e.filename),e.end_time];
+                            e.save=[e.filesize,1,e.end_time,e.id,e.ke,s.nameToTime(e.filename)];
                             if(!e.status){e.save.push(0)}else{e.save.push(e.status)}
-                            sql.query('UPDATE Videos SET `size`=?,`frames`=?,`status`=? WHERE `mid`=? AND `ke`=? AND `time`=? AND `end`=? AND `status`=?',e.save)
+                            sql.query('UPDATE Videos SET `size`=?,`status`=?,`end`=? WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save)
                             s.tx({f:'video_build_success',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),size:e.filesize,end:e.end_time},'GRP_'+e.ke);
                             
                             //cloud auto savers
@@ -635,10 +635,12 @@ s.camera=function(x,e,cn,tx){
             if(!s.group[e.ke].mon_conf[e.id]){s.group[e.ke].mon_conf[e.id]=s.init('clean',e);}
             e.url=s.init('url',e);
             if(s.group[e.ke].mon[e.id].started===1){return}
-            s.group[e.ke].mon[e.id].motion_lock=setTimeout(function(){
-                clearTimeout(s.group[e.ke].mon[e.id].motion_lock);
-                delete(s.group[e.ke].mon[e.id].motion_lock);
-            },10000)
+            if(x==='start'&&e.details.detector_trigger=='1'){
+                s.group[e.ke].mon[e.id].motion_lock=setTimeout(function(){
+                    clearTimeout(s.group[e.ke].mon[e.id].motion_lock);
+                    delete(s.group[e.ke].mon[e.id].motion_lock);
+                },20000)
+            }
             //every 15 minutes start a new file.
             s.group[e.ke].mon[e.id].started=1;
             if(x==='record'){
@@ -705,15 +707,10 @@ s.camera=function(x,e,cn,tx){
                         s.kill(s.group[e.ke].mon[e.id].spawn,e);
                     }
                 }
+                e.error_fatal_count=0;
                 e.fn=function(){//this function loops to create new files
                     if(s.group[e.ke].mon[e.id].started===1){
-                        
-                        
-
-                        
-                        
-                    e.error_fatal_count=0;
-                    e.error_count=0;
+                     e.error_count=0;
                     if(!e.details.fatal_max||e.details.fatal_max===''){e.details.fatal_max=10}else{e.details.fatal_max=parseFloat(e.details.fatal_max)}
                     s.kill(s.group[e.ke].mon[e.id].spawn,e);
                     e.draw=function(err,o){
@@ -1329,26 +1326,36 @@ var tx;
             break;
             case'trigger':
                 //got a frame rendered with a marker
-                if(d.ke&&d.id&&s.group[d.ke]&&s.group[d.ke].mon_conf[d.id]){
+                if(d.ke&&d.id&&s.group[d.ke]&&d.mon){
                     if(s.group[d.ke].mon[d.id].motion_lock){return}
-                    s.tx({f:'detector_trigger',id:d.id,ke:d.ke,details:d.details},'GRP_'+d.ke);
-                    d.mon=s.group[d.ke].mon_conf[d.id];
-                    if(s.group[d.ke].mon_conf[d.id].mode==='start'&&s.group[d.ke].mon_conf[d.id].details.detector_trigger=='1'){
+                    d.cx={f:'detector_trigger',id:d.id,ke:d.ke,details:d.details};
+                    s.tx(d.cx,'GRP_'+d.ke);
+                    d.mon=d.mon;
+                    if(d.mon.mode==='start'&&d.mon.details.detector_trigger=='1'){
                         if(!s.group[d.ke].mon[d.id].watchdog_stop){
+                            d.cx.f='detector_record_start';
+                            s.tx(d.cx,'GRP_'+d.ke);
                             d.mon.mode='stop';s.camera('stop',d.mon)
                             setTimeout(function(){d.mon.mode='record';s.camera('record',d.mon)},1200)
+                        }else{
+                            if(d.mon.details.watchdog_reset=='0'){
+                                return
+                            }
                         }
                         if(!d.mon.details.detector_timeout||d.mon.details.detector_timeout===''){
                             d.mon.details.detector_timeout=10
                         }
                         d.detector_timeout=parseFloat(d.mon.details.detector_timeout)*1000*60;
-
                         clearTimeout(s.group[d.ke].mon[d.id].watchdog_stop);
-
+                        d.cx.f='detector_record_timeout_start';
+                        s.tx(d.cx,'GRP_'+d.ke);
                         s.group[d.ke].mon[d.id].watchdog_stop=setTimeout(function(){
+                            d.cx.f='detector_record_stop';
+                            s.tx(d.cx,'GRP_'+d.ke);
                             d.mon.mode='stop';s.camera('stop',d.mon)
                             setTimeout(function(){
                                 d.mon.mode='start';s.camera('start',d.mon);
+                                clearTimeout(s.group[d.ke].mon[d.id].watchdog_stop);
                                 delete(s.group[d.ke].mon[d.id].watchdog_stop);
                             },500)
                         },d.detector_timeout)
@@ -1396,6 +1403,8 @@ var tx;
                     //save this detection result in SQL, only coords. not image.
                     if(d.mon.details.detector_save==='1'){
                         sql.query('INSERT INTO Events (ke,mid,details) VALUES (?,?,?)',[d.ke,d.id,JSON.stringify(d.details)])
+                        d.cx.f='detector_save_event';
+                        s.tx(d.cx,'GRP_'+d.ke);
                     }
                 }
             break;
@@ -1505,7 +1514,6 @@ var tx;
                     break;
                     case'created_file':
                         d.dir=s.dir.videos+d.d.ke+'/'+d.d.mid+'/';
-                        console.log('created_file '+d.d.mid,d.dir+d.filename)
                         fs.writeFile(d.dir+d.filename,d.created_file,'binary',function (err,data) {
                             if (err) {
                                 return console.error('created_file'+d.d.mid,err);

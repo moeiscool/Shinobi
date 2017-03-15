@@ -141,13 +141,23 @@
                         </label>
                       </div>
                   </div>
-                  <div class="form-group">
+                  <div class="row">
+                      <div class="form-group col-md-6">
+                        <label><span>Timeout Reset on Next Motion</span>
+                            <select class="form-control" detail="watchdog_reset">
+                                <option value="0">No</option>
+                                <option value="1" selected>Yes</option>
+                            </select>
+                        </label>
+                      </div>
+                      <div class="form-group col-md-6">
                     <label><span>Save Events to SQL</span>
-                        <select class="form-control" detail="detector_save">
-                            <option value="0" selected>No</option>
-                            <option value="1">Yes</option>
-                        </select>
-                    </label>
+                            <select class="form-control" detail="detector_save">
+                                <option value="0" selected>No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </label>
+                      </div>
                   </div>
                   <div class="row">
                       <div class="form-group col-md-6">
