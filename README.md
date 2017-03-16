@@ -13,9 +13,9 @@ Yes. I am saying it's **the** platform. It will hopefully be revered like WordPr
 # Key Aspects
 
 - Records IP Cameras and Local Cameras
-- Streams by WebSocket
+- Streams by WebSocket, HLS (includes audio), and MJPEG
 - Save to WebM and MP4
- - Other formats will be added after codec choices are less confusing.
+ - Can save Audio
 - API
  - Get videos
  - Get monitors

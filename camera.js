@@ -1500,6 +1500,7 @@ var tx;
                             break;
                             case'delete':
                                 sql.query('DELETE FROM Users WHERE uid=? AND ke=? AND mail=?',[d.$uid,cn.ke,d.mail])
+                                sql.query('DELETE FROM API WHERE uid=? AND ke=?',[d.$uid,cn.ke])
                                 s.tx({f:'delete_sub_account',ke:cn.ke,uid:d.$uid,mail:d.mail},'ADM_'+d.ke);
                             break;
                         }
