@@ -194,8 +194,11 @@ $.pR.e.on('change','[detail="allmonitors"]',function(e){
     e.e=$(this),
     e.mon=$('#monitors_section')
     if(e.e.val()=='1'){
-        e.mon.hide()
-        $.pR.e.find('[name="details"]').val('')
+        e.mon.hide();
+        e.details=$.pR.e.find('[name="details"]')
+        e.json=JSON.parse(e.details.val())
+        e.json.monitors='';
+        e.details.val(JSON.stringify(e.json))
     }else{
         e.mon.show()
         $.pR.e.find('[monitor]').first().change()

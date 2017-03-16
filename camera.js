@@ -46,7 +46,9 @@ var config = require('./conf.json');
 if(config.mail){
     var nodemailer = require('nodemailer').createTransport(config.mail);
 }
-
+if(!config.cpuUsageMarker){config.cpuUsageMarker='%Cpu'}
+if(!config.autoDropCache){config.autoDropCache=true}
+if(!config.doSnapshot){config.doSnapshot=true}
 server.listen(config.port);
 try{
     console.log('Shinobi - PORT : '+config.port+', NODE.JS : '+execSync("node -v"));
@@ -550,29 +552,39 @@ s.camera=function(x,e,cn,tx){
     }
     switch(x){
         case'snapshot'://get snapshot from monitor URL
-            if(e.mon.mode!=='stop'){
-                e.url=s.init('url',e.mon);
-                switch(e.mon.type){
-                    case'mjpeg':case'h264':case'local':
-                        if(e.mon.type==='local'){e.url=e.mon.path;}
-                        e.spawn=spawn('ffmpeg',('-loglevel quiet -i '+e.url+' -s 400x400 -r 25 -ss 1.8 -frames:v 1 -f singlejpeg pipe:1').split(' '))
-                        e.spawn.stdout.on('data',function(data){
-                            s.tx({f:'monitor_snapshot',snapshot:data.toString('base64'),snapshot_format:'b64',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
-                            e.spawn.kill();
-                        });
-                    break;
-                    case'jpeg':
-                        request({url:e.url,method:'GET',encoding:null},function(err,data){
-                            if(err){s.tx({f:'monitor_snapshot',snapshot:'No Image',snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke);return};
-                            s.tx({f:'monitor_snapshot',snapshot:data.body,snapshot_format:'ab',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
-                        })
-                    break;
-                    default:
-                        s.tx({f:'monitor_snapshot',snapshot:'...',snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
-                    break;
+            if(config.doSnapshot===true){
+                if(e.mon.mode!=='stop'){
+                    e.url=s.init('url',e.mon);
+                    switch(e.mon.type){
+                        case'mjpeg':case'h264':case'local':
+                            if(e.mon.type==='local'){e.url=e.mon.path;}
+                            e.spawn=spawn('ffmpeg',('-loglevel quiet -i '+e.url+' -s 400x400 -r 25 -ss 1.8 -frames:v 1 -f singlejpeg pipe:1').split(' '))
+                            e.spawn.stdout.on('data',function(data){
+                               e.snapshot_sent=true; s.tx({f:'monitor_snapshot',snapshot:data.toString('base64'),snapshot_format:'b64',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
+                                e.spawn.kill();
+                            });
+                            e.spawn.on('close',function(data){
+                                if(!e.snapshot_sent){
+                                    s.tx({f:'monitor_snapshot',snapshot:e.mon.name,snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
+                                }
+                                delete(e.snapshot_sent);
+                            });
+                        break;
+                        case'jpeg':
+                            request({url:e.url,method:'GET',encoding:null},function(err,data){
+                                if(err){s.tx({f:'monitor_snapshot',snapshot:e.mon.name,snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke);return};
+                                s.tx({f:'monitor_snapshot',snapshot:data.body,snapshot_format:'ab',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
+                            })
+                        break;
+                        default:
+                            s.tx({f:'monitor_snapshot',snapshot:'...',snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
+                        break;
+                    }
+                }else{
+                    s.tx({f:'monitor_snapshot',snapshot:'Disabled',snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
                 }
             }else{
-                s.tx({f:'monitor_snapshot',snapshot:'Disabled',snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
+                s.tx({f:'monitor_snapshot',snapshot:e.mon.name,snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
             }
         break;
         case'record_off'://stop recording and start
@@ -954,37 +966,39 @@ var tx;
                     }
                     s.init('apps',d)
                     sql.query('SELECT * FROM API WHERE ke=? && uid=?',[d.ke,d.uid],function(err,rrr) {
-                        
-                        d.sql='SELECT * FROM Monitors WHERE ke=?';
-                        d.ar=[d.ke];
-                        s.group[d.ke].users[d.auth].details
-        if(s.group[d.ke].users[d.auth].details&&s.group[d.ke].users[d.auth].details.monitors){
-            try{s.group[d.ke].users[d.auth].details.monitors=JSON.parse(s.group[d.ke].users[d.auth].details.monitors)}catch(er){}
-            s.group[d.ke].users[d.auth].details.monitors.forEach(function(v,n){
-                d.sql+=' and mid=?';d.ar.push(v)
-            })
-        }
-                        sql.query(d.sql,d.ar,function(err,rr) {
-                            tx({
-                                f:'init_success',
-                                monitors:rr,
-                                users:s.group[d.ke].vid,
-                                apis:rrr,
-                                os:{
-                                    platform:s.platform,
-                                    cpuCount:os.cpus().length,
-                                    totalmem:os.totalmem()
-                                }
-                            })
-                            s.disk(cn.id);
-                            setTimeout(function(){
-                                if(rr&&rr[0]){
-                                    rr.forEach(function(t){
-                                        s.camera('snapshot',{mid:t.mid,ke:t.ke,mon:t})
-                                    })
-                                }
-                            },2000)
+                        tx({
+                            f:'init_success',
+//                                monitors:rr,
+                            users:s.group[d.ke].vid,
+                            apis:rrr,
+                            os:{
+                                platform:s.platform,
+                                cpuCount:os.cpus().length,
+                                totalmem:os.totalmem()
+                            }
                         })
+                        s.disk(cn.id);
+                        http.get('http://localhost:'+config.port+'/'+cn.auth+'/monitor/'+cn.ke, function(res){
+                            var body = '';
+                            res.on('data', function(chunk){
+                                body += chunk;
+                            });
+                            res.on('end', function(rr){
+                                rr = JSON.parse(body);
+                                setTimeout(function(g){
+                                    g=function(t){
+                                        s.camera('snapshot',{mid:t.mid,ke:t.ke,mon:t})
+                                    }
+                                    if(rr.mid){
+                                        g(rr)
+                                    }else{
+                                        rr.forEach(g)
+                                    }
+                                },2000)
+                            });
+                        }).on('error', function(e){
+                              console.log("Get Snapshot Error", e);
+                        });
                     })
                 }else{
                     tx({ok:false,msg:'Not Authorized',token_used:d.auth,ke:d.ke});cn.disconnect();
@@ -2098,8 +2112,6 @@ sql.query('SELECT * FROM Monitors WHERE mode != "stop"', function(err,r) {
 });
 },1500)
 try{
-if(!config.cpuUsageMarker){config.cpuUsageMarker='%Cpu'}
-if(!config.autoDropCache){config.autoDropCache=true}
 s.cpuUsage=function(e,f){
     switch(s.platform){
         case'darwin':
