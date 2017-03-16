@@ -29,6 +29,7 @@ img{max-width:100%}
 .monitor_item .indifference{position:absolute;width:100%;left:0;top:0;transition:0.2s;}
 .monitor_item .indifference .progress{width:100%;background:#333;box-shadow:0;}
 .monitor_item .indifference:hover .progress{height:20px;transition:0.2s}
+.hide_indifference .indifference{display:none!important}
 
 .demo-blog .mdl-card__media ~ .mdl-card__supporting-text{position:relative;overflow:hidden}
 

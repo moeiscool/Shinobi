@@ -250,7 +250,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                         tmp+='<iframe class="stream-element"></iframe>';
                     break;
                     case'hls':
-                        tmp+='<video class="stream-element" autoplay></video>';
+                        tmp+='<video class="stream-element" controls autoplay></video>';
                     break;
                     default://base64
                         tmp+='<canvas class="stream-element"></canvas>';
@@ -502,11 +502,18 @@ $.ccio.ws.on('f',function (d){
             $('#monitors_list').empty();
             d.o=$.ccio.op().watch_on;
             if(!d.o){d.o={}};
-            $.each(d.monitors,function(n,v){
-                $.ccio.mon[v.mid]=v;
-                $.ccio.tm(1,v,'#monitors_list')
-                if(d.o[v.ke]&&d.o[v.ke][v.mid]===1){$.ccio.cx({f:'monitor',ff:'watch_on',id:v.mid})}
-            });
+            $.getJSON('/'+$user.auth_token+'/monitor/'+$user.ke,function(f,g){
+                g=function(n,v){
+                    $.ccio.mon[v.mid]=v;
+                    $.ccio.tm(1,v,'#monitors_list')
+                    if(d.o[v.ke]&&d.o[v.ke][v.mid]===1){$.ccio.cx({f:'monitor',ff:'watch_on',id:v.mid})}
+                }
+                if(f.mid){
+                    g(null,f)
+                }else{
+                    $.each(f,g);
+                }
+            })
             $.ccio.pm(3,d.apis);
             $('.os_platform').html(d.os.platform)
             $('.os_cpuCount').html(d.os.cpuCount)
@@ -566,7 +573,7 @@ $.ccio.ws.on('f',function (d){
             d.e=$('[mid="'+d.mon.mid+'"][ke="'+d.mon.ke+'"]');d.ee=d.e.find('.stream-element');
             switch(d.mon.details.stream_type){
                 case'hls':
-                    d.ee.after('<video class="stream-element" autoplay></video>').remove()
+                    d.ee.after('<video class="stream-element" controls autoplay></video>').remove()
                 break;
                 case'mjpeg':
                     d.ee.after('<iframe class="stream-element"></iframe>').remove()
