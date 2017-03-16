@@ -983,8 +983,8 @@ var tx;
                             res.on('data', function(chunk){
                                 body += chunk;
                             });
-                            res.on('end', function(rr){
-                                rr = JSON.parse(body);
+                            res.on('end', function(){
+                                var rr = JSON.parse(body);
                                 setTimeout(function(g){
                                     g=function(t){
                                         s.camera('snapshot',{mid:t.mid,ke:t.ke,mon:t})
@@ -2147,7 +2147,7 @@ s.disk = function (x) {
     }
 
      var dfopts = {
-        prefixMultiplier: 'GB',
+        prefixMultiplier: ' GB',
         isDisplayPrefixMultiplier: true,
         precision: 3
      };
