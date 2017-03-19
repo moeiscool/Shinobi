@@ -12,8 +12,8 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             case'jpegMode':
                 $.each($.ccio.mon,function(n,v,x){
                     if(v.watch===1){
-                        $.ccio.tm('stream-element',v);
                         x=JSON.parse(v.details);
+                        $.ccio.tm('stream-element',$.ccio.mon[v.mid]);
                         x.jpegInterval=parseFloat(x.jpegInterval);
                         if(!x.jpegInterval||x.jpegInterval===''||isNaN(x.jpegInterval)){x.jpegInterval=1}
                         clearInterval($.ccio.mon[n].jpegInterval);
@@ -650,11 +650,13 @@ $.ccio.ws.on('f',function (d){
                 if(v.watch===1){
                     $.ccio.cx({f:'monitor',ff:'watch_on',id:v.mid})
                 }
-            })
+            });
+            $('body').removeClass('jpegMode')
         break;
         case'mode_jpeg_on':
             $.ccio.op('jpeg_on',true);
             $.ccio.init('jpegMode');
+            $('body').addClass('jpegMode')
         break;
         case'monitor_watch_off':case'monitor_stopping':
             d.o=$.ccio.op().watch_on;if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=0;$.ccio.op('watch_on',d.o);
