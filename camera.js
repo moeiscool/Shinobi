@@ -478,6 +478,13 @@ s.ffmpeg=function(e,x){
         if(e.details.cust_detect&&e.details.cust_detect!==''){x.cust_detect+=e.details.cust_detect;}
         x.pipe+=' -c:v mjpeg -f image2pipe -r '+e.details.detector_fps+x.cust_detect+x.dratio+' pipe:0';
     }
+    //snapshot bin/ cgi.bin
+    if(e.details.snap==='1'){
+        if(!e.details.snap_fps||e.details.snap_fps===''){e.details.snap_fps=0.5}
+        if(e.details.snap_scale_x&&e.details.snap_scale_x!==''&&e.details.snap_scale_y&&e.details.snap_scale_y!==''){x.sratio=' -s '+e.details.snap_scale_x+'x'+e.details.snap_scale_y}else{x.sratio=''}
+        if(e.details.cust_snap&&e.details.cust_snap!==''){x.cust_snap=' '+e.details.cust_snap;}else{x.cust_snap=''}
+        x.pipe+=' -update 1 -r '+e.details.snap_fps+x.cust_snap+x.sratio+' '+e.sdir+'s.jpg';
+    }
     //custom output
     if(e.details.custom_output&&e.details.custom_output!==''){x.pipe+=' '+e.details.custom_output;}
     //custom input flags
@@ -1789,6 +1796,17 @@ app.get('/:auth/hls/:ke/:id/:file', function (req,res){
     }
     s.auth(req.params,req.fn,res,req);
 });
+//Get JPEG snap
+app.get('/:auth/jpeg/:ke/:id/s.jpg', function(req,res){
+    s.auth(req.params,function(user){
+        req.dir=s.dir.streams+req.params.ke+'/'+req.params.id+'/s.jpg';
+        if (fs.existsSync(req.dir)){
+            fs.createReadStream(req.dir).pipe(res);
+        }else{
+            res.send('Camera may not be ready yet.')
+        }
+    },res,req);
+});
 //Get MJPEG stream
 app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res) {
     if(req.params.addon=='full'){
@@ -2148,7 +2166,7 @@ s.disk = function (x) {
     }
 
      var dfopts = {
-        prefixMultiplier: ' GB',
+        prefixMultiplier: 'GB',
         isDisplayPrefixMultiplier: true,
         precision: 3
      };

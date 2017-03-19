@@ -138,6 +138,10 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 #pvideo_viewer iframe{border:0;width:100%;height:400px;margin-bottom:10px;overflow:hidden}
 #pvideo_viewer video{max-height:350px;max-width:100%;margin-bottom:10px;}
 #pvideo_viewer h3{margin-top:0}
+#pvideo_viewer .progressBar{position:relative;}
+#pvideo_viewer .bufferBar{position:absolute;left:0;top:0;opacity:0.4}
+#pvideo_viewer .timeBar{position:relative;z-index: 222;background:transparent}
+
 #vis_monitors{overflow:auto;max-height:400px}
 #vis_monitors .btn-group-vertical{width:100%}
 

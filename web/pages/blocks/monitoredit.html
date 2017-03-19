@@ -36,16 +36,6 @@
                     <input class="form-control" detail="fatal_max" placeholder="10">
                 </label>
               </div>
-              <div class="form-group h_p_input h_p_rtsp">
-                <label><span>RTSP Transport</span>
-                    <select class="form-control" detail="rtsp_transport">
-                        <option value="no" selected>Auto</option>  
-                        <option value="tcp">TCP</option>  
-                        <option value="udp">UDP</option>  
-                        <option value="http">HTTP</option>  
-                    </select>
-                </label>
-              </div>
           </div>
 <!--     START of Input     -->
           <div class="form-group-group forestgreen">
@@ -72,6 +62,16 @@
                         </select>
                     </label>
                   </div>
+              </div>
+              <div class="form-group h_p_input h_p_rtsp">
+                <label><span>RTSP Transport</span>
+                    <select class="form-control" detail="rtsp_transport">
+                        <option value="no" selected>Auto</option>  
+                        <option value="tcp">TCP</option>  
+                        <option value="udp">UDP</option>  
+                        <option value="http">HTTP</option>  
+                    </select>
+                </label>
               </div>
               <div class="row h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
                   <div class="form-group col-md-6">
@@ -114,6 +114,38 @@
               </div>
           </div>
 <!--     END of Input     -->
+<!--     START of JPEG     -->
+          <div class="form-group-group green">
+          <h4>Snapshot (cgi-bin)</h4>
+              <div class="form-group">
+                <label><span>Enabled</span>
+                    <select class="form-control" detail="snap" selector="h_sn">
+                        <option value="0" selected>No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </label>
+              </div>
+              <div class="h_sn_input h_sn_1" style="display:none">
+                  <div class="form-group">
+                    <label><span>Frame Rate <small>(FPS)</small></span>
+                    <input class="form-control" detail="snap_fps" placeholder="0.5">
+                    </label>
+                  </div>
+                  <div class="row">
+                      <div class="form-group col-md-6">
+                        <label><span>Image Width</span>
+                        <input class="form-control" detail="snap_scale_x" placeholder="">
+                        </label>
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label><span>Image Height</span>
+                        <input class="form-control" detail="snap_scale_y" placeholder="">
+                        </label>
+                      </div>
+                  </div>
+              </div>
+          </div>
+<!--     END of JPEG     -->
 <!--     START of Detector     -->
           <div class="form-group-group orange">
           <h4>Detector<span class="pull-right"><b class="shinobi-detector_name"></b> <b class="shinobi-detector-invert">Not </b>Connected</span></h4>
@@ -567,6 +599,11 @@
               <div class="form-group">
                 <label><span>Input Flags</span>
                 <input class="form-control" detail="cust_input" placeholder="">
+                </label>
+              </div>
+              <div class="form-group h_sn_input h_sn_1" style="display:none">
+                <label><span>Snapshot Flags</span>
+                <input class="form-control" detail="cust_snap">
                 </label>
               </div>
               <div class="form-group shinobi-detector" style="display:none">

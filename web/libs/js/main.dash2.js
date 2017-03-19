@@ -1017,12 +1017,59 @@ $.pwrvid.d=$('#vis_pwrvideo'),
 $.pwrvid.m=$('#vis_monitors'),
 $.pwrvid.lv=$('#live_view'),
 $.pwrvid.vp=$('#video_preview');
-$.pwrvid.e.on('click','[launch]',function(e){
+$.pwrvid.e.on('click','[preview]',function(e){
     e.e=$(this);
-    e.p=e.e.parents('[mid]');
-    e.preventDefault();
-    switch(e.e.attr('launch')){
+    e.video=$.pwrvid.vp.find('video')[0];
+    if(e.video){
+        e.duration=e.video.duration;
+        e.now=e.video.currentTime;
+    }
+    if($.pwrvid.video){
+        clearInterval($.pwrvid.video.interval);
+    }
+    switch(e.e.attr('preview')){
+        case'mute':
+            e.video.muted = !e.video.muted
+            e.e.find('i').toggleClass('fa-volume-off fa-volume-up')
+            e.e.toggleClass('btn-danger')
+        break;
+        case'play':
+            e.video.playbackRate = 1;
+            e.e.find('i').toggleClass('fa-play fa-pause')
+            
+            if(e.e.find('i').hasClass('fa-play')){
+                e.video.play()
+            }else{
+                e.video.pause()
+            }
+        break;
+        case'stepFrontFront':
+            e.video.playbackRate = 5;
+            e.video.play()
+        break;
+        case'stepFront':
+            e.video.currentTime += 1;
+            e.video.pause()
+        break;
+        case'stepBackBack':
+           $.pwrvid.video.interval = setInterval(function(){
+               e.video.playbackRate = 1.0;
+               if(e.video.currentTime == 0){
+                   clearInterval($.pwrvid.video.interval);
+                   e.video.pause();
+               }
+               else{
+                   e.video.currentTime += -.1;
+               }
+           },30);
+        break;
+        case'stepBack':
+            e.video.currentTime += -1;
+            e.video.pause()
+        break;
         case'video':
+            e.preventDefault();
+            e.p=e.e.parents('[mid]');
             e.filename=e.p.attr('file');
             $.pwrvid.vp.find('h3').text(e.filename)
             e.href=e.e.attr('href');
@@ -1042,6 +1089,7 @@ $.pwrvid.e.on('click','[launch]',function(e){
                     console.log(d)
                 })
             }
+            $.pwrvid.video={filename:e.filename,href:e.href,mid:e.mon.mid,ke:e.mon.ke}
         break;
     }
 })
@@ -1067,7 +1115,7 @@ $.pwrvid.e.on('click','[timeline]',function(){
             if(v.status>0){
                 var t = new Date(v.end);
                 t.setSeconds(t.getSeconds() - 10)
-                items.push({id:n,content:'<div mid="'+v.mid+'" ke="'+v.ke+'" status="'+v.status+'" file="'+v.filename+'"><a launch="video" href="'+v.href+'" class="btn btn-xs btn-primary">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a> '+v.mon.name+' - '+v.filename,start:v.time,end:t})
+                items.push({id:n,content:'<div mid="'+v.mid+'" ke="'+v.ke+'" status="'+v.status+'" file="'+v.filename+'"><a preview="video" href="'+v.href+'" class="btn btn-xs btn-primary">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a> '+v.mon.name+' - '+v.filename,start:v.time,end:t})
             }
         })
         items = new vis.DataSet(items);
@@ -1377,7 +1425,7 @@ $('body')
                     "mid":$.ccio.gid(),
                     "name":"",
                     "protocol":"http",
-                    "ext":"webm",
+                    "ext":"mp4",
                     "type":"jpeg",
                     "host":"",
                     "path":"",
@@ -1422,7 +1470,7 @@ $('body')
                             "stream_scale_x":"",
                             "stream_scale_y":"",
                             "svf":"",
-                            "vcodec":"copy",
+                            "vcodec":"libx264",
                             "crf":"",
                             "preset_record":"",
                             "acodec":"libvorbis",
@@ -1447,7 +1495,7 @@ $('body')
                             "cust_stream":"",
                             "cust_record":"",
                             "custom_output":"",
-                            "loglevel":"error",
+                            "loglevel":"warning",
                             "sqllog":"0"
                         }),
                     "shto":"[]",
