@@ -9,6 +9,22 @@ $.ccio={fr:$('#files_recent'),mon:{}};
     $.ccio.init=function(x,d,z,k){
         if(!k){k={}};k.tmp='';
         switch(x){
+            case'jpegMode':
+                $.each($.ccio.mon,function(n,v,x){
+                    if(v.watch===1){
+                        //mdl-card__media
+                        x=JSON.parse(v.details);
+                        k.e=$('#monitor_live_'+v.id+' .mdl-card__media');
+                        k.e.find('.stream-element').remove();
+                        k.e.append('<img class="stream-element">');
+                        if(!x.jpegInterval||x.jpegInterval===''){x.jpegInterval=1}
+                        clearTimeout($.ccio.mon[n].jpegInterval);
+                        $.ccio.mon[n].jpegInterval=setInterval(function(){
+                            $('#monitor_live_'+v.mid+' .stream-element').attr('src',$user.auth_token+'/jpeg/'+v.ke+'/'+v.mid+'/s.jpg?time='+(new Date()))
+                        },x.jpegInterval/1000);
+                    };
+                });
+            break;
             case'dragWindows':
                 k.e=$("#monitors_live");
                 if(k.e.disableSelection){k.e.disableSelection()};
@@ -245,16 +261,20 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" class="monitor_item glM'+d.mid+' mdl-grid col-md-6">';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col">';
                 tmp+='<div class="no-padding mdl-card__media mdl-color-text--grey-50">';
-                switch(k.d.stream_type){
-                    case'mjpeg':
-                        tmp+='<iframe class="stream-element"></iframe>';
-                    break;
-                    case'hls':
-                        tmp+='<video class="stream-element" controls autoplay></video>';
-                    break;
-                    default://base64
-                        tmp+='<canvas class="stream-element"></canvas>';
-                    break;
+                if($.ccio.op().jpeg_on===true){
+                    tmp+='<img class="stream-element">';
+                }else{
+                    switch(k.d.stream_type){
+                        case'mjpeg':
+                            tmp+='<iframe class="stream-element"></iframe>';
+                        break;
+                        case'hls':
+                            tmp+='<video class="stream-element" controls autoplay></video>';
+                        break;
+                        default://base64
+                            tmp+='<canvas class="stream-element"></canvas>';
+                        break;
+                    }
                 }
                 tmp+='</div>';
                 tmp+='<div class="mdl-card__supporting-text text-center">';
@@ -567,20 +587,23 @@ $.ccio.ws.on('f',function (d){
             $.ccio.init('data-video',d)
             d.e=$('[file="'+d.filename+'"][mid="'+d.mid+'"][ke="'+d.ke+'"]');
             d.e.attr('status',d.status),d.e.attr('data-status',d.status);
-            console.log('[file="'+d.filename+'"][mid="'+d.mid+'"][ke="'+d.ke+'"]')
         break;
         case'monitor_edit':
             d.e=$('[mid="'+d.mon.mid+'"][ke="'+d.mon.ke+'"]');d.ee=d.e.find('.stream-element');
-            switch(d.mon.details.stream_type){
-                case'hls':
-                    d.ee.after('<video class="stream-element" controls autoplay></video>').remove()
-                break;
-                case'mjpeg':
-                    d.ee.after('<iframe class="stream-element"></iframe>').remove()
-                break;
-                default://base64
-                    d.ee.after('<canvas class="stream-element"></canvas>').remove()
-                break;
+            if($.ccio.op().jpeg_on===true){
+                d.ee.after('<img class="stream-element">');
+            }else{
+                switch(d.mon.details.stream_type){
+                    case'hls':
+                        d.ee.after('<video class="stream-element" controls autoplay></video>').remove()
+                    break;
+                    case'mjpeg':
+                        d.ee.after('<iframe class="stream-element"></iframe>').remove()
+                    break;
+                    default://base64
+                        d.ee.after('<canvas class="stream-element"></canvas>').remove()
+                    break;
+                }
             }
             d.e.resize();
             d.e=$('#monitor_live_'+d.mid);
@@ -619,12 +642,27 @@ $.ccio.ws.on('f',function (d){
                 }
             d.e.find('.monitor_mode').text(d.mode)
         break;
+        case'mode_jpeg_off':
+            $.ccio.op('jpeg_on',false);
+            clearTimeout($.ccio.mon[n].jpegInterval);
+            $.each($.ccio.mon,function(n,v,x){
+                if(v.watch===1){
+                    x=JSON.parse(v.details);
+                    $.ccio.cx({f:'monitor',ff:'watch_on',id:v.mid})
+                }
+            })
+        break;
+        case'mode_jpeg_on':
+            $.ccio.op('jpeg_on',true);
+            $.ccio.init('jpegMode');
+        break;
         case'monitor_watch_off':case'monitor_stopping':
             d.o=$.ccio.op().watch_on;if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=0;$.ccio.op('watch_on',d.o);
             if($.ccio.mon[d.id]){
                 clearTimeout($.ccio.mon[d.id].sk)
                 clearInterval($.ccio.mon[d.id].signal);delete($.ccio.mon[d.id].signal);
                 $.ccio.mon[d.id].watch=0;
+                if($.ccio.mon[d.id].hls){$.ccio.mon[d.id].hls.destroy()}
                 $('#monitor_live_'+d.id).remove();
             }
         break;
@@ -637,35 +675,40 @@ $.ccio.ws.on('f',function (d){
                 $.ccio.init('dragWindows')
             }
             d.d=JSON.parse($.ccio.mon[d.id].details);
-            switch(d.d.stream_type){
-                case'hls':
-                    d.url=$user.auth_token+'/hls/'+d.ke+'/'+d.id+'/s.m3u8';
-                    var video = $('#monitor_live_'+d.id+' .stream-element')[0];
-                    if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)||(navigator.userAgent.match(/(Safari)/)&&!navigator.userAgent.match('Chrome'))) {
-                        video.src=d.url;
-                        if (video.paused) {
-                            video.play();
-                        }
-                    }else{
-                        var hls = new Hls();
-                        hls.loadSource(d.url);
-                        hls.attachMedia(video);
-                        hls.on(Hls.Events.MANIFEST_PARSED,function() {
+            if($.ccio.op().jpeg_on===true){
+                $.ccio.init('jpegMode');
+            }else{
+                switch(d.d.stream_type){
+                    case'hls':
+                        d.url=$user.auth_token+'/hls/'+d.ke+'/'+d.id+'/s.m3u8';
+                        var video = $('#monitor_live_'+d.id+' .stream-element')[0];
+                        if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)||(navigator.userAgent.match(/(Safari)/)&&!navigator.userAgent.match('Chrome'))) {
+                            video.src=d.url;
                             if (video.paused) {
                                 video.play();
                             }
-                        });
-                    }
-                    clearTimeout($.ccio.mon[d.id].sk);
-                    if(d.d.signal_check!=='0'){
-                        $.ccio.mon[d.id].sk=setTimeout(function(){
-                            $.ccio.init('signal-check',d)
-                        },15000)
-                    }
-                break;
-                case'mjpeg':
-                    $('#monitor_live_'+d.id+' .stream-element').attr('src',$user.auth_token+'/mjpeg/'+d.ke+'/'+d.id+'/full')
-                break;
+                        }else{
+                            if($.ccio.mon[d.id].hls){$.ccio.mon[d.id].hls.destroy()}
+                            $.ccio.mon[d.id].hls = new Hls();
+                            $.ccio.mon[d.id].hls.loadSource(d.url);
+                            $.ccio.mon[d.id].hls.attachMedia(video);
+                            $.ccio.mon[d.id].hls.on(Hls.Events.MANIFEST_PARSED,function() {
+                                if (video.paused) {
+                                    video.play();
+                                }
+                            });
+                        }
+                        clearTimeout($.ccio.mon[d.id].sk);
+                        if(d.d.signal_check!=='0'){
+                            $.ccio.mon[d.id].sk=setTimeout(function(){
+                                $.ccio.init('signal-check',d)
+                            },15000)
+                        }
+                    break;
+                    case'mjpeg':
+                        $('#monitor_live_'+d.id+' .stream-element').attr('src',$user.auth_token+'/mjpeg/'+d.ke+'/'+d.id+'/full')
+                    break;
+                }
             }
             d.signal=parseFloat(d.d.signal_check);
             if(!d.signal||d.signal==NaN){d.signal=10;};d.signal=d.signal*1000*60;
@@ -673,7 +716,6 @@ $.ccio.ws.on('f',function (d){
                 $.ccio.mon[d.id].signal=setInterval(function(){$.ccio.init('signal-check',{id:d.id,ke:d.ke})},d.signal);
             }
             d.e=$('.monitor_item[mid="'+d.id+'"][ke="'+d.ke+'"]').resize()
-            console.log('/'+$user.auth_token+'/videos/'+d.ke+'/'+d.id+'?limit=10')
             if(d.e.find('.videos_monitor_list li').length===0){
                 $.getJSON('/'+$user.auth_token+'/videos/'+d.ke+'/'+d.id+'?limit=10',function(f){
                     $.ccio.pm(0,{videos:f,ke:d.ke,mid:d.id})
@@ -955,7 +997,6 @@ $.apM.f.submit(function(e){
 });
 $.apM.e.on('click','.delete',function(e){
     e.e=$(this);e.p=e.e.parents('[api_key]'),e.code=e.p.attr('api_key');
-    console.log(e.code)
     $.ccio.cx({f:'api',ff:'delete',form:{code:e.code}})
 })
 //settings window
@@ -1086,7 +1127,6 @@ $.pwrvid.e.on('click','[preview]',function(e){
                 .attr('href',e.href)
             if(e.status==1){
                 $.get(e.href+'/status/2',function(d){
-                    console.log(d)
                 })
             }
             $.pwrvid.video={filename:e.filename,href:e.href,mid:e.mon.mid,ke:e.mon.ke}
@@ -1174,7 +1214,6 @@ $('body')
             e.e.modal('show').attr('ke',e.ke).attr('mid',e.mid).attr('file',e.file);
             if(e.status==1){
                 $.get(e.href+'/status/2',function(d){
-                    console.log(d)
                 })
             }
         break;
@@ -1198,6 +1237,20 @@ $('body')
                     }});
                 break;
             }
+        break;
+    }
+})
+.on('click','[system]',function(e){
+    e={}; 
+    e.e=$(this),
+    e.a=e.e.attr('system');//the function
+    switch(e.a){
+        case'jpegToggle':
+            e.cx={f:'monitor',ff:'jpeg_on'};
+            if($.ccio.op().jpeg_on===true){
+                e.cx.ff='jpeg_off';
+            }
+            $.ccio.cx(e.cx)
         break;
     }
 })
@@ -1558,5 +1611,8 @@ $(document).ready(function(e){
                 $(n).removeClass(v[0])
             }
         })
+    }
+    if($.ccio.op().jpeg_on){
+        $.ccio.cx({f:'monitor',ff:'jpeg_on'})
     }
 })

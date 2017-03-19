@@ -480,7 +480,7 @@ s.ffmpeg=function(e,x){
     }
     //snapshot bin/ cgi.bin
     if(e.details.snap==='1'){
-        if(!e.details.snap_fps||e.details.snap_fps===''){e.details.snap_fps=0.5}
+        if(!e.details.snap_fps||e.details.snap_fps===''){e.details.snap_fps=1}
         if(e.details.snap_scale_x&&e.details.snap_scale_x!==''&&e.details.snap_scale_y&&e.details.snap_scale_y!==''){x.sratio=' -s '+e.details.snap_scale_x+'x'+e.details.snap_scale_y}else{x.sratio=''}
         if(e.details.cust_snap&&e.details.cust_snap!==''){x.cust_snap=' '+e.details.cust_snap;}else{x.cust_snap=''}
         x.pipe+=' -update 1 -r '+e.details.snap_fps+x.cust_snap+x.sratio+' '+e.sdir+'s.jpg';
@@ -842,7 +842,7 @@ s.camera=function(x,e,cn,tx){
                                           }
                                           if((d[d.length-2] === 0xFF && d[d.length-1] === 0xD9)){
                                               e.buffer=Buffer.concat(e.buffer);
-                                              s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:e.buffer.toString('base64'),frame_format:'b64'},'MON_'+e.id);
+                                              s.tx({f:'monitor_frame',ke:e.ke,id:e.id,time:s.moment(),frame:e.buffer.toString('base64'),frame_format:'b64'},'MON_STREAM_'+e.id);
                                               e.buffer=null;
                                           }
                                         }
@@ -1217,15 +1217,33 @@ var tx;
                         }
                     })
                         break;
+                        case'jpeg_off':
+                          delete(cn.jpeg_on);
+                          Object.keys(cn.monitor_watching).forEach(function(n,v){
+                              v=cn.monitor_watching[n];
+                              cn.join('MON_STREAM_'+v.id);
+                          });
+                            tx({f:'mode_jpeg_off'})
+                        break;
+                        case'jpeg_on':
+                          cn.jpeg_on=true;
+                          Object.keys(cn.monitor_watching).forEach(function(n,v){
+                              v=cn.monitor_watching[n];
+                              cn.leave('MON_STREAM_'+v.id);
+                          });
+                          tx({f:'mode_jpeg_on'})
+                        break;
                         case'watch_on':
                             if(!d.ke){d.ke=cn.ke}
                             s.init(0,{mid:d.id,ke:d.ke});
                             if(!s.group[d.ke]||!s.group[d.ke].mon[d.id]||s.group[d.ke].mon[d.id].started===0){return false}
                             s.camera(d.ff,d,cn,tx)
                             cn.join('MON_'+d.id);
-                            if(s.group[d.ke]&&s.group[d.ke].mon&&s.group[d.ke].mon[d.id]&&s.group[d.ke].mon[d.id].watch){
+                            if(cn.jpeg_on===true){
+                                cn.join('MON_STREAM_'+d.id);
+                            } if(s.group[d.ke]&&s.group[d.ke].mon&&s.group[d.ke].mon[d.id]&&s.group[d.ke].mon[d.id].watch){
 
-                                tx({f:'monitor_watch_on',id:d.id,ke:d.ke},'MON_'+d.id)
+                                tx({f:'monitor_watch_on',id:d.id,ke:d.ke})
                                 s.tx({viewers:Object.keys(s.group[d.ke].mon[d.id].watch).length,ke:d.ke,id:d.id},'MON_'+d.id)
                            }
                         break;
@@ -1522,7 +1540,7 @@ var tx;
         switch(d.f){
             case'monitor_frame':
                if(s.group[d.ke].mon[d.mid].started!==1){s.tx({error:'Not Started'},cn.id);return false};if(s.group[d.ke]&&s.group[d.ke].mon[d.mid]&&s.group[d.ke].mon[d.mid].watch&&Object.keys(s.group[d.ke].mon[d.mid].watch).length>0){
-                        s.tx({f:'monitor_frame',ke:d.ke,id:d.mid,time:s.moment(),frame:d.frame.toString('base64')},'MON_'+d.mid);
+                        s.tx({f:'monitor_frame',ke:d.ke,id:d.mid,time:s.moment(),frame:d.frame.toString('base64')},'MON_STREAM_'+d.mid);
 
                     }
                 if(s.group[d.ke].mon[d.mid].record.yes===1){
@@ -1800,10 +1818,15 @@ app.get('/:auth/hls/:ke/:id/:file', function (req,res){
 app.get('/:auth/jpeg/:ke/:id/s.jpg', function(req,res){
     s.auth(req.params,function(user){
         req.dir=s.dir.streams+req.params.ke+'/'+req.params.id+'/s.jpg';
+            res.writeHead(200, {
+            'Content-Type': 'image/jpeg',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+            });
         if (fs.existsSync(req.dir)){
             fs.createReadStream(req.dir).pipe(res);
         }else{
-            res.send('Camera may not be ready yet.')
+            fs.createReadStream(config.defaultMjpeg).pipe(res);
         }
     },res,req);
 });
