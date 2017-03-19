@@ -34,6 +34,13 @@ img{max-width:100%}
 .demo-blog .mdl-card__media ~ .mdl-card__supporting-text{position:relative;overflow:hidden}
 
 .demo-blog .demo-blog__posts.mosaic{max-width:100%}
+@media screen and (max-width:1500px){
+    .monitor_item .mdl-card__supporting-text .btn{
+        padding: 5px 10px;
+        font-size: 11px;
+        line-height: 1.5;
+    }
+}
 @media screen and (min-width:1025px){
     .mosaic .monitor_item{width:33.3%;}
 }
