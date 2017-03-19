@@ -12,16 +12,15 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             case'jpegMode':
                 $.each($.ccio.mon,function(n,v,x){
                     if(v.watch===1){
-                        //mdl-card__media
+                        $.ccio.tm('stream-element',v);
                         x=JSON.parse(v.details);
-                        k.e=$('#monitor_live_'+v.id+' .mdl-card__media');
-                        k.e.find('.stream-element').remove();
-                        k.e.append('<img class="stream-element">');
-                        if(!x.jpegInterval||x.jpegInterval===''){x.jpegInterval=1}
-                        clearTimeout($.ccio.mon[n].jpegInterval);
+                        x.jpegInterval=parseFloat(x.jpegInterval);
+                        if(!x.jpegInterval||x.jpegInterval===''||isNaN(x.jpegInterval)){x.jpegInterval=1}
+                        clearInterval($.ccio.mon[n].jpegInterval);
                         $.ccio.mon[n].jpegInterval=setInterval(function(){
-                            $('#monitor_live_'+v.mid+' .stream-element').attr('src',$user.auth_token+'/jpeg/'+v.ke+'/'+v.mid+'/s.jpg?time='+(new Date()))
-                        },x.jpegInterval/1000);
+                            $('#monitor_live_'+v.mid+' .stream-element').attr('src',$user.auth_token+'/jpeg/'+v.ke+'/'+v.mid+'/s.jpg?time='+(new Date()).getTime())
+                        },1000/x.jpegInterval);
+                        console.log(1000/x.jpegInterval)
                     };
                 });
             break;
@@ -260,22 +259,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 
                 tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" class="monitor_item glM'+d.mid+' mdl-grid col-md-6">';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col">';
-                tmp+='<div class="no-padding mdl-card__media mdl-color-text--grey-50">';
-                if($.ccio.op().jpeg_on===true){
-                    tmp+='<img class="stream-element">';
-                }else{
-                    switch(k.d.stream_type){
-                        case'mjpeg':
-                            tmp+='<iframe class="stream-element"></iframe>';
-                        break;
-                        case'hls':
-                            tmp+='<video class="stream-element" controls autoplay></video>';
-                        break;
-                        default://base64
-                            tmp+='<canvas class="stream-element"></canvas>';
-                        break;
-                    }
-                }
+                tmp+='<div class="stream-block no-padding mdl-card__media mdl-color-text--grey-50">';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card__supporting-text text-center">';
                 tmp+='<div class="indifference"><div class="progress"><div class="progress-bar progress-bar-danger" role="progressbar"><span>70%</span></div></div></div>';
@@ -351,6 +335,27 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             case'option':
                 tmp+='<option value="'+d.id+'">'+d.name+'</option>'
             break;
+            case'stream-element':
+                k.e=$('#monitor_live_'+d.mid+' .stream-block');
+                k.e.find('.stream-element').remove();
+                if($.ccio.op().jpeg_on===true){
+                    tmp+='<img class="stream-element">';
+                }else{
+                    try{k.d=JSON.parse(d.details);}catch(er){k.d=d.details}
+                    switch(k.d.stream_type){
+                        case'hls':
+                            tmp+='<video class="stream-element" controls autoplay></video>';
+                        break;
+                        case'mjpeg':
+                            tmp+='<iframe class="stream-element"></iframe>';
+                        break;
+                        default://base64
+                            tmp+='<canvas class="stream-element"></canvas>';
+                        break;
+                    }
+                }
+                k.e.append(tmp).find('.stream-element').resize();
+            break;
         }
         if(z){
             $(z).prepend(tmp)
@@ -361,8 +366,14 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             break;
             case 2:
                 try{
-            k.e=$('#monitor_live_'+d.mid);
-            if(JSON.parse(d.details).control=="1"){k.e.find('[monitor="control_toggle"]').show()}else{k.e.find('.pad').remove();k.e.find('[monitor="control_toggle"]').hide()}
+                    k.e=$('#monitor_live_'+d.mid);
+                    if(JSON.parse(d.details).control=="1"){
+                        k.e.find('[monitor="control_toggle"]').show()
+                    }else{
+                        k.e.find('.pad').remove();
+                        k.e.find('[monitor="control_toggle"]').hide()
+                    }
+                    $.ccio.tm('stream-element',d)
                 }catch(re){console.log(re)}
             break;
         }
@@ -533,6 +544,9 @@ $.ccio.ws.on('f',function (d){
                 }else{
                     $.each(f,g);
                 }
+                if($.ccio.op().jpeg_on===true){
+                    $.ccio.cx({f:'monitor',ff:'jpeg_on'})
+                }
             })
             $.ccio.pm(3,d.apis);
             $('.os_platform').html(d.os.platform)
@@ -590,21 +604,7 @@ $.ccio.ws.on('f',function (d){
         break;
         case'monitor_edit':
             d.e=$('[mid="'+d.mon.mid+'"][ke="'+d.mon.ke+'"]');d.ee=d.e.find('.stream-element');
-            if($.ccio.op().jpeg_on===true){
-                d.ee.after('<img class="stream-element">');
-            }else{
-                switch(d.mon.details.stream_type){
-                    case'hls':
-                        d.ee.after('<video class="stream-element" controls autoplay></video>').remove()
-                    break;
-                    case'mjpeg':
-                        d.ee.after('<iframe class="stream-element"></iframe>').remove()
-                    break;
-                    default://base64
-                        d.ee.after('<canvas class="stream-element"></canvas>').remove()
-                    break;
-                }
-            }
+            $.ccio.tm('stream-element',d.mon)
             d.e.resize();
             d.e=$('#monitor_live_'+d.mid);
             if(d.mon.details.control=="1"){d.e.find('[monitor="control_toggle"]').show()}else{d.e.find('.pad').remove();d.e.find('[monitor="control_toggle"]').hide()}
@@ -614,6 +614,7 @@ $.ccio.ws.on('f',function (d){
             if(d.mon.details.cords instanceof Array){d.mon.details.cords=JSON.stringify(d.mon.details.cords);}
             d.mon.details=JSON.stringify(d.mon.details);
             if(!$.ccio.mon[d.mid]){$.ccio.mon[d.mid]={}}
+            clearInterval($.ccio.mon[d.mid].jpegInterval);
             $.each(d.mon,function(n,v){
                 $.ccio.mon[d.mid][n]=v;
             });
@@ -643,11 +644,10 @@ $.ccio.ws.on('f',function (d){
             d.e.find('.monitor_mode').text(d.mode)
         break;
         case'mode_jpeg_off':
-            $.ccio.op('jpeg_on',false);
-            clearTimeout($.ccio.mon[n].jpegInterval);
+            $.ccio.op('jpeg_on',"0");
             $.each($.ccio.mon,function(n,v,x){
+                clearInterval($.ccio.mon[n].jpegInterval);
                 if(v.watch===1){
-                    x=JSON.parse(v.details);
                     $.ccio.cx({f:'monitor',ff:'watch_on',id:v.mid})
                 }
             })
@@ -659,6 +659,7 @@ $.ccio.ws.on('f',function (d){
         case'monitor_watch_off':case'monitor_stopping':
             d.o=$.ccio.op().watch_on;if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=0;$.ccio.op('watch_on',d.o);
             if($.ccio.mon[d.id]){
+                clearInterval($.ccio.mon[d.id].jpegInterval);
                 clearTimeout($.ccio.mon[d.id].sk)
                 clearInterval($.ccio.mon[d.id].signal);delete($.ccio.mon[d.id].signal);
                 $.ccio.mon[d.id].watch=0;
@@ -675,6 +676,7 @@ $.ccio.ws.on('f',function (d){
                 $.ccio.init('dragWindows')
             }
             d.d=JSON.parse($.ccio.mon[d.id].details);
+            $.ccio.tm('stream-element',$.ccio.mon[d.id]);
             if($.ccio.op().jpeg_on===true){
                 $.ccio.init('jpegMode');
             }else{
@@ -726,13 +728,17 @@ $.ccio.ws.on('f',function (d){
             $('#monitor_live_'+d.id+' iframe').attr('src',location.protocol+'//'+location.host+d.watch_url);
         break;
         case'monitor_frame':
-            var image = new Image();
-            var ctx = $('#monitor_live_'+d.id+' canvas');
-            image.onload = function() {
-                ctx[0].getContext("2d").drawImage(image,0,0,ctx.width(),ctx.height());
-            };
-            image.src='data:image/jpeg;base64,'+d.frame;
-            $.ccio.mon[d.id].last_frame='data:image/jpeg;base64,'+d.frame;
+            try{
+                var image = new Image();
+                var ctx = $('#monitor_live_'+d.id+' canvas');
+                image.onload = function() {
+                    ctx[0].getContext("2d").drawImage(image,0,0,ctx.width(),ctx.height());
+                };
+                image.src='data:image/jpeg;base64,'+d.frame;
+                $.ccio.mon[d.id].last_frame='data:image/jpeg;base64,'+d.frame;
+            }catch(er){
+                console.log('base64 frame')
+            }
             $.ccio.init('signal',d);
         break;
         case'onvif':
@@ -1611,8 +1617,5 @@ $(document).ready(function(e){
                 $(n).removeClass(v[0])
             }
         })
-    }
-    if($.ccio.op().jpeg_on){
-        $.ccio.cx({f:'monitor',ff:'jpeg_on'})
     }
 })

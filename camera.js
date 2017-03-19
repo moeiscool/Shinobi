@@ -1221,7 +1221,7 @@ var tx;
                           delete(cn.jpeg_on);
                           Object.keys(cn.monitor_watching).forEach(function(n,v){
                               v=cn.monitor_watching[n];
-                              cn.join('MON_STREAM_'+v.id);
+                              cn.join('MON_STREAM_'+n);
                           });
                             tx({f:'mode_jpeg_off'})
                         break;
@@ -1229,7 +1229,7 @@ var tx;
                           cn.jpeg_on=true;
                           Object.keys(cn.monitor_watching).forEach(function(n,v){
                               v=cn.monitor_watching[n];
-                              cn.leave('MON_STREAM_'+v.id);
+                              cn.leave('MON_STREAM_'+n);
                           });
                           tx({f:'mode_jpeg_on'})
                         break;
@@ -1239,7 +1239,7 @@ var tx;
                             if(!s.group[d.ke]||!s.group[d.ke].mon[d.id]||s.group[d.ke].mon[d.id].started===0){return false}
                             s.camera(d.ff,d,cn,tx)
                             cn.join('MON_'+d.id);
-                            if(cn.jpeg_on===true){
+                            if(cn.jpeg_on!==true){
                                 cn.join('MON_STREAM_'+d.id);
                             } if(s.group[d.ke]&&s.group[d.ke].mon&&s.group[d.ke].mon[d.id]&&s.group[d.ke].mon[d.id].watch){
 
