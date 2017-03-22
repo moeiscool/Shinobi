@@ -431,9 +431,9 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             break;
             case'filters-where':
                 $('#filters_where').append(tmp);
-                $('[where="'+d.id+'_p1"]').val(d.p1)
-                $('[where="'+d.id+'_p2"]').val(d.p2)
-                $('[where="'+d.id+'_p3"]').val(d.p3)
+                $('#filters_where .row:last [where="p1"]').val(d.p1)
+                $('#filters_where .row:last [where="p2"]').val(d.p2)
+                $('#filters_where .row:last [where="p3"]').val(d.p3)
             break;
         }
         return tmp;
