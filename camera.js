@@ -1512,7 +1512,7 @@ var tx;
                             d.mailOptions = {
                                 from: '"ShinobiCCTV" <no-reply@shinobi.video>', // sender address
                                 to: d.mail, // list of receivers
-                                subject: 'Filter Matches : '+d.anme, // Subject line
+                                subject: 'Filter Matches : '+d.name, // Subject line
                                 html: 'This filter has met conditions. '+d.videos.length+' videos found.',
                             };
                             if(d.execute&&d.execute!==''){
