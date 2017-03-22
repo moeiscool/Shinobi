@@ -40,7 +40,7 @@ s.cx({f:'init',time:moment()})
 s.cron=function(){
     x={};
     s.cx({f:'start',time:moment()})
-    sql.query('SELECT ke,uid,details FROM Users WHERE details NOT LIKE \'%"sub"%\'', function(arr,r) {
+    sql.query('SELECT ke,uid,details,mail FROM Users WHERE details NOT LIKE \'%"sub"%\'', function(arr,r) {
         if(r&&r[0]){
             arr={};
             r.forEach(function(v){
@@ -49,6 +49,58 @@ s.cron=function(){
                 v.d=JSON.parse(v.details);
                 if(!v.d.size){if(!v.d.super){v.d.size=10000}else{v.d.size=20000}}else{v.d.size=parseFloat(v.d.size)};//in Megabytes
                 if(!v.d.days){if(!v.d.super){v.d.days=3}else{v.d.days=15}}else{v.d.days=parseFloat(v.d.days)};
+                //filters
+                if(v.d.filters&&v.d.filters!==''){
+                    Object.keys(v.d.filters).forEach(function(m,b){
+                        b=v.d.filters[m];
+                        if(b.enabled==="1"){
+                            b.ar=[];
+                            b.sql=[];
+                            b.where.forEach(function(j,k){
+                                if(j.p1==='ke'){j.p3=v.ke}
+                                b.sql.push(j.p1+' '+j.p2+' ?')
+                                b.ar.push(j.p3)
+                            })
+                            b.sql='WHERE '+b.sql.join(' AND ');
+                            if(b.sort_by&&b.sort_by!==''){
+                                b.sql+=' ORDER BY `'+b.sort_by+'` '+b.sort_by_direction
+                            }
+                            if(b.limit&&b.limit!==''){
+                                b.sql+=' LIMIT '+b.limit
+                            }
+                            console.log(b.sql)
+                            sql.query('SELECT * FROM Videos '+b.sql,b.ar,function(err,r){
+//                                sql.query('SELECT * FROM Events '+b.sql,b.ar,function(err,rr){
+                                    b.cx={f:'filters',name:b.name,videos:r,
+//                                          events:rr,
+                                          time:moment(),
+                                         ke:v.ke};
+                                    if(b.delete==="1"){
+                                        b.cx.ff='delete';
+                                        s.cx(b.cx)
+                                    }else{
+                                        if(b.archive==="1"){
+                                            b.cx.ff='archive';
+                                            s.cx(b.cx)
+                                        }
+                                    }
+                                    if(b.email==="1"){
+                                        b.cx.ff='email';
+                                        b.cx.delete=b.delete;
+                                        b.cx.mail=v.mail;
+                                        b.cx.execute=b.execute;
+                                        b.cx.query=b.sql;
+                                        s.cx(b.cx)
+                                    }
+                                    if(b.execute&&b.execute!==""){
+                                        s.cx({f:'filters',ff:'execute',execute:b.execute,time:moment()})
+                                    }
+//                                })
+                            })
+
+                        }
+                    })
+                }
                 //check for old videos
                 sql.query('SELECT * FROM Videos WHERE ke = ? AND end < DATE_SUB(NOW(), INTERVAL ? DAY);',[v.ke,v.d.days],function(err,evs,es){
                     if(evs&&evs[0]){

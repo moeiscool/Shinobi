@@ -285,13 +285,23 @@ s.video=function(x,e){
     if(!e){e={}};
     if(e.mid&&!e.id){e.id=e.mid};
     switch(x){
+        case'archive':
+            e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
+            if(!e.filename&&e.time){e.filename=s.moment(e.time)}
+            if(!e.status){e.status=0}
+            e.save=[e.id,e.ke,s.nameToTime(e.filename),e.status];
+            sql.query('UPDATE Videos SET status=3 WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save,function(err,r){
+                s.tx({f:'video_archive',status:3,filename:e.filename+'.'+e.ext,mid:e.mid,ke:e.ke,time:s.nameToTime(e.filename)},'GRP_'+e.ke);
+            })
+        break;
         case'delete':
             e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
+            if(!e.filename&&e.time){e.filename=s.moment(e.time)}
             if(!e.status){e.status=0}
             e.save=[e.id,e.ke,s.nameToTime(e.filename),e.status];
             sql.query('DELETE FROM Videos WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save,function(err,r){
                 s.tx({f:'video_delete',filename:e.filename+'.'+e.ext,mid:e.mid,ke:e.ke,time:s.nameToTime(e.filename),end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
-                    s.file('delete',e.dir+e.filename+'.'+e.ext)
+                s.file('delete',e.dir+e.filename+'.'+e.ext)
             })
         break;
         case'open':
@@ -1077,6 +1087,21 @@ var tx;
                 break;
                 case'settings':
                     switch(d.ff){
+                        case'filters':
+                            sql.query('SELECT details FROM Users WHERE ke=? AND uid=?',[d.ke,d.uid],function(err,r){
+                                if(r&&r[0]){
+                                    r=r[0];
+                                    d.d=JSON.parse(r.details);
+                                    
+                                    if(d.form.id===''){d.form.id=s.gid(5)}
+                                    if(!d.d.filters)d.d.filters={};
+                                    d.d.filters[d.form.id]=d.form;
+                                    sql.query('UPDATE Users SET details=? WHERE ke=? AND uid=?',[JSON.stringify(d.d),d.ke,d.uid],function(err,r){
+                                        tx({f:'filters_change',uid:d.uid,ke:d.ke,filters:d.d.filters});
+                                    });
+                                }
+                            })
+                        break;
                         case'edit':
                             sql.query('SELECT details FROM Users WHERE ke=? AND uid=?',[d.ke,d.uid],function(err,r){
                                 if(r&&r[0]){
@@ -1472,6 +1497,50 @@ var tx;
     //functions for retrieving cron announcements
     cn.on('cron',function(d){
         switch(d.f){
+            case'filters':
+                switch(d.ff){
+                    case'archive':
+                        d.videos.forEach(function(v,n){
+                            s.video('archive',v)
+                        })
+                    break;
+                    case'email':
+                        if(d.videos&&d.videos.length>0){
+                            d.videos.forEach(function(v,n){
+                                
+                            })
+                            d.mailOptions = {
+                                from: '"ShinobiCCTV" <no-reply@shinobi.video>', // sender address
+                                to: d.mail, // list of receivers
+                                subject: 'Filter Matches : '+d.anme, // Subject line
+                                html: 'This filter has met conditions. '+d.videos.length+' videos found.',
+                            };
+                            if(d.execute&&d.execute!==''){
+                                d.mailOptions.html+='<div><b>Executed :</b> '+d.execute+'</div>'
+                            }
+                            if(d.delete==='1'){
+                                d.mailOptions.html+='<div><b>Deleted :</b> Yes</div>'
+                            }
+                            d.mailOptions.html+='<div><b>Query :</b> '+d.query+'</div>'
+                            nodemailer.sendMail(d.mailOptions, (error, info) => {
+                                if (error) {
+                                    s.tx({f:'error',ff:'filter_mail',ke:d.ke,error:error},'GRP_'+d.ke);
+                                    return ;
+                                }
+                                s.tx({f:'filter_mail',ke:d.ke,info:info},'GRP_'+d.ke);
+                            });
+                        }
+                    break;
+                    case'delete':
+                        d.videos.forEach(function(v,n){
+                            s.video('delete',v)
+                        })
+                    break;
+                    case'execute':
+                        exec(d.execute)
+                    break;
+                }
+            break;
             case'init':
                 s.cron={started:moment(),last_run:moment()};
             break;
@@ -1779,13 +1848,13 @@ app.post('/',function (req,res){
                         })
                     }else{
                         //not admin user
-                        res.render("home",{$user:req.resp});
+                        res.render("home",{$user:req.resp,config:config});
                     }
                 }else{
                     //no admin checkbox selected
                     if(!req.body.recorder){
                         //dashboard
-                        res.render("home",{$user:req.resp});
+                        res.render("home",{$user:req.resp,config:config});
                     }else{
                         //streamer
                         sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
@@ -2189,9 +2258,9 @@ s.disk = function (x) {
     }
 
      var dfopts = {
-        prefixMultiplier: 'GB',
-        isDisplayPrefixMultiplier: true,
-        precision: 3
+        prefixMultiplier:'GB',
+        isDisplayPrefixMultiplier:true,
+        precision:3
      };
     df(dfopts, function (er,d) {
         if (er) { clearInterval(s.disk_check); }else{er={f:'disk',data:d}}

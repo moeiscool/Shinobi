@@ -88,6 +88,7 @@
                 <li class="mdl-menu__item" data-toggle="modal" data-target="#apis"><i class="fa fa-code"></i> &nbsp; API</li>
                 <li class="mdl-menu__item" data-toggle="modal" data-target="#onvif_probe"><i class="fa fa-rss"></i> &nbsp; ONVIF</li>
                 <li class="mdl-menu__item" data-toggle="modal" data-target="#probe"><i class="fa fa-search"></i> &nbsp; FFprobe</li>
+                <li class="mdl-menu__item" data-toggle="modal" data-target="#filters"><i class="fa fa-filter"></i> &nbsp; Filters</li>
                 <li class="mdl-menu__item" data-toggle="modal" data-target="#logs_modal"><i class="fa fa-exclamation-triangle"></i> &nbsp; Logs</li>
                 <li class="mdl-menu__item" class_toggle="list-blocks" data-target="#left_menu"><i class="fa fa-camera"></i>&nbsp; List Toggle</li>
                 <li class="mdl-menu__item" class_toggle="hide-side" data-target=".mdl-js-layout"><i class="fa fa-bars"></i>&nbsp; Hide List</li>
@@ -166,6 +167,7 @@
 <% include blocks/api.html %>
 <% include blocks/logs.html %>
 <% include blocks/settings.html %>
+<% include blocks/filters.ejs %>
 <% include blocks/powervideo.ejs %>
 <% include blocks/videoview.html %>
 <% include blocks/monitoredit.html %>
@@ -173,7 +175,7 @@
 <% include blocks/region.html %>
 <% include blocks/confirm.html %>
 <!--Dropbox Library, Change data-app-key to your app key. -->
-<script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="<%= $user.DropboxAppKey %>"></script>
+<script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="<%= config.DropboxAppKey %>"></script>
 <!--Dropbox End-->
 <script src="libs/js/material.min.js"></script>
 <script src="libs/js/pnotify.custom.min.js"></script>

@@ -17,7 +17,7 @@ img{max-width:100%}
 .small{font-size:80%}
 
 .jpegMode .cpu_load .progress-bar,.jpegMode .ram_load .progress-bar{background-color:#5cb85c}
-.jpegMode [data-target="#left_menu"]{color:#5cb85c!important}
+.jpegMode [system="jpegToggle"]{color:#5cb85c!important}
 
 
 .monitor_item.fullscreen .stream-element{position:fixed;left:0;top:0;z-index:1;height:100%;width:100%}
@@ -35,6 +35,7 @@ img{max-width:100%}
 .monitor_item .indifference .progress{width:100%;background:#333;box-shadow:0;}
 .monitor_item .indifference:hover .progress{height:20px;transition:0.2s}
 .hide_indifference .indifference{display:none!important}
+.monitor_item .mdl-card:not(.mdl-cell--4-col-desktop) .mdl-card__supporting-text .monitor_name{display:none;font-size:90%;margin-bottom:10px}
 
 .demo-blog .mdl-card__media ~ .mdl-card__supporting-text{position:relative;overflow:hidden}
 
@@ -52,6 +53,7 @@ img{max-width:100%}
 .mosaic .monitor_item [class_toggle="show_logs"]{display:none}
 .mosaic .monitor_item .mdl-cell--8-col{width:100%;border:0;border-radius:0;margin:0;position:relative}
 .mosaic .monitor_item .mdl-cell--4-col-desktop,.mosaic .monitor_item .mdl-card__supporting-text{display:none}
+.mosaic .monitor_item .mdl-card .mdl-card__supporting-text .monitor_name{display:block}
 .mosaic .monitor_item .mdl-card__supporting-text:not(.meta){display:block;position:absolute;bottom:0;left:0;opacity:0;}
 .mosaic .monitor_item:hover .mdl-card__supporting-text:not(.meta){opacity:1}
 .mdl-layout__header-row{padding-left:10!important}

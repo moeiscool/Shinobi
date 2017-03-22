@@ -13,14 +13,15 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 $.each($.ccio.mon,function(n,v,x){
                     if(v.watch===1){
                         x=JSON.parse(v.details);
-                        $.ccio.tm('stream-element',$.ccio.mon[v.mid]);
                         x.jpegInterval=parseFloat(x.jpegInterval);
                         if(!x.jpegInterval||x.jpegInterval===''||isNaN(x.jpegInterval)){x.jpegInterval=1}
-                        clearInterval($.ccio.mon[n].jpegInterval);
-                        $.ccio.mon[n].jpegInterval=setInterval(function(){
-                            $('#monitor_live_'+v.mid+' .stream-element').attr('src',$user.auth_token+'/jpeg/'+v.ke+'/'+v.mid+'/s.jpg?time='+(new Date()).getTime())
-                        },1000/x.jpegInterval);
-                        console.log(1000/x.jpegInterval)
+                        if(!$.ccio.mon[n].jpegInterval){
+                            $.ccio.tm('stream-element',$.ccio.mon[v.mid]);
+                            clearInterval($.ccio.mon[n].jpegInterval);
+                            $.ccio.mon[n].jpegInterval=setInterval(function(){
+                                $('#monitor_live_'+v.mid+' .stream-element').attr('src',$user.auth_token+'/jpeg/'+v.ke+'/'+v.mid+'/s.jpg?time='+(new Date()).getTime())
+                            },1000/x.jpegInterval);
+                        }
                     };
                 });
             break;
@@ -56,6 +57,13 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             case'tf'://time to filename
                 if(!d){d=new Date();}
                 return moment(d).format('YYYY-MM-DDTHH-mm-ss')
+            break;
+            case'filters':
+                k.tmp='<option value="" selected>Add New</option>';
+                $.each($user.filters,function(n,v){
+                    k.tmp+='<option value="'+v.id+'">'+v.name+'</option>'
+                });
+                $('#saved_filters').html(k.tmp)
             break;
             case'id':
                 $('.usermail').html(d.mail)
@@ -263,6 +271,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 tmp+='</div>';
                 tmp+='<div class="mdl-card__supporting-text text-center">';
                 tmp+='<div class="indifference"><div class="progress"><div class="progress-bar progress-bar-danger" role="progressbar"><span>70%</span></div></div></div>';
+                tmp+='<div class="monitor_name">'+d.name+'</div>';
                 tmp+='<div class="btn-group btn-group-lg"><a title="Snapshot" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="Show Logs" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="Enlarge" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="Status Indicator, Click to Recconnect" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-circle"></i></a> <a title="Calendar" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="Videos List" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a class="btn btn-default" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Enlarge" monitor="bigify" class="hidden btn btn-default"><i class="fa fa-expand"></i></a> <a title="Fullscreen" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
                 tmp+='</div>';
                 tmp+='</div>';
@@ -337,7 +346,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             break;
             case'stream-element':
                 k.e=$('#monitor_live_'+d.mid+' .stream-block');
-                k.e.find('.stream-element').remove();
+                k.e.find('.stream-element');
                 if($.ccio.op().jpeg_on===true){
                     tmp+='<img class="stream-element">';
                 }else{
@@ -354,7 +363,51 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                         break;
                     }
                 }
-                k.e.append(tmp).find('.stream-element').resize();
+                k.e.html(tmp).find('.stream-element').resize();
+            break;
+            case'filters-where':
+                if(!d)d={};
+                d.id=$('#filters_where .row').length;
+                if(!d.p1){d.p1='mid'}
+                if(!d.p2){d.p2='='}
+                if(!d.p3){d.p3=''}
+                tmp+='<div class="row where-row">';
+                tmp+='   <div class="form-group col-md-4">';
+                tmp+='       <label>';
+                tmp+='           <select class="form-control" where="p1">';
+                tmp+='               <option value="mid" selected>Monitor ID</option>';
+                tmp+='               <option value="ke">Group Key</option>';
+                tmp+='               <option value="ext">File Type</option>';
+                tmp+='               <option value="time">Start Time</option>';
+                tmp+='               <option value="end">End Time</option>';
+                tmp+='               <option value="size">Filesize</option>';
+                tmp+='               <option value="status">Video Status</option>';
+                tmp+='           </select>';
+                tmp+='       </label>';
+                tmp+='   </div>';
+                tmp+='   <div class="form-group col-md-4">';
+                tmp+='       <label>';
+                tmp+='           <select class="form-control" where="p2">';
+                tmp+='               <option value="=" selected>Equal to</option>';
+                tmp+='               <option value="!=">Not Equal to</option>';
+                tmp+='               <option value=">=">Greater Than or Equal to</option>';
+                tmp+='               <option value=">">Greater Than</option>';
+                tmp+='               <option value="<">Less Than</option>';
+                tmp+='               <option value="<=">Less Than or Equal to</option>';
+                tmp+='               <option value="LIKE">Like</option>';
+                tmp+='               <option value="=~">Matches</option>';
+                tmp+='               <option value="!~">Not Matches</option>';
+                tmp+='               <option value="=[]">In</option>';
+                tmp+='               <option value="![]">Not In</option>';
+                tmp+='           </select>';
+                tmp+='       </label>';
+                tmp+='   </div>';
+                tmp+='   <div class="form-group col-md-4">';
+                tmp+='       <label>';
+                tmp+='           <input class="form-control" placeholder="Value" title="Value" where="p3">';
+                tmp+='       </label>';
+                tmp+='   </div>';
+                tmp+='</div>';
             break;
         }
         if(z){
@@ -375,6 +428,12 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                     }
                     $.ccio.tm('stream-element',d)
                 }catch(re){console.log(re)}
+            break;
+            case'filters-where':
+                $('#filters_where').append(tmp);
+                $('[where="'+d.id+'_p1"]').val(d.p1)
+                $('[where="'+d.id+'_p2"]').val(d.p2)
+                $('[where="'+d.id+'_p3"]').val(d.p3)
             break;
         }
         return tmp;
@@ -457,6 +516,10 @@ $.ccio.ws.on('f',function (d){
         case'api_key_added':
             new PNotify({title:'API Key Added',text:'You may use this key now.',type:'success'});
             $.ccio.tm(3,d.form,'#api_list')
+        break;
+        case'filters_change':
+            $user.filters=d.filters;
+            $.ccio.init('filters');
         break;
         case'user_settings_change':
             new PNotify({title:'Settings Changed',text:'Your settings have been saved and applied.',type:'success'});
@@ -559,6 +622,11 @@ $.ccio.ws.on('f',function (d){
         case'get_videos':
             $.ccio.pm(0,d)
         break;
+        case'video_edit':case'video_archive':
+            $.ccio.init('data-video',d)
+            d.e=$('[file="'+d.filename+'"][mid="'+d.mid+'"][ke="'+d.ke+'"]');
+            d.e.attr('status',d.status),d.e.attr('data-status',d.status);
+        break;
         case'video_delete':
             if($('.modal[mid="'+d.mid+'"]').length>0){$('#video_viewer[mid="'+d.mid+'"]').attr('file',null).attr('ke',null).attr('mid',null).modal('hide')}
             $('[file="'+d.filename+'"][mid="'+d.mid+'"][ke="'+d.ke+'"]').remove();
@@ -597,15 +665,9 @@ $.ccio.ws.on('f',function (d){
             $('[mid="'+d.mid+'"][ke="'+d.ke+'"]:not(.modal)').remove();
             delete($.ccio.mon[d.mid]);
         break;
-        case'video_edit':
-            $.ccio.init('data-video',d)
-            d.e=$('[file="'+d.filename+'"][mid="'+d.mid+'"][ke="'+d.ke+'"]');
-            d.e.attr('status',d.status),d.e.attr('data-status',d.status);
-        break;
         case'monitor_edit':
-            d.e=$('[mid="'+d.mon.mid+'"][ke="'+d.mon.ke+'"]');d.ee=d.e.find('.stream-element');
+            d.e=$('[mid="'+d.mon.mid+'"][ke="'+d.mon.ke+'"]');
             $.ccio.tm('stream-element',d.mon)
-            d.e.resize();
             d.e=$('#monitor_live_'+d.mid);
             if(d.mon.details.control=="1"){d.e.find('[monitor="control_toggle"]').show()}else{d.e.find('.pad').remove();d.e.find('[monitor="control_toggle"]').hide()}
             
@@ -615,6 +677,7 @@ $.ccio.ws.on('f',function (d){
             d.mon.details=JSON.stringify(d.mon.details);
             if(!$.ccio.mon[d.mid]){$.ccio.mon[d.mid]={}}
             clearInterval($.ccio.mon[d.mid].jpegInterval);
+            delete($.ccio.mon[d.mid].jpegInterval);
             $.each(d.mon,function(n,v){
                 $.ccio.mon[d.mid][n]=v;
             });
@@ -647,6 +710,7 @@ $.ccio.ws.on('f',function (d){
             $.ccio.op('jpeg_on',"0");
             $.each($.ccio.mon,function(n,v,x){
                 clearInterval($.ccio.mon[n].jpegInterval);
+                delete($.ccio.mon[n].jpegInterval);
                 if(v.watch===1){
                     $.ccio.cx({f:'monitor',ff:'watch_on',id:v.mid})
                 }
@@ -662,6 +726,7 @@ $.ccio.ws.on('f',function (d){
             d.o=$.ccio.op().watch_on;if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=0;$.ccio.op('watch_on',d.o);
             if($.ccio.mon[d.id]){
                 clearInterval($.ccio.mon[d.id].jpegInterval);
+                delete($.ccio.mon[d.id].jpegInterval);
                 clearTimeout($.ccio.mon[d.id].sk)
                 clearInterval($.ccio.mon[d.id].signal);delete($.ccio.mon[d.id].signal);
                 $.ccio.mon[d.id].watch=0;
@@ -1007,6 +1072,59 @@ $.apM.e.on('click','.delete',function(e){
     e.e=$(this);e.p=e.e.parents('[api_key]'),e.code=e.p.attr('api_key');
     $.ccio.cx({f:'api',ff:'delete',form:{code:e.code}})
 })
+//filters window
+try{$user.filters=JSON.parse($user.details).filters;}catch(er){}
+if(!$user.filters)$user.filters={};
+$.fI={e:$('#filters')};$.fI.f=$.fI.e.find('form');
+$.fI.md=$.fI.f.find('[detail]');
+$.ccio.init('filters');
+$.ccio.tm('filters-where');
+$.fI.e.on('click','.where .add',function(e){
+    $.ccio.tm('filters-where');
+})
+$.fI.e.on('click','.where .remove',function(e){
+    e.e=$('#filters_where .row');
+    if(e.e.length>1){
+        e.e.last().remove();
+    }
+})
+$.fI.f.on('change','#saved_filters',function(e){
+    e.e=$(this),e.v=e.e.val();
+    $('#filters_where').empty()
+    if(e.v&&e.v!==''){
+        e.name=e.v;
+        $.each($user.filters[e.v].where,function(n,v){
+            $.ccio.tm('filters-where',v)
+        });
+        $.each($user.filters[e.v],function(n,v){
+            if(n==='where'){return}
+            $.fI.f.find('[name="'+n+'"]').val(v);
+        });
+    }else{
+        e.name='Add New';
+        $.fI.f.find('[name="id"]').val($.ccio.gid(5));
+        $.ccio.tm('filters-where');
+    }
+    $.fI.e.find('.filter_name').text(e.name)
+})
+
+$.fI.f.submit(function(e){
+    e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
+    e.er=[];
+    console.log(e.s)
+    $.each(e.s,function(n,v){e.s[n]=v.trim()})
+    e.s.where=[];
+    $('.where-row').each(function(n,v){
+        n={};
+        $(v).find('[where]').each(function(m,b){
+            b=$(b);
+            n[b.attr('where')]=b.val();
+        })
+        e.s.where.push(n)
+    })
+    $.ccio.cx({f:'settings',ff:'filters',form:e.s})
+    $.fI.e.modal('hide')
+});
 //settings window
 $.sM={e:$('#settings')};$.sM.f=$.sM.e.find('form');
 $.sM.md=$.sM.f.find('[detail]');
@@ -1020,18 +1138,6 @@ $.sM.f.submit(function(e){
     $.ccio.cx({f:'settings',ff:'edit',form:e.s})
     $.sM.e.modal('hide')
 });
-//confirm windows
-$.confirm={e:$('#confirm_window')};
-$.confirm.title=$.confirm.e.find('.modal-title span')
-$.confirm.body=$.confirm.e.find('.modal-body')
-$.confirm.click=function(x,e){
-    if(!x.class){x.class='btn-success'}
-    if(!x.title){x.title='Save changes'}
-    x.e=$.confirm.e.find('.confirmaction').removeClass('btn-danger btn-warning btn-primary btn-success').addClass(x.class).text(x.title);
-    x.e.click(function(){
-        x.e.unbind('click');$.confirm.e.modal('hide');e();
-    })
-}
 //videos window
 $.vidview={e:$('#videos_viewer')};$.vidview.f=$.vidview.e.find('form')
 $.vidview.e.on('change','#videos_select_all',function(e){
