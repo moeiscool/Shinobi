@@ -17,6 +17,7 @@ if(!config.cron)config.cron={};
 if(!config.cron.deleteOld)config.cron.deleteOld=true;
 if(!config.cron.deleteNoVideo)config.cron.deleteNoVideo=true;
 if(!config.cron.deleteOverMax)config.cron.deleteOverMax=true;
+if(!config.cron.interval)config.cron.interval=1;
 
 if(!config.videosDir){config.videosDir=__dirname+'/videos/'}
 s.dir={videos:config.videosDir};
@@ -174,9 +175,23 @@ s.cron=function(){
             })
         }
     })
+    s.timeout=setTimeout(function(){
+        s.cron();
+    },parseFloat(config.cron.interval)*60000*60)
 }
-setInterval(function(){
-    s.cron();
-},600000*60)//every hour
-s.cron()
+s.cron();
+
+io.on('f',function(d){
+    switch(d.f){
+        case'start':case'restart':
+            clearTimeout(s.timeout);
+            s.cron();
+        break;
+        case'stop':
+            clearTimeout(s.timeout);
+        break;
+    }
+})
+
+
 console.log('Shinobi : cron.js started')

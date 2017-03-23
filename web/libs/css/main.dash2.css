@@ -35,6 +35,7 @@ img{max-width:100%}
 .monitor_item .indifference .progress{width:100%;background:#333;box-shadow:0;}
 .monitor_item .indifference:hover .progress{height:20px;transition:0.2s}
 .hide_indifference .indifference{display:none!important}
+.hide_indifference [class_toggle="hide_indifference"]{color:#d9534f!important}
 .monitor_item .mdl-card:not(.mdl-cell--4-col-desktop) .mdl-card__supporting-text .monitor_name{display:none;font-size:90%;margin-bottom:10px}
 
 .demo-blog .mdl-card__media ~ .mdl-card__supporting-text{position:relative;overflow:hidden}

@@ -1122,7 +1122,7 @@ $.fI.f.submit(function(e){
         })
         e.s.where.push(n)
     })
-    $.ccio.cx({f:'settings',ff:'filters',form:e.s})
+    $.ccio.cx({f:'settings',ff:'filters',fff:'save',form:e.s})
     $.fI.e.modal('hide')
 });
 //settings window
@@ -1359,6 +1359,12 @@ $('body')
     e.e=$(this),
     e.a=e.e.attr('system');//the function
     switch(e.a){
+        case'cronStop':
+            $.ccio.cx({f:'cron',ff:'stop'})
+        break;
+        case'cronRestart':
+            $.ccio.cx({f:'cron',ff:'restart'})
+        break;
         case'jpegToggle':
             e.cx={f:'monitor',ff:'jpeg_on'};
             if($.ccio.op().jpeg_on===true){

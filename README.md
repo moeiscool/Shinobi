@@ -15,12 +15,12 @@ Yes. I am saying it's **the** platform. It will hopefully be revered like WordPr
 - Records IP Cameras and Local Cameras
 - Streams by WebSocket, HLS (includes audio), and MJPEG
 - Save to WebM and MP4
- - Can save Audio
+  - Can save Audio
 - API
- - Get videos
- - Get monitors
- - Change monitor modes : Disabled, Watch, Record
- - Embedding streams
+  - Get videos
+  - Get monitors
+  - Change monitor modes : Disabled, Watch, Record
+  - Embedding streams
 
 ## Help make Shinobi the best Open Source CCTV Solution.
 If you like Shinobi please check out some ways you can help <a href="https://github.com/moeiscool/Shinobi/wiki/Support-Shinobi">Support Shinobi</a>.

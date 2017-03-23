@@ -281,6 +281,51 @@ s.init=function(x,e){
     }
     if(typeof e.callback==='function'){setTimeout(function(){e.callback()},500);}
 }
+s.filter=function(x,d){
+    switch(x){
+        case'archive':
+            d.videos.forEach(function(v,n){
+                s.video('archive',v)
+            })
+        break;
+        case'email':
+            if(d.videos&&d.videos.length>0){
+                d.videos.forEach(function(v,n){
+
+                })
+                d.mailOptions = {
+                    from: '"ShinobiCCTV" <no-reply@shinobi.video>', // sender address
+                    to: d.mail, // list of receivers
+                    subject: 'Filter Matches : '+d.name, // Subject line
+                    html: 'This filter has met conditions. '+d.videos.length+' videos found.',
+                };
+                if(d.execute&&d.execute!==''){
+                    d.mailOptions.html+='<div><b>Executed :</b> '+d.execute+'</div>'
+                }
+                if(d.delete==='1'){
+                    d.mailOptions.html+='<div><b>Deleted :</b> Yes</div>'
+                }
+                d.mailOptions.html+='<div><b>Query :</b> '+d.query+'</div>'
+                d.mailOptions.html+='<div><b>Filter ID :</b> '+d.id+'</div>'
+                nodemailer.sendMail(d.mailOptions, (error, info) => {
+                    if (error) {
+                        s.tx({f:'error',ff:'filter_mail',ke:d.ke,error:error},'GRP_'+d.ke);
+                        return ;
+                    }
+                    s.tx({f:'filter_mail',ke:d.ke,info:info},'GRP_'+d.ke);
+                });
+            }
+        break;
+        case'delete':
+            d.videos.forEach(function(v,n){
+                s.video('delete',v)
+            })
+        break;
+        case'execute':
+            exec(d.execute)
+        break;
+    }
+}
 s.video=function(x,e){
     if(!e){e={}};
     if(e.mid&&!e.id){e.id=e.mid};
@@ -292,7 +337,7 @@ s.video=function(x,e){
             e.save=[e.id,e.ke,s.nameToTime(e.filename),e.status];
             sql.query('UPDATE Videos SET status=3 WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save,function(err,r){
                 s.tx({f:'video_edit',status:3,filename:e.filename+'.'+e.ext,mid:e.mid,ke:e.ke,time:s.nameToTime(e.filename)},'GRP_'+e.ke);
-            })
+            });
         break;
         case'delete':
             e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
@@ -1037,18 +1082,9 @@ var tx;
                         tx({error:'"updateKey" is incorrect.'});
                     }
                 break;
-                case'get':
-                    switch(d.ff){
-                        case'videos':
-                            d.cx={f:'get_videos',mid:d.mid};
-                            d.sql="SELECT * FROM Videos WHERE ke=?";d.ar=[d.ke];
-                            if(d.mid){d.sql+=' AND mid=?';d.ar.push(d.mid)}
-                            d.sql+=' ORDER BY `end` DESC';
-                            if(d.limit){d.sql+=' LIMIT '+d.limit;}
-                            sql.query(d.sql,d.ar,function(err,r){
-                                d.cx[d.ff]=r,tx(d.cx);
-                            });
-                        break;
+                case'cron':
+                    if(s.group[cn.ke]&&s.group[cn.ke].users[cn.auth].details&&!s.group[cn.ke].users[cn.auth].details.sub){
+                        s.tx({f:d.ff},s.cron.id)
                     }
                 break;
                 case'api':
@@ -1088,19 +1124,23 @@ var tx;
                 case'settings':
                     switch(d.ff){
                         case'filters':
-                            sql.query('SELECT details FROM Users WHERE ke=? AND uid=?',[d.ke,d.uid],function(err,r){
-                                if(r&&r[0]){
-                                    r=r[0];
-                                    d.d=JSON.parse(r.details);
-                                    
-                                    if(d.form.id===''){d.form.id=s.gid(5)}
-                                    if(!d.d.filters)d.d.filters={};
-                                    d.d.filters[d.form.id]=d.form;
-                                    sql.query('UPDATE Users SET details=? WHERE ke=? AND uid=?',[JSON.stringify(d.d),d.ke,d.uid],function(err,r){
-                                        tx({f:'filters_change',uid:d.uid,ke:d.ke,filters:d.d.filters});
-                                    });
-                                }
-                            })
+                            switch(d.fff){
+                                case'save':
+                                    sql.query('SELECT details FROM Users WHERE ke=? AND uid=?',[d.ke,d.uid],function(err,r){
+                                        if(r&&r[0]){
+                                            r=r[0];
+                                            d.d=JSON.parse(r.details);
+
+                                            if(d.form.id===''){d.form.id=s.gid(5)}
+                                            if(!d.d.filters)d.d.filters={};
+                                            d.d.filters[d.form.id]=d.form;
+                                            sql.query('UPDATE Users SET details=? WHERE ke=? AND uid=?',[JSON.stringify(d.d),d.ke,d.uid],function(err,r){
+                                                tx({f:'filters_change',uid:d.uid,ke:d.ke,filters:d.d.filters});
+                                            });
+                                        }
+                                    })
+                                break;
+                            }
                         break;
                         case'edit':
                             sql.query('SELECT details FROM Users WHERE ke=? AND uid=?',[d.ke,d.uid],function(err,r){
@@ -1391,7 +1431,7 @@ var tx;
             tx({ok:false,msg:'Not Authorized, Submit init command with "auth","ke", and "uid"'});
         }
     });
-    //functions for retrieving cron announcements
+    //functions for receiving detector data
     cn.on('ocv',function(d){
         switch(d.f){
             case'init':
@@ -1498,52 +1538,10 @@ var tx;
     cn.on('cron',function(d){
         switch(d.f){
             case'filters':
-                switch(d.ff){
-                    case'archive':
-                        d.videos.forEach(function(v,n){
-                            s.video('archive',v)
-                        })
-                    break;
-                    case'email':
-                        if(d.videos&&d.videos.length>0){
-                            d.videos.forEach(function(v,n){
-                                
-                            })
-                            d.mailOptions = {
-                                from: '"ShinobiCCTV" <no-reply@shinobi.video>', // sender address
-                                to: d.mail, // list of receivers
-                                subject: 'Filter Matches : '+d.name, // Subject line
-                                html: 'This filter has met conditions. '+d.videos.length+' videos found.',
-                            };
-                            if(d.execute&&d.execute!==''){
-                                d.mailOptions.html+='<div><b>Executed :</b> '+d.execute+'</div>'
-                            }
-                            if(d.delete==='1'){
-                                d.mailOptions.html+='<div><b>Deleted :</b> Yes</div>'
-                            }
-                            d.mailOptions.html+='<div><b>Query :</b> '+d.query+'</div>'
-                            d.mailOptions.html+='<div><b>Filter ID :</b> '+d.id+'</div>'
-                            nodemailer.sendMail(d.mailOptions, (error, info) => {
-                                if (error) {
-                                    s.tx({f:'error',ff:'filter_mail',ke:d.ke,error:error},'GRP_'+d.ke);
-                                    return ;
-                                }
-                                s.tx({f:'filter_mail',ke:d.ke,info:info},'GRP_'+d.ke);
-                            });
-                        }
-                    break;
-                    case'delete':
-                        d.videos.forEach(function(v,n){
-                            s.video('delete',v)
-                        })
-                    break;
-                    case'execute':
-                        exec(d.execute)
-                    break;
-                }
+                s.filter(d.ff,d);
             break;
             case'init':
-                s.cron={started:moment(),last_run:moment()};
+                s.cron={started:moment(),last_run:moment(),id:cn.id};
             break;
             case'msg':
 
