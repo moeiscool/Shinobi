@@ -291,7 +291,7 @@ s.video=function(x,e){
             if(!e.status){e.status=0}
             e.save=[e.id,e.ke,s.nameToTime(e.filename),e.status];
             sql.query('UPDATE Videos SET status=3 WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save,function(err,r){
-                s.tx({f:'video_archive',status:3,filename:e.filename+'.'+e.ext,mid:e.mid,ke:e.ke,time:s.nameToTime(e.filename)},'GRP_'+e.ke);
+                s.tx({f:'video_edit',status:3,filename:e.filename+'.'+e.ext,mid:e.mid,ke:e.ke,time:s.nameToTime(e.filename)},'GRP_'+e.ke);
             })
         break;
         case'delete':
@@ -1522,6 +1522,7 @@ var tx;
                                 d.mailOptions.html+='<div><b>Deleted :</b> Yes</div>'
                             }
                             d.mailOptions.html+='<div><b>Query :</b> '+d.query+'</div>'
+                            d.mailOptions.html+='<div><b>Filter ID :</b> '+d.id+'</div>'
                             nodemailer.sendMail(d.mailOptions, (error, info) => {
                                 if (error) {
                                     s.tx({f:'error',ff:'filter_mail',ke:d.ke,error:error},'GRP_'+d.ke);

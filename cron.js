@@ -68,20 +68,22 @@ s.cron=function(){
                             if(b.limit&&b.limit!==''){
                                 b.sql+=' LIMIT '+b.limit
                             }
-                            console.log(b.sql)
                             sql.query('SELECT * FROM Videos '+b.sql,b.ar,function(err,r){
 //                                sql.query('SELECT * FROM Events '+b.sql,b.ar,function(err,rr){
-                                    b.cx={f:'filters',name:b.name,videos:r,
-//                                          events:rr,
-                                          time:moment(),
-                                         ke:v.ke};
-                                    if(b.delete==="1"){
-                                        b.cx.ff='delete';
-                                        s.cx(b.cx)
+                                    b.cx={
+                                        f:'filters',
+                                        name:b.name,
+                                        videos:r,
+//                                        events:rr,
+                                        time:moment(),
+                                        ke:v.ke,
+                                        id:b.id
+                                    };
+                                    if(b.archive==="1"){
+                                        s.cx({f:'filters',ff:'archive',videos:r,time:moment(),ke:v.ke,id:b.id});
                                     }else{
-                                        if(b.archive==="1"){
-                                            b.cx.ff='archive';
-                                            s.cx(b.cx)
+                                        if(b.delete==="1"){
+                                            s.cx({f:'filters',ff:'delete',videos:r,time:moment(),ke:v.ke,id:b.id});
                                         }
                                     }
                                     if(b.email==="1"){
@@ -90,10 +92,10 @@ s.cron=function(){
                                         b.cx.mail=v.mail;
                                         b.cx.execute=b.execute;
                                         b.cx.query=b.sql;
-                                        s.cx(b.cx)
+                                        s.cx(b.cx);
                                     }
                                     if(b.execute&&b.execute!==""){
-                                        s.cx({f:'filters',ff:'execute',execute:b.execute,time:moment()})
+                                        s.cx({f:'filters',ff:'execute',execute:b.execute,time:moment()});
                                     }
 //                                })
                             })
