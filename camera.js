@@ -607,9 +607,9 @@ s.camera=function(x,e,cn,tx){
     if(e.details&&e.details.cords&&(e.details.cords instanceof Object)===false){
         try{
             e.details.cords=JSON.parse(e.details.cords);
-            if(!e.details.cords)e.details.cords=[];
+            if(!e.details.cords)e.details.cords={};
         }catch(err){
-            e.details.cords=[];
+            e.details.cords={};
         }
     }
     switch(x){
@@ -871,7 +871,10 @@ s.camera=function(x,e,cn,tx){
                             if(!s.group[e.ke]||!s.group[e.ke].mon[e.id]){s.init(0,e)}
                             s.group[e.ke].mon[e.id].spawn.on('error',function(er){
                                 s.log(e,{type:'Spawn Error',msg:er});e.error_fatal()
-                            })
+                            });
+                            if(s.ocv&&e.details.detector==='1'){
+                                s.tx({f:'init_monitor',mon:e.details,id:e.id},s.ocv.id)
+                            }
                             //frames from motion detect
                             s.group[e.ke].mon[e.id].spawn.stdin.on('data',function(d){
                                 if(s.ocv&&e.details.detector==='1'){
@@ -1125,7 +1128,7 @@ var tx;
                     switch(d.ff){
                         case'filters':
                             switch(d.fff){
-                                case'save':
+                                case'save':case'delete':
                                     sql.query('SELECT details FROM Users WHERE ke=? AND uid=?',[d.ke,d.uid],function(err,r){
                                         if(r&&r[0]){
                                             r=r[0];
@@ -1133,7 +1136,12 @@ var tx;
 
                                             if(d.form.id===''){d.form.id=s.gid(5)}
                                             if(!d.d.filters)d.d.filters={};
-                                            d.d.filters[d.form.id]=d.form;
+                                            //save/modify or delete
+                                            if(d.fff==='save'){
+                                                d.d.filters[d.form.id]=d.form;
+                                            }else{
+                                                delete(d.d.filters[d.form.id]);
+                                            }
                                             sql.query('UPDATE Users SET details=? WHERE ke=? AND uid=?',[JSON.stringify(d.d),d.ke,d.uid],function(err,r){
                                                 tx({f:'filters_change',uid:d.uid,ke:d.ke,filters:d.d.filters});
                                             });

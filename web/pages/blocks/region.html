@@ -9,14 +9,50 @@
         <h4 class="modal-title" id="region_editorLabel"><i class="fa fa-grav"></i> &nbsp; Region Editor</h4>
       </div>
       <div class="modal-body">
-      <div class="canvas_holder">
-        <canvas></canvas>
+      <div class="row">
+          <div class="col-md-6 text-left">
+            <div class="form-group">
+                <label><span>Coords</span>
+                    <div class="input-group">
+                        <select id="regions_list" class="form-control"></select>
+                        <div class="input-group-btn">
+                            <a class="btn btn-success add">&nbsp;<i class="fa fa-plus"></i>&nbsp;</a>
+                        </div>
+                    </div>
+                </label>
+            </div>
+            <div class="row">
+                <div class="form-group col-md-6">
+                    <label><span>Coord Name</span>
+                        <div class="input-group">
+                            <input class="form-control" name="name">
+                            <div class="input-group-btn">
+                                <a class="btn btn-danger erase">&nbsp;<i class="fa fa-trash-o"></i>&nbsp;</a>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+                <div class="form-group col-md-6">
+                    <label><span>Indifference</span>
+                        <input class="form-control" name="indifference">
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label><span>Points</span></label>
+                    <table class="table table-striped" id="regions_points"><tbody></tbody></table>
+            </div>
+          </div>
+          <div class="col-md-6">
+              <div class="canvas_holder">
+<textarea id="regions_canvas" rows=3 class="hidden canvas-area input-xxlarge" disabled>299,84,297,92,285,98,275,109,271,123,273,141,287,156,311,162,333,156,345,142,346,126,340,107,321,92,314,89,309,81</textarea>
+              </div>
+          </div>
       </div>
       </div>
       <div class="modal-footer">
           <div id="region_blocks" class="pull-left"></div>
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <a class="btn btn-success add">Add Region</a>
       </div>
     </form>
   </div>

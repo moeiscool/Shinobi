@@ -20,6 +20,7 @@
 process.on('uncaughtException', function (err) {
     console.error('uncaughtException',err);
 });
+var fs = require('fs');
 var Canvas = require('canvas');
 var config=require('./conf.json');
 s={
@@ -27,27 +28,106 @@ s={
     canvasContext:{},
     img:{},
     lastImageData:{},
-    blend:{},
-    blendContext:{},
-    lastFrames:{}
+    lastRegionImageData:{},
+    blendRegion:{},
+    blendRegionContext:{},
+    lastFrames:{},
+    globalCoords:{},
+    globalCoordsObject:{}
 }
-s.blender=function(mid){
-	var width  = s.img[mid].width;
-	var height = s.img[mid].height;
-    var sourceData = s.canvasContext[mid].getImageData(0, 0, width, height);
+s.initCanvas=function(d){
+    var width=d.mon.detector_scale_x;
+    var height=d.mon.detector_scale_y;
+    if(d.mon.detector_frame==='1'){
+        s.globalCoordsObject[d.id].frame={name:'frame',s:d.mon.detector_sensitivity,points:[[0,0],[0,height],[width,height],[width,0]]};
+        s.globalCoords[d.id].push(s.globalCoordsObject[d.id].frame);
+    }
+    s.globalCoords[d.id]=Object.values(d.mon.cords);
+    s.globalCoordsObject[d.id]=d.mon.cords;
+    for (var c = 0; c < s.globalCoords[d.id].length; c++){
+        var cord=s.globalCoords[d.id][c];
+        s.canvas[d.id+'_'+cord.name] = new Canvas(width,height);
+        s.canvasContext[d.id+'_'+cord.name] = s.canvas[d.id+'_'+cord.name].getContext('2d');
+        s.canvasContext[d.id+'_'+cord.name].fillStyle = '#005337';
+        s.canvasContext[d.id+'_'+cord.name].fillRect( 0, 0,width,height);
+        if(cord.points&&cord.points.length>0){
+            s.canvasContext[d.id+'_'+cord.name].beginPath();
+            for (var b = 0; b < cord.points.length; b++){
+                cord.points[b][0]=parseFloat(cord.points[b][0]);
+                cord.points[b][1]=parseFloat(cord.points[b][1]);
+                if(b===0){
+                    s.canvasContext[d.id+'_'+cord.name].moveTo(cord.points[b][0],cord.points[b][1]);
+                }else{
+                    s.canvasContext[d.id+'_'+cord.name].lineTo(cord.points[b][0],cord.points[b][1]);
+                }
+            }
+            s.canvasContext[d.id+'_'+cord.name].clip();
+        }
+    }
+}
+s.blenderRegion=function(mon,d,cord){
+	var width  = s.img[d.id].width;
+	var height = s.img[d.id].height;
+    if(isNaN(cord.sensitivity)){
+        cord.sensitivity=mon.detector_sensitivity;
+    }
+    if(!s.canvas[d.id+'_'+cord.name]){
+        s.canvas[d.id+'_'+cord.name] = new Canvas(width,height);
+        s.canvasContext[d.id+'_'+cord.name] = s.canvas[d.id+'_'+cord.name].getContext('2d');
+        s.canvasContext[d.id+'_'+cord.name].fillStyle = '#005337';
+        s.canvasContext[d.id+'_'+cord.name].fillRect( 0, 0,width,height);
+        if(cord.points&&cord.points.length>0){
+            s.canvasContext[d.id+'_'+cord.name].beginPath();
+            for (var b = 0; b < cord.points.length; b++){
+                cord.points[b][0]=parseFloat(cord.points[b][0]);
+                cord.points[b][1]=parseFloat(cord.points[b][1]);
+                if(b===0){
+                    s.canvasContext[d.id+'_'+cord.name].moveTo(cord.points[b][0],cord.points[b][1]);
+                }else{
+                    s.canvasContext[d.id+'_'+cord.name].lineTo(cord.points[b][0],cord.points[b][1]);
+                }
+            }
+            s.canvasContext[d.id+'_'+cord.name].clip();
+        }
+    }
+    try{
+    s.canvasContext[d.id+'_'+cord.name].drawImage(s.img[d.id], 0, 0, width, height);
+    }catch(err){
+        console.log(err)
+    }
+    
+    
+    if(!s.blendRegion[d.id+'_'+cord.name]){
+        s.blendRegion[d.id+'_'+cord.name] = new Canvas(width, height);
+        s.blendRegionContext[d.id+'_'+cord.name] = s.blendRegion[d.id+'_'+cord.name].getContext('2d');
+    }
+    var sourceData = s.canvasContext[d.id+'_'+cord.name].getImageData(0, 0, width, height);
 	// create an image if the previous image doesn�t exist
-	if (!s.lastImageData[mid]) s.lastImageData[mid] = s.canvasContext[mid].getImageData(0, 0, width, height);
+	if (!s.lastRegionImageData[d.id+'_'+cord.name]) s.lastRegionImageData[d.id+'_'+cord.name] = s.canvasContext[d.id+'_'+cord.name].getImageData(0, 0, width, height);
 	// create a ImageData instance to receive the blended result
-	var blendedData = s.canvasContext[mid].createImageData(width, height);
+	var blendedData = s.canvasContext[d.id+'_'+cord.name].createImageData(width, height);
 	// blend the 2 images
-	s.differenceAccuracy(blendedData.data,sourceData.data,s.lastImageData[mid].data);
+	s.differenceAccuracy(blendedData.data,sourceData.data,s.lastRegionImageData[d.id+'_'+cord.name].data);
 	// draw the result in a canvas
-	s.blendContext[mid].putImageData(blendedData, 0, 0);
+	s.blendRegionContext[d.id+'_'+cord.name].putImageData(blendedData, 0, 0);
 	// store the current webcam image
-	s.lastImageData[mid] = sourceData;
+	s.lastRegionImageData[d.id+'_'+cord.name] = sourceData;
+    blendedData = s.blendRegionContext[d.id+'_'+cord.name].getImageData(0, 0, width, height);
+    var i = 0;
+    var average = 0;
+    while (i < (blendedData.data.length * 0.25)) {
+        average += (blendedData.data[i * 4] + blendedData.data[i * 4 + 1] + blendedData.data[i * 4 + 2]);
+        ++i;
+    }
+    average = (average / (blendedData.data.length * 0.25))*100;
+    if (average > cord.sensitivity){
+        s.cx({f:'trigger',id:d.id,ke:d.ke,frame:d.buffer,details:{plug:config.plug,name:cord.name,reason:'motion',confidence:average}})
+
+    }
+    s.canvasContext[d.id+'_'+cord.name].clearRect(0, 0, width, height);
+    s.blendRegionContext[d.id+'_'+cord.name].clearRect(0, 0, width, height);
 }
 function fastAbs(value) {
-    // funky bitwise, equal Math.abs
     return (value ^ (value >> 31)) - (value >> 31);
 }
 
@@ -83,38 +163,13 @@ s.differenceAccuracy=function(target, data1, data2) {
 }
 
 s.checkAreas=function(d,mon){
-    var cords=mon.cords;
-    if(!mon.detector_sensitivity||mon.detector_sensitivity==''||isNaN(mon.detector_sensitivity)){mon.detector_sensitivity=0.5}
-    try{cords=JSON.parse(mon.cords)}catch(er){cords=[]}
-    if(!cords||mon.cords instanceof Array===false){cords=[]}
-    if(mon.detector_frame==='1'){
-        cords.push({name:'frame',s:mon.detector_sensitivity,x:0,y:0,w:s.img[d.id].width,h:s.img[d.id].height});
+    if(mon.detector_frame==='1'&&!s.globalCoordsObject[d.id].frame){
+        s.globalCoordsObject[d.id].frame={name:'frame',s:mon.detector_sensitivity,points:[[0,0],[0,mon.detector_scale_y],[mon.detector_scale_x,mon.detector_scale_y],[mon.detector_scale_x,0]]};
+        s.globalCoords[d.id].push(s.globalCoordsObject[d.id].frame);
     }
-	for (var b = 0; b < cords.length; b++){
-        if(!cords[b].sensitivity||cords[b].sensitivity===''||isNaN(cords[b].sensitivity)){
-            cords[b].sensitivity=mon.detector_sensitivity;
-        }
-		// get the pixels in a note area from the blended image
-        var blendedData = s.blendContext[d.id].getImageData(cords[b].x, cords[b].y, cords[b].w, cords[b].h);
-        var i = 0;
-        var average = 0;
-        while (i < (blendedData.data.length * 0.25)) {
-            // make an average between the color channel
-            average += (blendedData.data[i * 4] + blendedData.data[i * 4 + 1] + blendedData.data[i * 4 + 2]);
-            ++i;
-        }
-        // calculate an average between the color values of the spot area
-        average = (average / (blendedData.data.length * 0.25))*100;
-//        console.log(cords[b].name,average);
-		if (average > cords[b].sensitivity){
-//			console.log('Possible Motion : '+cords[b].name); // do stuff
-            //tell server you got some motion
-            s.cx({f:'trigger',id:d.id,ke:d.ke,frame:d.buffer,details:{plug:config.plug,name:cords[b].name,reason:'motion',confidence:average}})
-
-		}
-	}
-    s.canvasContext[d.id].clearRect(0, 0, s.img[d.id].width, s.img[d.id].height);
-    s.blendContext[d.id].clearRect(0, 0, s.img[d.id].width, s.img[d.id].height);
+	for (var b = 0; b < s.globalCoords[d.id].length; b++){
+        s.blenderRegion(mon,d,s.globalCoords[d.id][b])
+ 	}
 }
 
 
@@ -133,6 +188,9 @@ io.on('disconnect',function(d){
 })
 io.on('f',function(d){
     switch(d.f){
+        case'init_monitor':
+            s.initCanvas(d);
+        break;
         case'frame':
             if(!d.buffer){
               d.buffer=[d.frame];
@@ -141,6 +199,10 @@ io.on('f',function(d){
             }
             if(d.frame[d.frame.length-2] === 0xFF && d.frame[d.frame.length-1] === 0xD9){
                 d.buffer=Buffer.concat(d.buffer);
+                if(!s.globalCoords[d.id]){
+                    s.globalCoords[d.id]=Object.values(d.mon.cords);
+                    s.globalCoordsObject[d.id]=d.mon.cords;
+                }
                 if(!s.img[d.id]){
                     s.img[d.id] = new Canvas.Image;
                 }
@@ -156,24 +218,6 @@ io.on('f',function(d){
                     s.img[d.id].height=d.mon.detector_scale_y;
                 }
                 s.img[d.id].src = d.buffer;
-                if(!s.canvas[d.id]){
-                    s.canvas[d.id] = new Canvas(s.img[d.id].width,s.img[d.id].height);
-                    s.canvasContext[d.id] = s.canvas[d.id].getContext('2d');
-                    s.canvasContext[d.id].translate(s.img[d.id].width, 0);
-                    s.canvasContext[d.id].scale(-1, 1);
-                    s.canvasContext[d.id].fillStyle = '#005337';
-                    s.canvasContext[d.id].fillRect( 0, 0, s.img[d.id].width, s.img[d.id].height );
-                }
-                if(!s.blend[d.id]){
-                    s.blend[d.id] = new Canvas(s.img[d.id].width,s.img[d.id].height);
-                    s.blendContext[d.id] = s.blend[d.id].getContext('2d');
-                }
-                try{
-                s.canvasContext[d.id].drawImage(s.img[d.id], 0, 0, s.img[d.id].width / 4, s.img[d.id].height / 4);
-                }catch(err){
-                    console.log(err)
-                }
-                s.blender(d.id);
                 s.checkAreas({id:d.id,ke:d.ke,buffer:d.buffer},d.mon);
                 d.buffer=null;
             }

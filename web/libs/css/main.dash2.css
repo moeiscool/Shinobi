@@ -77,7 +77,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 }
 .modal{overflow:auto!important}
 #region_editor .modal-body{text-align:center;overflow:auto;max-height:800px}
-#region_editor .canvas_holder{position:relative;display:inline-block}
+#region_editor .canvas_holder{position:relative;display:inline-block;overflow:auto;min-height:450px}
 #region_editor .cord_element{position:absolute;background:rgba(221, 221, 221, 0.8);z-index:11;padding:5px;}
 #region_editor .cord_element.selected{z-index:12;}
 #region_editor .cord_element .controls{margin-bottom:5px;}
@@ -85,6 +85,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .form-group-group{padding:0 10px 10px 10px;overflow:hidden;margin-bottom:15px;border-radius:5px;border:1px solid #ddd;background:#fff}
 .form-group-group:last-child,.form-group-group .form-group:last-child{margin-bottom:0}
 .form-group-group h4{margin:0 -10px 15px -10px;padding:15px;background:#ddd;}
+.form-group-group h4 small{color:#fff;}
 .form-group-group.red{border-color:#d9534f}
 .form-group-group.red h4{background:#d9534f;color:#fff}
 .form-group-group.blue{border-color:#337ab7}
@@ -145,7 +146,6 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 #main_canvas{background:#333;color:#fff;padding-top:0}
 #main_header{background:#222;color:#fff;}
 #logs_modal table tr td:first-child{width:10%}
-#files_recent{}
 [class_toggle]{cursor:pointer}
 
 .form-group label{width:100%}
@@ -166,7 +166,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .dark.modal .modal-body{background:#333;}
 .dark.modal .close{color:#fff;}
 .dark.modal{color:#fff;}
-
+.dark .table-striped>tbody>tr:nth-of-type(even){background:#ddd}
 .os_bars{width:300px;display:inline-block;padding:5px 0 0 10px}
 @media screen and (max-width: 600px){
     .os_bars{width:200px;}

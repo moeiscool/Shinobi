@@ -307,26 +307,6 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                     if(v.find('.log-item').length>10){v.find('.log-item:last').remove()}
                 })
             break;
-            case 5://region element
-                k.contain='#region_editor .canvas_holder';
-                if(!d.name){d.name=$.ccio.gid()}
-                if(!d.sensitivity){d.sensitivity=0.5}
-                if(!d.y){d.y=0}
-                if(!d.x){d.x=0}
-                if(!d.w){d.w=200}
-                if(!d.h){d.h=200}
-                $.zO.c.append('<div class="cord_element text-left" cord="'+d.name+'"><div class="controls"><a class="pull-right btn btn-xs btn-danger delete">&nbsp;<i class="fa fa-times"></i>&nbsp;</a></div><div class="form-group"><label><span>Region Name</span><input class="form-control input-sm" detail="name" value="'+d.name+'"></label></div><div class="form-group"><label><span>Sensitivity</span><input class="form-control input-sm" detail="sensitivity" value="'+d.sensitivity+'"></label></div></div>');
-                $.zO.c.find('[cord="'+d.name+'"]')
-                    .css({top:d.y,left:d.x,width:d.w,height:d.h})
-                    .resizable({
-                        containment:k.contain,
-                        handles: "n,e,s,w,ne,nw,se,sw"
-                    })
-                    .draggable({
-                        containment:k.contain,
-                        stop: $.zO.checkCords
-                    }).click()
-            break;
             case 6://notification row
                 if(!d.time){d.time=$.ccio.init('t')}
                 if(!d.note.class){d.note.class=''}
@@ -518,6 +498,7 @@ $.ccio.ws.on('f',function (d){
             $.ccio.tm(3,d.form,'#api_list')
         break;
         case'filters_change':
+            new PNotify({title:'Filters Updated',text:'Your changes have been saved and applied.',type:'success'});
             $user.filters=d.filters;
             $.ccio.init('filters');
         break;
@@ -673,7 +654,7 @@ $.ccio.ws.on('f',function (d){
             
             d.o=$.ccio.op().watch_on;
             if(!d.o){d.o={}}
-            if(d.mon.details.cords instanceof Array){d.mon.details.cords=JSON.stringify(d.mon.details.cords);}
+            if(d.mon.details.cords instanceof Object){d.mon.details.cords=JSON.stringify(d.mon.details.cords);}
             d.mon.details=JSON.stringify(d.mon.details);
             if(!$.ccio.mon[d.mid]){$.ccio.mon[d.mid]={}}
             clearInterval($.ccio.mon[d.mid].jpegInterval);
@@ -870,39 +851,119 @@ if($.ccio.op().onvif_probe_user){
     $.oB.e.find('[name="user"]').val($.ccio.op().onvif_probe_user)
 }
 //Region Editor
-$.zO={e:$('#region_editor')};$.zO.f=$.zO.e.find('form');$.zO.o=$.zO.e.find('canvas'),$.zO.c=$.zO.e.find('.canvas_holder');
+$.zO={e:$('#region_editor')};
+$.zO.f=$.zO.e.find('form');
+$.zO.o=function(){return $.zO.e.find('canvas')};
+$.zO.c=$.zO.e.find('.canvas_holder');
+$.zO.name=$.zO.e.find('[name="name"]');
+$.zO.rl=$('#regions_list');
+$.zO.rp=$('#regions_points');
+$.zO.ca=$('#regions_canvas');
+$.zO.saveCoords=function(){
+    $.aM.e.find('[detail="cords"]').val(JSON.stringify($.zO.regionViewerDetails.cords)).change()
+}
+$.zO.initRegionList=function(){
+    $('#regions_list,#region_points').empty();
+    $.each($.zO.regionViewerDetails.cords,function(n,v){
+        if(v&&v.name){
+            $.zO.rl.append('<option value="'+n+'">'+v.name+'</option>')
+        }
+    });
+    $.zO.rl.change();
+}
+$.zO.rl.change(function(e){
+    $.zO.initCanvas();
+})
+$.zO.initCanvas=function(){
+    e={};
+    e.ar=[];
+    e.val=$.zO.rl.val();
+    e.cord=$.zO.regionViewerDetails.cords[e.val];
+    if(!e.cord.points){e.cord.points=[[0,0],[0,100],[100,0]]}
+    $.each(e.cord.points,function(n,v){
+        e.ar=e.ar.concat(v)
+    });
+    if(isNaN(e.cord.sensitivity)){
+        e.cord.sensitivity=$.zO.regionViewerDetails.detector_sensitivity;
+    }
+    $.zO.f.find('[name="name"]').val(e.val)
+    $.zO.f.find('[name="indifference"]').val(e.cord.sensitivity)
+    $.zO.e.find('.canvas_holder canvas').remove();
+    e.e=$.zO.ca.val(e.ar.join(','))
+    e.e.attr('data-image-url','/'+$user.auth_token+'/jpeg/'+$user.ke+'/'+$.aM.selected+'/s.jpg').canvasAreaDraw();
+    e.e.change();
+}
+$.zO.e.on('change','[name="indifference"]',function(e){
+    e.val=$(this).val();
+    $.zO.regionViewerDetails.cords[$.zO.rl.val()].sensitivity=e.val;
+    $.zO.saveCoords()
+})
+$.zO.e.on('change','[name="name"]',function(e){
+    e.old=$.zO.rl.val();
+    e.new=$.zO.name.val();
+    $.zO.regionViewerDetails.cords[e.new]=$.zO.regionViewerDetails.cords[e.old];
+    delete($.zO.regionViewerDetails.cords[e.old]);
+    $.zO.rl.find('option[value="'+e.old+'"]').attr('value',e.new).text(e.new)
+    $.zO.saveCoords()
+})
+$.zO.e.on('change','[point]',function(e){
+    e.points=[];
+    $('[points]').each(function(n,v){
+        v=$(v);
+        n=v.find('[point="x"]').val();
+        if(n){
+            e.points.push([n,v.find('[point="y"]').val()])
+        }
+    })
+    $.zO.regionViewerDetails.cords[$.zO.name.val()].points=e.points;
+    $.zO.initCanvas();
+})
+$.zO.e.find('.erase').click(function(e){
+    delete($.zO.regionViewerDetails.cords[$.zO.rl.val()]);
+    $.zO.initRegionList();
+    //$.zO.rl.append('<option value="'+e.gid+'">'+e.gid+'</option>');
+});
+//$.zO.e.find('.new').click(function(e){
+//    $.zO.regionViewerDetails.cords[$.zO.rl.val()]
+//    $.zO.initRegionList();
+//})
+$.zO.e.on('changed','#regions_canvas',function(e){
+    e.val=$(this).val().replace(/(,[^,]*),/g, '$1;').split(';');
+    e.ar=[];
+    $.each(e.val,function(n,v){
+        v=v.split(',')
+        if(v[1]){
+            e.ar.push([v[0],v[1]])
+        }
+    })
+    $.zO.regionViewerDetails.cords[$.zO.rl.val()].points=e.ar;
+    e.selected=$.zO.regionViewerDetails.cords[$.zO.rl.val()];
+    e.e=$('#regions_points tbody').empty();
+    $.each($.zO.regionViewerDetails.cords[$.zO.rl.val()].points,function(n,v){
+        e.e.append('<tr points="'+n+'"><td><input class="form-control" point="x" value="'+v[0]+'"></td><td><input class="form-control" point="y" value="'+v[1]+'"></td><td><a class="delete btn btn-danger"><i class="fa fa-trash-o"></i></a></td></tr>')
+    });
+    $.zO.saveCoords()
+})
 $.zO.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
     
     return false;
 });
-$.zO.checkCords=function(){
-    e={};e.ar=[];
-    $.zO.c.find('[cord]').each(function(n,v){
-        v=$(v);e.o=v.position();
-        e.arr={name:e.n,x:e.o.left,y:e.o.top,w:v.width(),h:v.height()};
-        v.find('[detail]').each(function(m,b){
-            b=$(b);
-            e.arr[b.attr('detail')]=b.val().trim();
-        })
-        if(e.n==''){e.n=$.ccio.gid()};
-        e.ar.push(e.arr);
-    });
-    $.aM.e.find('[detail="cords"]').val(JSON.stringify(e.ar)).change()
-}
-$.zO.c.on('change','input',$.zO.checkCords)
-.on('resize','[cord]',$.zO.checkCords)
-.on('mousedown touch','[cord]',function(){
-    $.zO.c.find('[cord]').removeClass('selected');
-    $(this).addClass('selected');
+$('#regions_points')
+.on('click','.delete',function(e){
+    e.p=$(this).parents('tr'),e.row=e.p.attr('points');
+    delete($.zO.regionViewerDetails.cords[$.zO.rl.val()].points[e.row])
+    $.zO.saveCoords()
+    e.p.remove();
+    $.zO.rl.change();
 })
-.on('click','.delete',function(){
-    $(this).parents('[cord]').remove();
-    $.zO.checkCords();
+$.zO.e.on('click','.add',function(e){
+    e.gid=$.ccio.gid(5);
+    $.zO.regionViewerDetails.cords[e.gid]={name:e.gid,sensitivity:0.0005,points:[[0,0],[0,100],[100,0]]};
+    $.zO.rl.append('<option value="'+e.gid+'">'+e.gid+'</option>');
+    $.zO.rl.val(e.gid)
+    $.zO.rl.change();
 });
-$.zO.e.on('click','.add',function(){
-    $.ccio.tm(5)
-})
 //probe
 $.pB={e:$('#probe')};$.pB.f=$.pB.e.find('form');$.pB.o=$.pB.e.find('.output_data');
 $.pB.f.submit(function(e){
@@ -1088,15 +1149,15 @@ $.fI.e.on('click','.where .remove',function(e){
         e.e.last().remove();
     }
 })
-$.fI.f.on('change','#saved_filters',function(e){
-    e.e=$(this),e.v=e.e.val();
+$('#saved_filters').change(function(e){
+    e.e=$(this),e.id=e.e.val();
     $('#filters_where').empty()
-    if(e.v&&e.v!==''){
-        e.name=e.v;
-        $.each($user.filters[e.v].where,function(n,v){
+    if(e.id&&e.id!==''){
+        e.name=$user.filters[e.id].name;
+        $.each($user.filters[e.id].where,function(n,v){
             $.ccio.tm('filters-where',v)
         });
-        $.each($user.filters[e.v],function(n,v){
+        $.each($user.filters[e.id],function(n,v){
             if(n==='where'){return}
             $.fI.f.find('[name="'+n+'"]').val(v);
         });
@@ -1106,8 +1167,22 @@ $.fI.f.on('change','#saved_filters',function(e){
         $.ccio.tm('filters-where');
     }
     $.fI.e.find('.filter_name').text(e.name)
+}).change()
+$.fI.f.find('.delete').click(function(e){
+    $.confirm.title.text('Delete Monitor : '+e.mon.name)
+    e.html='Do you want to delete this monitor? You cannot recover it.'
+    e.html+='<table class="info-table"><tr>';
+    $.each(e.mon,function(n,v,g){
+        if(n==='host'&&v.indexOf('@')>-1){g=v.split('@')[1]}else{g=v};
+        try{JSON.parse(g);return}catch(err){}
+        e.html+='<tr><td>'+n+'</td><td>'+g+'</td></tr>';
+    })
+    e.html+='</tr></table>';
+    $.confirm.body.html(e.html)
+    $.confirm.click({title:'Delete Filter',class:'btn-danger'},function(){
+        $.ccio.cx({f:'settings',ff:'filters',fff:'delete',form:e.s})
+    });
 })
-
 $.fI.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
     e.er=[];
@@ -1123,7 +1198,6 @@ $.fI.f.submit(function(e){
         e.s.where.push(n)
     })
     $.ccio.cx({f:'settings',ff:'filters',fff:'save',form:e.s})
-    $.fI.e.modal('hide')
 });
 //settings window
 $.sM={e:$('#settings')};$.sM.f=$.sM.e.find('form');
@@ -1411,25 +1485,18 @@ $('body')
             }
             
             $.zO.e.modal('show');
-            $.zO.o.attr('width',e.d.detector_scale_x).attr('height',e.d.detector_scale_y);
+            $.zO.o().attr('width',e.d.detector_scale_x).attr('height',e.d.detector_scale_y);
             $.zO.c.css({width:e.d.detector_scale_x,height:e.d.detector_scale_y});
-            var blendContext = $.zO.o[0].getContext('2d');
-            blendContext.fillStyle = '#005337';
-            blendContext.fillRect( 0, 0,e.d.detector_scale_x,e.d.detector_scale_y);
-            if(e.d.cords&&(e.d.cords instanceof Object)===false){
+                if(e.d.cords&&(e.d.cords instanceof Object)===false){
                 try{e.d.cords=JSON.parse(e.d.cords);}catch(er){}
             }
             if(!e.d.cords||e.d.cords===''){
-                e.d.cords=[
-                    { name:"red",sensitivity:0.5, x:320 - 32 - 10, y:10, w:64, h:64 },
-                    { name:"yellow",sensitivity:0.5, x:320 - 32 - 10, y:10, w:64, h:64 },
-                    { name:"green",sensitivity:0.5, x:238, y:10, w:64, h:64 }
-                ]
+                e.d.cords={
+                    red:{ name:"red",sensitivity:0.0005, points:[[0,0],[0,100],[100,0]] },
+                }
             }
-            $.zO.c.find('.cord_element').remove()
-            $.each(e.d.cords,function(n,v){
-                $.ccio.tm(5,v)
-            })
+            $.zO.regionViewerDetails=e.d;
+            $.zO.initRegionList()
         break;
         case'snapshot':
             $.ccio.snapshot(e,function(url){
@@ -1683,6 +1750,7 @@ $('body')
                 e.mt.find('i').attr('class','fa fa-wrench');
                 e.values=$.ccio.mon[e.mid];
             }
+            $.aM.selected=e.mid;
             $.each(e.values,function(n,v){
                 $.aM.e.find('[name="'+n+'"]').val(v).change()
             })
