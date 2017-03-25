@@ -940,7 +940,9 @@ $.zO.e.on('changed','#regions_canvas',function(e){
     e.selected=$.zO.regionViewerDetails.cords[$.zO.rl.val()];
     e.e=$('#regions_points tbody').empty();
     $.each($.zO.regionViewerDetails.cords[$.zO.rl.val()].points,function(n,v){
-        e.e.append('<tr points="'+n+'"><td><input class="form-control" point="x" value="'+v[0]+'"></td><td><input class="form-control" point="y" value="'+v[1]+'"></td><td><a class="delete btn btn-danger"><i class="fa fa-trash-o"></i></a></td></tr>')
+        if(isNaN(v[0])){v[0]=20}
+        if(isNaN(v[1])){v[1]=20}
+        e.e.append('<tr points="'+n+'"><td><input class="form-control" placeholder="X" point="x" value="'+v[0]+'"></td><td><input class="form-control" placeholder="Y" point="y" value="'+v[1]+'"></td><td class="text-right"><a class="delete btn btn-danger"><i class="fa fa-trash-o"></i></a></td></tr>')
     });
     $.zO.saveCoords()
 })
