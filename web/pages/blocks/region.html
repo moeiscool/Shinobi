@@ -11,28 +11,25 @@
       <div class="modal-body">
       <div class="row">
           <div class="col-md-6 text-left">
+          <div class="form-group-group blue where">
+              <h4><span class="cord_name"></span>
+                <div class="pull-right">
+                    <a class="btn btn-success btn-xs add">&nbsp;<i class="fa fa-plus"></i>&nbsp;</a> 
+                    <a class="btn btn-danger btn-xs erase">&nbsp;<i class="fa fa-trash-o"></i>&nbsp;</a>  
+                </div>
+              </h4>
             <div class="form-group">
                 <label><span>Coords</span>
-                    <div class="input-group">
-                        <select id="regions_list" class="form-control"></select>
-                        <div class="input-group-btn">
-                            <a class="btn btn-success add">&nbsp;<i class="fa fa-plus"></i>&nbsp;</a>
-                        </div>
-                    </div>
+                    <select id="regions_list" class="form-control"></select>
                 </label>
             </div>
             <div class="row">
-                <div class="form-group col-md-6">
+                <div class="form-group col-md-12">
                     <label><span>Coord Name</span>
-                        <div class="input-group">
-                            <input class="form-control" name="name">
-                            <div class="input-group-btn">
-                                <a class="btn btn-danger erase">&nbsp;<i class="fa fa-trash-o"></i>&nbsp;</a>
-                            </div>
-                        </div>
+                        <input class="form-control" name="name">
                     </label>
                 </div>
-                <div class="form-group col-md-6">
+                <div class="form-group col-md-12">
                     <label><span>Indifference</span>
                         <input class="form-control" name="indifference">
                     </label>
@@ -43,7 +40,9 @@
                     <table class="table table-striped" id="regions_points"><tbody></tbody></table>
             </div>
           </div>
+          </div>
           <div class="col-md-6">
+              <p>If you are seeing a mountain image, try turning on <b>Snapshot (cgi-bin)</b> in your <b>Monitor Settings</b> before adding points.</p>
               <div class="canvas_holder">
                   <textarea id="regions_canvas" rows=3 class="hidden canvas-area input-xxlarge" disabled></textarea>
               </div>

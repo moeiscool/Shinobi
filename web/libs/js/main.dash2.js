@@ -887,6 +887,7 @@ $.zO.initCanvas=function(){
         e.cord.sensitivity=$.zO.regionViewerDetails.detector_sensitivity;
     }
     $.zO.f.find('[name="name"]').val(e.val)
+    $.zO.e.find('.cord_name').text(e.val)
     $.zO.f.find('[name="indifference"]').val(e.cord.sensitivity)
     $.zO.e.find('.canvas_holder canvas').remove();
     e.e=$.zO.ca.val(e.ar.join(','))

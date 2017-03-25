@@ -84,7 +84,6 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 #region_editor .cord_element .controls{margin-bottom:5px;}
 .form-group label span{width:35%;padding:5px;font-weight: 400;color: #2d2d2d;display: inline-block;}
 .form-group label{display: flex}
-.dark .form-group label span{color:#fff;}
 .form-group label span small{margin-left: 2px;display:block;font-weight: 600;}
 .form-group-group{padding:0 10px 10px 10px;overflow:hidden;margin-bottom:15px;border-radius:5px;border:1px solid #ddd;background:#fff}
 .form-group-group:last-child,.form-group-group > .form-group:last-child{margin-bottom:0}
