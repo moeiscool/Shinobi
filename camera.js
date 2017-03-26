@@ -956,7 +956,7 @@ s.camera=function(x,e,cn,tx){
                                 s.log(e,{type:"Can't Connect",msg:'Retrying...'});e.error_fatal();return;
                             }
                     }
-                    if(e.type!=='socket'&&e.protocol!=='udp'){
+                    if(e.type!=='socket'&&e.protocol!=='udp'&&e.type!=='local'){
                         connectionTester.test(e.hosty,e.port,2000,e.draw);
                     }else{
                         e.draw(null,{success:true})
@@ -1455,8 +1455,7 @@ var tx;
                     if(s.group[d.ke].mon[d.id].motion_lock){return}
                     d.cx={f:'detector_trigger',id:d.id,ke:d.ke,details:d.details};
                     s.tx(d.cx,'GRP_'+d.ke);
-                    d.mon=d.mon;
-                    if(d.mon.mode==='start'&&d.mon.details.detector_trigger=='1'){
+                    if(s.group[d.ke].mon_conf[d.id].mode==='start'&&d.mon.details.detector_trigger=='1'){
                         if(!s.group[d.ke].mon[d.id].watchdog_stop){
                             d.cx.f='detector_record_start';
                             s.tx(d.cx,'GRP_'+d.ke);

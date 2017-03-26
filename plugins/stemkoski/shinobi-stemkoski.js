@@ -35,47 +35,17 @@ s={
     globalCoords:{},
     globalCoordsObject:{}
 }
-s.initCanvas=function(d){
-    var width=d.mon.detector_scale_x;
-    var height=d.mon.detector_scale_y;
-    if(d.mon.detector_frame==='1'){
-        s.globalCoordsObject[d.id].frame={name:'frame',s:d.mon.detector_sensitivity,points:[[0,0],[0,height],[width,height],[width,0]]};
-        s.globalCoords[d.id].push(s.globalCoordsObject[d.id].frame);
-    }
-    s.globalCoords[d.id]=Object.values(d.mon.cords);
-    s.globalCoordsObject[d.id]=d.mon.cords;
-    for (var c = 0; c < s.globalCoords[d.id].length; c++){
-        var cord=s.globalCoords[d.id][c];
-        s.canvas[d.id+'_'+cord.name] = new Canvas(width,height);
-        s.canvasContext[d.id+'_'+cord.name] = s.canvas[d.id+'_'+cord.name].getContext('2d');
-        s.canvasContext[d.id+'_'+cord.name].fillStyle = '#005337';
-        s.canvasContext[d.id+'_'+cord.name].fillRect( 0, 0,width,height);
-        if(cord.points&&cord.points.length>0){
-            s.canvasContext[d.id+'_'+cord.name].beginPath();
-            for (var b = 0; b < cord.points.length; b++){
-                cord.points[b][0]=parseFloat(cord.points[b][0]);
-                cord.points[b][1]=parseFloat(cord.points[b][1]);
-                if(b===0){
-                    s.canvasContext[d.id+'_'+cord.name].moveTo(cord.points[b][0],cord.points[b][1]);
-                }else{
-                    s.canvasContext[d.id+'_'+cord.name].lineTo(cord.points[b][0],cord.points[b][1]);
-                }
-            }
-            s.canvasContext[d.id+'_'+cord.name].clip();
-        }
-    }
-}
-s.blenderRegion=function(mon,d,cord){
-	var width  = s.img[d.id].width;
-	var height = s.img[d.id].height;
-    if(isNaN(cord.sensitivity)){
-        cord.sensitivity=mon.detector_sensitivity;
-    }
+s.blenderRegion=function(d,cord){
+	d.width  = s.img[d.id].width;
+	d.height = s.img[d.id].height;
     if(!s.canvas[d.id+'_'+cord.name]){
-        s.canvas[d.id+'_'+cord.name] = new Canvas(width,height);
+        if(!cord.sensitivity||isNaN(cord.sensitivity)){
+            cord.sensitivity=d.mon.detector_sensitivity;
+        }
+        s.canvas[d.id+'_'+cord.name] = new Canvas(d.width,d.height);
         s.canvasContext[d.id+'_'+cord.name] = s.canvas[d.id+'_'+cord.name].getContext('2d');
         s.canvasContext[d.id+'_'+cord.name].fillStyle = '#005337';
-        s.canvasContext[d.id+'_'+cord.name].fillRect( 0, 0,width,height);
+        s.canvasContext[d.id+'_'+cord.name].fillRect( 0, 0,d.width,d.height);
         if(cord.points&&cord.points.length>0){
             s.canvasContext[d.id+'_'+cord.name].beginPath();
             for (var b = 0; b < cord.points.length; b++){
@@ -91,28 +61,26 @@ s.blenderRegion=function(mon,d,cord){
         }
     }
     try{
-    s.canvasContext[d.id+'_'+cord.name].drawImage(s.img[d.id], 0, 0, width, height);
+    s.canvasContext[d.id+'_'+cord.name].drawImage(s.img[d.id], 0, 0, d.width, d.height);
     }catch(err){
         console.log(err)
     }
-    
-    
     if(!s.blendRegion[d.id+'_'+cord.name]){
-        s.blendRegion[d.id+'_'+cord.name] = new Canvas(width, height);
+        s.blendRegion[d.id+'_'+cord.name] = new Canvas(d.width, d.height);
         s.blendRegionContext[d.id+'_'+cord.name] = s.blendRegion[d.id+'_'+cord.name].getContext('2d');
     }
-    var sourceData = s.canvasContext[d.id+'_'+cord.name].getImageData(0, 0, width, height);
+    var sourceData = s.canvasContext[d.id+'_'+cord.name].getImageData(0, 0, d.width, d.height);
 	// create an image if the previous image doesn�t exist
-	if (!s.lastRegionImageData[d.id+'_'+cord.name]) s.lastRegionImageData[d.id+'_'+cord.name] = s.canvasContext[d.id+'_'+cord.name].getImageData(0, 0, width, height);
+	if (!s.lastRegionImageData[d.id+'_'+cord.name]) s.lastRegionImageData[d.id+'_'+cord.name] = s.canvasContext[d.id+'_'+cord.name].getImageData(0, 0, d.width, d.height);
 	// create a ImageData instance to receive the blended result
-	var blendedData = s.canvasContext[d.id+'_'+cord.name].createImageData(width, height);
+	var blendedData = s.canvasContext[d.id+'_'+cord.name].createImageData(d.width, d.height);
 	// blend the 2 images
 	s.differenceAccuracy(blendedData.data,sourceData.data,s.lastRegionImageData[d.id+'_'+cord.name].data);
 	// draw the result in a canvas
 	s.blendRegionContext[d.id+'_'+cord.name].putImageData(blendedData, 0, 0);
 	// store the current webcam image
 	s.lastRegionImageData[d.id+'_'+cord.name] = sourceData;
-    blendedData = s.blendRegionContext[d.id+'_'+cord.name].getImageData(0, 0, width, height);
+    blendedData = s.blendRegionContext[d.id+'_'+cord.name].getImageData(0, 0, d.width, d.height);
     var i = 0;
     var average = 0;
     while (i < (blendedData.data.length * 0.25)) {
@@ -124,8 +92,8 @@ s.blenderRegion=function(mon,d,cord){
         s.cx({f:'trigger',id:d.id,ke:d.ke,frame:d.buffer,details:{plug:config.plug,name:cord.name,reason:'motion',confidence:average}})
 
     }
-    s.canvasContext[d.id+'_'+cord.name].clearRect(0, 0, width, height);
-    s.blendRegionContext[d.id+'_'+cord.name].clearRect(0, 0, width, height);
+    s.canvasContext[d.id+'_'+cord.name].clearRect(0, 0, d.width, d.height);
+    s.blendRegionContext[d.id+'_'+cord.name].clearRect(0, 0, d.width, d.height);
 }
 function fastAbs(value) {
     return (value ^ (value >> 31)) - (value >> 31);
@@ -162,13 +130,19 @@ s.differenceAccuracy=function(target, data1, data2) {
     }
 }
 
-s.checkAreas=function(d,mon){
-    if(mon.detector_frame==='1'&&!s.globalCoordsObject[d.id].frame){
-        s.globalCoordsObject[d.id].frame={name:'frame',s:mon.detector_sensitivity,points:[[0,0],[0,mon.detector_scale_y],[mon.detector_scale_x,mon.detector_scale_y],[mon.detector_scale_x,0]]};
+s.checkAreas=function(d){
+    if(!s.globalCoords[d.id]){
+        if(!d.mon.cords){d.mon.cords={}}
+        s.globalCoords[d.id]=Object.values(d.mon.cords);
+        s.globalCoordsObject[d.id]=d.mon.cords;
+    }
+    if(d.mon.detector_frame==='1'&&!s.globalCoordsObject[d.id].frame){
+        s.globalCoordsObject[d.id].frame={name:'frame',s:d.mon.detector_sensitivity,points:[[0,0],[0,s.img[d.id].height],[s.img[d.id].width,s.img[d.id].height],[s.img[d.id].width,0]]};
         s.globalCoords[d.id].push(s.globalCoordsObject[d.id].frame);
     }
 	for (var b = 0; b < s.globalCoords[d.id].length; b++){
-        s.blenderRegion(mon,d,s.globalCoords[d.id][b])
+        if(!s.globalCoords[d.id][b]){return}
+        s.blenderRegion(d,s.globalCoords[d.id][b])
  	}
 }
 
@@ -189,7 +163,15 @@ io.on('disconnect',function(d){
 io.on('f',function(d){
     switch(d.f){
         case'init_monitor':
-            s.initCanvas(d);
+            if(!s.globalCoords[d.id]){
+                if(!d.mon.cords){d.mon.cords={}}
+                s.globalCoords[d.id]=Object.values(d.mon.cords);
+                s.globalCoordsObject[d.id]=d.mon.cords;
+            }
+            if(d.mon.detector_frame==='1'&&!s.globalCoordsObject[d.id].frame){
+                s.globalCoordsObject[d.id].frame={name:'frame',s:d.mon.detector_sensitivity,points:[[0,0],[0,s.img[d.id].height],[s.img[d.id].width,s.img[d.id].height],[s.img[d.id].width,0]]};
+                s.globalCoords[d.id].push(s.globalCoordsObject[d.id].frame);
+            }
         break;
         case'frame':
             if(!d.buffer){
@@ -218,7 +200,7 @@ io.on('f',function(d){
                     s.img[d.id].height=d.mon.detector_scale_y;
                 }
                 s.img[d.id].src = d.buffer;
-                s.checkAreas({id:d.id,ke:d.ke,buffer:d.buffer},d.mon);
+                s.checkAreas(d);
                 d.buffer=null;
             }
         break;

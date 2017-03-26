@@ -798,6 +798,7 @@ $.ccio.ws.on('f',function (d){
 });
 $.ccio.cx=function(x){if(!x.ke){x.ke=$user.ke;};if(!x.uid){x.uid=$user.uid;};return $.ccio.ws.emit('f',x)}
 
+$(document).ready(function(e){
 //global form functions
 $.ccio.form={};
 $.ccio.form.details=function(e){
@@ -878,21 +879,27 @@ $.zO.initCanvas=function(){
     e={};
     e.ar=[];
     e.val=$.zO.rl.val();
-    e.cord=$.zO.regionViewerDetails.cords[e.val];
-    if(!e.cord.points){e.cord.points=[[0,0],[0,100],[100,0]]}
-    $.each(e.cord.points,function(n,v){
-        e.ar=e.ar.concat(v)
-    });
-    if(isNaN(e.cord.sensitivity)){
-        e.cord.sensitivity=$.zO.regionViewerDetails.detector_sensitivity;
+    if(!e.val){
+        $.zO.f.find('[name="name"]').val('')
+        $.zO.f.find('[name="indifference"]').val('')
+        $.zO.rp.empty()
+    }else{
+        e.cord=$.zO.regionViewerDetails.cords[e.val];
+        if(!e.cord.points){e.cord.points=[[0,0],[0,100],[100,0]]}
+        $.each(e.cord.points,function(n,v){
+            e.ar=e.ar.concat(v)
+        });
+        if(isNaN(e.cord.sensitivity)){
+            e.cord.sensitivity=$.zO.regionViewerDetails.detector_sensitivity;
+        }
+        $.zO.f.find('[name="name"]').val(e.val)
+        $.zO.e.find('.cord_name').text(e.val)
+        $.zO.f.find('[name="indifference"]').val(e.cord.sensitivity)
+        $.zO.e.find('.canvas_holder canvas').remove();
+        e.e=$.zO.ca.val(e.ar.join(','))
+        e.e.attr('data-image-url','/'+$user.auth_token+'/jpeg/'+$user.ke+'/'+$.aM.selected+'/s.jpg').canvasAreaDraw();
+        e.e.change();
     }
-    $.zO.f.find('[name="name"]').val(e.val)
-    $.zO.e.find('.cord_name').text(e.val)
-    $.zO.f.find('[name="indifference"]').val(e.cord.sensitivity)
-    $.zO.e.find('.canvas_holder canvas').remove();
-    e.e=$.zO.ca.val(e.ar.join(','))
-    e.e.attr('data-image-url','/'+$user.auth_token+'/jpeg/'+$user.ke+'/'+$.aM.selected+'/s.jpg').canvasAreaDraw();
-    e.e.change();
 }
 $.zO.e.on('change','[name="indifference"]',function(e){
     e.val=$(this).val();
@@ -918,9 +925,12 @@ $.zO.e.on('change','[point]',function(e){
     })
     $.zO.regionViewerDetails.cords[$.zO.name.val()].points=e.points;
     $.zO.initCanvas();
+    $.zO.initCanvas();
 })
 $.zO.e.find('.erase').click(function(e){
-    delete($.zO.regionViewerDetails.cords[$.zO.rl.val()]);
+    if(Object.keys($.zO.regionViewerDetails.cords).length>1){
+        delete($.zO.regionViewerDetails.cords[$.zO.rl.val()]);
+    }
     $.zO.initRegionList();
     //$.zO.rl.append('<option value="'+e.gid+'">'+e.gid+'</option>');
 });
@@ -962,7 +972,15 @@ $('#regions_points')
 })
 $.zO.e.on('click','.add',function(e){
     e.gid=$.ccio.gid(5);
+    e.save={};
+    $.each($.zO.regionViewerDetails.cords,function(n,v){
+        if(v&&v!==null&&v!=='null'){
+            e.save[n]=v;
+        }
+    })
+    $.zO.regionViewerDetails.cords=e.save;
     $.zO.regionViewerDetails.cords[e.gid]={name:e.gid,sensitivity:0.0005,points:[[0,0],[0,100],[100,0]]};
+    console.log($.zO.regionViewerDetails.cords)
     $.zO.rl.append('<option value="'+e.gid+'">'+e.gid+'</option>');
     $.zO.rl.val(e.gid)
     $.zO.rl.change();
@@ -1321,34 +1339,65 @@ $.pwrvid.e.on('click','[preview]',function(e){
         break;
     }
 })
-$.pwrvid.e.on('click','[timeline]',function(){
-    e={e:$(this)};
+$.pwrvid.drawTimeline=function(mid){
+    e={};
     e.live_header=$.pwrvid.lv.find('h3 span');
     e.live=$.pwrvid.lv.find('iframe');
-    e.mid=e.e.attr('timeline');
+    e.JSONurl='/'+$user.auth_token+'/videos/'+$user.ke;
+    if(mid!==''){
+        e.JSONurl+='/'+mid;
+        e.live_header.text($.ccio.mon[mid].name)
+        e.live.attr('src','/'+$user.auth_token+'/embed/'+$user.ke+'/'+mid+'/fullscreen|jquery')
+    }
+    $.getJSON('/'+$user.auth_token+'/events/'+$user.ke+'/'+mid+'/500',function(events){
+        $.getJSON(e.JSONurl,function(d){
+            if($.pwrvid.t&&$.pwrvid.t.destroy){$.pwrvid.t.destroy()}
+            var items=[];
+            var groupNames = {};
+            var groups = new vis.DataSet();
+            
+            $.each(events,function(n,v){
+                v.mon=$.ccio.mon[v.mid];
+                if(!groupNames[v.mid+'_events']){
+                    groupNames[v.mid+'_events']=1;
+                    groups.add([{id:v.mid+'_events', content:v.mon.name+' Events'}]);
+                }
+
+                items.push({id:n+'_events',group:v.mid+'_events',content:v.details.reason+' '+v.details.confidence+' '+v.time,start:v.time})
+            });
+            $.each(d,function(n,v){
+                v.mon=$.ccio.mon[v.mid];
+                v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
+                if(v.status>0){
+
+                    if(!groupNames[v.mid]){
+                        groupNames[v.mid]=1;
+                        groups.add([{id:v.mid, content:v.mon.name,nestedGroups:[v.mid+'_events']}]);
+                    }
+
+                    var ts = new Date(v.time);
+                    ts.setSeconds(ts.getSeconds() + 10)
+                    var te = new Date(v.end);
+                    te.setSeconds(te.getSeconds() - 10)
+                    items.push({id:n,group:v.mid,content:'<div mid="'+v.mid+'" ke="'+v.ke+'" status="'+v.status+'" file="'+v.filename+'"><a preview="video" href="'+v.href+'" class="btn btn-xs btn-primary">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a> '+v.mon.name+' - '+v.filename,start:ts,end:te})
+                }
+            });
+            var options = {
+                groupOrder: 'content'
+            };
+            items = new vis.DataSet(items);
+            $.pwrvid.t = new vis.Timeline($.pwrvid.d[0]);
+            $.pwrvid.t.setOptions(options);
+            $.pwrvid.t.setGroups(groups);
+            $.pwrvid.t.setItems(items);
+        })
+    })
+}
+$.pwrvid.e.on('click','[timeline]',function(){
+    e={e:$(this)};
     $.pwrvid.e.find('[timeline]').removeClass('active');
     e.e.addClass('active');
-    e.JSONurl='/'+$user.auth_token+'/videos/'+$user.ke;
-    if(e.mid!==''){
-        e.JSONurl+='/'+e.mid;
-        e.live_header.text($.ccio.mon[e.mid].name)
-        e.live.attr('src','/'+$user.auth_token+'/embed/'+$user.ke+'/'+e.mid+'/fullscreen|jquery')
-    }
-    $.getJSON(e.JSONurl,function(d){
-        if($.pwrvid.t&&$.pwrvid.t.destroy){$.pwrvid.t.destroy()}
-        var items=[];
-        $.each(d,function(n,v){
-            v.mon=$.ccio.mon[v.mid];
-            v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
-            if(v.status>0){
-                var t = new Date(v.end);
-                t.setSeconds(t.getSeconds() - 10)
-                items.push({id:n,content:'<div mid="'+v.mid+'" ke="'+v.ke+'" status="'+v.status+'" file="'+v.filename+'"><a preview="video" href="'+v.href+'" class="btn btn-xs btn-primary">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a> '+v.mon.name+' - '+v.filename,start:v.time,end:t})
-            }
-        })
-        items = new vis.DataSet(items);
-        $.pwrvid.t = new vis.Timeline($.pwrvid.d[0], items, {});
-    })
+    $.pwrvid.drawTimeline(e.e.attr('timeline'))
 })
 $.pwrvid.e.on('hidden.bs.modal',function(e){
     $(this).find('iframe').attr('src','')
@@ -1470,6 +1519,10 @@ $('body')
         e.mon=$.ccio.mon[e.mid];//monitor configuration
     switch(e.a){
         case'region':
+            if(!e.mon){
+                new PNotify({title:'Unable to Launch',text:'Please save new monitor first. Then attempt to launch the region editor.',type:'error'});
+                return;
+            }
             e.d=JSON.parse(e.mon.details);
             e.width=$.aM.e.find('[detail="detector_scale_x"]');
             e.height=$.aM.e.find('[detail="detector_scale_y"]');
@@ -1490,6 +1543,7 @@ $('body')
                 if(e.d.cords&&(e.d.cords instanceof Object)===false){
                 try{e.d.cords=JSON.parse(e.d.cords);}catch(er){}
             }
+            console.log(e.d.cords)
             if(!e.d.cords||e.d.cords===''){
                 e.d.cords={
                     red:{ name:"red",sensitivity:0.0005, points:[[0,0],[0,100],[100,0]] },
@@ -1788,8 +1842,6 @@ $('body')
     });
 }); 
 
-////
-$(document).ready(function(e){
     e.o=$.ccio.op().class_toggle;
     if(e.o){
         $.each(e.o,function(n,v){
