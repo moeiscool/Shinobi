@@ -169,7 +169,7 @@ io.on('f',function(d){
                 s.globalCoordsObject[d.id]=d.mon.cords;
             }
             if(d.mon.detector_frame==='1'&&!s.globalCoordsObject[d.id].frame){
-                s.globalCoordsObject[d.id].frame={name:'frame',s:d.mon.detector_sensitivity,points:[[0,0],[0,s.img[d.id].height],[s.img[d.id].width,s.img[d.id].height],[s.img[d.id].width,0]]};
+                s.globalCoordsObject[d.id].frame={name:'frame',s:d.mon.detector_sensitivity,points:[[0,0],[0,d.mon.detector_scale_y],[d.mon.detector_scale_x,d.mon.detector_scale_y],[d.mon.detector_scale_x,0]]};
                 s.globalCoords[d.id].push(s.globalCoordsObject[d.id].frame);
             }
         break;
