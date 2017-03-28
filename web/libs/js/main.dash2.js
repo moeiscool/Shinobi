@@ -1188,8 +1188,8 @@ $('#saved_filters').change(function(e){
     $.fI.e.find('.filter_name').text(e.name)
 }).change()
 $.fI.f.find('.delete').click(function(e){
-    $.confirm.title.text('Delete Monitor : '+e.mon.name)
-    e.html='Do you want to delete this monitor? You cannot recover it.'
+    $.confirm.title.text('Delete Filter : '+e.mon.name)
+    e.html='Do you want to delete this filter? You cannot recover it.'
     e.html+='<table class="info-table"><tr>';
     $.each(e.mon,function(n,v,g){
         if(n==='host'&&v.indexOf('@')>-1){g=v.split('@')[1]}else{g=v};
@@ -1207,7 +1207,7 @@ $.fI.f.submit(function(e){
     e.er=[];
     console.log(e.s)
     $.each(e.s,function(n,v){e.s[n]=v.trim()})
-    e.s.where=[];
+    e.s.where={};
     $('.where-row').each(function(n,v){
         n={};
         $(v).find('[where]').each(function(m,b){
@@ -1766,9 +1766,9 @@ $('body')
                             "stream_scale_y":"",
                             "svf":"",
                             "vcodec":"libx264",
-                            "crf":"",
+                            "crf":"1",
                             "preset_record":"",
-                            "acodec":"libvorbis",
+                            "acodec":"none",
                             "timestamp":"0",
                             "dqf":"0",
                             "cutoff":"15",

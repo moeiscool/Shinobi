@@ -1213,8 +1213,12 @@ var tx;
                             if(!s.group[d.ke]||!s.group[d.ke].mon[d.mid]){return}
                             d.m=s.group[d.ke].mon_conf[d.mid];
                             if(d.m.details.control!=="1"){s.log(d,{type:'Control Error',msg:'Control is not enabled'});return}
-                            d.base=s.init('url_no_path',d.m);
-                           if(!d.m.details.control_url_stop_timeout||d.m.details.control_url_stop_timeout===''){d.m.details.control_url_stop_timeout=1000} request({url:d.base+d.m.details['control_url_'+d.direction],method:'GET'},function(err,data){
+                            if(!d.control_base_url||d.control_base_url===''){
+                                d.base=s.init('url_no_path',d.m);
+                            }else{
+                                d.base=d.control_base_url;
+                            }
+                            if(!d.m.details.control_url_stop_timeout||d.m.details.control_url_stop_timeout===''){d.m.details.control_url_stop_timeout=1000} request({url:d.base+d.m.details['control_url_'+d.direction],method:'GET'},function(err,data){
                                 if(err){s.log(d,{type:'Control Error',msg:err});return false}
                                 if(d.m.details.control_stop=='1'&&d.direction!=='center'){
                                    setTimeout(function(){
