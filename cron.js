@@ -151,7 +151,7 @@ s.cron=function(){
                         "where":{
                             "p1":"end",
                             "p2":"<",
-                            "p3":"DATE_SUB(NOW(), INTERVAL ? DAY)",
+                            "p3":"DATE_SUB(NOW(), INTERVAL "+v.d.days+" DAY)",
                         }
                     };
                 }
@@ -166,7 +166,6 @@ s.cron=function(){
                             evs.forEach(function(ev){
                                 es.size+=ev.size/1000000;
                                 ev.dir=s.dir.videos+v.ke+'/'+ev.mid+'/'+s.moment(ev.time)+'.'+ev.ext;
-                                console.log(fs.existsSync(ev.dir))
                                 if(config.cron.deleteNoVideo===true&&fs.existsSync(ev.dir)===false){
                                     es.del.push('(mid=? AND time=?)');
                                     es.ar.push(ev.mid),es.ar.push(ev.time);
