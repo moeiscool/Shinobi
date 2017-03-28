@@ -531,14 +531,14 @@ s.ffmpeg=function(e,x){
         if(!e.details.detector_fps||e.details.detector_fps===''){e.details.detector_fps=0.5}
         if(e.details.detector_scale_x&&e.details.detector_scale_x!==''&&e.details.detector_scale_y&&e.details.detector_scale_y!==''){x.dratio=' -s '+e.details.detector_scale_x+'x'+e.details.detector_scale_y}else{x.dratio=''}
         if(e.details.cust_detect&&e.details.cust_detect!==''){x.cust_detect+=e.details.cust_detect;}
-        x.pipe+=' -c:v mjpeg -f image2pipe -r '+e.details.detector_fps+x.cust_detect+x.dratio+' pipe:0';
+        x.pipe+=' -f singlejpeg -vf fps='+e.details.detector_fps+x.cust_detect+x.dratio+' pipe:0';
     }
-    //snapshot bin/ cgi.bin
+    //snapshot bin/ cgi.bin (JPEG Mode)
     if(e.details.snap==='1'){
         if(!e.details.snap_fps||e.details.snap_fps===''){e.details.snap_fps=1}
         if(e.details.snap_scale_x&&e.details.snap_scale_x!==''&&e.details.snap_scale_y&&e.details.snap_scale_y!==''){x.sratio=' -s '+e.details.snap_scale_x+'x'+e.details.snap_scale_y}else{x.sratio=''}
         if(e.details.cust_snap&&e.details.cust_snap!==''){x.cust_snap=' '+e.details.cust_snap;}else{x.cust_snap=''}
-        x.pipe+=' -update 1 -r '+e.details.snap_fps+x.cust_snap+x.sratio+' '+e.sdir+'s.jpg';
+        x.pipe+=' -update 1 -r '+e.details.snap_fps+x.cust_snap+x.sratio+' '+e.sdir+'s.jpg -y';
     }
     //custom output
     if(e.details.custom_output&&e.details.custom_output!==''){x.pipe+=' '+e.details.custom_output;}
@@ -744,22 +744,25 @@ s.camera=function(x,e,cn,tx){
             if(!e.details.cutoff||e.details.cutoff===''){e.cutoff=15}else{e.cutoff=parseFloat(e.details.cutoff)};
             if(isNaN(e.cutoff)===true){e.cutoff=15}
             s.group[e.ke].mon[e.id].fswatch=fs.watch(e.dir,{encoding:'utf8'},function(eventType,filename){
-                if(eventType==='change'){
-                    clearTimeout(s.group[e.ke].mon[e.id].checker)
-                    s.group[e.ke].mon[e.id].checker=setTimeout(function(){
-                        if(s.group[e.ke].mon[e.id].started===1){
-                            e.fn();
-                            s.log(e,{type:'FFMPEG Not Recording',msg:{msg:'Restarting Process'}});
+                switch(eventType){
+                    case'change':
+                        clearTimeout(s.group[e.ke].mon[e.id].checker)
+                        s.group[e.ke].mon[e.id].checker=setTimeout(function(){
+                            if(s.group[e.ke].mon[e.id].started===1){
+                                e.fn();
+                                s.log(e,{type:'FFMPEG Not Recording',msg:{msg:'Restarting Process'}});
+                            }
+                        },60000);
+                    break;
+                    case'rename':
+                        if(s.group[e.ke].mon[e.id].open&&s.group[e.ke].mon[e.id].record.yes===1){
+                            s.video('close',e);
                         }
-                    },(60000*e.cutoff)+10000)
-                }else if(eventType==='rename'){
-                    if(s.group[e.ke].mon[e.id].open&&s.group[e.ke].mon[e.id].record.yes===1){
-                        s.video('close',e);
-                    }
-                    e.filename=filename.split('.')[0];
-                    s.video('open',e);
-                    s.group[e.ke].mon[e.id].open=e.filename;
-                    s.group[e.ke].mon[e.id].open_ext=e.ext;
+                        e.filename=filename.split('.')[0];
+                        s.video('open',e);
+                        s.group[e.ke].mon[e.id].open=e.filename;
+                        s.group[e.ke].mon[e.id].open_ext=e.ext;
+                    break;
                 }
             })
             s.camera('snapshot',{mid:e.id,ke:e.ke,mon:e})
