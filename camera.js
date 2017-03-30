@@ -1906,6 +1906,10 @@ app.get('/:auth/hls/:ke/:id/:file', function (req,res){
 //Get JPEG snap
 app.get('/:auth/jpeg/:ke/:id/s.jpg', function(req,res){
     s.auth(req.params,function(user){
+        if(user.details.sub&&user.details.monitors.indexOf(req.params.id)===-1){
+            res.send('Not Permitted');
+            return
+        }
         req.dir=s.dir.streams+req.params.ke+'/'+req.params.id+'/s.jpg';
             res.writeHead(200, {
             'Content-Type': 'image/jpeg',
@@ -1925,6 +1929,10 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
         res.render('mjpeg',{url:'/'+req.params.auth+'/mjpeg/'+req.params.ke+'/'+req.params.id})
     }else{
         s.auth(req.params,function(user){
+            if(user.details.sub&&user.details.monitors.indexOf(req.params.id)===-1){
+                res.send('Not Permitted');
+                return
+            }
             res.writeHead(200, {
             'Content-Type': 'multipart/x-mixed-replace; boundary=shinobi',
             'Cache-Control': 'no-cache',
@@ -1958,15 +1966,10 @@ app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,re
     s.auth(req.params,function(user){
         req.sql='SELECT * FROM Monitors WHERE ke=? and mid=?';
         req.ar=[req.params.ke,req.params.id];
-        
-        if(user.details&&user.details.monitors&&user.details.monitors!==''){
-            try{user.details.monitors=JSON.parse(user.details.monitors)}catch(er){}
-            if(user.details.monitors.indexOf(req.params.id)===-1){
-                res.send('Not Permitted by Master Account');
-                return;
-            }
+        if(user.details.sub&&user.details.monitors.indexOf(req.params.id)===-1){
+            res.send('Not Permitted');
+            return
         }
-        
         sql.query(req.sql,req.ar,function(err,r){
             if(r&&r[0]){r=r[0];}
             res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,port:config.port,mon:r});
@@ -1979,16 +1982,23 @@ app.get(['/:auth/monitor/:ke','/:auth/monitor/:ke/:id'], function (req,res){
     res.setHeader('Content-Type', 'application/json');
     req.fn=function(user){
         req.sql='SELECT * FROM Monitors WHERE ke=?';req.ar=[req.params.ke];
-        
         if(!req.params.id){
-            try{
-                user.details.monitors=JSON.parse(user.details.monitors);
+            if(user.details.sub&&user.details.monitors){
+                try{user.details.monitors=JSON.parse(user.details.monitors);}catch(er){}
+                req.or=[];
                 user.details.monitors.forEach(function(v,n){
-                    req.sql+=' OR mid=?';req.ar.push(v)
+                    req.or.push('mid=?');req.ar.push(v)
                 })
-            }catch(er){}
+                req.sql+=' AND ('+req.or.join(' OR ')+')'
+            }
+        }else{
+            if(!user.details.sub||user.details.monitors.indexOf(req.params.id)>-1){
+                req.sql+=' and mid=?';req.ar.push(req.params.id)
+            }else{
+                res.send(s.s([], null, 3));
+                return
+            }
         }
-        if(req.params.id){req.sql+=' and mid=?';req.ar.push(req.params.id)}
         sql.query(req.sql,req.ar,function(err,r){
             if(r.length===1){r=r[0];}
             res.send(s.s(r, null, 3));
@@ -2000,15 +2010,23 @@ app.get(['/:auth/monitor/:ke','/:auth/monitor/:ke/:id'], function (req,res){
 app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id','/:auth/videos/:ke/:id'], function (req,res){
     s.auth(req.params,function(user){
         req.sql='SELECT * FROM Videos WHERE ke=?';req.ar=[req.params.ke];
-        
-        if(user.details&&user.details.monitors&&user.details.monitors!==''){
-            try{user.details.monitors=JSON.parse(user.details.monitors)}catch(er){}
-            user.details.monitors.forEach(function(v,n){
-                req.sql+=' and mid=?';req.ar.push(v)
-            })
+        if(!req.params.id){
+            if(user.details.monitors){
+                try{user.details.monitors=JSON.parse(user.details.monitors);}catch(er){}
+                req.or=[];
+                user.details.monitors.forEach(function(v,n){
+                    req.or.push('mid=?');req.ar.push(v)
+                })
+                req.sql+=' AND ('+req.or.join(' OR ')+')'
+            }
+        }else{
+            if(!user.details.sub||user.details.monitors.indexOf(req.params.id)>-1){
+                req.sql+=' and mid=?';req.ar.push(req.params.id)
+            }else{
+                res.send(s.s([], null, 3));
+                return
+            }
         }
-        
-        if(req.params.id){req.sql+='and mid=?';req.ar.push(req.params.id)}
         if(!req.query.limit||req.query.limit==''){req.query.limit=100}
         req.sql+=' ORDER BY `time` DESC LIMIT '+req.query.limit+'';
         sql.query(req.sql,req.ar,function(err,r){
@@ -2025,15 +2043,23 @@ app.get(['/:auth/events/:ke','/:auth/events/:ke/:id','/:auth/events/:ke/:id/:lim
     res.setHeader('Content-Type', 'application/json');
     s.auth(req.params,function(user){
         req.sql='SELECT * FROM Events WHERE ke=?';req.ar=[req.params.ke];
-
-        if(user.details&&user.details.monitors&&user.details.monitors!==''){
-            try{user.details.monitors=JSON.parse(user.details.monitors)}catch(er){}
-            user.details.monitors.forEach(function(v,n){
-                req.sql+=' and mid=?';req.ar.push(v)
-            })
+        if(!req.params.id){
+            if(user.details.monitors){
+                try{user.details.monitors=JSON.parse(user.details.monitors);}catch(er){}
+                req.or=[];
+                user.details.monitors.forEach(function(v,n){
+                    req.or.push('mid=?');req.ar.push(v)
+                })
+                req.sql+=' AND ('+req.or.join(' OR ')+')'
+            }
+        }else{
+            if(!user.details.sub||user.details.monitors.indexOf(req.params.id)>-1){
+                req.sql+=' and mid=?';req.ar.push(req.params.id)
+            }else{
+                res.send(s.s([], null, 3));
+                return
+            }
         }
-        
-        if(req.params.id){req.sql+=' and mid=?';req.ar.push(req.params.id)}
         if(req.params.start&&req.params.start!==''){
             req.params.start=req.params.start.replace('T',' ')
             if(req.params.end&&req.params.end!==''){
@@ -2064,15 +2090,23 @@ app.get(['/:auth/logs/:ke','/:auth/logs/:ke/:id','/:auth/logs/:ke/:limit','/:aut
     res.setHeader('Content-Type', 'application/json');
     s.auth(req.params,function(user){
         req.sql='SELECT * FROM Logs WHERE ke=?';req.ar=[req.params.ke];
-        
-        if(user.details&&user.details.monitors&&user.details.monitors!==''){
-            try{user.details.monitors=JSON.parse(user.details.monitors)}catch(er){}
-            user.details.monitors.forEach(function(v,n){
-                req.sql+=' and mid=?';req.ar.push(v)
-            })
+        if(!req.params.id){
+            if(user.details.monitors){
+                try{user.details.monitors=JSON.parse(user.details.monitors);}catch(er){}
+                req.or=[];
+                user.details.monitors.forEach(function(v,n){
+                    req.or.push('mid=?');req.ar.push(v)
+                })
+                req.sql+=' AND ('+req.or.join(' OR ')+')'
+            }
+        }else{
+            if(!user.details.sub||user.details.monitors.indexOf(req.params.id)>-1){
+                req.sql+=' and mid=?';req.ar.push(req.params.id)
+            }else{
+                res.send(s.s([], null, 3));
+                return
+            }
         }
-        
-        if(req.params.id){req.sql+=' and mid=?';req.ar.push(req.params.id)}
         if(!req.params.limit||req.params.limit==''){req.params.limit=100}
         req.sql+=' ORDER BY `time` DESC LIMIT '+req.params.limit+'';
         sql.query(req.sql,req.ar,function(err,r){
@@ -2090,7 +2124,16 @@ app.get('/:auth/smonitor/:ke', function (req,res){
     req.ret={ok:false};
     res.setHeader('Content-Type', 'application/json');
     req.fn=function(user){
-        sql.query('SELECT * FROM Monitors WHERE ke=?',[req.params.ke],function(err,r){
+        req.sql='SELECT * FROM Monitors WHERE ke=?';req.ar=[req.params.ke];
+        if(user.details.sub&&user.details.monitors){
+            try{user.details.monitors=JSON.parse(user.details.monitors);}catch(er){}
+            req.or=[];
+            user.details.monitors.forEach(function(v,n){
+                req.or.push('mid=?');req.ar.push(v)
+            })
+            req.sql+=' AND ('+req.or.join(' OR ')+')'
+        }
+        sql.query(req.sql,req.ar,function(err,r){
             if(r&&r[0]){
                 req.ar=[];
                 r.forEach(function(v){

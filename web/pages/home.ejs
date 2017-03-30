@@ -1,3 +1,4 @@
+<% var details=JSON.parse($user.details) %>
 <% include blocks/header %>
 <script>var $user=<%- JSON.stringify($user) %>;</script>
 <link rel="stylesheet" href="libs/css/material.min.css">
@@ -11,7 +12,18 @@
 <link rel="stylesheet" href="libs/css/fullcalendar.min.css">
 <link rel="stylesheet" href="libs/css/bootstrap-table.min.css">
 <link rel="stylesheet" href="libs/css/main.dash2.css">
-<style id="custom_css"><%= JSON.parse($user.details).css %></style>
+<style id="custom_css">
+<%= details.css %>
+
+<% if(details.sub){ 
+    details.monitor_edit.forEach(function(v,n){ %>
+    [mid="<%= v %>"] .permission_monitor_edit{display:inline-block}
+  <% })
+    details.video_delete.forEach(function(v,n){ %>
+    [mid="<%= v %>"] .permission_video_delete{display:inline-block}
+  <% })
+} %>
+</style>
 <html lang="en">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">

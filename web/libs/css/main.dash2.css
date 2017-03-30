@@ -18,7 +18,8 @@ img{max-width:100%}
 
 .jpegMode .cpu_load .progress-bar,.jpegMode .ram_load .progress-bar{background-color:#5cb85c}
 .jpegMode [system="jpegToggle"]{color:#5cb85c!important}
-
+.permission_monitor_edit{display:none}
+.permission_video_delete{display:none}
 
 .monitor_item.fullscreen .stream-element{position:fixed;left:0;top:0;z-index:1;height:100%;width:100%}
 .monitor_item .stream-element{width:100%;height:300px;border:0;}
