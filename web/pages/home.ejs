@@ -24,10 +24,14 @@
       <header id="main_header" class="demo-header mdl-layout__header">
         <div class="mdl-layout__header-row">
         <ul class="nav navbar-nav">
-            <li class_toggle="hide-side" data-target=".mdl-js-layout"><a>&nbsp;<i class="fa fa-bars"></i>&nbsp;</a></li>
-            <li class_toggle="mosaic" data-target="#monitors_live"><a>&nbsp;<i class="fa fa-th"></i>&nbsp;</a></li>
-            <li mid="" ke="" class="hidden-xs"><a monitor="edit">&nbsp;<i class="fa fa-plus"></i>&nbsp;</a></li>
-            <li class="hidden-xs" data-toggle="modal" data-target="#pvideo_viewer"><a>&nbsp;<i class="fa fa-map-marker"></i>&nbsp;</a></li>
+            <li title="Toggle Sidebar" class_toggle="hide-side" data-target=".mdl-js-layout"><a>&nbsp;<i class="fa fa-bars"></i>&nbsp;</a></li>
+            <li title="Montage" class_toggle="mosaic" data-target="#monitors_live"><a>&nbsp;<i class="fa fa-th"></i>&nbsp;</a></li>
+            <li title="Add Monitor" mid="" ke="" class="hidden-xs"><a monitor="edit">&nbsp;<i class="fa fa-plus"></i>&nbsp;</a></li>
+            <li title="Power Video Viewer" class="hidden-xs" data-toggle="modal" data-target="#pvideo_viewer"><a>&nbsp;<i class="fa fa-map-marker"></i>&nbsp;</a></li>
+            <li>
+                <a title="Monitor Groups" id="group_list_button" class="mdl-js-button">&nbsp;<i class="fa fa-video-camera"></i>&nbsp;</a>
+                <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="group_list_button" id="group_list"></ul>
+            </li>
             <li class="os_bars hidden-xs">
                 <div class="display-table">
                     <div class="cpu_load display-table-cell">
@@ -108,9 +112,7 @@
         </nav>
       </div>
       <main class="mdl-layout__content selected" id="main_canvas">
-          <div class="demo-blog__posts mdl-grid" id="monitors_live">
-
-          </div>
+          <div class="demo-blog__posts mdl-grid" id="monitors_live"></div>
       </main>
     </div>
       <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" style="position: fixed; left: -1000px; height: -1000px;">

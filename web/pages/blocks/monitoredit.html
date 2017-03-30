@@ -570,16 +570,16 @@
               </div>
               <div class="h_c_input h_c_1">
                   <div class="form-group">
-                    <label><span>Control <small>Monitor Need a Stop URL?</small></span>
+                    <label><span>Custom Base URL <small>Leave blank to use Host URL</small></span>
+                    <input class="form-control" detail="control_base_url" placeholder="Example : http://111.111.111.111:8080">
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Stop URL</span>
                         <select class="form-control" detail="control_stop" selector="h_cs">
                             <option value="0">No</option>  
                             <option value="1">Yes</option>
                         </select>
-                    </label>
-                  </div>
-                  <div class="form-group h_c_input h_c_1">
-                    <label><span>Custom Base URL <small>Leave blank to use Host URL.</small></span>
-                    <input class="form-control" detail="control_base_url" placeholder="Example : http://111.111.111.111/">
                     </label>
                   </div>
                   <div class="form-group h_cs_input h_cs_1">
@@ -587,12 +587,12 @@
                     <input class="form-control" detail="control_url_stop_timeout" placeholder="1000">
                     </label>
                   </div>
-                  <div class="form-group h_c_input h_c_1">
+                  <div class="form-group">
                     <label><span>Control Center <small>URL Address</small></span>
                     <input class="form-control" detail="control_url_center" placeholder="">
                     </label>
                   </div>
-                  <div class="form-group h_c_input h_c_1">
+                  <div class="form-group">
                     <label><span>Control Left <small>URL Address</small></span>
                     <input class="form-control" detail="control_url_left" placeholder="">
                     </label>
@@ -602,7 +602,7 @@
                     <input class="form-control" detail="control_url_left_stop" placeholder="">
                     </label>
                   </div>
-                  <div class="form-group h_c_input h_c_1">
+                  <div class="form-group">
                     <label><span>Control Right <small>URL Address</small></span>
                     <input class="form-control" detail="control_url_right" placeholder="">
                     </label>
@@ -612,7 +612,7 @@
                     <input class="form-control" detail="control_url_right_stop" placeholder="">
                     </label>
                   </div>
-                  <div class="form-group h_c_input h_c_1">
+                  <div class="form-group">
                     <label><span>Control Up <small>URL Address</small></span>
                     <input class="form-control" detail="control_url_up" placeholder="">
                     </label>
@@ -622,7 +622,7 @@
                     <input class="form-control" detail="control_url_up_stop" placeholder="">
                     </label>
                   </div>
-                  <div class="form-group h_c_input h_c_1">
+                  <div class="form-group">
                     <label><span>Control Down <small>URL Address</small></span>
                     <input class="form-control" detail="control_url_down" placeholder="">
                     </label>
@@ -632,6 +632,13 @@
                     <input class="form-control" detail="control_url_down_stop" placeholder="">
                     </label>
                   </div>
+              </div>
+          </div>
+          <div class="form-group-group purple">
+          <h4>Grouping</h4>
+              <div>
+                  <ul class="mdl-list" id="monitor_group"></ul>
+                  <input type="hidden" detail="groups">
               </div>
           </div>
           <div class="form-group-group green">

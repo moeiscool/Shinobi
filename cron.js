@@ -94,25 +94,27 @@ s.checkForOrphanedFiles=function(v){
                 fs.readdir(s.dir.videos+mon.ke+'/'+mon.mid, function(err, items) {
                     e.query=[];
                     e.filesFound=[mon.ke,mon.mid];
-                    items.forEach(function(v,n){
-                        e.query.push('time=?')
-                        e.filesFound.push(s.nameToTime(v))
-                    })
-                    sql.query('SELECT * FROM Videos WHERE ke=? AND mid=? AND ('+e.query.join(' OR ')+')',e.filesFound,function(arr,r) {
-                        if(!r){r=[]};
-                        e.foundSQLrows=[];
-                        r.forEach(function(v,n){
-                            v.index=e.filesFound.indexOf(s.moment(v.time,'YYYY-MM-DD HH:mm:ss'));
-                            if(v.index>-1){
-                                delete(items[v.index-2]);
-                            }
-                        });
+                    if(items&&items.length>0){
                         items.forEach(function(v,n){
-                            if(v&&v!==null){
-                                exec('rm '+s.dir.videos+mon.ke+'/'+mon.mid+'/'+v);
-                            }
+                            e.query.push('time=?')
+                            e.filesFound.push(s.nameToTime(v))
                         })
-                    })
+                        sql.query('SELECT * FROM Videos WHERE ke=? AND mid=? AND ('+e.query.join(' OR ')+')',e.filesFound,function(arr,r) {
+                            if(!r){r=[]};
+                            e.foundSQLrows=[];
+                            r.forEach(function(v,n){
+                                v.index=e.filesFound.indexOf(s.moment(v.time,'YYYY-MM-DD HH:mm:ss'));
+                                if(v.index>-1){
+                                    delete(items[v.index-2]);
+                                }
+                            });
+                            items.forEach(function(v,n){
+                                if(v&&v!==null){
+                                    exec('rm '+s.dir.videos+mon.ke+'/'+mon.mid+'/'+v);
+                                }
+                            })
+                        })
+                    }
                 })
             });
         });

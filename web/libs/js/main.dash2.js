@@ -9,6 +9,26 @@ $.ccio={fr:$('#files_recent'),mon:{}};
     $.ccio.init=function(x,d,z,k){
         if(!k){k={}};k.tmp='';
         switch(x){
+            case'monGroup':
+                $.ccio.mon_groups={};
+                $.each($.ccio.mon,function(n,v,x){
+                    if(typeof v.details==='string'){
+                        k.d=JSON.parse(v.details)
+                    }else{
+                        k.d=v.details
+                    }
+                    try{
+                        k.groups=JSON.parse(k.d.groups)
+                        $.each(k.groups,function(m,b){
+                            if(!$.ccio.mon_groups[b])$.ccio.mon_groups[b]={}
+                            $.ccio.mon_groups[b][v.mid]=v;
+                        })
+                    }catch(er){
+                           
+                    }
+                })
+                return $.ccio.mon_groups;
+            break;
             case'jpegMode':
                 $.each($.ccio.mon,function(n,v,x){
                     if(v.watch===1){
@@ -68,8 +88,12 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             case'id':
                 $('.usermail').html(d.mail)
                 try{k.d=JSON.parse(d.details);}catch(er){k.d=d.details}
+                try{$user.mon_groups=JSON.parse(k.d.mon_groups);}catch(er){}
+                if(!$user.mon_groups)$user.mon_groups={};
+                $.sM.reDrawMonGroups()
                 $.each($user,function(n,v){$.sM.e.find('[name="'+n+'"]').val(v).change()})
                 $.each(k.d,function(n,v){$.sM.e.find('[detail="'+n+'"]').val(v).change()})
+                $.gR.drawList();
             break;
             case'jsontoblock'://draw json as block
                 if(d instanceof Object){
@@ -592,6 +616,7 @@ $.ccio.ws.on('f',function (d){
                 if($.ccio.op().jpeg_on===true){
                     $.ccio.cx({f:'monitor',ff:'jpeg_on'})
                 }
+                $.gR.drawList();
             })
             $.ccio.pm(3,d.apis);
             $('.os_platform').html(d.os.platform)
@@ -687,6 +712,7 @@ $.ccio.ws.on('f',function (d){
                     break;
                 }
             d.e.find('.monitor_mode').text(d.mode)
+            $.gR.drawList();
         break;
         case'mode_jpeg_off':
             $.ccio.op('jpeg_on',"0");
@@ -852,6 +878,29 @@ $.oB.e.find('[name="user"]').change(function(e){
 if($.ccio.op().onvif_probe_user){
     $.oB.e.find('[name="user"]').val($.ccio.op().onvif_probe_user)
 }
+//Group Selector
+$.gR={e:$('#group_list'),b:$('#group_list_button')};
+$.gR.drawList=function(){
+    e={};
+    e.tmp='';
+    $.each($.ccio.init('monGroup'),function(n,v){
+        e.tmp+='<li class="mdl-menu__item" group="'+n+'">'+$user.mon_groups[n].name+'</li>'
+    })
+    $.gR.e.html(e.tmp)
+}
+$.gR.e.on('click','[group]',function(){
+    e={};
+    e.e=$(this),
+    e.a=e.e.attr('group');
+    $.each($.ccio.op().watch_on,function(n,v){
+        $.each(v,function(m,b){
+            $.ccio.cx({f:'monitor',ff:'watch_off',id:m,ke:n})
+        })
+    })
+    $.each($.ccio.mon_groups[e.a],function(n,v){
+        $.ccio.cx({f:'monitor',ff:'watch_on',id:v.mid,ke:v.ke})
+    })
+})
 //Region Editor
 $.zO={e:$('#region_editor')};
 $.zO.f=$.zO.e.find('form');
@@ -1044,6 +1093,15 @@ $.aM.f.submit(function(e){
         $.aM.e.modal('hide')
     return false;
 });
+$.aM.e.on('change','[group]',function(){
+    e={};
+    e.e=$.aM.e.find('[group]:checked');
+    e.s=[];
+    e.e.each(function(n,v){
+        e.s.push($(v).val())
+    });
+    $.aM.e.find('[detail="groups"]').val(JSON.stringify(e.s)).change()
+})
 $.aM.e.find('.probe_config').click(function(){
     e={};
     e.host=$.aM.e.find('[name="host"]').val();
@@ -1219,9 +1277,19 @@ $.fI.f.submit(function(e){
     $.ccio.cx({f:'settings',ff:'filters',fff:'save',form:e.s})
 });
 //settings window
-$.sM={e:$('#settings')};$.sM.f=$.sM.e.find('form');
+$.sM={e:$('#settings')};
+$.sM.f=$.sM.e.find('form');
+$.sM.g=$('#settings_mon_groups');
 $.sM.md=$.sM.f.find('[detail]');
 $.sM.md.change($.ccio.form.details);
+$.sM.writewMonGroups=function(){
+    $.sM.f.find('[detail="mon_groups"]').val(JSON.stringify($user.mon_groups)).change()
+}
+$.sM.reDrawMonGroups=function(){
+    $.sM.g.empty();
+    $.ccio.pm('option',$user.mon_groups,'#settings_mon_groups')
+    $.sM.g.change();
+};
 $.sM.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
     e.er=[];
@@ -1230,6 +1298,48 @@ $.sM.f.submit(function(e){
     $.each(e.s,function(n,v){e.s[n]=v.trim()})
     $.ccio.cx({f:'settings',ff:'edit',form:e.s})
     $.sM.e.modal('hide')
+});
+$.sM.e.on('shown.bs.modal',function(){
+    $.sM.reDrawMonGroups()
+})
+$.sM.g.change(function(e){
+    e.v=$(this).val();
+    e.group=$user.mon_groups[e.v];
+    if(!e.group){return}
+    $.sM.selectedMonGroup=e.group;
+    $.each(e.group,function(n,v){
+        $.sM.f.find('[group="'+n+'"]').val(v)
+    })
+});
+$.sM.f.find('[group]').change(function(e){
+    e.v=$.sM.g.val();
+    if(!e.v||e.v==''){
+        e.e=$.sM.f.find('[group="name"]')
+        e.name=e.e.val()
+        $('.mon_groups .add').click();
+        e.v=$.sM.g.val()
+        e.e.val(e.name)
+    }
+    e.group=$user.mon_groups[e.v];
+    $.sM.f.find('[group]').each(function(n,v){
+        v=$(v)
+        e.group[v.attr('group')]=v.val()
+    });
+    $user.mon_groups[e.v]=e.group;
+    $.sM.g.find('option[value="'+$.sM.g.val()+'"]').text(e.group.name)
+    $.sM.writewMonGroups()
+})
+$.sM.f.on('click','.mon_groups .delete',function(e){
+    e.v=$.sM.g.val();
+    delete($user.mon_groups[e.v]);
+    $.sM.reDrawMonGroups()
+})
+$.sM.f.on('click','.mon_groups .add',function(e){
+    e.gid=$.ccio.gid(5);
+    $user.mon_groups[e.gid]={id:e.gid,name:e.gid};
+    $.sM.g.append($.ccio.tm('option',$user.mon_groups[e.gid]));
+    $.sM.g.val(e.gid)
+    $.sM.g.change();
 });
 //videos window
 $.vidview={e:$('#videos_viewer')};$.vidview.f=$.vidview.e.find('form')
@@ -1738,6 +1848,7 @@ $('body')
                             "detector_frame":"1",
                             "detector_mail":"0",
                             "fatal_max":"",
+                            "groups":"[]",
                             "muser":"",
                             "mpass":"",
                             "sfps":"1",
@@ -1815,10 +1926,29 @@ $('body')
             })
             $.each(e.ss,function(n,v){
                 $.aM.e.find('[detail="'+n+'"]').val(v).change();
-            })
+            });
+            try{
+                e.tmp='';
+                $.each($user.mon_groups,function(n,v){
+                    e.tmp+='<li class="mdl-list__item">';
+                    e.tmp+='<span class="mdl-list__item-primary-content">';
+                    e.tmp+=v.name;
+                    e.tmp+='</span>';
+                    e.tmp+='<span class="mdl-list__item-secondary-action">';
+                    e.tmp+='<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect">';
+                    e.tmp+='<input type="checkbox" group value="'+v.id+'" class="mdl-switch__input"';
+                    if(e.ss.groups.indexOf(v.id)>-1){e.tmp+=' checked';}
+                    e.tmp+=' />';
+                    e.tmp+='</label>';
+                    e.tmp+='</span>';
+                    e.tmp+='</li>';
+                })
+                $('#monitor_group').html(e.tmp)
+            }catch(er){
+                //no group, this 'try' will be removed in future.
+            };
+            componentHandler.upgradeAllRegistered()
             $('#add_monitor').modal('show')
-                //temp
-//                .find('[detail="timestamp"]').val('0').change()
         break;
     }
 })

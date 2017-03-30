@@ -23,13 +23,11 @@ Yes. I am saying it's **the** platform. It will hopefully be revered like WordPr
   - Embedding streams
 
 ## Help make Shinobi the best Open Source CCTV Solution.
-If you like Shinobi please check out some ways you can help <a href="https://github.com/moeiscool/Shinobi/wiki/Support-Shinobi">Support Shinobi</a>.
+<a href="https://shinobi.video/docs/donate">Donate</a>
 
-$5 from each person that visits the github page would be enough. Currently all hours spent on Shinobi are entirely voluntary. There is no income from sharing this program with you, so all support means a great deal.
+As much as Shinobi is free, development and research is not. Please consider supporting Shinobi for as little as $4/month.
 
-<a href="https://www.patreon.com/moeiscool" title="Monthly Donation Subscriptions"><img src="https://www.patreon.com/images/patreon_navigation_logo_mini_orange.png"></a>
-
-**Just a side note:** Patreon is the best way to donate :)
+**Paid Support :** <a href="http://cloudchat.online/cart/shinobi/">from @moeiscool, The Lead Developer</a></p>
 
 # Why make this?
 

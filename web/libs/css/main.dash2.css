@@ -86,11 +86,15 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .form-group label{display: flex}
 .form-group label span small{margin-left: 2px;display:block;font-weight: 600;}
 .form-group-group{padding:0 10px 10px 10px;overflow:hidden;margin-bottom:15px;border-radius:5px;border:1px solid #ddd;background:#fff}
+.form-group-group .mdl-list__item{border-bottom:1px solid #eee;}
+.form-group-group .mdl-list__item:hover{background:#e6e6e6;border-radius:4px;}
 .form-group-group:last-child,.form-group-group > .form-group:last-child{margin-bottom:0}
 .form-group-group h4{margin:0 -10px 15px -10px;padding:15px;background:#ddd;}
 .form-group-group h4 small{color:#fff;}
 .form-group-group.red{border-color:#d9534f}
 .form-group-group.red h4{background:#d9534f;color:#fff}
+.form-group-group.purple{border-color:#3f51b5}
+.form-group-group.purple h4{background:#3f51b5;color:#fff}
 .form-group-group.blue{border-color:#337ab7}
 .form-group-group.blue h4{background:#337ab7;color:#fff}
 .form-group-group.navy{border-color:#31708f}
