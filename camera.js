@@ -616,31 +616,39 @@ s.camera=function(x,e,cn,tx){
         case'snapshot'://get snapshot from monitor URL
             if(config.doSnapshot===true){
                 if(e.mon.mode!=='stop'){
-                    e.url=s.init('url',e.mon);
-                    switch(e.mon.type){
-                        case'mjpeg':case'h264':case'local':
-                            if(e.mon.type==='local'){e.url=e.mon.path;}
-                            e.spawn=spawn('ffmpeg',('-loglevel quiet -i '+e.url+' -s 400x400 -r 25 -ss 1.8 -frames:v 1 -f singlejpeg pipe:1').split(' '))
-                            e.spawn.stdout.on('data',function(data){
-                               e.snapshot_sent=true; s.tx({f:'monitor_snapshot',snapshot:data.toString('base64'),snapshot_format:'b64',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
-                                e.spawn.kill();
-                            });
-                            e.spawn.on('close',function(data){
-                                if(!e.snapshot_sent){
-                                    s.tx({f:'monitor_snapshot',snapshot:e.mon.name,snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
-                                }
-                                delete(e.snapshot_sent);
-                            });
-                        break;
-                        case'jpeg':
-                            request({url:e.url,method:'GET',encoding:null},function(err,data){
-                                if(err){s.tx({f:'monitor_snapshot',snapshot:e.mon.name,snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke);return};
-                                s.tx({f:'monitor_snapshot',snapshot:data.body,snapshot_format:'ab',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
-                            })
-                        break;
-                        default:
-                            s.tx({f:'monitor_snapshot',snapshot:'...',snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
-                        break;
+                    try{e.mon.details=JSON.parse(e.mon.details)}catch(er){}
+                    if(e.mon.details.snap==='1'){
+                        fs.readFile(s.dir.streams+e.ke+'/'+e.mid+'/s.jpg',function(err,data){
+                            if(err){s.tx({f:'monitor_snapshot',snapshot:e.mon.name,snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke);return};
+                            s.tx({f:'monitor_snapshot',snapshot:data,snapshot_format:'ab',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
+                        })
+                    }else{
+                        e.url=s.init('url',e.mon);
+                        switch(e.mon.type){
+                            case'mjpeg':case'h264':case'local':
+                                if(e.mon.type==='local'){e.url=e.mon.path;}
+                                e.spawn=spawn('ffmpeg',('-loglevel quiet -i '+e.url+' -s 400x400 -r 25 -ss 1.8 -frames:v 1 -f singlejpeg pipe:1').split(' '))
+                                e.spawn.stdout.on('data',function(data){
+                                   e.snapshot_sent=true; s.tx({f:'monitor_snapshot',snapshot:data.toString('base64'),snapshot_format:'b64',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
+                                    e.spawn.kill();
+                                });
+                                e.spawn.on('close',function(data){
+                                    if(!e.snapshot_sent){
+                                        s.tx({f:'monitor_snapshot',snapshot:e.mon.name,snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
+                                    }
+                                    delete(e.snapshot_sent);
+                                });
+                            break;
+                            case'jpeg':
+                                request({url:e.url,method:'GET',encoding:null},function(err,data){
+                                    if(err){s.tx({f:'monitor_snapshot',snapshot:e.mon.name,snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke);return};
+                                    s.tx({f:'monitor_snapshot',snapshot:data.body,snapshot_format:'ab',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
+                                })
+                            break;
+                            default:
+                                s.tx({f:'monitor_snapshot',snapshot:'...',snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
+                            break;
+                        }
                     }
                 }else{
                     s.tx({f:'monitor_snapshot',snapshot:'Disabled',snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
@@ -1012,7 +1020,7 @@ s.cn=function(cn){return{id:cn.id,ke:cn.ke,uid:cn.uid}}
 io.on('connection', function (cn) {
 var tx;
     cn.on('f',function(d){
-        if(!cn.ke&&d.f==='init'){
+        if(!cn.ke&&d.f==='init'){//socket login
             cn.ip=cn.request.connection.remoteAddress;
             tx=function(z){if(!z.ke){z.ke=cn.ke;};cn.emit('f',z);}
             sql.query('SELECT ke,uid,auth,mail,details FROM Users WHERE ke=? AND auth=? AND uid=?',[d.ke,d.auth,d.uid],function(err,r) {
