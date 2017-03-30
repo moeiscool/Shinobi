@@ -1158,11 +1158,13 @@ var tx;
                                 if(r&&r[0]){
                                     r=r[0];
                                 d.d=JSON.parse(r.details);
-                                ///unchangeable from client side, so reset them incase they did.
+                                ///unchangeable from client side, so reset them in case they did.
                                 if(d.d.sub){
                                     d.form.details=JSON.parse(d.form.details)
                                     if(d.d.sub){d.form.details.sub=d.d.sub;}
                                     if(d.d.monitors){d.form.details.monitors=d.d.monitors;}
+                                    if(d.d.video_delete){d.form.details.video_delete=d.d.video_delete;}
+                                    if(d.d.monitor_edit){d.form.details.monitor_edit=d.d.monitor_edit;}
                                     if(d.d.size){d.form.details.size=d.d.size;}
                                     if(d.d.super){d.form.details.super=d.d.super;}
                                     d.form.details=JSON.stringify(d.form.details)
@@ -1233,15 +1235,23 @@ var tx;
                             });
                         break;
                         case'delete':
-                            if(!d.ke){d.ke=cn.ke};
-                            if(d.mid){
-                                d.delete=1;s.camera('stop',d);
-                                s.tx({f:'monitor_delete',uid:cn.uid,mid:d.mid,ke:cn.ke},'GRP_'+d.ke);
-                                s.log(d,{type:'Monitor Deleted',msg:'by user : '+cn.uid});
-                                sql.query('DELETE FROM Monitors WHERE ke=? AND mid=?',[d.ke,d.mid])
-                            }
+                            s.auth({auth:cn.auth,id:cn.uid,ke:cn.ke},function(user){
+                                if(!user.details.sub||(user.details.video_delete.indexOf(d.mid)>-1)){
+                                    if(!d.ke){d.ke=cn.ke};
+                                    if(d.mid){
+                                        d.delete=1;s.camera('stop',d);
+                                        s.tx({f:'monitor_delete',uid:cn.uid,mid:d.mid,ke:cn.ke},'GRP_'+d.ke);
+                                        s.log(d,{type:'Monitor Deleted',msg:'by user : '+cn.uid});
+                                        sql.query('DELETE FROM Monitors WHERE ke=? AND mid=?',[d.ke,d.mid])
+                                    }
+                                }else{
+                                    //add error
+                                }
+                            })
                         break;
                         case'add':
+                            s.auth({auth:cn.auth,id:cn.uid,ke:cn.ke},function(user){
+                                if(!user.details.sub||(user.details.monitor_edit.indexOf(d.mon.mid)>-1)){
                             if(d.mon&&d.mon.mid&&d.mon.name){
                                 d.set=[],d.ar=[];
                                 d.mon.mid=d.mon.mid.replace(/[^\w\s]/gi,'').replace(/ /g,'');
@@ -1283,34 +1293,29 @@ var tx;
                                     s.tx(d.tx,'STR_'+d.mon.ke);
                                 })
                             }
-                        break;
-                        case'record_on':case'record_off':
-                            if(!d.ke){d.ke=cn.ke;}
-                    sql.query('SELECT * FROM Monitors WHERE ke=? AND mid=?',[cn.ke,d.id],function(err,r) {
-                        if(r&&r[0]){r=r[0]
-                            if(d.ff==='record_on'){d.mode='record'}else{d.mode='start'};d.type=r.type;
-                            sql.query("UPDATE Monitors SET mode=? WHERE mid=? AND ke=?",[d.mode,d.id,d.ke],function(){
-
-                                d.callback=function(){delete(d.callback);s.camera(d.mode,d)};s.camera('stop',d);
-                                tx({f:d.ff,id:d.id})
+                                }else{
+                                    //add error
+                                }
                             })
-                        }
-                    })
                         break;
                         case'jpeg_off':
                           delete(cn.jpeg_on);
+                            if(cn.monitor_watching){
                           Object.keys(cn.monitor_watching).forEach(function(n,v){
                               v=cn.monitor_watching[n];
                               cn.join('MON_STREAM_'+n);
                           });
+                            }
                             tx({f:'mode_jpeg_off'})
                         break;
                         case'jpeg_on':
                           cn.jpeg_on=true;
+                            if(cn.monitor_watching){
                           Object.keys(cn.monitor_watching).forEach(function(n,v){
                               v=cn.monitor_watching[n];
                               cn.leave('MON_STREAM_'+n);
                           });
+                            }
                           tx({f:'mode_jpeg_on'})
                         break;
                         case'watch_on':
@@ -1590,28 +1595,30 @@ var tx;
             })
         }else{
             s.auth({auth:d.auth,ke:d.ke,id:d.id},function(user){
-                switch(d.f){
-                    case'accounts':
-                        switch(d.ff){
-                            case'edit':
-                                d.keys=Object.keys(d.form);
-                                d.condition=[];
-                                d.value=[];
-                                d.keys.forEach(function(v){
-                                    d.condition.push(v+'=?')
-                                    d.value.push(d.form[v])
-                                })
-                                d.value=d.value.concat([cn.ke,d.$uid])
-                                sql.query("UPDATE Users SET "+d.condition.join(',')+" WHERE ke=? AND uid=?",d.value)
-                                s.tx({f:'edit_sub_account',ke:cn.ke,uid:d.$uid,mail:d.mail,form:d.form},'ADM_'+d.ke);
-                            break;
-                            case'delete':
-                                sql.query('DELETE FROM Users WHERE uid=? AND ke=? AND mail=?',[d.$uid,cn.ke,d.mail])
-                                sql.query('DELETE FROM API WHERE uid=? AND ke=?',[d.$uid,cn.ke])
-                                s.tx({f:'delete_sub_account',ke:cn.ke,uid:d.$uid,mail:d.mail},'ADM_'+d.ke);
-                            break;
-                        }
-                    break;
+                if(!user.details.sub){
+                    switch(d.f){
+                        case'accounts':
+                            switch(d.ff){
+                                case'edit':
+                                    d.keys=Object.keys(d.form);
+                                    d.condition=[];
+                                    d.value=[];
+                                    d.keys.forEach(function(v){
+                                        d.condition.push(v+'=?')
+                                        d.value.push(d.form[v])
+                                    })
+                                    d.value=d.value.concat([cn.ke,d.$uid])
+                                    sql.query("UPDATE Users SET "+d.condition.join(',')+" WHERE ke=? AND uid=?",d.value)
+                                    s.tx({f:'edit_sub_account',ke:cn.ke,uid:d.$uid,mail:d.mail,form:d.form},'ADM_'+d.ke);
+                                break;
+                                case'delete':
+                                    sql.query('DELETE FROM Users WHERE uid=? AND ke=? AND mail=?',[d.$uid,cn.ke,d.mail])
+                                    sql.query('DELETE FROM API WHERE uid=? AND ke=?',[d.$uid,cn.ke])
+                                    s.tx({f:'delete_sub_account',ke:cn.ke,uid:d.$uid,mail:d.mail},'ADM_'+d.ke);
+                                break;
+                            }
+                        break;
+                    }
                 }
             })
         }
@@ -1747,7 +1754,7 @@ s.auth=function(xx,x,res,req){
         if(s.api[xx.auth]){
             x(s.api[xx.auth]);
         }else{
-            sql.query('SELECT * FROM API WHERE code=?',[xx.auth],function(err,r){
+            sql.query('SELECT * FROM API WHERE code=? AND ke=?',[xx.auth,xx.ke],function(err,r){
                 if(r&&r[0]){
                     r=r[0];
                     s.api[xx.auth]={};
@@ -1973,13 +1980,14 @@ app.get(['/:auth/monitor/:ke','/:auth/monitor/:ke/:id'], function (req,res){
     req.fn=function(user){
         req.sql='SELECT * FROM Monitors WHERE ke=?';req.ar=[req.params.ke];
         
-        if(user.details&&user.details.monitors&&user.details.monitors!==''){
-            try{user.details.monitors=JSON.parse(user.details.monitors)}catch(er){}
-            user.details.monitors.forEach(function(v,n){
-                req.sql+=' and mid=?';req.ar.push(v)
-            })
+        if(!req.params.id){
+            try{
+                user.details.monitors=JSON.parse(user.details.monitors);
+                user.details.monitors.forEach(function(v,n){
+                    req.sql+=' OR mid=?';req.ar.push(v)
+                })
+            }catch(er){}
         }
-        
         if(req.params.id){req.sql+=' and mid=?';req.ar.push(req.params.id)}
         sql.query(req.sql,req.ar,function(err,r){
             if(r.length===1){r=r[0];}

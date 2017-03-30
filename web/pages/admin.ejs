@@ -21,7 +21,7 @@
 <link rel="stylesheet" href="libs/css/font-awesome.min.css">
 <link rel="stylesheet" href="libs/css/fullcalendar.min.css">
 <link rel="stylesheet" href="libs/css/bootstrap-table.min.css">
-<link rel="stylesheet" href="libs/css/main.css">
+<link rel="stylesheet" href="libs/css/main.dash2.css">
 <body class="shinobi-bg">
     <div class="shinobi-bg-shade">
 <div class="container-fluid">
@@ -181,8 +181,13 @@ $.sU.e.on('click','.permission',function(e){
         if(e.d.monitors===''){
             $.pR.e.find('[detail="allmonitors"]').val(1).change()
         }else{
-            $.each(e.d.monitors,function(n,v){
-                $.pR.e.find('[monitor="'+v+'"]').val(1)
+            $.each(['monitors','monitor_edit','video_delete'],function(m,b){
+                console.log(e.d[b])
+                if(e.d[b]){
+                    $.each(e.d[b],function(n,v){
+                        $.pR.e.find('[monitor="'+b+'"][mid="'+v+'"]').val(1)
+                    })
+                }
             })
         }
     }
@@ -197,27 +202,33 @@ $.pR.e.on('change','[detail="allmonitors"]',function(e){
         e.mon.hide();
         e.details=$.pR.e.find('[name="details"]')
         e.json=JSON.parse(e.details.val())
-        e.json.monitors='';
+        $.each(['monitors','monitor_edit','video_delete'],function(m,b){
+            e.d[b]='';
+        })
         e.details.val(JSON.stringify(e.json))
     }else{
         e.mon.show()
         $.pR.e.find('[monitor]').first().change()
     }
 })
+$.pR.e.on('click','[check]',function(e){
+    $(this).parents('.form-group-group').find('select').val($(this).attr('check')).first().change()
+})
 $.pR.e.on('change','[monitor]',function(e){
     e.monitors=[];
+    e.key=$(this).attr('monitor');
     e.details=$.pR.e.find('[name="details"]')
     try{e.detail=JSON.parse(e.details.val())}catch(err){e.detail={}}
     if(!e.detail){e.detail={}}
-    $.pR.e.find('[monitor]').each(function(n,v){
+    $.pR.e.find('[monitor="'+e.key+'"]').each(function(n,v){
         v=$(v)
         if(v.val()=='1'){
-            e.monitors.push(v.attr('monitor'))
+            e.monitors.push(v.attr('mid'))
         }
     });
-    e.detail.monitors=e.monitors;
+    e.detail[e.key]=e.monitors;
     e.details.val(JSON.stringify(e.detail))
-})
+});
 $.pR.f.submit(function(e){
     e.preventDefault();
     e.s=$(this).serializeObject()
