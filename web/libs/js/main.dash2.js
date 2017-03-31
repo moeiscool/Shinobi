@@ -1366,7 +1366,7 @@ $.vidview.e.find('.delete_selected').click(function(e){
     $.confirm.click({title:'Delete Video',class:'btn-danger'},function(){
         $.each(e.s,function(n,v){
             n=n.split('.')
-            $.ccio.cx({f:'video',ff:'delete',status:1,filename:n[0],ext:n[1],mid:v});
+            $.ccio.cx({f:'video',ff:'delete',filename:n[0],ext:n[1],mid:v});
         })
     });
 })
@@ -1574,7 +1574,7 @@ $('body')
             $.confirm.body.html(e.html)
             $.confirm.click({title:'Delete Video',class:'btn-danger'},function(){
                 e.file=e.file.split('.')
-                $.ccio.cx({f:'video',ff:'delete',status:1,filename:e.file[0],ext:e.file[1],ke:e.ke,mid:e.mid});
+                $.ccio.cx({f:'video',ff:'delete',filename:e.file[0],ext:e.file[1],ke:e.ke,mid:e.mid});
             });
         break;
         case'download':

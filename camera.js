@@ -334,8 +334,8 @@ s.video=function(x,e){
             e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
             if(!e.filename&&e.time){e.filename=s.moment(e.time)}
             if(!e.status){e.status=0}
-            e.save=[e.id,e.ke,s.nameToTime(e.filename),e.status];
-            sql.query('UPDATE Videos SET status=3 WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save,function(err,r){
+            e.save=[e.id,e.ke,s.nameToTime(e.filename)];
+            sql.query('UPDATE Videos SET status=3 WHERE `mid`=? AND `ke`=? AND `time`=?',e.save,function(err,r){
                 s.tx({f:'video_edit',status:3,filename:e.filename+'.'+e.ext,mid:e.mid,ke:e.ke,time:s.nameToTime(e.filename)},'GRP_'+e.ke);
             });
         break;
@@ -343,8 +343,8 @@ s.video=function(x,e){
             e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
             if(!e.filename&&e.time){e.filename=s.moment(e.time)}
             if(!e.status){e.status=0}
-            e.save=[e.id,e.ke,s.nameToTime(e.filename),e.status];
-            sql.query('DELETE FROM Videos WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save,function(err,r){
+            e.save=[e.id,e.ke,s.nameToTime(e.filename)];
+            sql.query('DELETE FROM Videos WHERE `mid`=? AND `ke`=? AND `time`=?',e.save,function(err,r){
                 s.tx({f:'video_delete',filename:e.filename+'.'+e.ext,mid:e.mid,ke:e.ke,time:s.nameToTime(e.filename),end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
                 s.file('delete',e.dir+e.filename+'.'+e.ext)
             })
@@ -1245,7 +1245,7 @@ var tx;
                         break;
                         case'delete':
                             s.auth({auth:cn.auth,id:cn.uid,ke:cn.ke},function(user){
-                                if(!user.details.sub||user.details.allmonitors==='1'||user.details.video_delete.indexOf(d.mid)>-1){
+                                if(!user.details.sub||user.details.allmonitors==='1'||user.details.monitor_edit.indexOf(d.mid)>-1){
                                     if(!d.ke){d.ke=cn.ke};
                                     if(d.mid){
                                         d.delete=1;s.camera('stop',d);
