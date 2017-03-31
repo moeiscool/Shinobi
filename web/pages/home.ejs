@@ -15,14 +15,22 @@
 <style id="custom_css">
 <%= details.css %>
 
-<% if(details.sub){ 
-    details.monitor_edit.forEach(function(v,n){ %>
-    [mid="<%= v %>"] .permission_monitor_edit{display:inline-block}
-  <% })
-    details.video_delete.forEach(function(v,n){ %>
-    [mid="<%= v %>"] .permission_video_delete{display:inline-block}
-  <% })
-} %>
+<% if(details.sub&&details.allmonitors==='0'){
+    if(details.monitor_edit&&details.monitor_edit!==''){
+        details.monitor_edit.forEach(function(v,n){ %>
+            [mid="<%= v %>"] .permission_monitor_edit{display:inline-block}
+  <% 
+        })
+    }
+    if(details.video_delete&&details.video_delete!==''){
+        details.video_delete.forEach(function(v,n){ %>
+            [mid="<%= v %>"] .permission_video_delete{display:inline-block}
+  <%
+        })
+    }
+}else{ %>
+    .permission_video_delete,.permission_monitor_edit{display:inline-block}
+<% } %>
 </style>
 <html lang="en">
   <head>

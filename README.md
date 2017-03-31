@@ -6,7 +6,7 @@
 
 Shinobi is the Open Source CCTV platform written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. Shinobi can record IP Cameras and Local Cameras.
 
-Yes. I am saying it's **the** platform. It will hopefully be revered like WordPress and Magento in their respective sectors... Hopefully better.
+Shinobi is not made by the current or previous ZoneMinder developers. This app is inspired by ZoneMinder and all it's glory.
 
 <img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo5.jpg?raw=true">
 
