@@ -1,5 +1,5 @@
 <!--Add Monitor Window-->
-<div class="modal fade" id="add_monitor" tabindex="-1" role="dialog" aria-labelledby="add_monitorLabel" aria-hidden="true">
+<div class="modal medium fade" id="add_monitor" tabindex="-1" role="dialog" aria-labelledby="add_monitorLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <form class="modal-content">
       <div class="modal-header">
@@ -36,22 +36,12 @@
                     <input class="form-control" detail="fatal_max" placeholder="10">
                 </label>
               </div>
-              <div class="form-group h_p_input h_p_rtsp">
-                <label><span>RTSP Transport</span>
-                    <select class="form-control" detail="rtsp_transport">
-                        <option value="no" selected>Auto</option>  
-                        <option value="tcp">TCP</option>  
-                        <option value="udp">UDP</option>  
-                        <option value="http">HTTP</option>  
-                    </select>
-                </label>
-              </div>
           </div>
 <!--     START of Input     -->
           <div class="form-group-group forestgreen">
           <h4>Input</h4>
               <div class="row">
-                  <div class="form-group col-md-6">
+                  <div class="form-group col-md-12">
                     <label><span>Input Type</span>
                         <select class="form-control" name="type">
                             <option value="jpeg">JPEG</option>  
@@ -62,7 +52,7 @@
                         </select>
                     </label>
                   </div>
-                  <div class="form-group col-md-6 h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
+                  <div class="form-group col-md-12 h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
                     <label><span>Connection Type</span>
                         <select class="form-control" name="protocol" selector="h_p">
                             <option value="http" selected>HTTP</option>
@@ -73,25 +63,35 @@
                     </label>
                   </div>
               </div>
+              <div class="form-group h_p_input h_p_rtsp">
+                <label><span>RTSP Transport</span>
+                    <select class="form-control" detail="rtsp_transport">
+                        <option value="no" selected>Auto</option>  
+                        <option value="tcp">TCP</option>  
+                        <option value="udp">UDP</option>  
+                        <option value="http">HTTP</option>  
+                    </select>
+                </label>
+              </div>
               <div class="row h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
-                  <div class="form-group col-md-6">
+                  <div class="form-group col-md-12">
                     <label><span>Username</span>
                     <input class="form-control" detail="muser" placeholder="">
                     </label>
                   </div>
-                  <div class="form-group col-md-6">
+                  <div class="form-group col-md-12">
                     <label><span>Password</span>
                     <input class="form-control" type="password" detail="mpass" placeholder="">
                     </label>
                   </div>
               </div>
               <div class="row h_t_input h_t_h264 h_t_jpeg h_t_mjpeg">
-                  <div class="form-group col-md-9">
+                  <div class="form-group col-md-12">
                     <label><span>Host</span>
                     <input class="form-control" name="host" placeholder="">
                     </label>
                   </div>
-                  <div class="form-group col-md-3">
+                  <div class="form-group col-md-12">
                     <label><span>Port</span>
                     <input class="form-control" name="port" placeholder="80">
                     </label>
@@ -114,135 +114,6 @@
               </div>
           </div>
 <!--     END of Input     -->
-<!--     START of Detector     -->
-          <div class="form-group-group orange">
-          <h4>Detector<span class="pull-right"><b class="shinobi-detector_name"></b> <b class="shinobi-detector-invert">Not </b>Connected</span></h4>
-              <div class="form-group">
-                <label><span>Enabled <small>Only do this if you have a Detector plugin running.</small></span>
-                    <select class="form-control" detail="detector">
-                        <option value="0" selected>No</option>
-                        <option value="1">Yes</option>
-                    </select>
-                </label>
-              </div>
-              <div class="shinobi-detector" style="display:none">
-                  <div class="row">
-                      <div class="form-group col-md-6">
-                        <label><span>Trigger Record</span>
-                            <select class="form-control" detail="detector_trigger">
-                                <option value="0" selected>No</option>
-                                <option value="1">Yes</option>
-                            </select>
-                        </label>
-                      </div>
-                      <div class="form-group col-md-6">
-                        <label><span>Recording Timeout <small>in Minutes</small></span>
-                        <input class="form-control" detail="detector_timeout" placeholder="10">
-                        </label>
-                      </div>
-                  </div>
-                  <div class="row">
-                      <div class="form-group col-md-6">
-                        <label><span>Timeout Reset on Next Motion</span>
-                            <select class="form-control" detail="watchdog_reset">
-                                <option value="0">No</option>
-                                <option value="1" selected>Yes</option>
-                            </select>
-                        </label>
-                      </div>
-                      <div class="form-group col-md-6">
-                    <label><span>Save Events to SQL</span>
-                            <select class="form-control" detail="detector_save">
-                                <option value="0" selected>No</option>
-                                <option value="1">Yes</option>
-                            </select>
-                        </label>
-                      </div>
-                  </div>
-                  <div class="row">
-                      <div class="form-group col-md-6">
-                        <label><span>Email on Trigger</span>
-                            <select class="form-control" detail="detector_mail">
-                                <option value="0" selected>No</option>
-                                <option value="1">Yes</option>
-                            </select>
-                        </label>
-                      </div>
-                      <div class="form-group col-md-6">
-                        <label><span>Allow Next Email <small>in Minutes</small></span>
-                        <input class="form-control" detail="detector_mail_timeout" placeholder="10">
-                        </label>
-                      </div>
-                  </div>
-                  <div class="form-group">
-                    <label><span>Detector Rate <small>(FPS)</small></span>
-                    <input class="form-control" detail="detector_fps" placeholder="0.5">
-                    </label>
-                  </div>
-                  <div class="row">
-                      <div class="form-group col-md-6">
-                        <label><span>Feed-in Image Width</span>
-                        <input class="form-control" detail="detector_scale_x" placeholder="">
-                        </label>
-                      </div>
-                      <div class="form-group col-md-6">
-                        <label><span>Feed-in Image Height</span>
-                        <input class="form-control" detail="detector_scale_y" placeholder="">
-                        </label>
-                      </div>
-                  </div>
-              </div>
-              <div class="shinobi-detector-stemkoski shinobi-detector_plug" style="display:none">
-                  <div class="row">
-                      <div class="form-group col-md-6">
-                        <label><span>Full Frame Detection</span>
-                            <select class="form-control" detail="detector_frame">
-                                <option value="0">No</option>
-                                <option value="1" selected>Yes</option>
-                            </select>
-                        </label>
-                      </div>
-                      <div class="form-group col-md-6">
-                        <label><span title="Opposite of Sensitivity">Indifference</span>
-                        <input class="form-control" detail="detector_sensitivity" placeholder="0.5">
-                        </label>
-                      </div>
-                  </div>
-                  <div class="hidden">
-                    <input detail="cords" placeholder="">
-                  </div>
-                  <div class="form-group">
-                    <a class="btn btn-primary btn-block" monitor="region">Region Editor (Experimental)</a>
-                  </div>
-              </div>
-              <div class="shinobi-detector-opencv shinobi-detector_plug" style="display:none">
-                  <div class="form-group">
-                    <label><span>Face Detection</span>
-                        <select class="form-control" detail="detector_face">
-                            <option value="0" selected>No</option>
-                            <option value="1">Yes</option>
-                        </select>
-                    </label>
-                  </div>
-                  <div class="form-group">
-                    <label><span>Full Body Detection</span>
-                        <select class="form-control" detail="detector_fullbody">
-                            <option value="0" selected>No</option>
-                            <option value="1">Yes</option>
-                        </select>
-                    </label>
-                  </div>
-                  <div class="form-group">
-                    <label><span>Car Side Detection</span>
-                        <select class="form-control" detail="detector_car">
-                            <option value="0" selected>No</option>
-                            <option value="1">Yes</option>
-                        </select>
-                    </label>
-                  </div>
-              </div>
-          </div>
-<!--     END of Motion     -->
 <!--     START of Stream     -->
           <div class="form-group-group navy">
           <h4>Stream</h4>
@@ -262,7 +133,7 @@
               </div>
               <div class="h_st_input h_st_hls">
                   <div class="row">
-                      <div class="form-group col-md-6">
+                      <div class="form-group col-md-12">
                         <label><span>HLS Video Encoder</span>
                             <select class="form-control" detail="stream_vcodec">
                                 <option value="no" selected>Auto</option>
@@ -272,7 +143,7 @@
                             </select>
                         </label>
                       </div>
-                      <div class="form-group col-md-6">
+                      <div class="form-group col-md-12">
                         <label><span>HLS Audio Encoder</span>
                             <select class="form-control" detail="stream_acodec">
                                 <option value="no" selected>No Audio</option>
@@ -302,12 +173,12 @@
                   </div>
               </div>
               <div class="row">
-                  <div class="form-group col-md-6">
+                  <div class="form-group col-md-12">
                     <label><span>Check Signal Interval <small>in Minutes</small></span>
                         <input class="form-control" detail="signal_check" placeholder="Set to 0 to Disable">
                     </label>
                   </div>
-                  <div class="form-group col-md-6">
+                  <div class="form-group col-md-12">
                     <label><span>Log Signal Event <small>Client side only</small></span>
                             <select class="form-control" detail="signal_check_log">
                                 <option value="0" selected>No</option>
@@ -317,24 +188,24 @@
                   </div>
               </div>
               <div class="row">
-                  <div class="form-group col-md-6">
+                  <div class="form-group col-md-12">
                     <label><span>Quality <small>1 is High, 23 is Low</small></span>
                     <input class="form-control" placeholder="23" detail="stream_quality">
                     </label>
                   </div>
-                  <div class="form-group col-md-6">
+                  <div class="form-group col-md-12">
                     <label><span>Rate <small>(FPS)</small></span>
                     <input class="form-control" detail="stream_fps" placeholder="1">
                     </label>
                   </div>
               </div>
               <div class="row">
-                  <div class="form-group col-md-6">
+                  <div class="form-group col-md-12">
                     <label><span>Width</span>
                     <input class="form-control" type="number" min="1" detail="stream_scale_x" placeholder="640">
                     </label>
                   </div>
-                  <div class="form-group col-md-6">
+                  <div class="form-group col-md-12">
                     <label><span>Height</span>
                     <input class="form-control" type="number" min="1" detail="stream_scale_y" placeholder="480">
                     </label>
@@ -411,12 +282,12 @@
                 </label>
               </div>
               <div class="row">
-                  <div class="form-group col-md-6">
+                  <div class="form-group col-md-12">
                     <label><span>Record Width</span>
                     <input class="form-control" type="number" min="1" name="width">
                     </label>
                   </div>
-                  <div class="form-group col-md-6">
+                  <div class="form-group col-md-12">
                     <label><span>Record Height</span>
                     <input class="form-control" type="number" min="1" name="height">
                     </label>
@@ -453,36 +324,36 @@
               </div>
               <div class="h_tm_input h_tm_1">
                   <div class="row">
-                      <div class="form-group col-md-6">
+                      <div class="form-group col-md-12">
                         <label><span>Font Path</span>
                         <input class="form-control" detail="timestamp_font">
                         </label>
                       </div>
-                      <div class="form-group col-md-6">
+                      <div class="form-group col-md-12">
                         <label><span>Font Size</span>
                         <input class="form-control" detail="timestamp_font_size">
                         </label>
                       </div>
                   </div>
                   <div class="row">
-                      <div class="form-group col-md-6">
+                      <div class="form-group col-md-12">
                         <label><span>Text Color</span>
                         <input class="form-control" detail="timestamp_color">
                         </label>
                       </div>
-                      <div class="form-group col-md-6">
+                      <div class="form-group col-md-12">
                         <label><span>Text Box Color</span>
                         <input class="form-control" detail="timestamp_box_color">
                         </label>
                       </div>
                   </div>
                   <div class="row">
-                      <div class="form-group col-md-6">
+                      <div class="form-group col-md-12">
                         <label><span>Position X</span>
                         <input class="form-control" detail="timestamp_x">
                         </label>
                       </div>
-                      <div class="form-group col-md-6">
+                      <div class="form-group col-md-12">
                         <label><span>Position Y</span>
                         <input class="form-control" detail="timestamp_y">
                         </label>
@@ -491,82 +362,17 @@
               </div>
           </div>
 <!--     END of Record     -->
-          <div class="form-group-group blue">
-          <h4>Control</h4>
-              <div class="form-group">
-                <label><span>Controllable</span>
-                    <select class="form-control" detail="control" selector="h_c">
-                        <option value="0">No</option>  
-                        <option value="1">Yes</option>  
-                    </select>
-                </label>
-              </div>
-              <div class="h_c_input h_c_1">
-                  <div class="form-group">
-                    <label><span>Control <small>Monitor Need a Stop URL?</small></span>
-                        <select class="form-control" detail="control_stop" selector="h_cs">
-                            <option value="0">No</option>  
-                            <option value="1">Yes</option>
-                        </select>
-                    </label>
-                  </div>
-                  <div class="form-group h_cs_input h_cs_1">
-                    <label><span>Control URL Stop Timeout <small>Run stop URL after X milliseconds</small></span>
-                    <input class="form-control" detail="control_url_stop_timeout" placeholder="1000">
-                    </label>
-                  </div>
-                  <div class="form-group h_c_input h_c_1">
-                    <label><span>Control Center <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_center" placeholder="">
-                    </label>
-                  </div>
-                  <div class="form-group h_c_input h_c_1">
-                    <label><span>Control Left <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_left" placeholder="">
-                    </label>
-                  </div>
-                  <div class="form-group h_cs_input h_cs_1">
-                    <label><span>Control Left Stop <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_left_stop" placeholder="">
-                    </label>
-                  </div>
-                  <div class="form-group h_c_input h_c_1">
-                    <label><span>Control Right <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_right" placeholder="">
-                    </label>
-                  </div>
-                  <div class="form-group h_cs_input h_cs_1">
-                    <label><span>Control Right Stop <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_right_stop" placeholder="">
-                    </label>
-                  </div>
-                  <div class="form-group h_c_input h_c_1">
-                    <label><span>Control Up <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_up" placeholder="">
-                    </label>
-                  </div>
-                  <div class="form-group h_cs_input h_cs_1">
-                    <label><span>Control Up Stop <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_up_stop" placeholder="">
-                    </label>
-                  </div>
-                  <div class="form-group h_c_input h_c_1">
-                    <label><span>Control Down <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_down" placeholder="">
-                    </label>
-                  </div>
-                  <div class="form-group h_cs_input h_cs_1">
-                    <label><span>Control Down Stop <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_down_stop" placeholder="">
-                    </label>
-                  </div>
-              </div>
-          </div>
+<!--     START of Custom     -->
           <div class="form-group-group navy">
           <h4>Custom</h4>
               <div class="form-group">
                 <label><span>Input Flags</span>
                 <input class="form-control" detail="cust_input" placeholder="">
+                </label>
+              </div>
+              <div class="form-group h_sn_input h_sn_1" style="display:none">
+                <label><span>Snapshot Flags</span>
+                <input class="form-control" detail="cust_snap">
                 </label>
               </div>
               <div class="form-group shinobi-detector" style="display:none">
@@ -590,10 +396,255 @@
                 </label>
               </div>
           </div>
+<!--     END of Custom     -->
+<!--     START of JPEG     -->
+          <div class="form-group-group green">
+          <h4>Snapshot (cgi-bin)</h4>
+              <div class="form-group">
+                <label><span>Enabled</span>
+                    <select class="form-control" detail="snap" selector="h_sn">
+                        <option value="0" selected>No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </label>
+              </div>
+              <div class="h_sn_input h_sn_1" style="display:none">
+                  <div class="form-group">
+                    <label><span>Frame Rate <small>(FPS)</small></span>
+                    <input class="form-control" detail="snap_fps" placeholder="1">
+                    </label>
+                  </div>
+                  <div class="row">
+                      <div class="form-group col-md-12">
+                        <label><span>Image Width</span>
+                        <input class="form-control" detail="snap_scale_x" placeholder="">
+                        </label>
+                      </div>
+                      <div class="form-group col-md-12">
+                        <label><span>Image Height</span>
+                        <input class="form-control" detail="snap_scale_y" placeholder="">
+                        </label>
+                      </div>
+                  </div>
+              </div>
+          </div>
+<!--     END of JPEG     -->
+<!--     START of Detector     -->
+          <div class="form-group-group orange">
+          <h4>Detector : <span><b class="shinobi-detector_name"></b> <b class="shinobi-detector-invert">Not </b>Connected</span></h4>
+              <div class="form-group">
+                <label><span>Enabled <small>Only do this if you have a Detector plugin running.</small></span>
+                    <select class="form-control" detail="detector">
+                        <option value="0" selected>No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </label>
+              </div>
+              <div class="shinobi-detector" style="display:none">
+                  <div class="row">
+                      <div class="form-group col-md-12">
+                        <label><span>Trigger Record</span>
+                            <select class="form-control" detail="detector_trigger">
+                                <option value="0" selected>No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </label>
+                      </div>
+                      <div class="form-group col-md-12">
+                        <label><span>Recording Timeout <small>in Minutes</small></span>
+                        <input class="form-control" detail="detector_timeout" placeholder="10">
+                        </label>
+                      </div>
+                  </div>
+                  <div class="row">
+                      <div class="form-group col-md-12">
+                        <label><span>Timeout Reset on Next Motion</span>
+                            <select class="form-control" detail="watchdog_reset">
+                                <option value="0">No</option>
+                                <option value="1" selected>Yes</option>
+                            </select>
+                        </label>
+                      </div>
+                      <div class="form-group col-md-12">
+                        <label><span>Save Events to SQL</span>
+                            <select class="form-control" detail="detector_save">
+                                <option value="0" selected>No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </label>
+                      </div>
+                  </div>
+                  <div class="row">
+                      <div class="form-group col-md-12">
+                        <label><span>Email on Trigger</span>
+                            <select class="form-control" detail="detector_mail">
+                                <option value="0" selected>No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </label>
+                      </div>
+                      <div class="form-group col-md-12">
+                        <label><span>Allow Next Email <small>in Minutes</small></span>
+                        <input class="form-control" detail="detector_mail_timeout" placeholder="10">
+                        </label>
+                      </div>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Detector Rate <small>(FPS)</small></span>
+                    <input class="form-control" detail="detector_fps" placeholder="0.5">
+                    </label>
+                  </div>
+                  <div class="row">
+                      <div class="form-group col-md-12">
+                        <label><span>Feed-in Image Width</span>
+                        <input class="form-control" detail="detector_scale_x" placeholder="">
+                        </label>
+                      </div>
+                      <div class="form-group col-md-12">
+                        <label><span>Feed-in Image Height</span>
+                        <input class="form-control" detail="detector_scale_y" placeholder="">
+                        </label>
+                      </div>
+                  </div>
+              </div>
+              <div class="shinobi-detector-stemkoski shinobi-detector_plug" style="display:none">
+                  <div class="row">
+                      <div class="form-group col-md-12">
+                        <label><span>Full Frame Detection</span>
+                            <select class="form-control" detail="detector_frame">
+                                <option value="0">No</option>
+                                <option value="1" selected>Yes</option>
+                            </select>
+                        </label>
+                      </div>
+                      <div class="form-group col-md-12">
+                        <label><span title="Opposite of Sensitivity">Indifference</span>
+                        <input class="form-control" detail="detector_sensitivity" placeholder="0.5">
+                        </label>
+                      </div>
+                  </div>
+                  <div class="hidden">
+                    <input detail="cords" placeholder="">
+                  </div>
+                  <div class="form-group">
+                    <a class="btn btn-danger btn-block" monitor="region"><i class="fa fa-grav"></i> &nbsp; Region Editor</a>
+                  </div>
+              </div>
+              <div class="shinobi-detector-opencv shinobi-detector_plug" style="display:none">
+                  <div class="form-group">
+                    <label><span>Face Detection</span>
+                        <select class="form-control" detail="detector_face">
+                            <option value="0" selected>No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Full Body Detection</span>
+                        <select class="form-control" detail="detector_fullbody">
+                            <option value="0" selected>No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Car Side Detection</span>
+                        <select class="form-control" detail="detector_car">
+                            <option value="0" selected>No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </label>
+                  </div>
+              </div>
+          </div>
+<!--     END of Motion     -->
+          <div class="form-group-group blue">
+          <h4>Control</h4>
+              <div class="form-group">
+                <label><span>Controllable</span>
+                    <select class="form-control" detail="control" selector="h_c">
+                        <option value="0">No</option>  
+                        <option value="1">Yes</option>  
+                    </select>
+                </label>
+              </div>
+              <div class="h_c_input h_c_1">
+                  <div class="form-group">
+                    <label><span>Custom Base URL <small>Leave blank to use Host URL</small></span>
+                    <input class="form-control" detail="control_base_url" placeholder="Example : http://111.111.111.111:8080">
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Stop URL</span>
+                        <select class="form-control" detail="control_stop" selector="h_cs">
+                            <option value="0">No</option>  
+                            <option value="1">Yes</option>
+                        </select>
+                    </label>
+                  </div>
+                  <div class="form-group h_cs_input h_cs_1">
+                    <label><span>Control URL Stop Timeout <small>Run stop URL after X milliseconds</small></span>
+                    <input class="form-control" detail="control_url_stop_timeout" placeholder="1000">
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Control Center <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_center" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Control Left <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_left" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group h_cs_input h_cs_1">
+                    <label><span>Control Left Stop <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_left_stop" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Control Right <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_right" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group h_cs_input h_cs_1">
+                    <label><span>Control Right Stop <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_right_stop" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Control Up <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_up" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group h_cs_input h_cs_1">
+                    <label><span>Control Up Stop <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_up_stop" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Control Down <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_down" placeholder="">
+                    </label>
+                  </div>
+                  <div class="form-group h_cs_input h_cs_1">
+                    <label><span>Control Down Stop <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_down_stop" placeholder="">
+                    </label>
+                  </div>
+              </div>
+          </div>
+          <div class="form-group-group purple">
+          <h4>Grouping &nbsp; <small>Add groups in <b>Settings</b></small></h4>
+              <div>
+                  <ul class="mdl-list" id="monitor_group"></ul>
+                  <input type="hidden" detail="groups">
+              </div>
+          </div>
           <div class="form-group-group green">
           <h4>Logging</h4>
               <div class="row">
-                  <div class="form-group col-md-6">
+                  <div class="form-group col-md-12">
                       <label><span>Log Level</span>
                         <select class="form-control" detail="loglevel">
                             <option value="quiet">Silent</option>
@@ -604,7 +655,7 @@
                         </select>
                       </label>
                   </div>
-                  <div class="form-group col-md-6">
+                  <div class="form-group col-md-12">
                       <label><span>Save Log in SQL <small>This can fill up quickly.</small></span>
                         <select class="form-control" detail="sqllog">
                             <option value="0" selected>No</option>  
@@ -621,12 +672,15 @@
           </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
-        <a class="btn btn-danger pull-left" monitor="delete" data-dismiss="modal">Delete</a>
-        <button type="button" class="btn btn-default pull-left save_config">Export</button>
-        <button type="button" class="btn btn-default pull-left import_config">Import</button>
-        <button type="button" class="btn btn-default pull-left probe_config">Probe</button>
-        <button type="submit" class="btn btn-success">Save changes</button>
+          <div class="pull-left">
+            <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+            <a class="btn btn-danger" monitor="delete" data-dismiss="modal"><i class="fa fa-trash-o"></i> Delete</a>
+            <button type="button" class="btn btn-default save_config"><i class="fa fa-download"></i> Export</button>
+            <button type="button" class="btn btn-default import_config"><i class="fa fa-upload"></i> Import</button>
+            <button type="button" class="btn btn-primary probe_config"><i class="fa fa-search"></i> Probe</button>
+            <button type="button" style="display:none" class="btn btn-warning shinobi-detector-stemkoski shinobi-detector_plug" monitor="region"><i class="fa fa-grav"></i> Region Editor</button>
+          </div>
+          <button type="submit" class="btn btn-success"><i class="fa fa-check"></i> Save</button>
       </div>
     </form>
   </div>

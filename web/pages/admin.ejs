@@ -21,7 +21,7 @@
 <link rel="stylesheet" href="libs/css/font-awesome.min.css">
 <link rel="stylesheet" href="libs/css/fullcalendar.min.css">
 <link rel="stylesheet" href="libs/css/bootstrap-table.min.css">
-<link rel="stylesheet" href="libs/css/main.css">
+<link rel="stylesheet" href="libs/css/main.dash2.css">
 <body class="shinobi-bg">
     <div class="shinobi-bg-shade">
 <div class="container-fluid">
@@ -148,7 +148,6 @@ $.aN.e.submit(function(e){
     e.preventDefault();
     e.s=$.aN.e.serializeObject();e.m=$('#msg').empty()
     $.post($user.auth_token+'/register/'+$user.ke+'/'+$user.uid,e.s,function(d){
-        console.log(d)
         if(d.msg){
             e.m.text(d.msg)
         };
@@ -177,51 +176,54 @@ $.sU.e.on('click','.permission',function(e){
     $.each($.ccio.subs[$.pR.user],function(n,v){
         $.pR.e.find('[name="'+n+'"]').val(v)
     })
-    if(e.d&&e.d.monitors){
-        if(e.d.monitors===''){
-            $.pR.e.find('[detail="allmonitors"]').val(1).change()
-        }else{
-            $.each(e.d.monitors,function(n,v){
-                $.pR.e.find('[monitor="'+v+'"]').val(1)
+    $.pR.e.find('[detail="allmonitors"]').val(e.d.allmonitors).change()
+    $.each(['monitors','monitor_edit','video_delete'],function(m,b){
+        if(e.d[b]){
+            $.each(e.d[b],function(n,v){
+                $.pR.e.find('[monitor="'+b+'"][mid="'+v+'"]').val(1)
             })
         }
-    }
+    })
 })
 
 //permission window
 $.pR={e:$('#permissions'),l:$('#permissionsLabel small')};$.pR.f=$.pR.e.find('form')
 $.pR.e.on('change','[detail="allmonitors"]',function(e){
     e.e=$(this),
-    e.mon=$('#monitors_section')
+    e.mon=$('#monitors_section,#monitors_edit_section,#video_delete_section')
+    e.details=$.pR.e.find('[name="details"]')
+    e.json=JSON.parse(e.details.val())
     if(e.e.val()=='1'){
         e.mon.hide();
-        e.details=$.pR.e.find('[name="details"]')
-        e.json=JSON.parse(e.details.val())
-        e.json.monitors='';
-        e.details.val(JSON.stringify(e.json))
+        e.json.allmonitors='1';
     }else{
         e.mon.show()
+        e.json.allmonitors='0';
         $.pR.e.find('[monitor]').first().change()
     }
+    e.details.val(JSON.stringify(e.json))
+})
+$.pR.e.on('click','[check]',function(e){
+    $(this).parents('.form-group-group').find('select').val($(this).attr('check')).first().change()
 })
 $.pR.e.on('change','[monitor]',function(e){
     e.monitors=[];
+    e.key=$(this).attr('monitor');
     e.details=$.pR.e.find('[name="details"]')
     try{e.detail=JSON.parse(e.details.val())}catch(err){e.detail={}}
     if(!e.detail){e.detail={}}
-    $.pR.e.find('[monitor]').each(function(n,v){
+    $.pR.e.find('[monitor="'+e.key+'"]').each(function(n,v){
         v=$(v)
         if(v.val()=='1'){
-            e.monitors.push(v.attr('monitor'))
+            e.monitors.push(v.attr('mid'))
         }
     });
-    e.detail.monitors=e.monitors;
+    e.detail[e.key]=e.monitors;
     e.details.val(JSON.stringify(e.detail))
-})
+});
 $.pR.f.submit(function(e){
     e.preventDefault();
     e.s=$(this).serializeObject()
-    console.log(e.s)
     $.ccio.cx({f:'accounts',ff:'edit',$uid:$.pR.user,auth:$user.auth_token,mail:$.ccio.subs[$.pR.user].mail,form:e.s})
     $.pR.e.modal('hide')
     return false;

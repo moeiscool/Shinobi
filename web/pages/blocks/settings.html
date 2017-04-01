@@ -27,18 +27,39 @@
                         <input class="form-control" type="password" name="password_again">
                     </label>
                 </div>
-                <div class="form-group">
+                <div class="form-group isSubAccount">
                     <label><span>Number of Days to keep Videos</span>
                         <input class="form-control" detail="days">
                     </label>
                 </div>
-                <div class="form-group">
+                <div class="form-group isSubAccount">
                     <label><span>Max Storage Amount <small>in Megabytes</small></span>
                         <input class="form-control" detail="size" placeholder="10000">
                     </label>
                 </div>
           </div>
-          <div class="form-group-group forestgreen">
+          <div class="form-group-group blue isSubAccount">
+              <h4 class="mon_groups">
+                  Monitor Groups
+                  <div class="pull-right">
+                    <a class="btn btn-success btn-xs add"><i class="fa fa-plus"></i></a>
+                    <a class="btn btn-danger btn-xs delete"><i class="fa fa-trash-o"></i></a>
+                  </div>
+              </h4>
+              <div class="form-group">
+                    <label><span>Monitor Groups</span>
+                        <select class="form-control" id="settings_mon_groups"></select>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label><span>Group Name</span>
+                        <input type="hidden" group="id">
+                        <input class="form-control" group="name">
+                    </label>
+                </div>
+              <input type="hidden" detail="mon_groups">
+          </div>
+          <div class="form-group-group forestgreen isSubAccount">
                 <h4>WebDAV</h4>
                 <div class="form-group">
                     <label><span>URL</span>
@@ -46,12 +67,12 @@
                     </label>
                 </div>
                 <div class="row">
-                    <div class="form-group col-md-6">
+                    <div class="form-group col-md-12">
                         <label><span>Username</span>
                             <input class="form-control" detail="webdav_user">
                         </label>
                     </div>
-                    <div class="form-group col-md-6">
+                    <div class="form-group col-md-12">
                         <label><span>Password</span>
                             <input class="form-control" type="password" detail="webdav_pass">
                         </label>
@@ -82,9 +103,9 @@
         <input type="hidden" name="details">
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-success">Save changes</button>
-      </div>
+        <button type="button" class="btn btn-default pull-left" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+          <button type="submit" class="btn btn-success"><i class="fa fa-check"></i> Save</button>
+        </div>
     </form>
   </div>
 </div>

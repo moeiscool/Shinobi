@@ -9,14 +9,49 @@
         <h4 class="modal-title" id="region_editorLabel"><i class="fa fa-grav"></i> &nbsp; Region Editor</h4>
       </div>
       <div class="modal-body">
-      <div class="canvas_holder">
-        <canvas></canvas>
+      <div class="row">
+          <div class="col-md-6 text-left">
+              <div class="form-group-group orange where">
+                  <h4><span class="cord_name"></span>
+                    <div class="pull-right">
+                        <a class="btn btn-success btn-xs add">&nbsp;<i class="fa fa-plus"></i>&nbsp;</a> 
+                        <a class="btn btn-danger btn-xs erase">&nbsp;<i class="fa fa-trash-o"></i>&nbsp;</a>  
+                    </div>
+                  </h4>
+                <div class="form-group">
+                    <label><span>Regions</span>
+                        <select id="regions_list" class="form-control"></select>
+                    </label>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <label><span>Region Name</span>
+                            <input class="form-control" name="name">
+                        </label>
+                    </div>
+                    <div class="form-group col-md-12">
+                        <label><span>Indifference</span>
+                            <input class="form-control" name="indifference">
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><span>Points <small>When adding points click on the edge of the polygon.</small></span></label>
+                        <table class="table table-striped" id="regions_points"><tbody></tbody></table>
+                </div>
+              </div>
+          </div>
+          <div class="col-md-6">
+              <p>If you are seeing a mountain image, try turning on <b>Snapshot (cgi-bin)</b> in your <b>Monitor Settings</b> before adding points.</p>
+              <div class="canvas_holder">
+                  <textarea id="regions_canvas" rows=3 class="hidden canvas-area input-xxlarge" disabled></textarea>
+              </div>
+          </div>
       </div>
       </div>
       <div class="modal-footer">
           <div id="region_blocks" class="pull-left"></div>
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <a class="btn btn-success add">Add Region</a>
+        <button type="button" class="btn btn-default pull-left" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
       </div>
     </form>
   </div>

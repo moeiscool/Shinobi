@@ -9,6 +9,42 @@ $.ccio={fr:$('#files_recent'),mon:{}};
     $.ccio.init=function(x,d,z,k){
         if(!k){k={}};k.tmp='';
         switch(x){
+            case'monGroup':
+                $.ccio.mon_groups={};
+                $.each($.ccio.mon,function(n,v,x){
+                    if(typeof v.details==='string'){
+                        k.d=JSON.parse(v.details)
+                    }else{
+                        k.d=v.details
+                    }
+                    try{
+                        k.groups=JSON.parse(k.d.groups)
+                        $.each(k.groups,function(m,b){
+                            if(!$.ccio.mon_groups[b])$.ccio.mon_groups[b]={}
+                            $.ccio.mon_groups[b][v.mid]=v;
+                        })
+                    }catch(er){
+                           
+                    }
+                })
+                return $.ccio.mon_groups;
+            break;
+            case'jpegMode':
+                $.each($.ccio.mon,function(n,v,x){
+                    if(v.watch===1){
+                        x=JSON.parse(v.details);
+                        x.jpegInterval=parseFloat(x.jpegInterval);
+                        if(!x.jpegInterval||x.jpegInterval===''||isNaN(x.jpegInterval)){x.jpegInterval=1}
+                        if(!$.ccio.mon[n].jpegInterval){
+                            $.ccio.tm('stream-element',$.ccio.mon[v.mid]);
+                            clearInterval($.ccio.mon[n].jpegInterval);
+                            $.ccio.mon[n].jpegInterval=setInterval(function(){
+                                $('#monitor_live_'+v.mid+' .stream-element').attr('src',$user.auth_token+'/jpeg/'+v.ke+'/'+v.mid+'/s.jpg?time='+(new Date()).getTime())
+                            },1000/x.jpegInterval);
+                        }
+                    };
+                });
+            break;
             case'dragWindows':
                 k.e=$("#monitors_live");
                 if(k.e.disableSelection){k.e.disableSelection()};
@@ -42,11 +78,22 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 if(!d){d=new Date();}
                 return moment(d).format('YYYY-MM-DDTHH-mm-ss')
             break;
+            case'filters':
+                k.tmp='<option value="" selected>Add New</option>';
+                $.each($user.filters,function(n,v){
+                    k.tmp+='<option value="'+v.id+'">'+v.name+'</option>'
+                });
+                $('#saved_filters').html(k.tmp)
+            break;
             case'id':
                 $('.usermail').html(d.mail)
                 try{k.d=JSON.parse(d.details);}catch(er){k.d=d.details}
+                try{$user.mon_groups=JSON.parse(k.d.mon_groups);}catch(er){}
+                if(!$user.mon_groups)$user.mon_groups={};
+                $.sM.reDrawMonGroups()
                 $.each($user,function(n,v){$.sM.e.find('[name="'+n+'"]').val(v).change()})
                 $.each(k.d,function(n,v){$.sM.e.find('[detail="'+n+'"]').val(v).change()})
+                $.gR.drawList();
             break;
             case'jsontoblock'://draw json as block
                 if(d instanceof Object){
@@ -168,48 +215,55 @@ $.ccio={fr:$('#files_recent'),mon:{}};
     }
     $.ccio.snapshot=function(e,cb){
         var image_data;
-        switch(JSON.parse(e.mon.details).stream_type){
-            case'hls':
-                $('#temp').html('<canvas></canvas>')
-                var c = $('#temp canvas')[0];
-                var img = e.p.find('video')[0];
-//                img.pause();
-                c.width = img.videoWidth;
-                c.height = img.videoHeight;
-                var ctx = c.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                image_data=atob(c.toDataURL('image/jpeg').split(',')[1]);
-//                img.play();
-            break;
-            case'mjpeg':
-                $('#temp').html('<canvas></canvas>')
-                var c = $('#temp canvas')[0];
-                var img = $('img',e.p.find('.stream-element').contents())[0];
-                c.width = img.width;
-                c.height = img.height;
-                var ctx = c.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                image_data=atob(c.toDataURL('image/jpeg').split(',')[1]);
-            break;
-            case'b64':
-                image_data = atob(e.mon.last_frame.split(',')[1]);
-            break;
+        e.details=JSON.parse(e.mon.details);
+        if(e.details.stream_scale_x===''){e.details.stream_scale_x=640}
+        if(e.details.stream_scale_y===''){e.details.stream_scale_y=480}
+        if($.ccio.op().jpeg_on!==true){
+            switch(JSON.parse(e.mon.details).stream_type){
+                case'hls':
+                    $('#temp').html('<canvas></canvas>')
+                    var c = $('#temp canvas')[0];
+                    var img = e.p.find('video')[0];
+                    c.width = img.videoWidth;
+                    c.height = img.videoHeight;
+                    var ctx = c.getContext('2d');
+                    ctx.drawImage(img, 0, 0,c.width,c.height);
+                    image_data=atob(c.toDataURL('image/jpeg').split(',')[1]);
+                break;
+                case'mjpeg':
+                    $('#temp').html('<canvas></canvas>')
+                    var c = $('#temp canvas')[0];
+                    var img = $('img',e.p.find('.stream-element').contents())[0];
+                    c.width = e.details.stream_scale_x;
+                    c.height = e.details.stream_scale_y;
+                    var ctx = c.getContext('2d');
+                    ctx.drawImage(img, 0, 0,c.width,c.height);
+                    image_data=atob(c.toDataURL('image/jpeg').split(',')[1]);
+                break;
+                case'b64':
+                    image_data = atob(e.mon.last_frame.split(',')[1]);
+                break;
+            }
+            var arraybuffer = new ArrayBuffer(image_data.length);
+            var view = new Uint8Array(arraybuffer);
+            for (var i=0; i<image_data.length; i++) {
+                view[i] = image_data.charCodeAt(i) & 0xff;
+            }
+            try {
+                var blob = new Blob([arraybuffer], {type: 'application/octet-stream'});
+            } catch (e) {
+                var bb = new (window.WebKitBlobBuilder || window.MozBlobBuilder);
+                bb.append(arraybuffer);
+                var blob = bb.getBlob('application/octet-stream');
+            }
+            var url = (window.URL || window.webkitURL).createObjectURL(blob);
+        }else{
+            url=e.p.find('.stream-element').attr('src');
         }
-        var arraybuffer = new ArrayBuffer(image_data.length);
-        var view = new Uint8Array(arraybuffer);
-        for (var i=0; i<image_data.length; i++) {
-            view[i] = image_data.charCodeAt(i) & 0xff;
-        }
-        try {
-            var blob = new Blob([arraybuffer], {type: 'application/octet-stream'});
-        } catch (e) {
-            var bb = new (window.WebKitBlobBuilder || window.MozBlobBuilder);
-            bb.append(arraybuffer);
-            var blob = bb.getBlob('application/octet-stream');
-        }
-        var url = (window.URL || window.webkitURL).createObjectURL(blob);
-        cb(url,image_data);
-        URL.revokeObjectURL(url)
+            cb(url,image_data);
+        try{
+            URL.revokeObjectURL(url)
+        }catch(er){}
     }
     $.ccio.tm=function(x,d,z,k){
         var tmp='';if(!d){d={}};if(!k){k={}};
@@ -219,11 +273,11 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 if(!d.filename){d.filename=moment(d.time).format('YYYY-MM-DDTHH-mm-ss')+'.'+d.ext;}
                 k=[d.mid+'-'+d.filename,'href="/'+$user.auth_token+'/videos/'+d.ke+'/'+d.mid+'/'+d.filename+'"'];
                 d.mom=moment(d.time),d.hr=parseInt(d.mom.format('HH')),d.per=parseInt(d.hr/24*100);
-                tmp+='<li class="glM'+d.mid+'" mid="'+d.mid+'" ke="'+d.ke+'" status="'+d.status+'" file="'+d.filename+'"><div title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'" '+k[1]+' video="launch" class="progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div><div><span title="'+d.end+'" class="livestamp"></span></div><div class="small"><b>Start</b> : '+d.time+'</div><div class="small"><b>End</b> : '+d.end+'</div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls"><a class="btn btn-sm btn-primary" video="launch" '+k[1]+'><i class="fa fa-play-circle"></i></a> <a download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a> <a video="download" host="dropbox" download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a> <a title="Delete Video" video="delete" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></a></div></div></li>';
+                tmp+='<li class="glM'+d.mid+'" mid="'+d.mid+'" ke="'+d.ke+'" status="'+d.status+'" file="'+d.filename+'"><div title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'" '+k[1]+' video="launch" class="progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div><div><span title="'+d.end+'" class="livestamp"></span></div><div class="small"><b>Start</b> : '+d.time+'</div><div class="small"><b>End</b> : '+d.end+'</div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls"><a class="btn btn-sm btn-primary" video="launch" '+k[1]+'><i class="fa fa-play-circle"></i></a> <a download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a> <a video="download" host="dropbox" download="'+k[0]+'" '+k[1]+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a> <a title="Delete Video" video="delete" class="btn btn-sm btn-danger permission_video_delete"><i class="fa fa-trash"></i></a></div></div></li>';
             break;
             case 1://monitor icon
                 d.src=placeholder.getData(placeholder.plcimg({bgcolor:'#b57d00',text:'...'}));
-                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" title="'+d.mid+' : '+d.name+'" class="monitor_block glM'+d.mid+' col-md-4"><img monitor="watch" class="snapshot" src="'+d.src+'"><div class="box"><div class="title monitor_name truncate">'+d.name+'</div><div class="list-data"><div class="monitor_mid">'+d.mid+'</div><div><b>Save as :</b> <span class="monitor_ext">'+d.ext+'</span></div><div><b>Mode :</b> <span class="monitor_mode">'+d.mode+'</span></div></div><div class="icons btn-group"><a class="btn btn-xs btn-default" monitor="edit"><i class="fa fa-wrench"></i></a> <a monitor="calendar" class="btn btn-xs btn-default"><i class="fa fa-calendar"></i></a> <a monitor="videos_table" class="btn btn-xs btn-default"><i class="fa fa-film"></i></a></div></div></div>';
+                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" title="'+d.mid+' : '+d.name+'" class="monitor_block glM'+d.mid+' col-md-4"><img monitor="watch" class="snapshot" src="'+d.src+'"><div class="box"><div class="title monitor_name truncate">'+d.name+'</div><div class="list-data"><div class="monitor_mid">'+d.mid+'</div><div><b>Save as :</b> <span class="monitor_ext">'+d.ext+'</span></div><div><b>Mode :</b> <span class="monitor_mode">'+d.mode+'</span></div></div><div class="icons btn-group"><a class="btn btn-xs btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a monitor="calendar" class="btn btn-xs btn-default"><i class="fa fa-calendar"></i></a> <a monitor="videos_table" class="btn btn-xs btn-default"><i class="fa fa-film"></i></a></div></div></div>';
                 delete(d.src);
             break;
             case 2://monitor stream
@@ -244,22 +298,12 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 
                 tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" class="monitor_item glM'+d.mid+' mdl-grid col-md-6">';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col">';
-                tmp+='<div class="no-padding mdl-card__media mdl-color-text--grey-50">';
-                switch(k.d.stream_type){
-                    case'mjpeg':
-                        tmp+='<iframe class="stream-element"></iframe>';
-                    break;
-                    case'hls':
-                        tmp+='<video class="stream-element" controls autoplay></video>';
-                    break;
-                    default://base64
-                        tmp+='<canvas class="stream-element"></canvas>';
-                    break;
-                }
+                tmp+='<div class="stream-block no-padding mdl-card__media mdl-color-text--grey-50">';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card__supporting-text text-center">';
                 tmp+='<div class="indifference"><div class="progress"><div class="progress-bar progress-bar-danger" role="progressbar"><span>70%</span></div></div></div>';
-                tmp+='<div class="btn-group btn-group-lg"><a title="Snapshot" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="Show Logs" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="Enlarge" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="Status Indicator, Click to Recconnect" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-circle"></i></a> <a title="Calendar" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="Videos List" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a class="btn btn-default" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Enlarge" monitor="bigify" class="hidden btn btn-default"><i class="fa fa-expand"></i></a> <a title="Fullscreen" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
+                tmp+='<div class="monitor_name">'+d.name+'</div>';
+                tmp+='<div class="btn-group btn-group-lg"><a title="Snapshot" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="Show Logs" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="Enlarge" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="Status Indicator, Click to Recconnect" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-circle"></i></a> <a title="Calendar" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="Videos List" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a class="btn btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Enlarge" monitor="bigify" class="hidden btn btn-default"><i class="fa fa-expand"></i></a> <a title="Fullscreen" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
                 tmp+='</div>';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col mdl-cell--4-col-desktop">';
@@ -294,26 +338,6 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                     if(v.find('.log-item').length>10){v.find('.log-item:last').remove()}
                 })
             break;
-            case 5://region element
-                k.contain='#region_editor .canvas_holder';
-                if(!d.name){d.name=$.ccio.gid()}
-                if(!d.sensitivity){d.sensitivity=0.5}
-                if(!d.y){d.y=0}
-                if(!d.x){d.x=0}
-                if(!d.w){d.w=200}
-                if(!d.h){d.h=200}
-                $.zO.c.append('<div class="cord_element text-left" cord="'+d.name+'"><div class="controls"><a class="pull-right btn btn-xs btn-danger delete">&nbsp;<i class="fa fa-times"></i>&nbsp;</a></div><div class="form-group"><label><span>Region Name</span><input class="form-control input-sm" detail="name" value="'+d.name+'"></label></div><div class="form-group"><label><span>Sensitivity</span><input class="form-control input-sm" detail="sensitivity" value="'+d.sensitivity+'"></label></div></div>');
-                $.zO.c.find('[cord="'+d.name+'"]')
-                    .css({top:d.y,left:d.x,width:d.w,height:d.h})
-                    .resizable({
-                        containment:k.contain,
-                        handles: "n,e,s,w,ne,nw,se,sw"
-                    })
-                    .draggable({
-                        containment:k.contain,
-                        stop: $.zO.checkCords
-                    }).click()
-            break;
             case 6://notification row
                 if(!d.time){d.time=$.ccio.init('t')}
                 if(!d.note.class){d.note.class=''}
@@ -331,6 +355,71 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             case'option':
                 tmp+='<option value="'+d.id+'">'+d.name+'</option>'
             break;
+            case'stream-element':
+                k.e=$('#monitor_live_'+d.mid+' .stream-block');
+                k.e.find('.stream-element');
+                if($.ccio.op().jpeg_on===true){
+                    tmp+='<img class="stream-element">';
+                }else{
+                    try{k.d=JSON.parse(d.details);}catch(er){k.d=d.details}
+                    switch(k.d.stream_type){
+                        case'hls':
+                            tmp+='<video class="stream-element" controls autoplay></video>';
+                        break;
+                        case'mjpeg':
+                            tmp+='<iframe class="stream-element"></iframe>';
+                        break;
+                        default://base64
+                            tmp+='<canvas class="stream-element"></canvas>';
+                        break;
+                    }
+                }
+                k.e.html(tmp).find('.stream-element').resize();
+            break;
+            case'filters-where':
+                if(!d)d={};
+                d.id=$('#filters_where .row').length;
+                if(!d.p1){d.p1='mid'}
+                if(!d.p2){d.p2='='}
+                if(!d.p3){d.p3=''}
+                tmp+='<div class="row where-row">';
+                tmp+='   <div class="form-group col-md-4">';
+                tmp+='       <label>';
+                tmp+='           <select class="form-control" where="p1">';
+                tmp+='               <option value="mid" selected>Monitor ID</option>';
+                tmp+='               <option value="ke">Group Key</option>';
+                tmp+='               <option value="ext">File Type</option>';
+                tmp+='               <option value="time">Start Time</option>';
+                tmp+='               <option value="end">End Time</option>';
+                tmp+='               <option value="size">Filesize</option>';
+                tmp+='               <option value="status">Video Status</option>';
+                tmp+='           </select>';
+                tmp+='       </label>';
+                tmp+='   </div>';
+                tmp+='   <div class="form-group col-md-4">';
+                tmp+='       <label>';
+                tmp+='           <select class="form-control" where="p2">';
+                tmp+='               <option value="=" selected>Equal to</option>';
+                tmp+='               <option value="!=">Not Equal to</option>';
+                tmp+='               <option value=">=">Greater Than or Equal to</option>';
+                tmp+='               <option value=">">Greater Than</option>';
+                tmp+='               <option value="<">Less Than</option>';
+                tmp+='               <option value="<=">Less Than or Equal to</option>';
+                tmp+='               <option value="LIKE">Like</option>';
+                tmp+='               <option value="=~">Matches</option>';
+                tmp+='               <option value="!~">Not Matches</option>';
+                tmp+='               <option value="=[]">In</option>';
+                tmp+='               <option value="![]">Not In</option>';
+                tmp+='           </select>';
+                tmp+='       </label>';
+                tmp+='   </div>';
+                tmp+='   <div class="form-group col-md-4">';
+                tmp+='       <label>';
+                tmp+='           <input class="form-control" placeholder="Value" title="Value" where="p3">';
+                tmp+='       </label>';
+                tmp+='   </div>';
+                tmp+='</div>';
+            break;
         }
         if(z){
             $(z).prepend(tmp)
@@ -341,9 +430,21 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             break;
             case 2:
                 try{
-            k.e=$('#monitor_live_'+d.mid);
-            if(JSON.parse(d.details).control=="1"){k.e.find('[monitor="control_toggle"]').show()}else{k.e.find('.pad').remove();k.e.find('[monitor="control_toggle"]').hide()}
+                    k.e=$('#monitor_live_'+d.mid);
+                    if(JSON.parse(d.details).control=="1"){
+                        k.e.find('[monitor="control_toggle"]').show()
+                    }else{
+                        k.e.find('.pad').remove();
+                        k.e.find('[monitor="control_toggle"]').hide()
+                    }
+                    $.ccio.tm('stream-element',d)
                 }catch(re){console.log(re)}
+            break;
+            case'filters-where':
+                $('#filters_where').append(tmp);
+                $('#filters_where .row:last [where="p1"]').val(d.p1)
+                $('#filters_where .row:last [where="p2"]').val(d.p2)
+                $('#filters_where .row:last [where="p3"]').val(d.p3)
             break;
         }
         return tmp;
@@ -427,6 +528,11 @@ $.ccio.ws.on('f',function (d){
             new PNotify({title:'API Key Added',text:'You may use this key now.',type:'success'});
             $.ccio.tm(3,d.form,'#api_list')
         break;
+        case'filters_change':
+            new PNotify({title:'Filters Updated',text:'Your changes have been saved and applied.',type:'success'});
+            $user.filters=d.filters;
+            $.ccio.init('filters');
+        break;
         case'user_settings_change':
             new PNotify({title:'Settings Changed',text:'Your settings have been saved and applied.',type:'success'});
             $.ccio.init('id',d.form);
@@ -453,6 +559,7 @@ $.ccio.ws.on('f',function (d){
         case'detector_trigger':
             d.e=$('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]')
             if($.ccio.mon[d.id]&&d.e.length>0){
+                d.details.confidence=d.details.confidence/10
                 d.e.addClass('detector_triggered')
                 clearTimeout($.ccio.mon[d.id].detector_trigger_timeout);
                 $.ccio.mon[d.id].detector_trigger_timeout=setTimeout(function(){
@@ -513,6 +620,10 @@ $.ccio.ws.on('f',function (d){
                 }else{
                     $.each(f,g);
                 }
+                if($.ccio.op().jpeg_on===true){
+                    $.ccio.cx({f:'monitor',ff:'jpeg_on'})
+                }
+                $.gR.drawList();
             })
             $.ccio.pm(3,d.apis);
             $('.os_platform').html(d.os.platform)
@@ -524,6 +635,11 @@ $.ccio.ws.on('f',function (d){
         break;
         case'get_videos':
             $.ccio.pm(0,d)
+        break;
+        case'video_edit':case'video_archive':
+            $.ccio.init('data-video',d)
+            d.e=$('[file="'+d.filename+'"][mid="'+d.mid+'"][ke="'+d.ke+'"]');
+            d.e.attr('status',d.status),d.e.attr('data-status',d.status);
         break;
         case'video_delete':
             if($('.modal[mid="'+d.mid+'"]').length>0){$('#video_viewer[mid="'+d.mid+'"]').attr('file',null).attr('ke',null).attr('mid',null).modal('hide')}
@@ -563,34 +679,19 @@ $.ccio.ws.on('f',function (d){
             $('[mid="'+d.mid+'"][ke="'+d.ke+'"]:not(.modal)').remove();
             delete($.ccio.mon[d.mid]);
         break;
-        case'video_edit':
-            $.ccio.init('data-video',d)
-            d.e=$('[file="'+d.filename+'"][mid="'+d.mid+'"][ke="'+d.ke+'"]');
-            d.e.attr('status',d.status),d.e.attr('data-status',d.status);
-            console.log('[file="'+d.filename+'"][mid="'+d.mid+'"][ke="'+d.ke+'"]')
-        break;
         case'monitor_edit':
-            d.e=$('[mid="'+d.mon.mid+'"][ke="'+d.mon.ke+'"]');d.ee=d.e.find('.stream-element');
-            switch(d.mon.details.stream_type){
-                case'hls':
-                    d.ee.after('<video class="stream-element" controls autoplay></video>').remove()
-                break;
-                case'mjpeg':
-                    d.ee.after('<iframe class="stream-element"></iframe>').remove()
-                break;
-                default://base64
-                    d.ee.after('<canvas class="stream-element"></canvas>').remove()
-                break;
-            }
-            d.e.resize();
+            d.e=$('[mid="'+d.mon.mid+'"][ke="'+d.mon.ke+'"]');
+            $.ccio.tm('stream-element',d.mon)
             d.e=$('#monitor_live_'+d.mid);
             if(d.mon.details.control=="1"){d.e.find('[monitor="control_toggle"]').show()}else{d.e.find('.pad').remove();d.e.find('[monitor="control_toggle"]').hide()}
             
             d.o=$.ccio.op().watch_on;
             if(!d.o){d.o={}}
-            if(d.mon.details.cords instanceof Array){d.mon.details.cords=JSON.stringify(d.mon.details.cords);}
+            if(d.mon.details.cords instanceof Object){d.mon.details.cords=JSON.stringify(d.mon.details.cords);}
             d.mon.details=JSON.stringify(d.mon.details);
             if(!$.ccio.mon[d.mid]){$.ccio.mon[d.mid]={}}
+            clearInterval($.ccio.mon[d.mid].jpegInterval);
+            delete($.ccio.mon[d.mid].jpegInterval);
             $.each(d.mon,function(n,v){
                 $.ccio.mon[d.mid][n]=v;
             });
@@ -618,13 +719,34 @@ $.ccio.ws.on('f',function (d){
                     break;
                 }
             d.e.find('.monitor_mode').text(d.mode)
+            $.gR.drawList();
+            new PNotify({title:'Monitor Saved',text:'Your monitor has been saved.',type:'success'});
+        break;
+        case'mode_jpeg_off':
+            $.ccio.op('jpeg_on',"0");
+            $.each($.ccio.mon,function(n,v,x){
+                clearInterval($.ccio.mon[n].jpegInterval);
+                delete($.ccio.mon[n].jpegInterval);
+                if(v.watch===1){
+                    $.ccio.cx({f:'monitor',ff:'watch_on',id:v.mid})
+                }
+            });
+            $('body').removeClass('jpegMode')
+        break;
+        case'mode_jpeg_on':
+            $.ccio.op('jpeg_on',true);
+            $.ccio.init('jpegMode');
+            $('body').addClass('jpegMode')
         break;
         case'monitor_watch_off':case'monitor_stopping':
             d.o=$.ccio.op().watch_on;if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=0;$.ccio.op('watch_on',d.o);
             if($.ccio.mon[d.id]){
+                clearInterval($.ccio.mon[d.id].jpegInterval);
+                delete($.ccio.mon[d.id].jpegInterval);
                 clearTimeout($.ccio.mon[d.id].sk)
                 clearInterval($.ccio.mon[d.id].signal);delete($.ccio.mon[d.id].signal);
                 $.ccio.mon[d.id].watch=0;
+                if($.ccio.mon[d.id].hls){$.ccio.mon[d.id].hls.destroy()}
                 $('#monitor_live_'+d.id).remove();
             }
         break;
@@ -637,35 +759,41 @@ $.ccio.ws.on('f',function (d){
                 $.ccio.init('dragWindows')
             }
             d.d=JSON.parse($.ccio.mon[d.id].details);
-            switch(d.d.stream_type){
-                case'hls':
-                    d.url=$user.auth_token+'/hls/'+d.ke+'/'+d.id+'/s.m3u8';
-                    var video = $('#monitor_live_'+d.id+' .stream-element')[0];
-                    if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)||(navigator.userAgent.match(/(Safari)/)&&!navigator.userAgent.match('Chrome'))) {
-                        video.src=d.url;
-                        if (video.paused) {
-                            video.play();
-                        }
-                    }else{
-                        var hls = new Hls();
-                        hls.loadSource(d.url);
-                        hls.attachMedia(video);
-                        hls.on(Hls.Events.MANIFEST_PARSED,function() {
+            $.ccio.tm('stream-element',$.ccio.mon[d.id]);
+            if($.ccio.op().jpeg_on===true){
+                $.ccio.init('jpegMode');
+            }else{
+                switch(d.d.stream_type){
+                    case'hls':
+                        d.url=$user.auth_token+'/hls/'+d.ke+'/'+d.id+'/s.m3u8';
+                        var video = $('#monitor_live_'+d.id+' .stream-element')[0];
+                        if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)||(navigator.userAgent.match(/(Safari)/)&&!navigator.userAgent.match('Chrome'))) {
+                            video.src=d.url;
                             if (video.paused) {
                                 video.play();
                             }
-                        });
-                    }
-                    clearTimeout($.ccio.mon[d.id].sk);
-                    if(d.d.signal_check!=='0'){
-                        $.ccio.mon[d.id].sk=setTimeout(function(){
-                            $.ccio.init('signal-check',d)
-                        },15000)
-                    }
-                break;
-                case'mjpeg':
-                    $('#monitor_live_'+d.id+' .stream-element').attr('src',$user.auth_token+'/mjpeg/'+d.ke+'/'+d.id+'/full')
-                break;
+                        }else{
+                            if($.ccio.mon[d.id].hls){$.ccio.mon[d.id].hls.destroy()}
+                            $.ccio.mon[d.id].hls = new Hls();
+                            $.ccio.mon[d.id].hls.loadSource(d.url);
+                            $.ccio.mon[d.id].hls.attachMedia(video);
+                            $.ccio.mon[d.id].hls.on(Hls.Events.MANIFEST_PARSED,function() {
+                                if (video.paused) {
+                                    video.play();
+                                }
+                            });
+                        }
+                        clearTimeout($.ccio.mon[d.id].sk);
+                        if(d.d.signal_check!=='0'){
+                            $.ccio.mon[d.id].sk=setTimeout(function(){
+                                $.ccio.init('signal-check',d)
+                            },15000)
+                        }
+                    break;
+                    case'mjpeg':
+                        $('#monitor_live_'+d.id+' .stream-element').attr('src',$user.auth_token+'/mjpeg/'+d.ke+'/'+d.id+'/full')
+                    break;
+                }
             }
             d.signal=parseFloat(d.d.signal_check);
             if(!d.signal||d.signal==NaN){d.signal=10;};d.signal=d.signal*1000*60;
@@ -673,7 +801,6 @@ $.ccio.ws.on('f',function (d){
                 $.ccio.mon[d.id].signal=setInterval(function(){$.ccio.init('signal-check',{id:d.id,ke:d.ke})},d.signal);
             }
             d.e=$('.monitor_item[mid="'+d.id+'"][ke="'+d.ke+'"]').resize()
-            console.log('/'+$user.auth_token+'/videos/'+d.ke+'/'+d.id+'?limit=10')
             if(d.e.find('.videos_monitor_list li').length===0){
                 $.getJSON('/'+$user.auth_token+'/videos/'+d.ke+'/'+d.id+'?limit=10',function(f){
                     $.ccio.pm(0,{videos:f,ke:d.ke,mid:d.id})
@@ -684,13 +811,17 @@ $.ccio.ws.on('f',function (d){
             $('#monitor_live_'+d.id+' iframe').attr('src',location.protocol+'//'+location.host+d.watch_url);
         break;
         case'monitor_frame':
-            var image = new Image();
-            var ctx = $('#monitor_live_'+d.id+' canvas');
-            image.onload = function() {
-                ctx[0].getContext("2d").drawImage(image,0,0,ctx.width(),ctx.height());
-            };
-            image.src='data:image/jpeg;base64,'+d.frame;
-            $.ccio.mon[d.id].last_frame='data:image/jpeg;base64,'+d.frame;
+            try{
+                var image = new Image();
+                var ctx = $('#monitor_live_'+d.id+' canvas');
+                image.onload = function() {
+                    ctx[0].getContext("2d").drawImage(image,0,0,ctx.width(),ctx.height());
+                };
+                image.src='data:image/jpeg;base64,'+d.frame;
+                $.ccio.mon[d.id].last_frame='data:image/jpeg;base64,'+d.frame;
+            }catch(er){
+                console.log('base64 frame')
+            }
             $.ccio.init('signal',d);
         break;
         case'onvif':
@@ -702,6 +833,7 @@ $.ccio.ws.on('f',function (d){
 });
 $.ccio.cx=function(x){if(!x.ke){x.ke=$user.ke;};if(!x.uid){x.uid=$user.uid;};return $.ccio.ws.emit('f',x)}
 
+$(document).ready(function(e){
 //global form functions
 $.ccio.form={};
 $.ccio.form.details=function(e){
@@ -754,40 +886,163 @@ $.oB.e.find('[name="user"]').change(function(e){
 if($.ccio.op().onvif_probe_user){
     $.oB.e.find('[name="user"]').val($.ccio.op().onvif_probe_user)
 }
+//Group Selector
+$.gR={e:$('#group_list'),b:$('#group_list_button')};
+$.gR.drawList=function(){
+    e={};
+    e.tmp='';
+    $.each($.ccio.init('monGroup'),function(n,v){
+        e.tmp+='<li class="mdl-menu__item" group="'+n+'">'+$user.mon_groups[n].name+'</li>'
+    })
+    $.gR.e.html(e.tmp)
+}
+$.gR.e.on('click','[group]',function(){
+    e={};
+    e.e=$(this),
+    e.a=e.e.attr('group');
+    $.each($.ccio.op().watch_on,function(n,v){
+        $.each(v,function(m,b){
+            $.ccio.cx({f:'monitor',ff:'watch_off',id:m,ke:n})
+        })
+    })
+    $.each($.ccio.mon_groups[e.a],function(n,v){
+        $.ccio.cx({f:'monitor',ff:'watch_on',id:v.mid,ke:v.ke})
+    })
+})
 //Region Editor
-$.zO={e:$('#region_editor')};$.zO.f=$.zO.e.find('form');$.zO.o=$.zO.e.find('canvas'),$.zO.c=$.zO.e.find('.canvas_holder');
+$.zO={e:$('#region_editor')};
+$.zO.f=$.zO.e.find('form');
+$.zO.o=function(){return $.zO.e.find('canvas')};
+$.zO.c=$.zO.e.find('.canvas_holder');
+$.zO.name=$.zO.e.find('[name="name"]');
+$.zO.rl=$('#regions_list');
+$.zO.rp=$('#regions_points');
+$.zO.ca=$('#regions_canvas');
+$.zO.saveCoords=function(){
+    $.aM.e.find('[detail="cords"]').val(JSON.stringify($.zO.regionViewerDetails.cords)).change()
+}
+$.zO.initRegionList=function(){
+    $('#regions_list,#region_points').empty();
+    $.each($.zO.regionViewerDetails.cords,function(n,v){
+        if(v&&v.name){
+            $.zO.rl.append('<option value="'+n+'">'+v.name+'</option>')
+        }
+    });
+    $.zO.rl.change();
+}
+$.zO.rl.change(function(e){
+    $.zO.initCanvas();
+})
+$.zO.initCanvas=function(){
+    e={};
+    e.ar=[];
+    e.val=$.zO.rl.val();
+    if(!e.val){
+        $.zO.f.find('[name="name"]').val('')
+        $.zO.f.find('[name="indifference"]').val('')
+        $.zO.rp.empty()
+    }else{
+        e.cord=$.zO.regionViewerDetails.cords[e.val];
+        if(!e.cord.points){e.cord.points=[[0,0],[0,100],[100,0]]}
+        $.each(e.cord.points,function(n,v){
+            e.ar=e.ar.concat(v)
+        });
+        if(isNaN(e.cord.sensitivity)){
+            e.cord.sensitivity=$.zO.regionViewerDetails.detector_sensitivity;
+        }
+        $.zO.f.find('[name="name"]').val(e.val)
+        $.zO.e.find('.cord_name').text(e.val)
+        $.zO.f.find('[name="indifference"]').val(e.cord.sensitivity)
+        $.zO.e.find('.canvas_holder canvas').remove();
+        e.e=$.zO.ca.val(e.ar.join(','))
+        e.e.attr('data-image-url','/'+$user.auth_token+'/jpeg/'+$user.ke+'/'+$.aM.selected+'/s.jpg').canvasAreaDraw();
+        e.e.change();
+    }
+}
+$.zO.e.on('change','[name="indifference"]',function(e){
+    e.val=$(this).val();
+    $.zO.regionViewerDetails.cords[$.zO.rl.val()].sensitivity=e.val;
+    $.zO.saveCoords()
+})
+$.zO.e.on('change','[name="name"]',function(e){
+    e.old=$.zO.rl.val();
+    e.new=$.zO.name.val();
+    $.zO.regionViewerDetails.cords[e.new]=$.zO.regionViewerDetails.cords[e.old];
+    delete($.zO.regionViewerDetails.cords[e.old]);
+    $.zO.rl.find('option[value="'+e.old+'"]').attr('value',e.new).text(e.new)
+    $.zO.saveCoords()
+})
+$.zO.e.on('change','[point]',function(e){
+    e.points=[];
+    $('[points]').each(function(n,v){
+        v=$(v);
+        n=v.find('[point="x"]').val();
+        if(n){
+            e.points.push([n,v.find('[point="y"]').val()])
+        }
+    })
+    $.zO.regionViewerDetails.cords[$.zO.name.val()].points=e.points;
+    $.zO.initCanvas();
+    $.zO.initCanvas();
+})
+$.zO.e.find('.erase').click(function(e){
+    if(Object.keys($.zO.regionViewerDetails.cords).length>1){
+        delete($.zO.regionViewerDetails.cords[$.zO.rl.val()]);
+    }
+    $.zO.initRegionList();
+    //$.zO.rl.append('<option value="'+e.gid+'">'+e.gid+'</option>');
+});
+//$.zO.e.find('.new').click(function(e){
+//    $.zO.regionViewerDetails.cords[$.zO.rl.val()]
+//    $.zO.initRegionList();
+//})
+$.zO.e.on('changed','#regions_canvas',function(e){
+    e.val=$(this).val().replace(/(,[^,]*),/g, '$1;').split(';');
+    e.ar=[];
+    $.each(e.val,function(n,v){
+        v=v.split(',')
+        if(v[1]){
+            e.ar.push([v[0],v[1]])
+        }
+    })
+    $.zO.regionViewerDetails.cords[$.zO.rl.val()].points=e.ar;
+    e.selected=$.zO.regionViewerDetails.cords[$.zO.rl.val()];
+    e.e=$('#regions_points tbody').empty();
+    $.each($.zO.regionViewerDetails.cords[$.zO.rl.val()].points,function(n,v){
+        if(isNaN(v[0])){v[0]=20}
+        if(isNaN(v[1])){v[1]=20}
+        e.e.append('<tr points="'+n+'"><td><input class="form-control" placeholder="X" point="x" value="'+v[0]+'"></td><td><input class="form-control" placeholder="Y" point="y" value="'+v[1]+'"></td><td class="text-right"><a class="delete btn btn-danger"><i class="fa fa-trash-o"></i></a></td></tr>')
+    });
+    $.zO.saveCoords()
+})
 $.zO.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
     
     return false;
 });
-$.zO.checkCords=function(){
-    e={};e.ar=[];
-    $.zO.c.find('[cord]').each(function(n,v){
-        v=$(v);e.o=v.position();
-        e.arr={name:e.n,x:e.o.left,y:e.o.top,w:v.width(),h:v.height()};
-        v.find('[detail]').each(function(m,b){
-            b=$(b);
-            e.arr[b.attr('detail')]=b.val().trim();
-        })
-        if(e.n==''){e.n=$.ccio.gid()};
-        e.ar.push(e.arr);
-    });
-    $.aM.e.find('[detail="cords"]').val(JSON.stringify(e.ar)).change()
-}
-$.zO.c.on('change','input',$.zO.checkCords)
-.on('resize','[cord]',$.zO.checkCords)
-.on('mousedown touch','[cord]',function(){
-    $.zO.c.find('[cord]').removeClass('selected');
-    $(this).addClass('selected');
+$('#regions_points')
+.on('click','.delete',function(e){
+    e.p=$(this).parents('tr'),e.row=e.p.attr('points');
+    delete($.zO.regionViewerDetails.cords[$.zO.rl.val()].points[e.row])
+    $.zO.saveCoords()
+    e.p.remove();
+    $.zO.rl.change();
 })
-.on('click','.delete',function(){
-    $(this).parents('[cord]').remove();
-    $.zO.checkCords();
+$.zO.e.on('click','.add',function(e){
+    e.gid=$.ccio.gid(5);
+    e.save={};
+    $.each($.zO.regionViewerDetails.cords,function(n,v){
+        if(v&&v!==null&&v!=='null'){
+            e.save[n]=v;
+        }
+    })
+    $.zO.regionViewerDetails.cords=e.save;
+    $.zO.regionViewerDetails.cords[e.gid]={name:e.gid,sensitivity:0.0005,points:[[0,0],[0,100],[100,0]]};
+    console.log($.zO.regionViewerDetails.cords)
+    $.zO.rl.append('<option value="'+e.gid+'">'+e.gid+'</option>');
+    $.zO.rl.val(e.gid)
+    $.zO.rl.change();
 });
-$.zO.e.on('click','.add',function(){
-    $.ccio.tm(5)
-})
 //probe
 $.pB={e:$('#probe')};$.pB.f=$.pB.e.find('form');$.pB.o=$.pB.e.find('.output_data');
 $.pB.f.submit(function(e){
@@ -846,6 +1101,15 @@ $.aM.f.submit(function(e){
         $.aM.e.modal('hide')
     return false;
 });
+$.aM.e.on('change','[group]',function(){
+    e={};
+    e.e=$.aM.e.find('[group]:checked');
+    e.s=[];
+    e.e.each(function(n,v){
+        e.s.push($(v).val())
+    });
+    $.aM.e.find('[detail="groups"]').val(JSON.stringify(e.s)).change()
+})
 $.aM.e.find('.probe_config').click(function(){
     e={};
     e.host=$.aM.e.find('[name="host"]').val();
@@ -926,14 +1190,11 @@ $.aM.f.find('[name="type"]').change(function(e){
     $.aM.f.find('.h_t_'+e.v).show();
     e.h=$.aM.f.find('[name="path"]');
     e.p=e.e.parents('.form-group');
-    e.p.removeClass('col-md-12 col-md-6')
     switch(e.v){
         case'local':case'socket':
-            e.p.addClass('col-md-12')
             e.h.attr('placeholder','/dev/video0')
         break;
         default:
-            e.p.addClass('col-md-6')
             e.h.attr('placeholder','/videostream.cgi?1')
         break;
     }
@@ -955,13 +1216,88 @@ $.apM.f.submit(function(e){
 });
 $.apM.e.on('click','.delete',function(e){
     e.e=$(this);e.p=e.e.parents('[api_key]'),e.code=e.p.attr('api_key');
-    console.log(e.code)
     $.ccio.cx({f:'api',ff:'delete',form:{code:e.code}})
 })
+//filters window
+try{$user.filters=JSON.parse($user.details).filters;}catch(er){}
+if(!$user.filters)$user.filters={};
+$.fI={e:$('#filters')};$.fI.f=$.fI.e.find('form');
+$.fI.md=$.fI.f.find('[detail]');
+$.ccio.init('filters');
+$.ccio.tm('filters-where');
+$.fI.e.on('click','.where .add',function(e){
+    $.ccio.tm('filters-where');
+})
+$.fI.e.on('click','.where .remove',function(e){
+    e.e=$('#filters_where .row');
+    if(e.e.length>1){
+        e.e.last().remove();
+    }
+})
+$('#saved_filters').change(function(e){
+    e.e=$(this),e.id=e.e.val();
+    $('#filters_where').empty()
+    if(e.id&&e.id!==''){
+        e.name=$user.filters[e.id].name;
+        $.each($user.filters[e.id].where,function(n,v){
+            $.ccio.tm('filters-where',v)
+        });
+        $.each($user.filters[e.id],function(n,v){
+            if(n==='where'){return}
+            $.fI.f.find('[name="'+n+'"]').val(v);
+        });
+    }else{
+        e.name='Add New';
+        $.fI.f.find('[name="id"]').val($.ccio.gid(5));
+        $.ccio.tm('filters-where');
+    }
+    $.fI.e.find('.filter_name').text(e.name)
+}).change()
+$.fI.f.find('.delete').click(function(e){
+    $.confirm.title.text('Delete Filter : '+e.mon.name)
+    e.html='Do you want to delete this filter? You cannot recover it.'
+    e.html+='<table class="info-table"><tr>';
+    $.each(e.mon,function(n,v,g){
+        if(n==='host'&&v.indexOf('@')>-1){g=v.split('@')[1]}else{g=v};
+        try{JSON.parse(g);return}catch(err){}
+        e.html+='<tr><td>'+n+'</td><td>'+g+'</td></tr>';
+    })
+    e.html+='</tr></table>';
+    $.confirm.body.html(e.html)
+    $.confirm.click({title:'Delete Filter',class:'btn-danger'},function(){
+        $.ccio.cx({f:'settings',ff:'filters',fff:'delete',form:e.s})
+    });
+})
+$.fI.f.submit(function(e){
+    e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
+    e.er=[];
+    console.log(e.s)
+    $.each(e.s,function(n,v){e.s[n]=v.trim()})
+    e.s.where={};
+    $('.where-row').each(function(n,v){
+        n={};
+        $(v).find('[where]').each(function(m,b){
+            b=$(b);
+            n[b.attr('where')]=b.val();
+        })
+        e.s.where.push(n)
+    })
+    $.ccio.cx({f:'settings',ff:'filters',fff:'save',form:e.s})
+});
 //settings window
-$.sM={e:$('#settings')};$.sM.f=$.sM.e.find('form');
+$.sM={e:$('#settings')};
+$.sM.f=$.sM.e.find('form');
+$.sM.g=$('#settings_mon_groups');
 $.sM.md=$.sM.f.find('[detail]');
 $.sM.md.change($.ccio.form.details);
+$.sM.writewMonGroups=function(){
+    $.sM.f.find('[detail="mon_groups"]').val(JSON.stringify($user.mon_groups)).change()
+}
+$.sM.reDrawMonGroups=function(){
+    $.sM.g.empty();
+    $.ccio.pm('option',$user.mon_groups,'#settings_mon_groups')
+    $.sM.g.change();
+};
 $.sM.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
     e.er=[];
@@ -971,18 +1307,48 @@ $.sM.f.submit(function(e){
     $.ccio.cx({f:'settings',ff:'edit',form:e.s})
     $.sM.e.modal('hide')
 });
-//confirm windows
-$.confirm={e:$('#confirm_window')};
-$.confirm.title=$.confirm.e.find('.modal-title span')
-$.confirm.body=$.confirm.e.find('.modal-body')
-$.confirm.click=function(x,e){
-    if(!x.class){x.class='btn-success'}
-    if(!x.title){x.title='Save changes'}
-    x.e=$.confirm.e.find('.confirmaction').removeClass('btn-danger btn-warning btn-primary btn-success').addClass(x.class).text(x.title);
-    x.e.click(function(){
-        x.e.unbind('click');$.confirm.e.modal('hide');e();
+$.sM.e.on('shown.bs.modal',function(){
+    $.sM.reDrawMonGroups()
+})
+$.sM.g.change(function(e){
+    e.v=$(this).val();
+    e.group=$user.mon_groups[e.v];
+    if(!e.group){return}
+    $.sM.selectedMonGroup=e.group;
+    $.each(e.group,function(n,v){
+        $.sM.f.find('[group="'+n+'"]').val(v)
     })
-}
+});
+$.sM.f.find('[group]').change(function(e){
+    e.v=$.sM.g.val();
+    if(!e.v||e.v==''){
+        e.e=$.sM.f.find('[group="name"]')
+        e.name=e.e.val()
+        $('.mon_groups .add').click();
+        e.v=$.sM.g.val()
+        e.e.val(e.name)
+    }
+    e.group=$user.mon_groups[e.v];
+    $.sM.f.find('[group]').each(function(n,v){
+        v=$(v)
+        e.group[v.attr('group')]=v.val()
+    });
+    $user.mon_groups[e.v]=e.group;
+    $.sM.g.find('option[value="'+$.sM.g.val()+'"]').text(e.group.name)
+    $.sM.writewMonGroups()
+})
+$.sM.f.on('click','.mon_groups .delete',function(e){
+    e.v=$.sM.g.val();
+    delete($user.mon_groups[e.v]);
+    $.sM.reDrawMonGroups()
+})
+$.sM.f.on('click','.mon_groups .add',function(e){
+    e.gid=$.ccio.gid(5);
+    $user.mon_groups[e.gid]={id:e.gid,name:e.gid};
+    $.sM.g.append($.ccio.tm('option',$user.mon_groups[e.gid]));
+    $.sM.g.val(e.gid)
+    $.sM.g.change();
+});
 //videos window
 $.vidview={e:$('#videos_viewer')};$.vidview.f=$.vidview.e.find('form')
 $.vidview.e.on('change','#videos_select_all',function(e){
@@ -1007,7 +1373,7 @@ $.vidview.e.find('.delete_selected').click(function(e){
     $.confirm.click({title:'Delete Video',class:'btn-danger'},function(){
         $.each(e.s,function(n,v){
             n=n.split('.')
-            $.ccio.cx({f:'video',ff:'delete',status:1,filename:n[0],ext:n[1],mid:v});
+            $.ccio.cx({f:'video',ff:'delete',filename:n[0],ext:n[1],mid:v});
         })
     });
 })
@@ -1017,12 +1383,59 @@ $.pwrvid.d=$('#vis_pwrvideo'),
 $.pwrvid.m=$('#vis_monitors'),
 $.pwrvid.lv=$('#live_view'),
 $.pwrvid.vp=$('#video_preview');
-$.pwrvid.e.on('click','[launch]',function(e){
+$.pwrvid.e.on('click','[preview]',function(e){
     e.e=$(this);
-    e.p=e.e.parents('[mid]');
-    e.preventDefault();
-    switch(e.e.attr('launch')){
+    e.video=$.pwrvid.vp.find('video')[0];
+    if(e.video){
+        e.duration=e.video.duration;
+        e.now=e.video.currentTime;
+    }
+    if($.pwrvid.video){
+        clearInterval($.pwrvid.video.interval);
+    }
+    switch(e.e.attr('preview')){
+        case'mute':
+            e.video.muted = !e.video.muted
+            e.e.find('i').toggleClass('fa-volume-off fa-volume-up')
+            e.e.toggleClass('btn-danger')
+        break;
+        case'play':
+            e.video.playbackRate = 1;
+            e.e.find('i').toggleClass('fa-play fa-pause')
+            
+            if(e.e.find('i').hasClass('fa-play')){
+                e.video.play()
+            }else{
+                e.video.pause()
+            }
+        break;
+        case'stepFrontFront':
+            e.video.playbackRate = 5;
+            e.video.play()
+        break;
+        case'stepFront':
+            e.video.currentTime += 1;
+            e.video.pause()
+        break;
+        case'stepBackBack':
+           $.pwrvid.video.interval = setInterval(function(){
+               e.video.playbackRate = 1.0;
+               if(e.video.currentTime == 0){
+                   clearInterval($.pwrvid.video.interval);
+                   e.video.pause();
+               }
+               else{
+                   e.video.currentTime += -.1;
+               }
+           },30);
+        break;
+        case'stepBack':
+            e.video.currentTime += -1;
+            e.video.pause()
+        break;
         case'video':
+            e.preventDefault();
+            e.p=e.e.parents('[mid]');
             e.filename=e.p.attr('file');
             $.pwrvid.vp.find('h3').text(e.filename)
             e.href=e.e.attr('href');
@@ -1039,40 +1452,71 @@ $.pwrvid.e.on('click','[launch]',function(e){
                 .attr('href',e.href)
             if(e.status==1){
                 $.get(e.href+'/status/2',function(d){
-                    console.log(d)
                 })
             }
+            $.pwrvid.video={filename:e.filename,href:e.href,mid:e.mon.mid,ke:e.mon.ke}
         break;
     }
 })
-$.pwrvid.e.on('click','[timeline]',function(){
-    e={e:$(this)};
+$.pwrvid.drawTimeline=function(mid){
+    e={};
     e.live_header=$.pwrvid.lv.find('h3 span');
     e.live=$.pwrvid.lv.find('iframe');
-    e.mid=e.e.attr('timeline');
+    e.JSONurl='/'+$user.auth_token+'/videos/'+$user.ke;
+    if(mid!==''){
+        e.JSONurl+='/'+mid;
+        e.live_header.text($.ccio.mon[mid].name)
+        e.live.attr('src','/'+$user.auth_token+'/embed/'+$user.ke+'/'+mid+'/fullscreen|jquery')
+    }
+    $.getJSON('/'+$user.auth_token+'/events/'+$user.ke+'/'+mid+'/500',function(events){
+        $.getJSON(e.JSONurl,function(d){
+            if($.pwrvid.t&&$.pwrvid.t.destroy){$.pwrvid.t.destroy()}
+            var items=[];
+            var groupNames = {};
+            var groups = new vis.DataSet();
+            
+            $.each(events,function(n,v){
+                v.mon=$.ccio.mon[v.mid];
+                if(!groupNames[v.mid+'_events']){
+                    groupNames[v.mid+'_events']=1;
+                    groups.add([{id:v.mid+'_events', content:v.mon.name+' Events'}]);
+                }
+
+                items.push({id:n+'_events',group:v.mid+'_events',content:v.details.reason+' '+v.details.confidence+' '+v.time,start:v.time})
+            });
+            $.each(d,function(n,v){
+                v.mon=$.ccio.mon[v.mid];
+                v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
+                if(v.status>0){
+
+                    if(!groupNames[v.mid]){
+                        groupNames[v.mid]=1;
+                        groups.add([{id:v.mid, content:v.mon.name,nestedGroups:[v.mid+'_events']}]);
+                    }
+
+                    var ts = new Date(v.time);
+                    ts.setSeconds(ts.getSeconds() + 10)
+                    var te = new Date(v.end);
+                    te.setSeconds(te.getSeconds() - 10)
+                    items.push({id:n,group:v.mid,content:'<div mid="'+v.mid+'" ke="'+v.ke+'" status="'+v.status+'" file="'+v.filename+'"><a preview="video" href="'+v.href+'" class="btn btn-xs btn-primary">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a> '+v.mon.name+' - '+v.filename,start:ts,end:te})
+                }
+            });
+            var options = {
+                groupOrder: 'content'
+            };
+            items = new vis.DataSet(items);
+            $.pwrvid.t = new vis.Timeline($.pwrvid.d[0]);
+            $.pwrvid.t.setOptions(options);
+            $.pwrvid.t.setGroups(groups);
+            $.pwrvid.t.setItems(items);
+        })
+    })
+}
+$.pwrvid.e.on('click','[timeline]',function(){
+    e={e:$(this)};
     $.pwrvid.e.find('[timeline]').removeClass('active');
     e.e.addClass('active');
-    e.JSONurl='/'+$user.auth_token+'/videos/'+$user.ke;
-    if(e.mid!==''){
-        e.JSONurl+='/'+e.mid;
-        e.live_header.text($.ccio.mon[e.mid].name)
-        e.live.attr('src','/'+$user.auth_token+'/embed/'+$user.ke+'/'+e.mid+'/fullscreen|jquery')
-    }
-    $.getJSON(e.JSONurl,function(d){
-        if($.pwrvid.t&&$.pwrvid.t.destroy){$.pwrvid.t.destroy()}
-        var items=[];
-        $.each(d,function(n,v){
-            v.mon=$.ccio.mon[v.mid];
-            v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
-            if(v.status>0){
-                var t = new Date(v.end);
-                t.setSeconds(t.getSeconds() - 10)
-                items.push({id:n,content:'<div mid="'+v.mid+'" ke="'+v.ke+'" status="'+v.status+'" file="'+v.filename+'"><a launch="video" href="'+v.href+'" class="btn btn-xs btn-primary">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a> '+v.mon.name+' - '+v.filename,start:v.time,end:t})
-            }
-        })
-        items = new vis.DataSet(items);
-        $.pwrvid.t = new vis.Timeline($.pwrvid.d[0], items, {});
-    })
+    $.pwrvid.drawTimeline(e.e.attr('timeline'))
 })
 $.pwrvid.e.on('hidden.bs.modal',function(e){
     $(this).find('iframe').attr('src','')
@@ -1126,7 +1570,6 @@ $('body')
             e.e.modal('show').attr('ke',e.ke).attr('mid',e.mid).attr('file',e.file);
             if(e.status==1){
                 $.get(e.href+'/status/2',function(d){
-                    console.log(d)
                 })
             }
         break;
@@ -1138,7 +1581,7 @@ $('body')
             $.confirm.body.html(e.html)
             $.confirm.click({title:'Delete Video',class:'btn-danger'},function(){
                 e.file=e.file.split('.')
-                $.ccio.cx({f:'video',ff:'delete',status:1,filename:e.file[0],ext:e.file[1],ke:e.ke,mid:e.mid});
+                $.ccio.cx({f:'video',ff:'delete',filename:e.file[0],ext:e.file[1],ke:e.ke,mid:e.mid});
             });
         break;
         case'download':
@@ -1150,6 +1593,26 @@ $('body')
                     }});
                 break;
             }
+        break;
+    }
+})
+.on('click','[system]',function(e){
+    e={}; 
+    e.e=$(this),
+    e.a=e.e.attr('system');//the function
+    switch(e.a){
+        case'cronStop':
+            $.ccio.cx({f:'cron',ff:'stop'})
+        break;
+        case'cronRestart':
+            $.ccio.cx({f:'cron',ff:'restart'})
+        break;
+        case'jpegToggle':
+            e.cx={f:'monitor',ff:'jpeg_on'};
+            if($.ccio.op().jpeg_on===true){
+                e.cx.ff='jpeg_off';
+            }
+            $.ccio.cx(e.cx)
         break;
     }
 })
@@ -1175,6 +1638,10 @@ $('body')
         e.mon=$.ccio.mon[e.mid];//monitor configuration
     switch(e.a){
         case'region':
+            if(!e.mon){
+                new PNotify({title:'Unable to Launch',text:'Please save new monitor first. Then attempt to launch the region editor.',type:'error'});
+                return;
+            }
             e.d=JSON.parse(e.mon.details);
             e.width=$.aM.e.find('[detail="detector_scale_x"]');
             e.height=$.aM.e.find('[detail="detector_scale_y"]');
@@ -1190,25 +1657,19 @@ $('body')
             }
             
             $.zO.e.modal('show');
-            $.zO.o.attr('width',e.d.detector_scale_x).attr('height',e.d.detector_scale_y);
+            $.zO.o().attr('width',e.d.detector_scale_x).attr('height',e.d.detector_scale_y);
             $.zO.c.css({width:e.d.detector_scale_x,height:e.d.detector_scale_y});
-            var blendContext = $.zO.o[0].getContext('2d');
-            blendContext.fillStyle = '#005337';
-            blendContext.fillRect( 0, 0,e.d.detector_scale_x,e.d.detector_scale_y);
-            if(e.d.cords&&(e.d.cords instanceof Object)===false){
+                if(e.d.cords&&(e.d.cords instanceof Object)===false){
                 try{e.d.cords=JSON.parse(e.d.cords);}catch(er){}
             }
+            console.log(e.d.cords)
             if(!e.d.cords||e.d.cords===''){
-                e.d.cords=[
-                    { name:"red",sensitivity:0.5, x:320 - 32 - 10, y:10, w:64, h:64 },
-                    { name:"yellow",sensitivity:0.5, x:320 - 32 - 10, y:10, w:64, h:64 },
-                    { name:"green",sensitivity:0.5, x:238, y:10, w:64, h:64 }
-                ]
+                e.d.cords={
+                    red:{ name:"red",sensitivity:0.0005, points:[[0,0],[0,100],[100,0]] },
+                }
             }
-            $.zO.c.find('.cord_element').remove()
-            $.each(e.d.cords,function(n,v){
-                $.ccio.tm(5,v)
-            })
+            $.zO.regionViewerDetails=e.d;
+            $.zO.initRegionList()
         break;
         case'snapshot':
             $.ccio.snapshot(e,function(url){
@@ -1271,7 +1732,7 @@ $('body')
                         e.tmp+='<th data-field="Size" data-sortable="true">Size (mb)</th>';
                         e.tmp+='<th data-field="Watch" data-sortable="true">Watch</th>';
                         e.tmp+='<th data-field="Download" data-sortable="true">Download</th>';
-                        e.tmp+='<th data-field="Delete" data-sortable="true">Delete</th>';
+                        e.tmp+='<th class="permission_video_delete" data-field="Delete" data-sortable="true">Delete</th>';
                         e.tmp+='</tr>';
                         e.tmp+='</thead>';
                         e.tmp+='<tbody>';
@@ -1289,7 +1750,7 @@ $('body')
                                 e.tmp+='<td>'+(parseInt(v.size)/1000000).toFixed(2)+'</td>';
                                 e.tmp+='<td><a class="btn btn-sm btn-primary" video="launch" href="'+v.href+'">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a></td>';
                                 e.tmp+='<td><a class="btn btn-sm btn-success" download="'+v.mid+'-'+v.filename+'" href="'+v.href+'">&nbsp;<i class="fa fa-download"></i>&nbsp;</a></td>';
-                                e.tmp+='<td><a class="btn btn-sm btn-danger" video="delete">&nbsp;<i class="fa fa-trash"></i>&nbsp;</a></td>';
+                                e.tmp+='<td class="permission_video_delete"><a class="btn btn-sm btn-danger" video="delete">&nbsp;<i class="fa fa-trash"></i>&nbsp;</a></td>';
                                 e.tmp+='</tr>';
                             }
                         })
@@ -1377,7 +1838,7 @@ $('body')
                     "mid":$.ccio.gid(),
                     "name":"",
                     "protocol":"http",
-                    "ext":"webm",
+                    "ext":"mp4",
                     "type":"jpeg",
                     "host":"",
                     "path":"",
@@ -1395,6 +1856,7 @@ $('body')
                             "detector_frame":"1",
                             "detector_mail":"0",
                             "fatal_max":"",
+                            "groups":"[]",
                             "muser":"",
                             "mpass":"",
                             "sfps":"1",
@@ -1422,10 +1884,10 @@ $('body')
                             "stream_scale_x":"",
                             "stream_scale_y":"",
                             "svf":"",
-                            "vcodec":"copy",
-                            "crf":"",
+                            "vcodec":"libx264",
+                            "crf":"1",
                             "preset_record":"",
-                            "acodec":"libvorbis",
+                            "acodec":"none",
                             "timestamp":"0",
                             "dqf":"0",
                             "cutoff":"15",
@@ -1447,7 +1909,7 @@ $('body')
                             "cust_stream":"",
                             "cust_record":"",
                             "custom_output":"",
-                            "loglevel":"error",
+                            "loglevel":"warning",
                             "sqllog":"0"
                         }),
                     "shto":"[]",
@@ -1462,6 +1924,7 @@ $('body')
                 e.mt.find('i').attr('class','fa fa-wrench');
                 e.values=$.ccio.mon[e.mid];
             }
+            $.aM.selected=e.mid;
             $.each(e.values,function(n,v){
                 $.aM.e.find('[name="'+n+'"]').val(v).change()
             })
@@ -1471,10 +1934,29 @@ $('body')
             })
             $.each(e.ss,function(n,v){
                 $.aM.e.find('[detail="'+n+'"]').val(v).change();
-            })
+            });
+            try{
+                e.tmp='';
+                $.each($user.mon_groups,function(n,v){
+                    e.tmp+='<li class="mdl-list__item">';
+                    e.tmp+='<span class="mdl-list__item-primary-content">';
+                    e.tmp+=v.name;
+                    e.tmp+='</span>';
+                    e.tmp+='<span class="mdl-list__item-secondary-action">';
+                    e.tmp+='<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect">';
+                    e.tmp+='<input type="checkbox" group value="'+v.id+'" class="mdl-switch__input"';
+                    if(e.ss.groups.indexOf(v.id)>-1){e.tmp+=' checked';}
+                    e.tmp+=' />';
+                    e.tmp+='</label>';
+                    e.tmp+='</span>';
+                    e.tmp+='</li>';
+                })
+                $('#monitor_group').html(e.tmp)
+            }catch(er){
+                //no group, this 'try' will be removed in future.
+            };
+            componentHandler.upgradeAllRegistered()
             $('#add_monitor').modal('show')
-                //temp
-//                .find('[detail="timestamp"]').val('0').change()
         break;
     }
 })
@@ -1499,8 +1981,6 @@ $('body')
     });
 }); 
 
-////
-$(document).ready(function(e){
     e.o=$.ccio.op().class_toggle;
     if(e.o){
         $.each(e.o,function(n,v){

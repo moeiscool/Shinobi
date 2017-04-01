@@ -1,3 +1,4 @@
+<% var details=JSON.parse($user.details) %>
 <% include blocks/header %>
 <script>var $user=<%- JSON.stringify($user) %>;</script>
 <link rel="stylesheet" href="libs/css/material.min.css">
@@ -11,7 +12,30 @@
 <link rel="stylesheet" href="libs/css/fullcalendar.min.css">
 <link rel="stylesheet" href="libs/css/bootstrap-table.min.css">
 <link rel="stylesheet" href="libs/css/main.dash2.css">
-<style id="custom_css"><%= JSON.parse($user.details).css %></style>
+<style id="custom_css">
+<%= details.css %>
+</style>
+<style>
+<% if(details.sub){ %>
+    .isSubAccount{display:none!important}
+<% } %>
+<% if(details.sub&&details.allmonitors==='0'){
+    if(details.monitor_edit&&details.monitor_edit!==''){
+        details.monitor_edit.forEach(function(v,n){ %>
+            [mid="<%= v %>"] .permission_monitor_edit{display:inline-block}
+  <% 
+        })
+    }
+    if(details.video_delete&&details.video_delete!==''){
+        details.video_delete.forEach(function(v,n){ %>
+            [mid="<%= v %>"] .permission_video_delete{display:inline-block}
+  <%
+        })
+    }
+}else{ %>
+    .permission_video_delete,.permission_monitor_edit{display:inline-block}
+<% } %>
+</style>
 <html lang="en">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
@@ -24,10 +48,14 @@
       <header id="main_header" class="demo-header mdl-layout__header">
         <div class="mdl-layout__header-row">
         <ul class="nav navbar-nav">
-            <li class_toggle="hide-side" data-target=".mdl-js-layout"><a>&nbsp;<i class="fa fa-bars"></i>&nbsp;</a></li>
-            <li class_toggle="mosaic" data-target="#monitors_live"><a>&nbsp;<i class="fa fa-th"></i>&nbsp;</a></li>
-            <li mid="" ke="" class="hidden-xs"><a monitor="edit">&nbsp;<i class="fa fa-plus"></i>&nbsp;</a></li>
-            <li class="hidden-xs" data-toggle="modal" data-target="#pvideo_viewer"><a>&nbsp;<i class="fa fa-map-marker"></i>&nbsp;</a></li>
+            <li title="Toggle Sidebar" class_toggle="hide-side" data-target=".mdl-js-layout"><a>&nbsp;<i class="fa fa-bars"></i>&nbsp;</a></li>
+            <li title="Montage" class_toggle="mosaic" data-target="#monitors_live"><a>&nbsp;<i class="fa fa-th"></i>&nbsp;</a></li>
+            <li title="Add Monitor" mid="" ke="" class="hidden-xs permission_monitor_edit"><a monitor="edit">&nbsp;<i class="fa fa-plus"></i>&nbsp;</a></li>
+            <li title="Power Video Viewer" class="hidden-xs" data-toggle="modal" data-target="#pvideo_viewer"><a>&nbsp;<i class="fa fa-map-marker"></i>&nbsp;</a></li>
+            <li>
+                <a title="Monitor Groups" id="group_list_button" class="mdl-js-button">&nbsp;<i class="fa fa-video-camera"></i>&nbsp;</a>
+                <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="group_list_button" id="group_list"></ul>
+            </li>
             <li class="os_bars hidden-xs">
                 <div class="display-table">
                     <div class="cpu_load display-table-cell">
@@ -86,12 +114,14 @@
                 <li class="mdl-menu__item" class_toggle="mosaic" data-target="#monitors_live"><i class="fa fa-th"></i>&nbsp; Montage</li>
                 <li class="mdl-menu__item" data-toggle="modal" data-target="#settings"><i class="fa fa-gears"></i> &nbsp; Settings</li>
                 <li class="mdl-menu__item" data-toggle="modal" data-target="#apis"><i class="fa fa-code"></i> &nbsp; API</li>
-                <li class="mdl-menu__item" data-toggle="modal" data-target="#onvif_probe"><i class="fa fa-rss"></i> &nbsp; ONVIF</li>
-                <li class="mdl-menu__item" data-toggle="modal" data-target="#probe"><i class="fa fa-search"></i> &nbsp; FFprobe</li>
+                <li class="mdl-menu__item isSubAccount" data-toggle="modal" data-target="#onvif_probe"><i class="fa fa-rss"></i> &nbsp; ONVIF</li>
+                <li class="mdl-menu__item isSubAccount" data-toggle="modal" data-target="#probe"><i class="fa fa-search"></i> &nbsp; FFprobe</li>
+                <li class="mdl-menu__item isSubAccount" data-toggle="modal" data-target="#filters"><i class="fa fa-filter"></i> &nbsp; Filters</li>
                 <li class="mdl-menu__item" data-toggle="modal" data-target="#logs_modal"><i class="fa fa-exclamation-triangle"></i> &nbsp; Logs</li>
                 <li class="mdl-menu__item" class_toggle="list-blocks" data-target="#left_menu"><i class="fa fa-camera"></i>&nbsp; List Toggle</li>
                 <li class="mdl-menu__item" class_toggle="hide-side" data-target=".mdl-js-layout"><i class="fa fa-bars"></i>&nbsp; Hide List</li>
-                <li class="mdl-menu__item shinobi-detector-stemkoski shinobi-detector_plug" class_toggle="hide_indifference" data-target="#monitors_live" style="display:none"><i class="fa fa-bolt"></i> &nbsp; Motion GUI</li>
+                <li class="mdl-menu__item shinobi-detector-stemkoski shinobi-detector_plug" class_toggle="hide_indifference" data-target="body" style="display:none"><i class="fa fa-bolt"></i> &nbsp; Motion GUI</li>
+                <li class="mdl-menu__item" system="jpegToggle"><i class="fa fa-file-image-o"></i> &nbsp; JPEG Mode</li>
                 <li class="mdl-menu__item logout"><i class="fa fa-sign-out"></i>&nbsp; Log Out</li>
             </ul>
             <div class="mdl-layout-spacer"></div>
@@ -106,9 +136,7 @@
         </nav>
       </div>
       <main class="mdl-layout__content selected" id="main_canvas">
-          <div class="demo-blog__posts mdl-grid" id="monitors_live">
-
-          </div>
+          <div class="demo-blog__posts mdl-grid" id="monitors_live"></div>
       </main>
     </div>
       <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" style="position: fixed; left: -1000px; height: -1000px;">
@@ -165,6 +193,7 @@
 <% include blocks/api.html %>
 <% include blocks/logs.html %>
 <% include blocks/settings.html %>
+<% include blocks/filters.ejs %>
 <% include blocks/powervideo.ejs %>
 <% include blocks/videoview.html %>
 <% include blocks/monitoredit.html %>
@@ -172,7 +201,7 @@
 <% include blocks/region.html %>
 <% include blocks/confirm.html %>
 <!--Dropbox Library, Change data-app-key to your app key. -->
-<script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="<%= $user.DropboxAppKey %>"></script>
+<script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="<%= config.DropboxAppKey %>"></script>
 <!--Dropbox End-->
 <script src="libs/js/material.min.js"></script>
 <script src="libs/js/pnotify.custom.min.js"></script>
@@ -187,4 +216,5 @@
 <script src="libs/js/menu.js"></script>
 <script src="libs/js/clock.js"></script>
 <script src="libs/js/vis.min.js"></script>
+<script src="libs/js/jquery.canvasAreaDraw.js"></script>
 <script src="libs/js/main.dash2.js"></script>

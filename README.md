@@ -6,7 +6,7 @@
 
 Shinobi is the Open Source CCTV platform written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. Shinobi can record IP Cameras and Local Cameras.
 
-Yes. I am saying it's **the** platform. It will hopefully be revered like WordPress and Magento in their respective sectors... Hopefully better.
+Shinobi is not made by the current or previous ZoneMinder developers. This app is inspired by ZoneMinder and all it's glory.
 
 <img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo5.jpg?raw=true">
 
@@ -15,21 +15,19 @@ Yes. I am saying it's **the** platform. It will hopefully be revered like WordPr
 - Records IP Cameras and Local Cameras
 - Streams by WebSocket, HLS (includes audio), and MJPEG
 - Save to WebM and MP4
- - Can save Audio
+  - Can save Audio
 - API
- - Get videos
- - Get monitors
- - Change monitor modes : Disabled, Watch, Record
- - Embedding streams
+  - Get videos
+  - Get monitors
+  - Change monitor modes : Disabled, Watch, Record
+  - Embedding streams
 
 ## Help make Shinobi the best Open Source CCTV Solution.
-If you like Shinobi please check out some ways you can help <a href="https://github.com/moeiscool/Shinobi/wiki/Support-Shinobi">Support Shinobi</a>.
+<a href="https://shinobi.video/docs/donate">Donate</a>
 
-$5 from each person that visits the github page would be enough. Currently all hours spent on Shinobi are entirely voluntary. There is no income from sharing this program with you, so all support means a great deal.
+As much as Shinobi is free, development and research is not. Please consider supporting Shinobi.
 
-<a href="https://www.patreon.com/moeiscool" title="Monthly Donation Subscriptions"><img src="https://www.patreon.com/images/patreon_navigation_logo_mini_orange.png"></a>
-
-**Just a side note:** Patreon is the best way to donate :)
+**Paid Support / Donation :** <a href="http://cloudchat.online/cart/shinobi/">from @moeiscool, The Lead Developer</a></p>
 
 # Why make this?
 

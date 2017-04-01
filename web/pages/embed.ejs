@@ -42,7 +42,8 @@ if(data.addon.indexOf('gui')>-1){ %>
 <% };
 if(data.addon.indexOf('fullscreen')>-1){ %>
 <style>
-    body{margin:0;padding:0;}
+    body,html{overflow: hidden;}
+    *{margin:0;padding:0;border:0}
     .stream-element,.shinobi_stream{position:absolute;top:0;left:0;}
 </style>
 <script>
