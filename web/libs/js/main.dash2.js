@@ -215,48 +215,55 @@ $.ccio={fr:$('#files_recent'),mon:{}};
     }
     $.ccio.snapshot=function(e,cb){
         var image_data;
-        switch(JSON.parse(e.mon.details).stream_type){
-            case'hls':
-                $('#temp').html('<canvas></canvas>')
-                var c = $('#temp canvas')[0];
-                var img = e.p.find('video')[0];
-//                img.pause();
-                c.width = img.videoWidth;
-                c.height = img.videoHeight;
-                var ctx = c.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                image_data=atob(c.toDataURL('image/jpeg').split(',')[1]);
-//                img.play();
-            break;
-            case'mjpeg':
-                $('#temp').html('<canvas></canvas>')
-                var c = $('#temp canvas')[0];
-                var img = $('img',e.p.find('.stream-element').contents())[0];
-                c.width = img.width;
-                c.height = img.height;
-                var ctx = c.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                image_data=atob(c.toDataURL('image/jpeg').split(',')[1]);
-            break;
-            case'b64':
-                image_data = atob(e.mon.last_frame.split(',')[1]);
-            break;
+        e.details=JSON.parse(e.mon.details);
+        if(e.details.stream_scale_x===''){e.details.stream_scale_x=640}
+        if(e.details.stream_scale_y===''){e.details.stream_scale_y=480}
+        if($.ccio.op().jpeg_on!==true){
+            switch(JSON.parse(e.mon.details).stream_type){
+                case'hls':
+                    $('#temp').html('<canvas></canvas>')
+                    var c = $('#temp canvas')[0];
+                    var img = e.p.find('video')[0];
+                    c.width = img.videoWidth;
+                    c.height = img.videoHeight;
+                    var ctx = c.getContext('2d');
+                    ctx.drawImage(img, 0, 0,c.width,c.height);
+                    image_data=atob(c.toDataURL('image/jpeg').split(',')[1]);
+                break;
+                case'mjpeg':
+                    $('#temp').html('<canvas></canvas>')
+                    var c = $('#temp canvas')[0];
+                    var img = $('img',e.p.find('.stream-element').contents())[0];
+                    c.width = e.details.stream_scale_x;
+                    c.height = e.details.stream_scale_y;
+                    var ctx = c.getContext('2d');
+                    ctx.drawImage(img, 0, 0,c.width,c.height);
+                    image_data=atob(c.toDataURL('image/jpeg').split(',')[1]);
+                break;
+                case'b64':
+                    image_data = atob(e.mon.last_frame.split(',')[1]);
+                break;
+            }
+            var arraybuffer = new ArrayBuffer(image_data.length);
+            var view = new Uint8Array(arraybuffer);
+            for (var i=0; i<image_data.length; i++) {
+                view[i] = image_data.charCodeAt(i) & 0xff;
+            }
+            try {
+                var blob = new Blob([arraybuffer], {type: 'application/octet-stream'});
+            } catch (e) {
+                var bb = new (window.WebKitBlobBuilder || window.MozBlobBuilder);
+                bb.append(arraybuffer);
+                var blob = bb.getBlob('application/octet-stream');
+            }
+            var url = (window.URL || window.webkitURL).createObjectURL(blob);
+        }else{
+            url=e.p.find('.stream-element').attr('src');
         }
-        var arraybuffer = new ArrayBuffer(image_data.length);
-        var view = new Uint8Array(arraybuffer);
-        for (var i=0; i<image_data.length; i++) {
-            view[i] = image_data.charCodeAt(i) & 0xff;
-        }
-        try {
-            var blob = new Blob([arraybuffer], {type: 'application/octet-stream'});
-        } catch (e) {
-            var bb = new (window.WebKitBlobBuilder || window.MozBlobBuilder);
-            bb.append(arraybuffer);
-            var blob = bb.getBlob('application/octet-stream');
-        }
-        var url = (window.URL || window.webkitURL).createObjectURL(blob);
-        cb(url,image_data);
-        URL.revokeObjectURL(url)
+            cb(url,image_data);
+        try{
+            URL.revokeObjectURL(url)
+        }catch(er){}
     }
     $.ccio.tm=function(x,d,z,k){
         var tmp='';if(!d){d={}};if(!k){k={}};

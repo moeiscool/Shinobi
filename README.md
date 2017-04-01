@@ -25,9 +25,9 @@ Shinobi is not made by the current or previous ZoneMinder developers. This app i
 ## Help make Shinobi the best Open Source CCTV Solution.
 <a href="https://shinobi.video/docs/donate">Donate</a>
 
-As much as Shinobi is free, development and research is not. Please consider supporting Shinobi for as little as $4/month.
+As much as Shinobi is free, development and research is not. Please consider supporting Shinobi.
 
-**Paid Support :** <a href="http://cloudchat.online/cart/shinobi/">from @moeiscool, The Lead Developer</a></p>
+**Paid Support / Donation :** <a href="http://cloudchat.online/cart/shinobi/">from @moeiscool, The Lead Developer</a></p>
 
 # Why make this?
 
