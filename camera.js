@@ -2051,6 +2051,18 @@ app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
                 res.send('[]');return;
             }
         }
+        if(req.query.start&&req.query.start!==''){
+            req.query.start=req.query.start.replace('T',' ')
+            if(req.query.end&&req.query.end!==''){
+                req.query.end=req.query.end.replace('T',' ')
+                req.sql+=' AND `time` >= ? AND `time` <= ?';
+                req.ar.push(req.query.start)
+                req.ar.push(req.query.end)
+            }else{
+                req.sql+=' AND `time` >= ?';
+                req.ar.push(req.query.start)
+            }
+        }
         if(!req.query.limit||req.query.limit==''){req.query.limit=100}
         req.sql+=' ORDER BY `time` DESC LIMIT '+req.query.limit+'';
         sql.query(req.sql,req.ar,function(err,r){

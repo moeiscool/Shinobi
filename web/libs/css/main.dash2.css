@@ -39,6 +39,8 @@ img{max-width:100%}
 .hide_indifference [class_toggle="hide_indifference"]{color:#d9534f!important}
 .monitor_item .mdl-card:not(.mdl-cell--4-col-desktop) .mdl-card__supporting-text .monitor_name{display:none;font-size:90%;margin-bottom:10px}
 
+#vis_pwrvideo{height:300px}
+
 .demo-blog .mdl-card__media ~ .mdl-card__supporting-text{position:relative;overflow:hidden}
 
 .demo-blog .demo-blog__posts.mosaic{max-width:100%}
