@@ -16,11 +16,29 @@ Shinobi is not made by the current or previous ZoneMinder developers. This app i
 - Streams by WebSocket, HLS (includes audio), and MJPEG
 - Save to WebM and MP4
   - Can save Audio
+- Push Events - When a video is finished it will appear in the dashboard without a refresh
+- Region Motion Detection (Similar to ZoneMinder Zone Detection)
+  - Represented by a Motion Guage on each monitor
+- 1 Process for Each Camera to do both, Recording and Streaming
+- Timeline for viewing Motion Events and Videos
+- Sub-Accounts with permissions
+  - Monitor Viewing
+  - Monitor Editing
+  - Video Deleting
+  - Separate API keys for sub account
+- Cron Filters can be set based on master account
+- Stream Analyzer built-in (FFprobe GUI)
+- Monitor Groups
+- Can snapshot images from stream directly
+- Lower Bandiwth Mode (JPEG Mode)
+  - Snapshot (cgi-bin) must be enabled in Monitor Settings
+- Control Cameras from Interface
 - API
   - Get videos
   - Get monitors
   - Change monitor modes : Disabled, Watch, Record
   - Embedding streams
+- Dashboard Framework made with Google Material Design Lite, jQuery, and Bootstrap
 
 ## Help make Shinobi the best Open Source CCTV Solution.
 <a href="https://shinobi.video/docs/donate">Donate</a>
