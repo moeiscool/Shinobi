@@ -166,6 +166,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                             }
                         break;
                         default:
+                            if($.ccio.op().jpeg_on===true){return}
                             $.ccio.snapshot(d,function(e,url){
                                 d.check.f=url;
                                 setTimeout(function(){
