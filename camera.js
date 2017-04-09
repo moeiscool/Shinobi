@@ -52,7 +52,7 @@ if(!config.doSnapshot){config.doSnapshot=true}
 server.listen(config.port);
 try{
     console.log('Shinobi - PORT : '+config.port+', NODE.JS : '+execSync("node -v"));
-}catch(err){
+}catch(err){ 
     console.log('Shinobi - PORT : '+config.port);
 }
 
@@ -1031,7 +1031,7 @@ var tx;
 //                    if(!s.group[d.ke].vid)s.group[d.ke].vid={};
                     if(!s.group[d.ke].users)s.group[d.ke].users={};
 //                    s.group[d.ke].vid[cn.id]={uid:d.uid};
-                    s.group[d.ke].users[d.auth]={cnid:cn.id}
+                    s.group[d.ke].users[d.auth]={cnid:cn.id,uid:r.uid}
                     try{s.group[d.ke].users[d.auth].details=JSON.parse(r.details)}catch(er){}
                     if(!s.group[d.ke].mon){
                         s.group[d.ke].mon={}
@@ -1040,6 +1040,7 @@ var tx;
                     if(s.ocv){
                         tx({f:'detector_plugged',plug:s.ocv.plug})
                     }
+                    s.tx({f:'diskUsed',size:s.group[d.ke].users[d.auth].details.used_space,limit:s.group[d.ke].users[d.auth].details.size,ke:r.ke},'GRP_'+r.ke)
                     s.init('apps',d)
                     sql.query('SELECT * FROM API WHERE ke=? && uid=?',[d.ke,d.uid],function(err,rrr) {
                         tx({
@@ -1052,7 +1053,6 @@ var tx;
                                 totalmem:os.totalmem()
                             }
                         })
-                        s.disk(cn.id);
                         http.get('http://localhost:'+config.port+'/'+cn.auth+'/monitor/'+cn.ke, function(res){
                             var body = '';
                             res.on('data', function(chunk){
@@ -1565,6 +1565,20 @@ var tx;
     //functions for retrieving cron announcements
     cn.on('cron',function(d){
         switch(d.f){
+            case'diskUsed':
+                if(s.group[d.ke]){
+                    d.keys=Object.keys(s.group[d.ke].users);
+                    if(d.keys>0){
+                        d.keys.forEach(function(v,n){
+                            if(s.group[d.ke].users[v].uid===d.uid){
+                                s.group[d.ke].users[v].details.used_space=d.size;
+                            }
+                        })
+                       
+                    }
+                }
+                s.tx({f:'diskUsed',size:d.size,limit:d.limit},'GRP_'+d.ke)
+            break;
             case'filters':
                 s.filter(d.ff,d);
             break;
@@ -1865,33 +1879,29 @@ app.post('/',function (req,res){
             r.details=JSON.parse(r.details);
             
             req.fn=function(){
-                if(req.body.classic){
-                    res.render("classic",{$user:req.resp});
-                }else{
-                    if(req.body.admin){
-                        //admin checkbox selected
-                        if(!r.details.sub){
-                            sql.query('SELECT uid,mail,details FROM Users WHERE ke=? AND details LIKE \'%"sub"%\'',[r.ke],function(err,rr) {
-                                sql.query('SELECT * FROM Monitors WHERE ke=?',[r.ke],function(err,rrr) {
-                                    res.render("admin",{$user:req.resp,$subs:rr,$mons:rrr});
-                                })
+                if(req.body.admin){
+                    //admin checkbox selected
+                    if(!r.details.sub){
+                        sql.query('SELECT uid,mail,details FROM Users WHERE ke=? AND details LIKE \'%"sub"%\'',[r.ke],function(err,rr) {
+                            sql.query('SELECT * FROM Monitors WHERE ke=?',[r.ke],function(err,rrr) {
+                                res.render("admin",{$user:req.resp,$subs:rr,$mons:rrr});
                             })
-                        }else{
-                            //not admin user
-                            res.render("home",{$user:req.resp,config:config});
-                        }
+                        })
                     }else{
-                        //no admin checkbox selected
-                        if(!req.body.recorder){
-                            //dashboard
-                            res.render("home",{$user:req.resp,config:config});
-                        }else{
-                            //streamer
-                            sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
-                                req.resp.mons=rr;
-                                res.render("streamer",{$user:req.resp});
-                            })
-                        }
+                        //not admin user
+                        res.render("home",{$user:req.resp,config:config});
+                    }
+                }else{
+                    //no admin checkbox selected
+                    if(!req.body.recorder){
+                        //dashboard
+                        res.render("home",{$user:req.resp,config:config});
+                    }else{
+                        //streamer
+                        sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
+                            req.resp.mons=rr;
+                            res.render("streamer",{$user:req.resp});
+                        })
                     }
                 }
             }
@@ -1921,6 +1931,7 @@ app.post('/',function (req,res){
 app.get('/:auth/hls/:ke/:id/:file', function (req,res){
     req.fn=function(user){
         req.dir=s.dir.streams+req.params.ke+'/'+req.params.id+'/'+req.params.file;
+        res.on('finish',function(){res.end();});
         if (fs.existsSync(req.dir)){
             fs.createReadStream(req.dir).pipe(res);
         }else{
@@ -1942,6 +1953,7 @@ app.get('/:auth/jpeg/:ke/:id/s.jpg', function(req,res){
             'Cache-Control': 'no-cache',
             'Pragma': 'no-cache'
             });
+        res.on('finish',function(){res.end();});
         if (fs.existsSync(req.dir)){
             fs.createReadStream(req.dir).pipe(res);
         }else{
@@ -1951,40 +1963,40 @@ app.get('/:auth/jpeg/:ke/:id/s.jpg', function(req,res){
 });
 //Get MJPEG stream
 app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res) {
+s.auth(req.params,function(user){
+    if(user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
+         res.send('Not Permitted');
+         return
+     }
     if(req.params.addon=='full'){
         res.render('mjpeg',{url:'/'+req.params.auth+'/mjpeg/'+req.params.ke+'/'+req.params.id})
     }else{
-        s.auth(req.params,function(user){
-            if(user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
-                res.send('Not Permitted');
-                return
-            }
-            res.writeHead(200, {
-            'Content-Type': 'multipart/x-mixed-replace; boundary=shinobi',
-            'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive',
-            'Pragma': 'no-cache'
+        res.writeHead(200, {
+        'Content-Type': 'multipart/x-mixed-replace; boundary=shinobi',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Pragma': 'no-cache'
+        });
+        var contentWriter,content = fs.readFileSync(config.defaultMjpeg,'binary');
+        res.write("--shinobi\r\n");
+        res.write("Content-Type: image/jpeg\r\n");
+        res.write("Content-Length: " + content.length + "\r\n");
+        res.write("\r\n");
+        res.write(content,'binary');
+        res.write("\r\n");
+        if(s.group[req.params.ke]&&s.group[req.params.ke].mon[req.params.id]){
+            s.group[req.params.ke].mon[req.params.id].emitter.on('data',contentWriter=function(d){
+                content = d;
+                res.write(content,'binary');
+            })
+            res.on('close', function () {
+                s.group[req.params.ke].mon[req.params.id].emitter.removeListener('data',contentWriter)
             });
-            var contentWriter,content = fs.readFileSync(config.defaultMjpeg,'binary');
-            res.write("--shinobi\r\n");
-            res.write("Content-Type: image/jpeg\r\n");
-            res.write("Content-Length: " + content.length + "\r\n");
-            res.write("\r\n");
-            res.write(content,'binary');
-            res.write("\r\n");
-            if(s.group[req.params.ke]&&s.group[req.params.ke].mon[req.params.id]){
-                s.group[req.params.ke].mon[req.params.id].emitter.on('data',contentWriter=function(d){
-                    content = d;
-                    res.write(content,'binary');
-                })
-                res.on('close', function () {
-                    s.group[req.params.ke].mon[req.params.id].emitter.removeListener('data',contentWriter)
-                });
-            }else{
-                res.end();
-            }
-        },res,req);
+        }else{
+            res.end();
+        }
     }
+},res,req);
 });
 //embed monitor
 app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,res){
@@ -1992,7 +2004,7 @@ app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,re
     s.auth(req.params,function(user){
         req.sql='SELECT * FROM Monitors WHERE ke=? and mid=?';
         req.ar=[req.params.ke,req.params.id];
-        if(user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
+        if(user.details&&user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
             res.send('Not Permitted');
             return
         }
@@ -2346,13 +2358,15 @@ s.cpuUsage=function(e,f){
          e(d)
      });
 }
-s.ramUsage=function(){
-    var cmd;
-    if (os.platform()=='darwin')
+s.ramUsage=function(cmd){
+    switch(s.platform){
+        case'darwin':
             cmd = "vm_stat | awk '/^Pages free: /{f=substr($3,1,length($3)-1)} /^Pages active: /{a=substr($3,1,length($3-1))} /^Pages inactive: /{i=substr($3,1,length($3-1))} /^Pages speculative: /{s=substr($3,1,length($3-1))} /^Pages wired down: /{w=substr($4,1,length($4-1))} /^Pages occupied by compressor: /{c=substr($5,1,length($5-1)); print ((a+w)/(f+a+i+w+s+c))*100;}'"
-    else
+        break;
+        default:
             cmd = "free | grep Mem | awk '{print $4/$2 * 100.0}'";
-
+        break;
+    }
     return execSync(cmd,{encoding:'utf8'});
 }
     setInterval(function(){
@@ -2362,22 +2376,11 @@ s.ramUsage=function(){
     },10000);
 }catch(err){console.log('CPU indicator will not work. Continuing...')}
 //check disk space every 20 minutes
-s.disk = function (x) {
-    if(config.autoDropCache===true){
+if(config.autoDropCache===true){
+    setInterval(function(){
         exec('echo 3 > /proc/sys/vm/drop_caches')
-    }
-
-     var dfopts = {
-        prefixMultiplier:'GB',
-        isDisplayPrefixMultiplier:true,
-        precision:3
-     };
-    df(dfopts, function (er,d) {
-        if (er) { clearInterval(s.disk_check); }else{er={f:'disk',data:d}}
-        s.tx(er, 'CPU');
-    });
-};
-s.disk_check=setInterval(function(){s.disk()},60000*20);
+    },60000*20);
+}
 s.beat=function(){
     setTimeout(s.beat, 8000);
     io.sockets.emit('ping',{beat:1});

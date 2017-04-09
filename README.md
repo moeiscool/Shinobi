@@ -30,7 +30,7 @@ Shinobi is not made by the current or previous ZoneMinder developers. This app i
 - Stream Analyzer built-in (FFprobe GUI)
 - Monitor Groups
 - Can snapshot images from stream directly
-- Lower Bandiwth Mode (JPEG Mode)
+- Lower Bandwith Mode (JPEG Mode)
   - Snapshot (cgi-bin) must be enabled in Monitor Settings
 - Control Cameras from Interface
 - API

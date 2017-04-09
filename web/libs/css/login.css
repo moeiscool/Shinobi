@@ -1,17 +1,21 @@
 #register-msg:empty{display:none}
 .shinobi-bg{background:url(/libs/img/bg.jpg);background-size:cover;background-position:center;position:relative}
+.shinobi-bg{background:#333}
 .shinobi-bg-shade{position:absolute;height:100%;width:100%;background:rgba(0,0,0,0.5)}
 .panel-login {
+    background:#343434;
+    color:#ddd;
     margin-top:90px;
-	border-color: #ccc;
+	border-color: #444;
 	-webkit-box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
 	-moz-box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
 	box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
 }
 .panel-login>.panel-heading {
 	color: #00415d;
-	background-color: #fff;
-	border-color: #fff;
+	background-color: #333;
+	color: #fff;
+	border-color: #444;
 	text-align:center;
 }
 .panel-login>.panel-heading a{
@@ -97,3 +101,5 @@
 	background-color: #1CA347;
 	border-color: #1CA347;
 }
+
+.monospace{font-family: monospace;}

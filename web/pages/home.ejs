@@ -1,8 +1,6 @@
 <% var details=JSON.parse($user.details) %>
 <% include blocks/header %>
 <script>var $user=<%- JSON.stringify($user) %>;</script>
-<link rel="stylesheet" href="libs/css/material.min.css">
-<link rel="stylesheet" href="libs/css/material.style.css">
 <link rel="stylesheet" href="libs/css/pnotify.custom.min.css">
 <link rel="stylesheet" href="libs/css/vbox.css">
 <link rel="stylesheet" href="libs/css/morris.css">
@@ -73,6 +71,13 @@
                         <div class="progress-bar progress-bar-warning" role="progressbar" style="width:0%"></div>
                       </div>
                     </div>
+                    <div class="diskUsed display-table-cell">
+                        <span class="pull-right percent"></span>
+                       <label><span class="value" style="letter-spacing:2px;font-weight:100"></span></label>
+                      <div class="progress">
+                        <div class="progress-bar progress-bar-warning" role="progressbar" style="width:0%"></div>
+                      </div>
+                    </div>
                 </div>
             </li>
         </ul>
@@ -93,10 +98,6 @@
                 <li role="presentation" class="dropdown">
                   <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown" aria-expanded="true">&nbsp;<i class="fa fa-info-circle"></i>&nbsp;</a>
                   <ul id="notifications" class="dropdown-menu list-unstyled msg_list scrollable" role="menu"></ul>
-                </li>
-                <li role="presentation" class="dropdown">
-                  <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown" aria-expanded="true">&nbsp;<i class="fa fa-hdd-o"></i>&nbsp;</a>
-                  <ul id="disk" class="dropdown-menu list-unstyled msg_list scrollable" role="menu"></ul>
                 </li>
                 <li role="presentation" class="dropdown">
                   <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown" aria-expanded="true">&nbsp;<i class="fa fa-exclamation-triangle"></i>&nbsp;</a>
