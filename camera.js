@@ -1943,7 +1943,7 @@ app.get('/:auth/hls/:ke/:id/:file', function (req,res){
 //Get JPEG snap
 app.get('/:auth/jpeg/:ke/:id/s.jpg', function(req,res){
     s.auth(req.params,function(user){
-        if(user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
+        if(user.details&&user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
             res.send('Not Permitted');
             return
         }
@@ -1964,7 +1964,7 @@ app.get('/:auth/jpeg/:ke/:id/s.jpg', function(req,res){
 //Get MJPEG stream
 app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res) {
 s.auth(req.params,function(user){
-    if(user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
+    if(user.details&&user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
          res.send('Not Permitted');
          return
      }
@@ -2021,7 +2021,7 @@ app.get(['/:auth/monitor/:ke','/:auth/monitor/:ke/:id'], function (req,res){
     req.fn=function(user){
         req.sql='SELECT * FROM Monitors WHERE ke=?';req.ar=[req.params.ke];
         if(!req.params.id){
-            if(user.details.sub&&user.details.monitors&&user.details.allmonitors!=='1'){
+            if(user.details&&user.details.sub&&user.details.monitors&&user.details.allmonitors!=='1'){
                 try{user.details.monitors=JSON.parse(user.details.monitors);}catch(er){}
                 req.or=[];
                 user.details.monitors.forEach(function(v,n){
@@ -2048,7 +2048,7 @@ app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
     s.auth(req.params,function(user){
         req.sql='SELECT * FROM Videos WHERE ke=?';req.ar=[req.params.ke];
         if(!req.params.id){
-            if(user.details.sub&&user.details.monitors&&user.details.allmonitors!=='1'){
+            if(user.details&&user.details.sub&&user.details.monitors&&user.details.allmonitors!=='1'){
                 try{user.details.monitors=JSON.parse(user.details.monitors);}catch(er){}
                 req.or=[];
                 user.details.monitors.forEach(function(v,n){
@@ -2092,7 +2092,7 @@ app.get(['/:auth/events/:ke','/:auth/events/:ke/:id','/:auth/events/:ke/:id/:lim
     s.auth(req.params,function(user){
         req.sql='SELECT * FROM Events WHERE ke=?';req.ar=[req.params.ke];
         if(!req.params.id){
-            if(user.details.sub&&user.details.monitors&&user.details.allmonitors!=='1'){
+            if(user.details&&user.details.sub&&user.details.monitors&&user.details.allmonitors!=='1'){
                 try{user.details.monitors=JSON.parse(user.details.monitors);}catch(er){}
                 req.or=[];
                 user.details.monitors.forEach(function(v,n){
@@ -2138,7 +2138,7 @@ app.get(['/:auth/logs/:ke','/:auth/logs/:ke/:id','/:auth/logs/:ke/:limit','/:aut
     s.auth(req.params,function(user){
         req.sql='SELECT * FROM Logs WHERE ke=?';req.ar=[req.params.ke];
         if(!req.params.id){
-            if(user.details.sub&&user.details.monitors&&user.details.allmonitors!=='1'){
+            if(user.details&&user.details.sub&&user.details.monitors&&user.details.allmonitors!=='1'){
                 try{user.details.monitors=JSON.parse(user.details.monitors);}catch(er){}
                 req.or=[];
                 user.details.monitors.forEach(function(v,n){
@@ -2171,7 +2171,7 @@ app.get('/:auth/smonitor/:ke', function (req,res){
     res.setHeader('Content-Type', 'application/json');
     req.fn=function(user){
         req.sql='SELECT * FROM Monitors WHERE ke=?';req.ar=[req.params.ke];
-        if(user.details.sub&&user.details.monitors&&user.details.allmonitors!=='1'){
+        if(user.details&&user.details.sub&&user.details.monitors&&user.details.allmonitors!=='1'){
             try{user.details.monitors=JSON.parse(user.details.monitors);}catch(er){}
             req.or=[];
             user.details.monitors.forEach(function(v,n){
@@ -2200,7 +2200,7 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
     req.ret={ok:false};
     res.setHeader('Content-Type', 'application/json');
     req.fn=function(user){
-        if(user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitor_edit.indexOf(req.params.id)===-1){
+        if(user.details&&user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitor_edit.indexOf(req.params.id)===-1){
             res.send('Not Permitted');
             return
         }
@@ -2274,7 +2274,7 @@ app.get(['/libs/:f/:f2','/libs/:f/:f2/:f3'], function (req,res){
 // Get video file
 app.get('/:auth/videos/:ke/:id/:file', function (req,res){
     req.fn=function(user){
-        if(user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
+        if(user.details&&user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
             res.send('Not Permitted');
             return
         }
@@ -2293,7 +2293,7 @@ app.get(['/:auth/videos/:ke/:id/:file/:mode','/:auth/videos/:ke/:id/:file/:mode/
     req.ret={ok:false};
     res.setHeader('Content-Type', 'application/json');
     s.auth(req.params,function(user){
-        if(user.details.sub&&user.details.allmonitors!=='1'&&user.details.video_delete.indexOf(req.params.id)===-1){
+        if(user.details&&user.details.sub&&user.details.allmonitors!=='1'&&user.details.video_delete.indexOf(req.params.id)===-1){
             res.send('Not Permitted');
             return
         }
