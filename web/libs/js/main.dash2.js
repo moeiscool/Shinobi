@@ -598,17 +598,15 @@ $.ccio.ws.on('f',function (d){
             $('.ram_load .progress-bar').css('width',d.ram);
             $('.ram_load .percent').html(d.ram);
         break;
-        case'disk':
-            d.tmp='';
-            $.each(d.data,function(n,v){
-                if(v.capacity!==0){
-                    d.tmp+='<li class="log-item">'
-                    d.tmp+=$.ccio.init('jsontoblock',v);
-                    d.tmp+='<div class="progress"><div class="progress-bar progress-bar-primary" role="progressbar" style="width:'+v.capacity*100+'%;"></div></div>'
-                    d.tmp+='</li>'
-                }
-            })
-            $('#disk').html(d.tmp)
+        case'diskUsed':
+            if(!d.limit||d.limit===''){d.limit=10000}
+            d.diskUsed=d.size/1000000;
+            d.percent=parseInt((d.diskUsed/d.limit)*100)+'%';
+            d.human=parseFloat(d.diskUsed).toFixed(2)
+            if(d.human>1000){d.human=d.human/1000+' GB'}else{d.human=d.human+' MB'}
+            $('.diskUsed .value').html(d.human)
+            $('.diskUsed .percent').html(d.percent)
+            $('.diskUsed .progress-bar').css('width',d.percent)
         break;
         case'init_success':
             $('#monitors_list').empty();
@@ -959,8 +957,21 @@ $.zO.initCanvas=function(){
         $.zO.e.find('.cord_name').text(e.val)
         $.zO.f.find('[name="indifference"]').val(e.cord.sensitivity)
         $.zO.e.find('.canvas_holder canvas').remove();
+        e.re=$('#region_editor_live').find('iframe');
+        e.src='/'+$user.auth_token+'/embed/'+$user.ke+'/'+$.aM.selected+'/fullscreen|jquery'
+        if(e.re.attr('src')!==e.src){
+           e.re.attr('src',e.src)
+        }
+        e.re.attr('width',$.zO.regionViewerDetails.detector_scale_x)
+        e.re.attr('height',$.zO.regionViewerDetails.detector_scale_y)
         e.e=$.zO.ca.val(e.ar.join(','))
-        e.e.attr('data-image-url','/'+$user.auth_token+'/jpeg/'+$user.ke+'/'+$.aM.selected+'/s.jpg').canvasAreaDraw();
+        e.e.canvasAreaDraw({
+            imageUrl:placeholder.getData(placeholder.plcimg({
+                bgcolor:'transparent',
+                text:' ',
+                size:$.zO.regionViewerDetails.detector_scale_x+'x'+$.zO.regionViewerDetails.detector_scale_y
+            }))
+        });
         e.e.change();
     }
 }
@@ -1526,23 +1537,29 @@ $.pwrvid.drawTimeline=function(mid){
 //                    items.push({id:n,content:'<div mid="'+v.mid+'" ke="'+v.ke+'" status="'+v.status+'" file="'+v.filename+'"><a preview="video" href="'+v.href+'" class="btn btn-xs btn-primary">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a> '+v.mon.name+' - '+v.filename,start:ts,end:te})
                 }
             });
+            e.n=$.pwrvid.e.find('.nodata').hide()
             if($.pwrvid.chart){
                $.pwrvid.chart.setData(items)
-            }else{
-                $.pwrvid.chart=Morris.Line({
-                  element: 'vis_pwrvideo',
-                  resize: true,
-                  data: items,
-                  xkey: 'x',
-                  ykeys: ['y','yy'],
-                  labels: ['Minutes','Motion']
-                })
             }
-            $.pwrvid.chart.on('click', function(i,r){
-                if(r.yy){return}
-                $.pwrvid.e.find('.temp').html('<li class="glM'+r.src.mid+'" mid="'+r.src.mid+'" ke="'+r.src.ke+'" status="'+r.src.status+'" file="'+r.src.filename+'"><a class="btn btn-sm btn-primary" preview="video" href="'+r.src.href+'"><i class="fa fa-play-circle"></i></a></li>').find('a').click()
-            });
-            $.pwrvid.d.resize()
+            if(items.length>0){
+                if(!$.pwrvid.chart){
+                    $.pwrvid.chart=Morris.Line({
+                      element: 'vis_pwrvideo',
+                      resize: true,
+                      data: items,
+                      xkey: 'x',
+                      ykeys: ['y','yy'],
+                      labels: ['Minutes','Motion']
+                    })
+                    $.pwrvid.chart.on('click', function(i,r){
+                        if(!r||r.yy){return}
+                        $.pwrvid.e.find('.temp').html('<li class="glM'+r.src.mid+'" mid="'+r.src.mid+'" ke="'+r.src.ke+'" status="'+r.src.status+'" file="'+r.src.filename+'"><a class="btn btn-sm btn-primary" preview="video" href="'+r.src.href+'"><i class="fa fa-play-circle"></i></a></li>').find('a').click()
+                    });
+                }
+                $.pwrvid.d.resize()
+            }else{
+                e.n.show()
+            }
         })
     })
 }
