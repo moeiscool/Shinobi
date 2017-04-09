@@ -203,7 +203,7 @@ s.cron=function(){
                                         es.del.push('(mid=? AND time=?)');
                                         es.ar.push(ev.mid),es.ar.push(ev.time);
                                         exec('rm '+ev.dir);
-                                       console.log(ev.dir);s.tx({f:'video_delete',filename:s.moment(ev.time)+'.'+ev.ext,mid:ev.mid,ke:ev.ke,time:ev.time,end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+ev.ke);
+                                       s.tx({f:'video_delete',filename:s.moment(ev.time)+'.'+ev.ext,mid:ev.mid,ke:ev.ke,time:ev.time,end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+ev.ke);
 
                                     });
                                     if(es.del.length>0){
