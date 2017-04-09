@@ -180,12 +180,12 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .dark.modal .close{color:#fff;}
 .dark.modal{color:#fff;}
 .dark .table-striped>tbody>tr:nth-of-type(even){background:#ddd}
-.os_bars{width:400px;display:inline-block;padding:5px 0 0 10px}
+.os_bars{width:500px;display:inline-block;padding:5px 0 0 10px}
 @media screen and (max-width: 600px){
     .os_bars{width:200px;}
     .os_bars label{padding:2.5px 0;margin:0;font-size:8pt}
 }
-.os_bars .display-table .display-table-cell{padding:5px;vertical-align:center}
+.os_bars .display-table .display-table-cell{padding:5px;vertical-align:center;width:33%}
 .progress{height:5px;margin:0;}
 .os_bars label,.os_bars .percent{padding:2.5px 0;margin:0;font-size:7.5pt}
 
