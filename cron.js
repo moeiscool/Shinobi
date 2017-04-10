@@ -44,7 +44,7 @@ s.checkFilterRules=function(v){
                 b.sql.push(j.p1+' '+j.p2+' ?')
                 b.ar.push(j.p3)
             })
-            b.sql='WHERE status > 0 AND ('+b.sql.join(' AND ')+')';
+            b.sql='WHERE ('+b.sql.join(' AND ')+')';
             if(b.sort_by&&b.sort_by!==''){
                 b.sql+=' ORDER BY `'+b.sort_by+'` '+b.sort_by_direction
             }
@@ -172,7 +172,7 @@ s.cron=function(){
                         s.lock[v.ke]=1;
                         es={};
                         v.size=0;
-                        sql.query('SELECT * FROM Videos WHERE ke = ? AND status > 0',[v.ke],function(err,evs){
+                        sql.query('SELECT * FROM Videos WHERE ke = ? AND status != 0 AND time < (NOW() - INTERVAL 10 MINUTE)',[v.ke],function(err,evs){
                             if(evs&&evs[0]){
                                 es.del=[];es.ar=[v.ke];
                                 evs.forEach(function(ev){
@@ -196,7 +196,7 @@ s.cron=function(){
                             }
                             //delete files when over specified maximum
                             if(config.cron.deleteOverMax===true&&(v.size/1000000)>v.d.size){
-                                sql.query('SELECT * FROM Videos WHERE status > 0 AND ke=? ORDER BY `time` ASC LIMIT 15',[v.ke],function(err,evs){
+                                sql.query('SELECT * FROM Videos WHERE status != 0 AND ke=? ORDER BY `time` ASC LIMIT 15',[v.ke],function(err,evs){
                                 es.del=[];es.ar=[v.ke];
                                     evs.forEach(function(ev){
                                         ev.dir=s.dir.videos+v.ke+'/'+ev.mid+'/'+s.moment(ev.time)+'.'+ev.ext;
