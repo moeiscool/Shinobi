@@ -1821,7 +1821,14 @@ $('body')
         break;
         case'fullscreen':
             e.e=e.e.parents('.monitor_item');
-            e.vid=e.e.find('.stream-element')[0]
+            e.e.addClass('fullscreen')
+            e.vid=e.e.find('.stream-element')
+            if(e.vid.is('canvas')){
+                e.doc=$('body')
+               e.vid.attr('height',e.doc.height())
+               e.vid.attr('width',e.doc.width())
+            }
+            e.vid=e.vid[0]
             if (e.vid.requestFullscreen) {
               e.vid.requestFullscreen();
             } else if (e.vid.mozRequestFullScreen) {
@@ -2048,3 +2055,15 @@ $('body')
         })
     }
 })
+document.addEventListener("fullscreenchange", onFullScreenChange, false);
+document.addEventListener("webkitfullscreenchange", onFullScreenChange, false);
+document.addEventListener("mozfullscreenchange", onFullScreenChange, false);
+function onFullScreenChange() {
+    var fullscreenElement = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement;
+    if(!fullscreenElement){
+        $('.fullscreen').removeClass('fullscreen')
+        setTimeout(function(){
+            $('canvas.stream-element').resize()
+        },2000)
+    }
+}

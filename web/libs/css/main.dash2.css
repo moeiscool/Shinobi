@@ -23,7 +23,8 @@ img{max-width:100%}
 
 .nodata .divider{margin:5px 0}
 
-.monitor_item.fullscreen .stream-element{position:fixed;left:0;top:0;z-index:1;height:100%;width:100%}
+.monitor_item.fullscreen img.stream-element{height:100%;width:auto}
+.monitor_item.fullscreen canvas.stream-element{height:auto;width:auto}
 .monitor_item .stream-element{width:100%;height:300px;border:0;}
 .monitor_item{position:relative;padding:0;}
 .monitor_item{transition:none;}
