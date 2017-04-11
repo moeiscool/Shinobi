@@ -173,6 +173,8 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 #vis_monitors{overflow:auto;max-height:400px}
 #vis_monitors .btn-group-vertical{width:100%}
 
+.novideos{text-transform: uppercase;text-align: center;border-bottom:0!important;padding-top: 55%!important;letter-spacing:2px}
+
 .dark.modal .modal-header,.dark.modal .modal-footer{background:#333;border-color:#444;}
 .dark.modal .modal-header{color:#fff;}
 .dark.modal .modal-footer>*:not(.btn){color:#fff;}

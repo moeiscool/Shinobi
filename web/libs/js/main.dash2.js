@@ -469,7 +469,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 })
                 }else{
                     $('.glM'+d.mid+'.videos_list,.glM'+d.mid+'.videos_monitor_list').appendTo($.ccio.fr)
-                    tmp+='<li class="notice novideos">No videos for This Monitor</li>';
+                    tmp+='<li class="notice novideos">No videos</li>';
                 }
                 $(d.ev).html(tmp);
                 $.ccio.init('ls');
@@ -602,8 +602,8 @@ $.ccio.ws.on('f',function (d){
             if(!d.limit||d.limit===''){d.limit=10000}
             d.diskUsed=d.size/1000000;
             d.percent=parseInt((d.diskUsed/d.limit)*100)+'%';
-            d.human=parseFloat(d.diskUsed).toFixed(2)
-            if(d.human>1000){d.human=d.human/1000+' GB'}else{d.human=d.human+' MB'}
+            d.human=parseFloat(d.diskUsed)
+            if(d.human>1000){d.human=(d.human/1000).toFixed(2)+' GB'}else{d.human=d.human.toFixed(2)+' MB'}
             $('.diskUsed .value').html(d.human)
             $('.diskUsed .percent').html(d.percent)
             $('.diskUsed .progress-bar').css('width',d.percent)
@@ -1869,7 +1869,7 @@ $('body')
         case'delete':
             e.m=$('#confirm_window').modal('show');e.f=e.e.attr('file');
             $.confirm.title.text('Delete Monitor : '+e.mon.name)
-            e.html='Do you want to delete this monitor? You cannot recover it.'
+            e.html='Do you want to delete this monitor? You cannot recover it. The files for this ID will remain in the filesystem. If you choose to recreate a monitor with the same ID the videos and events will become visible in the dashboard.'
             e.html+='<table class="info-table"><tr>';
             $.each(e.mon,function(n,v,g){
                 if(n==='host'&&v.indexOf('@')>-1){g=v.split('@')[1]}else{g=v};
