@@ -776,13 +776,17 @@ s.camera=function(x,e,cn,tx){
                         },60000*2);
                     break;
                     case'rename':
-                        if(s.group[e.ke].mon[e.id].open&&s.group[e.ke].mon[e.id].record.yes===1){
-                            s.video('close',e);
-                        }
-                        e.filename=filename.split('.')[0];
-                        s.video('open',e);
-                        s.group[e.ke].mon[e.id].open=e.filename;
-                        s.group[e.ke].mon[e.id].open_ext=e.ext;
+                        fs.exists(e.dir+filename,function(exists){
+                            if(exists){
+                                if(s.group[e.ke].mon[e.id].open&&s.group[e.ke].mon[e.id].record.yes===1){
+                                    s.video('close',e);
+                                }
+                                e.filename=filename.split('.')[0];
+                                s.video('open',e);
+                                s.group[e.ke].mon[e.id].open=e.filename;
+                                s.group[e.ke].mon[e.id].open_ext=e.ext;
+                            }
+                        });
                     break;
                 }
             })
@@ -809,7 +813,7 @@ s.camera=function(x,e,cn,tx){
                 e.fn=function(){//this function loops to create new files
                     if(s.group[e.ke].mon[e.id].started===1){
                     e.error_count=0;
-                    e.error_socket_timeout_count=0;
+                    s.group[e.ke].mon[e.id].error_socket_timeout_count=0;
                     if(!e.details.fatal_max||e.details.fatal_max===''){e.details.fatal_max=10}else{e.details.fatal_max=parseFloat(e.details.fatal_max)}
                     s.kill(s.group[e.ke].mon[e.id].spawn,e);
                     e.draw=function(err,o){
@@ -887,13 +891,13 @@ s.camera=function(x,e,cn,tx){
                                             switch(err.code){
                                                 case'ESOCKETTIMEDOUT':
                                                 case'ETIMEDOUT':
-                                                    ++e.error_socket_timeout_count
-                                                    if(e.error_socket_timeout_count>e.details.fatal_max){
+                                                    ++s.group[e.ke].mon[e.id].error_socket_timeout_count
+                                                    if(s.group[e.ke].mon[e.id].error_socket_timeout_count>e.details.fatal_max){
                                                         s.log(e,{type:'Fatal Maximum Reached, Stopping Camera restart commands.',msg:{code:'ESOCKETTIMEDOUT',msg:'JPEG Error was fatal.'}});
                                                         s.camera('stop',e)
                                                     }else{
                                                         s.log(e,{type:'FFMPEG Restarting',msg:{code:'ESOCKETTIMEDOUT',msg:'JPEG Error was fatal.'}});
-                                                        e.fn();
+                                                        s.camera('restart',e)
                                                     }
                                                     return;
                                                 break;
