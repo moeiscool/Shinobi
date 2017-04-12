@@ -156,7 +156,7 @@ $(document).ready(function(){
                             $(window).resize();
                             d.mon.details=JSON.stringify(d.mon.details);
                             $.shinobi.mon[d.mon.mid]=d.mon;
-                            $.shinobi.init(d);
+                            $.shinobi.init(d.mon);
                         break;
                     }
                     $.shinobi.callback()
