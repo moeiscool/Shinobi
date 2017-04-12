@@ -163,6 +163,10 @@ io.on('disconnect',function(d){
 io.on('f',function(d){
     switch(d.f){
         case'init_monitor':
+            if(d.mon.detector_scale_x===''||d.mon.detector_scale_y===''){
+                d.mon.detector_scale_x=320;
+                d.mon.detector_scale_y=240;
+            }
             if(!s.globalCoords[d.id]){
                 if(!d.mon.cords){d.mon.cords={}}
                 s.globalCoords[d.id]=Object.values(d.mon.cords);
@@ -189,8 +193,8 @@ io.on('f',function(d){
                     s.img[d.id] = new Canvas.Image;
                 }
                 if(d.mon.detector_scale_x===''||d.mon.detector_scale_y===''){
-                    console.log('Must set detector image size')
-                    return
+                    d.mon.detector_scale_x=320;
+                    d.mon.detector_scale_y=240;
                 }else{
                     s.img[d.id].width=d.mon.detector_scale_x;
                     s.img[d.id].height=d.mon.detector_scale_y;
