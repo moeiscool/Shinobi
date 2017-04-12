@@ -1289,7 +1289,7 @@ $.fI.f.submit(function(e){
     e.er=[];
     console.log(e.s)
     $.each(e.s,function(n,v){e.s[n]=v.trim()})
-    e.s.where={};
+    e.s.where=[];
     $('.where-row').each(function(n,v){
         n={};
         $(v).find('[where]').each(function(m,b){
