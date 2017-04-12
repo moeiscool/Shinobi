@@ -49,6 +49,8 @@ if(config.mail){
 if(!config.cpuUsageMarker){config.cpuUsageMarker='%Cpu'}
 if(!config.autoDropCache){config.autoDropCache=true}
 if(!config.doSnapshot){config.doSnapshot=true}
+if(!config.restart){config.restart={}}
+if(!config.restart.onVideoNotExist){config.restart.onVideoNotExist=true}
 server.listen(config.port);
 try{
     console.log('Shinobi - PORT : '+config.port+', NODE.JS : '+execSync("node -v"));
@@ -390,6 +392,11 @@ s.video=function(x,e){
                     }else{
                         s.video('delete',e);
                         s.log(e,{type:'File Not Exist',msg:'Cannot save non existant file. Something went wrong.',ffmpeg:s.group[e.ke].mon[e.id].ffmpeg})
+                        if(e.mode&&config.restart.onVideoNotExist===true&&e.fn){
+                            delete(s.group[e.ke].mon[e.id].open);
+                            s.log(e,{type:'FFMPEG Not Recording',msg:{msg:'Restarting Process'}});
+                            s.camera('restart',e)
+                        }
                     }
                 }
             }
@@ -529,7 +536,7 @@ s.ffmpeg=function(e,x){
     //motion detector, opencv
     if(e.details.detector==='1'){
         if(!e.details.detector_fps||e.details.detector_fps===''){e.details.detector_fps=0.5}
-        if(e.details.detector_scale_x&&e.details.detector_scale_x!==''&&e.details.detector_scale_y&&e.details.detector_scale_y!==''){x.dratio=' -s '+e.details.detector_scale_x+'x'+e.details.detector_scale_y}else{x.dratio=''}
+        if(e.details.detector_scale_x&&e.details.detector_scale_x!==''&&e.details.detector_scale_y&&e.details.detector_scale_y!==''){x.dratio=' -s '+e.details.detector_scale_x+'x'+e.details.detector_scale_y}else{x.dratio=' -s 320x240'}
         if(e.details.cust_detect&&e.details.cust_detect!==''){x.cust_detect+=e.details.cust_detect;}
         x.pipe+=' -f singlejpeg -vf fps='+e.details.detector_fps+x.cust_detect+x.dratio+' pipe:0';
     }
@@ -694,6 +701,12 @@ s.camera=function(x,e,cn,tx){
             if(tx){tx({f:'monitor_watch_off',ke:e.ke,id:e.id,cnid:cn.id})};
             s.tx({viewers:e.ob,ke:e.ke,id:e.id},'MON_'+e.id);
         break;
+        case'restart'://restart monitor
+            s.camera('stop',e)
+            setTimeout(function(){
+                s.camera(e.mode,e)
+            },1300)
+        break;
         case'stop'://stop monitor
             if(!s.group[e.ke]||!s.group[e.ke].mon[e.id]){return}
             if(s.group[e.ke].mon[e.id].fswatch){s.group[e.ke].mon[e.id].fswatch.close();delete(s.group[e.ke].mon[e.id].fswatch)}
@@ -760,7 +773,7 @@ s.camera=function(x,e,cn,tx){
                                 e.fn();
                                 s.log(e,{type:'FFMPEG Not Recording',msg:{msg:'Restarting Process'}});
                             }
-                        },60000);
+                        },60000*2);
                     break;
                     case'rename':
                         if(s.group[e.ke].mon[e.id].open&&s.group[e.ke].mon[e.id].record.yes===1){
@@ -795,7 +808,8 @@ s.camera=function(x,e,cn,tx){
                 e.error_fatal_count=0;
                 e.fn=function(){//this function loops to create new files
                     if(s.group[e.ke].mon[e.id].started===1){
-                     e.error_count=0;
+                    e.error_count=0;
+                    e.error_socket_timeout_count=0;
                     if(!e.details.fatal_max||e.details.fatal_max===''){e.details.fatal_max=10}else{e.details.fatal_max=parseFloat(e.details.fatal_max)}
                     s.kill(s.group[e.ke].mon[e.id].spawn,e);
                     e.draw=function(err,o){
@@ -869,7 +883,21 @@ s.camera=function(x,e,cn,tx){
                                         ++e.error_count;
                                         clearTimeout(e.timeOut);delete(e.timeOut);
                                         if(e.details.loglevel!=='quiet'){
-                                            s.log(e,{type:'Snapshot Error',msg:{msg:'There was an issue getting data from your camera.',info:err}});
+                                            s.log(e,{type:'JPEG Error',msg:{msg:'There was an issue getting data from your camera.',info:err}});
+                                            switch(err.code){
+                                                case'ESOCKETTIMEDOUT':
+                                                case'ETIMEDOUT':
+                                                    ++e.error_socket_timeout_count
+                                                    if(e.error_socket_timeout_count>e.details.fatal_max){
+                                                        s.log(e,{type:'Fatal Maximum Reached, Stopping Camera restart commands.',msg:{code:'ESOCKETTIMEDOUT',msg:'JPEG Error was fatal.'}});
+                                                        s.camera('stop',e)
+                                                    }else{
+                                                        s.log(e,{type:'FFMPEG Restarting',msg:{code:'ESOCKETTIMEDOUT',msg:'JPEG Error was fatal.'}});
+                                                        e.fn();
+                                                    }
+                                                    return;
+                                                break;
+                                            }
                                         }
                                         if(e.error_count>e.details.fatal_max){
                                             clearTimeout(s.group[e.ke].mon[e.id].record.capturing);
@@ -1959,7 +1987,7 @@ app.get('/:auth/hls/:ke/:id/:file', function (req,res){
 app.get('/:auth/jpeg/:ke/:id/s.jpg', function(req,res){
     s.auth(req.params,function(user){
         if(user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
-            res.send('Not Permitted');
+            res.end('Not Permitted')
             return
         }
         req.dir=s.dir.streams+req.params.ke+'/'+req.params.id+'/s.jpg';
@@ -1983,7 +2011,7 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
     }else{
         s.auth(req.params,function(user){
             if(user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
-                res.send('Not Permitted');
+                res.end('Not Permitted')
                 return
             }
             res.writeHead(200, {
@@ -2019,8 +2047,8 @@ app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,re
     s.auth(req.params,function(user){
         req.sql='SELECT * FROM Monitors WHERE ke=? and mid=?';
         req.ar=[req.params.ke,req.params.id];
-        if(user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
-            res.send('Not Permitted');
+        if(user.details&&user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
+            res.end('Not Permitted')
             return
         }
         sql.query(req.sql,req.ar,function(err,r){
@@ -2216,7 +2244,7 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
     res.setHeader('Content-Type', 'application/json');
     req.fn=function(user){
         if(user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitor_edit.indexOf(req.params.id)===-1){
-            res.send('Not Permitted');
+            res.end('Not Permitted')
             return
         }
         if(req.params.f===''){req.ret.msg='incomplete request, remove last slash in URL or put acceptable value.';res.send(s.s(req.ret, null, 3));return}
@@ -2290,7 +2318,7 @@ app.get(['/libs/:f/:f2','/libs/:f/:f2/:f3'], function (req,res){
 app.get('/:auth/videos/:ke/:id/:file', function (req,res){
     req.fn=function(user){
         if(user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
-            res.send('Not Permitted');
+            res.end('Not Permitted')
             return
         }
         req.dir=s.dir.videos+req.params.ke+'/'+req.params.id+'/'+req.params.file;
@@ -2309,7 +2337,7 @@ app.get(['/:auth/videos/:ke/:id/:file/:mode','/:auth/videos/:ke/:id/:file/:mode/
     res.setHeader('Content-Type', 'application/json');
     s.auth(req.params,function(user){
         if(user.details.sub&&user.details.allmonitors!=='1'&&user.details.video_delete.indexOf(req.params.id)===-1){
-            res.send('Not Permitted');
+            res.end('Not Permitted')
             return
         }
         req.sql='SELECT * FROM Videos WHERE ke=? AND mid=? AND time=?';

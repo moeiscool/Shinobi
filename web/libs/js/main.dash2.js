@@ -1700,8 +1700,8 @@ $('body')
             e.height=$.aM.e.find('[detail="detector_scale_y"]');
             e.d.cords=$.aM.e.find('[detail="cords"]').val();
             if(e.width.val()===''){
-                e.d.detector_scale_x=640;
-                e.d.detector_scale_y=480;
+                e.d.detector_scale_x=320;
+                e.d.detector_scale_y=240;
                 $.aM.e.find('[detail="detector_scale_x"]').val(e.d.detector_scale_x);
                 $.aM.e.find('[detail="detector_scale_y"]').val(e.d.detector_scale_y);
             }else{
