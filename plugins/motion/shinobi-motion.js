@@ -1,4 +1,5 @@
 //
+// Shinobi - Motion Plugin
 // Copyright (C) 2016-2025 Moe Alam, moeiscool
 //
 // This program is free software; you can redistribute it and/or
