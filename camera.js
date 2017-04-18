@@ -54,7 +54,7 @@ if(!config.restart.onVideoNotExist){config.restart.onVideoNotExist=true}
 server.listen(config.port);
 try{
     console.log('Shinobi - PORT : '+config.port+', NODE.JS : '+execSync("node -v"));
-}catch(err){ 
+}catch(err){
     console.log('Shinobi - PORT : '+config.port);
 }
 
@@ -128,7 +128,7 @@ s.portRange=function(lowEnd,highEnd){
     }
     return list;
 }
-//toLong taken from NPM package 'ip' 
+//toLong taken from NPM package 'ip'
 s.toLong=function(ip) {
   var ipl = 0;
   ip.split('.').forEach(function(octet) {
@@ -138,7 +138,7 @@ s.toLong=function(ip) {
   return(ipl >>> 0);
 };
 
-//fromLong taken from NPM package 'ip' 
+//fromLong taken from NPM package 'ip'
 s.fromLong=function(ipl) {
   return ((ipl >>> 24) + '.' +
       (ipl >> 16 & 255) + '.' +
@@ -373,7 +373,7 @@ s.video=function(x,e){
                             if(!e.status){e.save.push(0)}else{e.save.push(e.status)}
                             sql.query('UPDATE Videos SET `size`=?,`status`=?,`end`=? WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save)
                             s.tx({f:'video_build_success',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),size:e.filesize,end:e.end_time},'GRP_'+e.ke);
-                            
+
                             //cloud auto savers
                             //webdav
                             if(s.group[e.ke].webdav&&s.group[e.ke].init.webdav_save=="1"){
@@ -420,7 +420,7 @@ s.ffmpeg=function(e,x){
     //check protocol
     switch(e.protocol){
         case'rtsp':
-            if(e.details.rtsp_transport&&e.details.rtsp_transport!==''&&e.details.rtsp_transport!=='no'){x.cust_input+=' -rtsp_transport '+e.details.rtsp_transport;}            
+            if(e.details.rtsp_transport&&e.details.rtsp_transport!==''&&e.details.rtsp_transport!=='no'){x.cust_input+=' -rtsp_transport '+e.details.rtsp_transport;}
         break;
     }
     //resolution
@@ -449,7 +449,7 @@ s.ffmpeg=function(e,x){
         if(e.details.timestamp_box_color&&e.details.timestamp_box_color!==''){x.time_box_color=e.details.timestamp_box_color}else{x.time_box_color='0x00000000@1'}
         //text size
         if(e.details.timestamp_font_size&&e.details.timestamp_font_size!==''){x.time_font_size=e.details.timestamp_font_size}else{x.time_font_size='10'}
-        
+
         x.time=' -vf drawtext=fontfile='+x.time_font+':text=\'%{localtime}\':x='+x.timex+':y='+x.timey+':fontcolor='+x.time_color+':box=1:boxcolor='+x.time_box_color+':fontsize='+x.time_font_size;
     }else{x.time=''}
     //get video and audio codec defaults based on extension
@@ -826,7 +826,7 @@ s.camera=function(x,e,cn,tx){
             s.camera('snapshot',{mid:e.id,ke:e.ke,mon:e})
             //check host to see if has password and user in it
             e.hosty=e.host.split('@');if(e.hosty[1]){e.hosty=e.hosty[1];}else{e.hosty=e.hosty[0];};
-            
+
                 e.error_fatal=function(x){
                     clearTimeout(e.err_fatal_timeout);
                     ++e.error_fatal_count;
@@ -901,7 +901,7 @@ s.camera=function(x,e,cn,tx){
                                           }
                                           if((d[d.length-2] === 0xFF && d[d.length-1] === 0xD9)){
                                               e.buffer0=Buffer.concat(e.buffer0);
-                                              ++e.frames; 
+                                              ++e.frames;
                                               if(s.group[e.ke].mon[e.id].spawn&&s.group[e.ke].mon[e.id].spawn.stdin){
                                                 s.group[e.ke].mon[e.id].spawn.stdin.write(e.buffer0);
                                             }
@@ -1299,10 +1299,10 @@ var tx;
                             if(!s.group[d.ke]||!s.group[d.ke].mon[d.mid]){return}
                             d.m=s.group[d.ke].mon_conf[d.mid];
                             if(d.m.details.control!=="1"){s.log(d,{type:'Control Error',msg:'Control is not enabled'});return}
-                            if(!d.control_base_url||d.control_base_url===''){
+                            if(!d.m.details.control_base_url||d.m.details.control_base_url===''){
                                 d.base=s.init('url_no_path',d.m);
                             }else{
-                                d.base=d.control_base_url;
+                                d.base=d.m.details.control_base_url;
                             }
                             if(!d.m.details.control_url_stop_timeout||d.m.details.control_url_stop_timeout===''){d.m.details.control_url_stop_timeout=1000} request({url:d.base+d.m.details['control_url_'+d.direction],method:'GET'},function(err,data){
                                 if(err){s.log(d,{type:'Control Error',msg:err});return false}
@@ -1312,7 +1312,7 @@ var tx;
                                            if(err){s.log(d,{type:'Control Error',msg:err});return false}
                                            s.tx({f:'control',ok:data,mid:d.mid,ke:d.ke,direction:d.direction,url_stop:true});
                                     })
-                                   },d.m.details.control_url_stop_timeout) 
+                                   },d.m.details.control_url_stop_timeout)
                                 }else{
                                     tx({f:'control',ok:data,mid:d.mid,ke:d.ke,direction:d.direction,url_stop:false});
                                 }
@@ -1657,7 +1657,7 @@ var tx;
                                 s.group[d.ke].users[v].details.used_space=d.size;
                             }
                         })
-                       
+
                     }
                     s.tx({f:'diskUsed',size:d.size,limit:d.limit},'GRP_'+d.ke);
                 }
@@ -1802,7 +1802,7 @@ var tx;
 //                    if(!s.group[d.ke].embed){s.group[d.ke].embed={}}
 //                    if(!s.group[d.ke].embed[d.mid]){s.group[d.ke].embed[d.mid]={}}
 //                    s.group[d.ke].embed[d.mid][cn.id]={}
-                    
+
                     s.camera('watch_on',d,cn,tx)
                     cn.join('MON_'+d.id);
                     cn.join('STR_'+d.ke);
@@ -1962,7 +1962,7 @@ app.post('/',function (req,res){
             sql.query("UPDATE Users SET auth=? WHERE ke=? AND uid=?",[r.auth,r.ke,r.uid])
             req.resp={ok:true,auth_token:r.auth,ke:r.ke,uid:r.uid,mail:r.mail,details:r.details};
             r.details=JSON.parse(r.details);
-            
+
             req.fn=function(){
                 if(req.body.classic){
                     res.render("classic",{$user:req.resp});
@@ -2005,9 +2005,9 @@ app.post('/',function (req,res){
             }else{
                 req.fn()
             }
-            
-            
-            
+
+
+
 
         }else{
             res.render("index",{failedLogin:true});
