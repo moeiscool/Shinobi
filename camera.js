@@ -1551,7 +1551,7 @@ var tx;
                     if(s.group[d.ke].mon[d.id].motion_lock){return}
                     d.cx={f:'detector_trigger',id:d.id,ke:d.ke,details:d.details};
                     s.tx(d.cx,'GRP_'+d.ke);
-                    if(d.mon.details.detector_trigger=='1'){
+                    if(d.mon.details.detector_notrigger=='1'){
                         if(!d.mon.details.detector_notrigger_timeout||d.mon.details.detector_notrigger_timeout===''){
                             d.mon.details.detector_notrigger_timeout=10
                         }
