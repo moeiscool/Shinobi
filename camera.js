@@ -715,6 +715,7 @@ s.camera=function(x,e,cn,tx){
             if(s.group[e.ke].mon[e.id].started!==1){return}
             s.kill(s.group[e.ke].mon[e.id].spawn,e);
             clearInterval(s.group[e.ke].mon[e.id].running);
+            clearInterval(s.group[e.ke].mon[e.id].detector_notrigger_timeout)
             s.group[e.ke].mon[e.id].started=0;
             if(s.group[e.ke].mon[e.id].record){s.group[e.ke].mon[e.id].record.yes=0}
             s.log(e,{type:'Monitor Stopped',msg:'Monitor session has been ordered to stop.'});
@@ -760,6 +761,38 @@ s.camera=function(x,e,cn,tx){
                 fs.mkdirSync(e.sdir);
             }else{
                 exec('rm -rf '+e.sdir+'*')
+            }
+            //start "no motion" checker
+            if(e.details.detector=='1'&&e.details.detector_notrigger=='1'){
+                if(!e.details.detector_notrigger_timeout||e.details.detector_notrigger_timeout===''){
+                    e.details.detector_notrigger_timeout=10
+                }
+                e.detector_notrigger_timeout=parseFloat(e.details.detector_notrigger_timeout)*1000*60;
+                sql.query('SELECT mail FROM Users WHERE ke=? AND details NOT LIKE ?',[e.ke,'%sub%'],function(err,r){
+                    r=r[0];
+                    s.group[e.ke].mon[e.id].detector_notrigger_timeout_function=function(){
+                        if(config.mail&&e.details.detector_notrigger_mail=='1'){
+                            e.mailOptions = {
+                                from: '"ShinobiCCTV" <no-reply@shinobi.video>', // sender address
+                                to: r.mail, // list of receivers
+                                subject: 'No Motion for '+e.name+' ('+e.id+')', // Subject line
+                                html: '<i>There hasn\'t been any motion detected for '+e.details.detector_notrigger_timeout+' minutes on camera.</i>',
+                            };
+                            e.mailOptions.html+='<div><b>Monitor Name </b> : '+e.name+'</div>'
+                            e.mailOptions.html+='<div><b>Monitor ID </b> : '+e.id+'</div>'
+                            nodemailer.sendMail(e.mailOptions, (error, info) => {
+                                if (error) {
+                                   console.log('detector:notrigger:sendMail',s.moment(),error)
+                                    s.tx({f:'error',ff:'detector_notrigger_mail',id:e.id,ke:e.ke,error:error},'GRP_'+e.ke);
+                                    return ;
+                                }
+                                s.tx({f:'detector_notrigger_mail',id:e.id,ke:e.ke,info:info},'GRP_'+e.ke);
+                            });
+                        }
+                    }
+                    clearInterval(s.group[e.ke].mon[e.id].detector_notrigger_timeout)
+                    s.group[e.ke].mon[e.id].detector_notrigger_timeout=setInterval(s.group[e.ke].mon[e.id].detector_notrigger_timeout_function,e.detector_notrigger_timeout)
+                })
             }
             //cutoff time and recording check interval
             if(!e.details.cutoff||e.details.cutoff===''){e.cutoff=15}else{e.cutoff=parseFloat(e.details.cutoff)};
@@ -1518,7 +1551,15 @@ var tx;
                     if(s.group[d.ke].mon[d.id].motion_lock){return}
                     d.cx={f:'detector_trigger',id:d.id,ke:d.ke,details:d.details};
                     s.tx(d.cx,'GRP_'+d.ke);
-                    if(s.group[d.ke].mon_conf[d.id].mode==='start'&&d.mon.details.detector_trigger=='1'){
+                    if(d.mon.mode==='start'&&d.mon.details.detector_trigger=='1'){
+                        if(!d.mon.details.detector_notrigger_timeout||d.mon.details.detector_notrigger_timeout===''){
+                            d.mon.details.detector_notrigger_timeout=10
+                        }
+                        d.mon.detector_notrigger_timeout=parseFloat(d.mon.details.detector_notrigger_timeout)*1000*60;
+                        clearInterval(s.group[d.ke].mon[d.id].detector_notrigger_timeout)
+                        s.group[d.ke].mon[d.id].detector_notrigger_timeout=setInterval(s.group[d.ke].mon[d.id].detector_notrigger_timeout_function,d.mon.detector_notrigger_timeout)
+                    }
+                    if(d.mon.mode==='start'&&d.mon.details.detector_trigger=='1'){
                         if(!s.group[d.ke].mon[d.id].watchdog_stop){
                             d.cx.f='detector_record_start';
                             s.tx(d.cx,'GRP_'+d.ke);
@@ -1549,7 +1590,7 @@ var tx;
                     }
                     //mailer
                     if(config.mail&&!s.group[d.ke].mon[d.id].detector_mail&&d.mon.details.detector_mail==='1'){
-                        sql.query('SELECT mail FROM Users WHERE ke=?',[d.ke],function(err,r){
+                        sql.query('SELECT mail FROM Users WHERE ke=? AND details NOT LIKE ?',[d.ke,'%sub%'],function(err,r){
                             r=r[0];
                             if(!d.mon.details.detector_mail_timeout||d.mon.details.detector_mail_timeout===''){
                                 d.mon.details.detector_mail_timeout=1000*60*10;
@@ -1765,7 +1806,7 @@ var tx;
                     s.camera('watch_on',d,cn,tx)
                     cn.join('MON_'+d.id);
                     cn.join('STR_'+d.ke);
-                    if(s.group[d.ke]&&s.group[d.ke].mon&&s.group[d.ke].mon[d.id]&&s.group[d.ke].mon[d.id].watch){
+                    if(s.group[d.ke]&&s.group[d.ke].mon[d.id]&&s.group[d.ke].mon[d.id].watch){
 
                         tx({f:'monitor_watch_on',id:d.id,ke:d.ke},'MON_'+d.id)
                         s.tx({viewers:Object.keys(s.group[d.ke].mon[d.id].watch).length,ke:d.ke,id:d.id},'MON_'+d.id)
@@ -1890,8 +1931,9 @@ app.post('/:auth/register/:ke/:uid',function (req,res){
                             }else{//create new
                                 req.resp.msg='New Account Created';req.resp.ok=true;
                                 req.gid=s.gid();
-                                sql.query('INSERT INTO Users (ke,uid,mail,pass,details) VALUES (?,?,?,?,?)',[req.params.ke,req.gid,req.body.mail,s.md5(req.body.pass),'{"sub":"1","allmonitors":"1"}'])
-                                s.tx({f:'add_sub_account',ke:req.params.ke,uid:req.gid,mail:req.body.mail},'ADM_'+req.params.ke);
+                                req.body.details='{"sub":"1","allmonitors":"1"}';
+                                sql.query('INSERT INTO Users (ke,uid,mail,pass,details) VALUES (?,?,?,?,?)',[req.params.ke,req.gid,req.body.mail,s.md5(req.body.pass),req.body.details])
+                                s.tx({f:'add_sub_account',details:req.body.details,ke:req.params.ke,uid:req.gid,mail:req.body.mail},'ADM_'+req.params.ke);
                             }
                             res.send(s.s(req.resp,null,3));
                         })
