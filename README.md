@@ -78,12 +78,16 @@ Follow me on Twitter https://twitter.com/moe_alam
 
 <a title="Find me on Slack, Get an Invite" href="https://shinobicctv.herokuapp.com/"><img src="https://camo.githubusercontent.com/5843e066b5f0a7b5ff5942921aedcbac70766ed5/68747470733a2f2f612e736c61636b2d656467652e636f6d2f35656230302f696d672f6c616e64696e672f77686572655f776f726b5f68617070656e732f6c6f676f2d6461726b2d626c75652e706e67"></a>
 
-# Credits
+# License
 
-If you wish to use this software for commercial purposes please consider donating :) If not.. including my name would be nice.
+Paid license required only if you choose to bill your users for the use of Shinobi.
+Personal and Educational purposes do not require a license.
+Educational Institutions, such as high schools and universities, do not require the purchase of a license.
+
+<a href="http://cloudchat.online/cart/licenses/">http://cloudchat.online/cart/licenses/</a>
 
     Shinobi
-    Copyright (C) 2016-2025 Moe Alam, moeiscool
+    Copyright (C) 2016 Moe Alam, moeiscool
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
