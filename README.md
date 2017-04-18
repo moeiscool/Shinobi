@@ -12,6 +12,8 @@ Shinobi is not made by the current or previous ZoneMinder developers. This app i
 
 # Key Aspects
 
+- Defeats stream limit imposed by browsers
+  - With Base64 (Stream Type) and JPEG Mode (Option)
 - Records IP Cameras and Local Cameras
 - Streams by WebSocket, HLS (includes audio), and MJPEG
 - Save to WebM and MP4
