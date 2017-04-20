@@ -275,6 +275,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
         if(d.id&&!d.mid){d.mid=d.id;}
         switch(x){
             case 0://video
+                if(!d.href&&d.hrefNoAuth){d.href='/'+$user.auth_token+d.hrefNoAuth}
                 if(!d.filename){d.filename=$.ccio.init('tf',d.time)+'.'+d.ext;}
                 d.dlname=d.mid+'-'+d.filename;
                 d.mom=moment(d.time),
