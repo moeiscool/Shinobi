@@ -557,6 +557,30 @@
                   </div>
               </div>
           </div>
+          <div class="form-group-group orange shinobi-detector" style="display:none">
+          <h4>"No Motion" Detector</h4>
+              <div class="form-group">
+                <label><span>Enabled</span>
+                    <select class="form-control" detail="detector_notrigger">
+                        <option value="0" selected>No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Email on "No Motion"</span>
+                    <select class="form-control" detail="detector_notrigger_mail">
+                        <option value="0" selected>No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </label>
+              </div>
+              <div class="form-group">
+                <label><span>Timeout</span>
+                    <input class="form-control" detail="detector_notrigger_timeout" placeholder="10">
+                </label>
+              </div>
+          </div>
 <!--     END of Motion     -->
           <div class="form-group-group blue">
           <h4>Control</h4>

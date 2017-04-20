@@ -54,7 +54,7 @@ if(!config.restart.onVideoNotExist){config.restart.onVideoNotExist=true}
 server.listen(config.port);
 try{
     console.log('Shinobi - PORT : '+config.port+', NODE.JS : '+execSync("node -v"));
-}catch(err){ 
+}catch(err){
     console.log('Shinobi - PORT : '+config.port);
 }
 
@@ -128,7 +128,7 @@ s.portRange=function(lowEnd,highEnd){
     }
     return list;
 }
-//toLong taken from NPM package 'ip' 
+//toLong taken from NPM package 'ip'
 s.toLong=function(ip) {
   var ipl = 0;
   ip.split('.').forEach(function(octet) {
@@ -138,7 +138,7 @@ s.toLong=function(ip) {
   return(ipl >>> 0);
 };
 
-//fromLong taken from NPM package 'ip' 
+//fromLong taken from NPM package 'ip'
 s.fromLong=function(ipl) {
   return ((ipl >>> 24) + '.' +
       (ipl >> 16 & 255) + '.' +
@@ -372,8 +372,8 @@ s.video=function(x,e){
                             e.save=[e.filesize,1,e.end_time,e.id,e.ke,s.nameToTime(e.filename)];
                             if(!e.status){e.save.push(0)}else{e.save.push(e.status)}
                             sql.query('UPDATE Videos SET `size`=?,`status`=?,`end`=? WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save)
-                            s.tx({f:'video_build_success',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),size:e.filesize,end:e.end_time},'GRP_'+e.ke);
-                            
+                            s.tx({f:'video_build_success',hrefNoAuth:'/videos/'+e.ke+'/'+e.mid+'/'+e.filename+'.'+e.ext,filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:moment(s.nameToTime(e.filename)).format(),size:e.filesize,end:moment(e.end_time).format()},'GRP_'+e.ke);
+
                             //cloud auto savers
                             //webdav
                             if(s.group[e.ke].webdav&&s.group[e.ke].init.webdav_save=="1"){
@@ -420,7 +420,7 @@ s.ffmpeg=function(e,x){
     //check protocol
     switch(e.protocol){
         case'rtsp':
-            if(e.details.rtsp_transport&&e.details.rtsp_transport!==''&&e.details.rtsp_transport!=='no'){x.cust_input+=' -rtsp_transport '+e.details.rtsp_transport;}            
+            if(e.details.rtsp_transport&&e.details.rtsp_transport!==''&&e.details.rtsp_transport!=='no'){x.cust_input+=' -rtsp_transport '+e.details.rtsp_transport;}
         break;
     }
     //resolution
@@ -449,7 +449,7 @@ s.ffmpeg=function(e,x){
         if(e.details.timestamp_box_color&&e.details.timestamp_box_color!==''){x.time_box_color=e.details.timestamp_box_color}else{x.time_box_color='0x00000000@1'}
         //text size
         if(e.details.timestamp_font_size&&e.details.timestamp_font_size!==''){x.time_font_size=e.details.timestamp_font_size}else{x.time_font_size='10'}
-        
+
         x.time=' -vf drawtext=fontfile='+x.time_font+':text=\'%{localtime}\':x='+x.timex+':y='+x.timey+':fontcolor='+x.time_color+':box=1:boxcolor='+x.time_box_color+':fontsize='+x.time_font_size;
     }else{x.time=''}
     //get video and audio codec defaults based on extension
@@ -715,6 +715,7 @@ s.camera=function(x,e,cn,tx){
             if(s.group[e.ke].mon[e.id].started!==1){return}
             s.kill(s.group[e.ke].mon[e.id].spawn,e);
             clearInterval(s.group[e.ke].mon[e.id].running);
+            clearInterval(s.group[e.ke].mon[e.id].detector_notrigger_timeout)
             s.group[e.ke].mon[e.id].started=0;
             if(s.group[e.ke].mon[e.id].record){s.group[e.ke].mon[e.id].record.yes=0}
             s.log(e,{type:'Monitor Stopped',msg:'Monitor session has been ordered to stop.'});
@@ -761,6 +762,38 @@ s.camera=function(x,e,cn,tx){
             }else{
                 exec('rm -rf '+e.sdir+'*')
             }
+            //start "no motion" checker
+            if(e.details.detector=='1'&&e.details.detector_notrigger=='1'){
+                if(!e.details.detector_notrigger_timeout||e.details.detector_notrigger_timeout===''){
+                    e.details.detector_notrigger_timeout=10
+                }
+                e.detector_notrigger_timeout=parseFloat(e.details.detector_notrigger_timeout)*1000*60;
+                sql.query('SELECT mail FROM Users WHERE ke=? AND details NOT LIKE ?',[e.ke,'%sub%'],function(err,r){
+                    r=r[0];
+                    s.group[e.ke].mon[e.id].detector_notrigger_timeout_function=function(){
+                        if(config.mail&&e.details.detector_notrigger_mail=='1'){
+                            e.mailOptions = {
+                                from: '"ShinobiCCTV" <no-reply@shinobi.video>', // sender address
+                                to: r.mail, // list of receivers
+                                subject: 'No Motion for '+e.name+' ('+e.id+')', // Subject line
+                                html: '<i>There hasn\'t been any motion detected for '+e.details.detector_notrigger_timeout+' minutes on camera.</i>',
+                            };
+                            e.mailOptions.html+='<div><b>Monitor Name </b> : '+e.name+'</div>'
+                            e.mailOptions.html+='<div><b>Monitor ID </b> : '+e.id+'</div>'
+                            nodemailer.sendMail(e.mailOptions, (error, info) => {
+                                if (error) {
+                                   console.log('detector:notrigger:sendMail',s.moment(),error)
+                                    s.tx({f:'error',ff:'detector_notrigger_mail',id:e.id,ke:e.ke,error:error},'GRP_'+e.ke);
+                                    return ;
+                                }
+                                s.tx({f:'detector_notrigger_mail',id:e.id,ke:e.ke,info:info},'GRP_'+e.ke);
+                            });
+                        }
+                    }
+                    clearInterval(s.group[e.ke].mon[e.id].detector_notrigger_timeout)
+                    s.group[e.ke].mon[e.id].detector_notrigger_timeout=setInterval(s.group[e.ke].mon[e.id].detector_notrigger_timeout_function,e.detector_notrigger_timeout)
+                })
+            }
             //cutoff time and recording check interval
             if(!e.details.cutoff||e.details.cutoff===''){e.cutoff=15}else{e.cutoff=parseFloat(e.details.cutoff)};
             if(isNaN(e.cutoff)===true){e.cutoff=15}
@@ -793,7 +826,7 @@ s.camera=function(x,e,cn,tx){
             s.camera('snapshot',{mid:e.id,ke:e.ke,mon:e})
             //check host to see if has password and user in it
             e.hosty=e.host.split('@');if(e.hosty[1]){e.hosty=e.hosty[1];}else{e.hosty=e.hosty[0];};
-            
+
                 e.error_fatal=function(x){
                     clearTimeout(e.err_fatal_timeout);
                     ++e.error_fatal_count;
@@ -868,7 +901,7 @@ s.camera=function(x,e,cn,tx){
                                           }
                                           if((d[d.length-2] === 0xFF && d[d.length-1] === 0xD9)){
                                               e.buffer0=Buffer.concat(e.buffer0);
-                                              ++e.frames; 
+                                              ++e.frames;
                                               if(s.group[e.ke].mon[e.id].spawn&&s.group[e.ke].mon[e.id].spawn.stdin){
                                                 s.group[e.ke].mon[e.id].spawn.stdin.write(e.buffer0);
                                             }
@@ -1266,10 +1299,10 @@ var tx;
                             if(!s.group[d.ke]||!s.group[d.ke].mon[d.mid]){return}
                             d.m=s.group[d.ke].mon_conf[d.mid];
                             if(d.m.details.control!=="1"){s.log(d,{type:'Control Error',msg:'Control is not enabled'});return}
-                            if(!d.control_base_url||d.control_base_url===''){
+                            if(!d.m.details.control_base_url||d.m.details.control_base_url===''){
                                 d.base=s.init('url_no_path',d.m);
                             }else{
-                                d.base=d.control_base_url;
+                                d.base=d.m.details.control_base_url;
                             }
                             if(!d.m.details.control_url_stop_timeout||d.m.details.control_url_stop_timeout===''){d.m.details.control_url_stop_timeout=1000} request({url:d.base+d.m.details['control_url_'+d.direction],method:'GET'},function(err,data){
                                 if(err){s.log(d,{type:'Control Error',msg:err});return false}
@@ -1279,7 +1312,7 @@ var tx;
                                            if(err){s.log(d,{type:'Control Error',msg:err});return false}
                                            s.tx({f:'control',ok:data,mid:d.mid,ke:d.ke,direction:d.direction,url_stop:true});
                                     })
-                                   },d.m.details.control_url_stop_timeout) 
+                                   },d.m.details.control_url_stop_timeout)
                                 }else{
                                     tx({f:'control',ok:data,mid:d.mid,ke:d.ke,direction:d.direction,url_stop:false});
                                 }
@@ -1518,7 +1551,15 @@ var tx;
                     if(s.group[d.ke].mon[d.id].motion_lock){return}
                     d.cx={f:'detector_trigger',id:d.id,ke:d.ke,details:d.details};
                     s.tx(d.cx,'GRP_'+d.ke);
-                    if(s.group[d.ke].mon_conf[d.id].mode==='start'&&d.mon.details.detector_trigger=='1'){
+                    if(d.mon.details.detector_notrigger=='1'){
+                        if(!d.mon.details.detector_notrigger_timeout||d.mon.details.detector_notrigger_timeout===''){
+                            d.mon.details.detector_notrigger_timeout=10
+                        }
+                        d.mon.detector_notrigger_timeout=parseFloat(d.mon.details.detector_notrigger_timeout)*1000*60;
+                        clearInterval(s.group[d.ke].mon[d.id].detector_notrigger_timeout)
+                        s.group[d.ke].mon[d.id].detector_notrigger_timeout=setInterval(s.group[d.ke].mon[d.id].detector_notrigger_timeout_function,d.mon.detector_notrigger_timeout)
+                    }
+                    if(d.mon.mode==='start'&&d.mon.details.detector_trigger=='1'){
                         if(!s.group[d.ke].mon[d.id].watchdog_stop){
                             d.cx.f='detector_record_start';
                             s.tx(d.cx,'GRP_'+d.ke);
@@ -1549,7 +1590,7 @@ var tx;
                     }
                     //mailer
                     if(config.mail&&!s.group[d.ke].mon[d.id].detector_mail&&d.mon.details.detector_mail==='1'){
-                        sql.query('SELECT mail FROM Users WHERE ke=?',[d.ke],function(err,r){
+                        sql.query('SELECT mail FROM Users WHERE ke=? AND details NOT LIKE ?',[d.ke,'%sub%'],function(err,r){
                             r=r[0];
                             if(!d.mon.details.detector_mail_timeout||d.mon.details.detector_mail_timeout===''){
                                 d.mon.details.detector_mail_timeout=1000*60*10;
@@ -1616,7 +1657,7 @@ var tx;
                                 s.group[d.ke].users[v].details.used_space=d.size;
                             }
                         })
-                       
+
                     }
                     s.tx({f:'diskUsed',size:d.size,limit:d.limit},'GRP_'+d.ke);
                 }
@@ -1761,11 +1802,11 @@ var tx;
 //                    if(!s.group[d.ke].embed){s.group[d.ke].embed={}}
 //                    if(!s.group[d.ke].embed[d.mid]){s.group[d.ke].embed[d.mid]={}}
 //                    s.group[d.ke].embed[d.mid][cn.id]={}
-                    
+
                     s.camera('watch_on',d,cn,tx)
                     cn.join('MON_'+d.id);
                     cn.join('STR_'+d.ke);
-                    if(s.group[d.ke]&&s.group[d.ke].mon&&s.group[d.ke].mon[d.id]&&s.group[d.ke].mon[d.id].watch){
+                    if(s.group[d.ke]&&s.group[d.ke].mon[d.id]&&s.group[d.ke].mon[d.id].watch){
 
                         tx({f:'monitor_watch_on',id:d.id,ke:d.ke},'MON_'+d.id)
                         s.tx({viewers:Object.keys(s.group[d.ke].mon[d.id].watch).length,ke:d.ke,id:d.id},'MON_'+d.id)
@@ -1817,14 +1858,14 @@ s.auth=function(xx,x,res,req){
     if(s.group[xx.ke]&&s.group[xx.ke].users&&s.group[xx.ke].users[xx.auth]){
         x(s.group[xx.ke].users[xx.auth]);
     }else{
-        if(s.api[xx.auth]){
+        if(s.api[xx.auth]&&s.api[xx.auth].details){
             x(s.api[xx.auth]);
         }else{
             sql.query('SELECT * FROM API WHERE code=? AND ke=?',[xx.auth,xx.ke],function(err,r){
                 if(r&&r[0]){
                     r=r[0];
                     s.api[xx.auth]={};
-                    sql.query('SELECT details FROM Users WHERE uid=? AND ke=?',[r.uid],function(err,rr){
+                    sql.query('SELECT details FROM Users WHERE uid=? AND ke=?',[r.uid,r.ke],function(err,rr){
                         if(rr&&rr[0]){
                             rr=rr[0];
                             try{s.api[xx.auth].details=JSON.parse(rr.details)}catch(er){}
@@ -1890,8 +1931,9 @@ app.post('/:auth/register/:ke/:uid',function (req,res){
                             }else{//create new
                                 req.resp.msg='New Account Created';req.resp.ok=true;
                                 req.gid=s.gid();
-                                sql.query('INSERT INTO Users (ke,uid,mail,pass,details) VALUES (?,?,?,?,?)',[req.params.ke,req.gid,req.body.mail,s.md5(req.body.pass),'{"sub":"1","allmonitors":"1"}'])
-                                s.tx({f:'add_sub_account',ke:req.params.ke,uid:req.gid,mail:req.body.mail},'ADM_'+req.params.ke);
+                                req.body.details='{"sub":"1","allmonitors":"1"}';
+                                sql.query('INSERT INTO Users (ke,uid,mail,pass,details) VALUES (?,?,?,?,?)',[req.params.ke,req.gid,req.body.mail,s.md5(req.body.pass),req.body.details])
+                                s.tx({f:'add_sub_account',details:req.body.details,ke:req.params.ke,uid:req.gid,mail:req.body.mail},'ADM_'+req.params.ke);
                             }
                             res.send(s.s(req.resp,null,3));
                         })
@@ -1920,7 +1962,7 @@ app.post('/',function (req,res){
             sql.query("UPDATE Users SET auth=? WHERE ke=? AND uid=?",[r.auth,r.ke,r.uid])
             req.resp={ok:true,auth_token:r.auth,ke:r.ke,uid:r.uid,mail:r.mail,details:r.details};
             r.details=JSON.parse(r.details);
-            
+
             req.fn=function(){
                 if(req.body.classic){
                     res.render("classic",{$user:req.resp});
@@ -1963,9 +2005,9 @@ app.post('/',function (req,res){
             }else{
                 req.fn()
             }
-            
-            
-            
+
+
+
 
         }else{
             res.render("index",{failedLogin:true});
