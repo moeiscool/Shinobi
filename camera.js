@@ -1858,14 +1858,14 @@ s.auth=function(xx,x,res,req){
     if(s.group[xx.ke]&&s.group[xx.ke].users&&s.group[xx.ke].users[xx.auth]){
         x(s.group[xx.ke].users[xx.auth]);
     }else{
-        if(s.api[xx.auth]){
+        if(s.api[xx.auth]&&s.api[xx.auth].details){
             x(s.api[xx.auth]);
         }else{
             sql.query('SELECT * FROM API WHERE code=? AND ke=?',[xx.auth,xx.ke],function(err,r){
                 if(r&&r[0]){
                     r=r[0];
                     s.api[xx.auth]={};
-                    sql.query('SELECT details FROM Users WHERE uid=? AND ke=?',[r.uid],function(err,rr){
+                    sql.query('SELECT details FROM Users WHERE uid=? AND ke=?',[r.uid,r.ke],function(err,rr){
                         if(rr&&rr[0]){
                             rr=rr[0];
                             try{s.api[xx.auth].details=JSON.parse(rr.details)}catch(er){}
@@ -2152,17 +2152,19 @@ app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
                 res.send('[]');return;
             }
         }
-        if(req.query.start&&req.query.start!==''){
-            req.query.start=req.query.start.replace('T',' ')
-            if(req.query.end&&req.query.end!==''){
-                req.query.end=req.query.end.replace('T',' ')
-                req.sql+=' AND `time` >= ? AND `time` <= ?';
-                req.ar.push(req.query.start)
-                req.ar.push(req.query.end)
-            }else{
-                req.sql+=' AND `time` >= ?';
-                req.ar.push(req.query.start)
-            }
+        if(!req.query.start||req.query.start==''){
+            req.query.start=s.moment(moment().subtract(moment.duration("24:00:00"))),
+            req.query.end=s.moment(moment().add(moment.duration("24:00:00")));
+        }
+        req.query.start=req.query.start.replace('T',' ')
+        if(req.query.end&&req.query.end!==''){
+            req.query.end=req.query.end.replace('T',' ')
+            req.sql+=' AND `time` >= ? AND `time` <= ?';
+            req.ar.push(req.query.start)
+            req.ar.push(req.query.end)
+        }else{
+            req.sql+=' AND `time` >= ?';
+            req.ar.push(req.query.start)
         }
         if(!req.query.limit||req.query.limit==''){req.query.limit=100}
         req.sql+=' ORDER BY `time` DESC LIMIT '+req.query.limit+'';
