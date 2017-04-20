@@ -21,6 +21,7 @@ Shinobi is not made by the current or previous ZoneMinder developers. This app i
 - Push Events - When a video is finished it will appear in the dashboard without a refresh
 - Region Motion Detection (Similar to ZoneMinder Zone Detection)
   - Represented by a Motion Guage on each monitor
+- "No Motion" Notifications
 - 1 Process for Each Camera to do both, Recording and Streaming
 - Timeline for viewing Motion Events and Videos
 - Sub-Accounts with permissions
