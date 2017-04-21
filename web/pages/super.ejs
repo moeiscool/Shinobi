@@ -107,22 +107,23 @@
 <script>
 $.ccio={accounts:{}};$.ls=localStorage;
 $.ccio.ws=io(location.origin);
-$.ccio.cx=function(x){if(!x.ke){x.ke=$user.ke;};if(!x.uid){x.uid=$user.uid;};return $.ccio.ws.emit('super',x)}
+$.ccio.cx=function(x){return $.ccio.ws.emit('super',x)}
 $.ccio.ws.on('f',function(d){
     console.log(d);
     switch(d.f){
         case'edit_account':
             d.msg='Account Edited';
             $.each(d.form,function(n,v){
-                $.ccio.accounts[d.uid][n]=v;
+                $.ccio.accounts[d.ke][n]=v;
             });
         break;
         case'add_account':
             d.msg='Account Created';
             $.ccio.tm(0,d,'#accounts')
+            $.aN.selected=$.ccio.accounts[d.ke];
         break;
         case'delete_account':
-            $('#accounts tr[uid="'+d.uid+'"]').remove()
+            $('#accounts tr[ke="'+d.ke+'"]').remove()
         break;
     }
     if(d.msg){
@@ -136,8 +137,8 @@ $.ccio.tm=function(x,d,z,k){
     switch(x){
         case 0://account row
             d.detailsJSON=JSON.parse(d.details);
-            $.ccio.accounts[d.uid]=d;
-            tmp+='<tr uid="'+d.uid+'"><td><b class="mail">'+d.mail+'</b></td><td><span class="uid">'+d.uid+'</span></td><td><a class="permission btn btn-xs btn-primary"><i class="fa fa-lock"></i></a></td><td><a class="delete btn btn-xs btn-danger"><i class="fa fa-trash-o"></i></a></td></tr>';
+            $.ccio.accounts[d.ke]=d;
+            tmp+='<tr ke="'+d.ke+'"><td><b class="mail">'+d.mail+'</b></td><td>'+d.ke+'</td><td><a class="permission btn btn-xs btn-primary"><i class="fa fa-lock"></i></a></td><td><a class="delete btn btn-xs btn-danger"><i class="fa fa-trash-o"></i></a></td></tr>';
         break;
     }
     if(z){
@@ -185,21 +186,20 @@ $('#edit').change(function(e){
 $.aC={e:$('#accounts')};
 $.aC.e.on('click','.delete',function(e){
     e.e=$(this).parents('tr');
-    e.u=e.e.attr('uid');
+    e.u=e.e.attr('ke');
     e.account=$.ccio.accounts[e.u];
-    e.m=e.account.mail;
     $.confirm.e.modal('show');
     $.confirm.title.html('Delete Account <small>'+e.u+'</small>')
-    e.html='Do you want to delete <b>'+e.m+'</b>? You cannot recover this account.'
+    e.html='Do you want to delete <b>'+e.account.mail+'</b>? You cannot recover this account. Files will remain in the filesystem. If you choose to create an account with the same Group Key it will have the previous events activated in that account.'
     $.confirm.body.html(e.html)
     $.confirm.click({title:'Delete',class:'btn-danger'},function(){
-        $.ccio.cx({f:'accounts',ff:'delete',uid:e.u,mail:e.m,ke:e.account.ke})
+        $.ccio.cx({f:'accounts',ff:'delete',account:e.account})
     });
 })
 $.aC.e.on('click','.permission',function(e){
     $('#edit').prop('checked',true).change().parent().addClass('is-checked')
     e.e=$(this).parents('tr');
-    e.u=e.e.attr('uid');
+    e.u=e.e.attr('ke');
     e.account=$.ccio.accounts[e.u];
     $.aN.selected=e.account;
     $.aN.e.find('input').val('');

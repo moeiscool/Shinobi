@@ -1218,7 +1218,7 @@ var tx;
                                         if(r&&r[0]){
                                             r=r[0];
                                             d.d=JSON.parse(r.details);
-
+                                            console.log(d)
                                             if(d.form.id===''){d.form.id=s.gid(5)}
                                             if(!d.d.filters)d.d.filters={};
                                             //save/modify or delete
@@ -1759,9 +1759,9 @@ var tx;
                                 })
                             break;
                             case'delete':
-                                sql.query('DELETE FROM Users WHERE uid=? AND ke=? AND mail=?',[d.uid,d.ke,d.mail])
-                                sql.query('DELETE FROM API WHERE uid=? AND ke=?',[d.uid,d.ke])
-                                s.tx({f:'delete_account',ke:d.ke,uid:d.uid,mail:d.mail},'SUPER');
+                                sql.query('DELETE FROM Users WHERE uid=? AND ke=? AND mail=?',[d.account.uid,d.account.ke,d.account.mail])
+                                sql.query('DELETE FROM API WHERE uid=? AND ke=?',[d.account.uid,d.account.ke])
+                                s.tx({f:'delete_account',ke:d.account.ke,uid:d.account.uid,mail:d.account.mail},'SUPER');
                             break;
                         }
                     break;

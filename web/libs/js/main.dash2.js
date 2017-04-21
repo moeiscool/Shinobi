@@ -1275,16 +1275,11 @@ $('#saved_filters').change(function(e){
     $.fI.e.find('.filter_name').text(e.name)
 }).change()
 $.fI.f.find('.delete').click(function(e){
-    $.confirm.title.text('Delete Filter : '+e.mon.name)
-    e.html='Do you want to delete this filter? You cannot recover it.'
-    e.html+='<table class="info-table"><tr>';
-    $.each(e.mon,function(n,v,g){
-        if(n==='host'&&v.indexOf('@')>-1){g=v.split('@')[1]}else{g=v};
-        try{JSON.parse(g);return}catch(err){}
-        e.html+='<tr><td>'+n+'</td><td>'+g+'</td></tr>';
-    })
-    e.html+='</tr></table>';
-    $.confirm.body.html(e.html)
+    e.s=$.fI.f.serializeObject();
+    $.confirm.e.modal('show');
+    $.confirm.title.text('Delete Filter');
+    e.html='Do you want to delete this filter? You cannot recover it.';
+    $.confirm.body.html(e.html);
     $.confirm.click({title:'Delete Filter',class:'btn-danger'},function(){
         $.ccio.cx({f:'settings',ff:'filters',fff:'delete',form:e.s})
     });
@@ -1292,7 +1287,6 @@ $.fI.f.find('.delete').click(function(e){
 $.fI.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
     e.er=[];
-    console.log(e.s)
     $.each(e.s,function(n,v){e.s[n]=v.trim()})
     e.s.where=[];
     $('.where-row').each(function(n,v){
