@@ -726,7 +726,7 @@ $.ccio.ws.on('f',function (d){
                 }
             d.e.find('.monitor_mode').text(d.mode)
             $.gR.drawList();
-            new PNotify({title:'Monitor Saved',text:'Your monitor has been saved.',type:'success'});
+            new PNotify({title:'Monitor Saved',text:'<b>'+d.mon.name+'</b> <small>'+d.mon.mid+'</small> has been saved.',type:'success'});
         break;
         case'mode_jpeg_off':
             $.ccio.op('jpeg_on',"0");

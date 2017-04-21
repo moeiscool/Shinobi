@@ -78,10 +78,14 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .video_video{margin:auto;max-width:100%;max-height:600px;}
 #confirm_window .video_video{margin-top:15px}
 #confirm_window .info-table{margin-top:15px}
+@media (max-width: 768px){
+    .full.modal .modal-body,.medium.modal .modal-body{max-height:400px;overflow:auto}
+}
 @media (min-width: 768px){
     .modal.full,.modal.medium{padding-left:0!important;}
     .modal.full .modal-dialog{width:calc(100% - 10px)!important;margin: 30px auto;}
     .modal.medium .modal-dialog{width:calc(70% - 10px)!important;margin: 30px auto;}
+    .full.modal .modal-body,.medium.modal .modal-body{max-height:calc(100% - 200px);overflow:auto}
 }
 .modal{overflow:auto!important}
 #region_editor .modal-body{text-align:center;overflow:auto;max-height:800px}

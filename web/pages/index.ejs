@@ -29,10 +29,15 @@
 									<div class="form-group">
 									<div class="row">
                                         <div class="col-md-6">
-                                        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="remember_me">
-                                          <input type="checkbox" id="remember_me" value="1" name="remember" class="mdl-switch__input">
-                                            <span class="monospace mdl-switch__label">Remember Me</span>
-                                        </label>
+                                            <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="remember_me">
+                                              <input type="checkbox" id="remember_me" value="1" name="remember" class="mdl-switch__input">
+                                                <span class="monospace mdl-switch__label">Remember Me</span>
+                                            </label>
+                                            <div style="padding:5px"></div>
+                                            <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="super">
+                                                <input type="checkbox" id="super" value="1" name="super" class="mdl-switch__input">
+                                                <span class="monospace mdl-switch__label">Superuser</span>
+                                            </label>
                                         </div>
                                         <div class="col-md-6">
                                         <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="admin">
@@ -87,4 +92,13 @@
         $.ccio.f.find('[name="remember"]').prop('checked',true);
         $.ccio.f.submit()
     }
+    $('#super').change(function(e){
+        e.e=$(this);
+        e.f=$('form');
+        if(e.e.is(':checked')){
+            e.f.attr('action','/super')
+        }else{
+            e.f.attr('action','/')
+        }
+    })
 </script>
