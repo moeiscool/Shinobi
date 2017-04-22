@@ -1,37 +1,21 @@
 <% include blocks/header %>
-<script>$user=<%-JSON.stringify($user)%></script>
-<style>
-.shinobi-bg {
-    background: url(/libs/img/bg.jpg);
-    background-size: cover;
-    background-position: center;
-    position: relative;
-}
-.shinobi-bg-shade {
-    position: absolute;
-    height: 100%;
-    width: 100%;
-    background: rgba(0,0,0,0.5);
-}
-    nav{margin-top:20px}
-</style>
 <link rel="stylesheet" href="libs/css/pnotify.custom.min.css">
 <link rel="stylesheet" href="libs/css/vbox.css">
 <link rel="stylesheet" href="libs/css/circles.css">
+<link rel="stylesheet" href="libs/css/material.min.css">
 <link rel="stylesheet" href="libs/css/bootstrap.min.css">
 <link rel="stylesheet" href="libs/css/font-awesome.min.css">
 <link rel="stylesheet" href="libs/css/fullcalendar.min.css">
 <link rel="stylesheet" href="libs/css/bootstrap-table.min.css">
 <link rel="stylesheet" href="libs/css/main.dash2.css">
-<body class="shinobi-bg">
-    <div class="shinobi-bg-shade">
+<body style="background:rgba(33,33,33,1);">
 <div class="container-fluid">
     <div class="container">
 <nav class="navbar navbar-default">
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
-      <a class="navbar-brand" href="/">Shinobi : Admin</a>
+      <a class="navbar-brand" href="/">Shinobi : Super Admin</a>
     </div>
       <ul class="nav navbar-nav navbar-right">
 <!--        <li><a href="#">Link</a></li>-->
@@ -55,21 +39,26 @@
         <div class="row">
             <div class="col-md-6">
                 <div class="form-group-group grey">
-                    <h4>Sub-Accounts</h4>
-                    <table class="table table-striped" id="sub_accounts"></table>
+                    <h4>Accounts</h4>
+                    <table class="table table-striped" id="accounts"></table>
                 </div>
             </div>
             <div class="col-md-6">
-                <form id="add_new">
+                <form id="add_edit">
                   <div class="form-group-group grey">
-                        <h4>Add<small id="msg" class="pull-right" style="color:#fff"></small></h4>
+                        <h4><span id="title"></span><small id="msg" class="pull-right" style="color:#fff"></small></h4>
                         <div class="form-group">
                             <label><span>Email</span>
                                 <input class="form-control" type="email" name="mail">
                             </label>
                         </div>
                         <div class="form-group">
-                            <label><span>Password <small>Leave blank to keep same password</small></span>
+                            <label><span>Group Key <small>Leave blank for random.</small></span>
+                                <input class="form-control" name="ke">
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label><span>Password <small class="h_e_input h_e_edit">Leave blank to keep same password</small></span>
                                 <input class="form-control" type="password" name="pass">
                             </label>
                         </div>
@@ -78,20 +67,33 @@
                                 <input class="form-control" type="password" name="password_again">
                             </label>
                         </div>
+                        <div class="form-group">
+                            <label><span>Max Storage <small>in Megabytes</small></span>
+                                <input class="form-control" detail="size" placeholder="10000">
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label><span>Max Days <small>Number of days to keep data</small></span>
+                                <input class="form-control" detail="days" placeholder="3">
+                            </label>
+                        </div>
                       <div>
+                          <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="edit">
+                              <input type="checkbox" id="edit" value="1" class="mdl-switch__input">
+                              <span class="monospace mdl-switch__label"></span>
+                          </label>
                           <div class="pull-right">
                             <button type="submit" class="btn btn-primary">Submit</button>
                           </div>
                       </div>
                   </div>
+                    <input type="hidden" name="details" value="{}">
                 </form>
             </div>
         </div>
     </div>
 </div>
 <% include blocks/confirm.html %>
-<% include blocks/permissions.ejs %>
-    </div>
 </body>
 <script src="libs/js/pnotify.custom.min.js"></script>
 <script src="libs/js/socket.io.js"></script>
@@ -100,136 +102,119 @@
 <script src="libs/js/placeholder.js"></script>
 <script src="libs/js/bootstrap.min.js"></script>
 <script src="libs/js/bootstrap-table.min.js"></script>
+<script src="libs/js/material.min.js"></script>
+<script>$user=<%-JSON.stringify($user)%></script>
 <script>
-$.ccio={subs:{}};$.ls=localStorage;
+$.ccio={accounts:{}};$.ls=localStorage;
 $.ccio.ws=io(location.origin);
-$.ccio.cx=function(x){if(!x.ke){x.ke=$user.ke;};if(!x.uid){x.uid=$user.uid;};return $.ccio.ws.emit('a',x)}
+$.ccio.cx=function(x){return $.ccio.ws.emit('super',x)}
 $.ccio.ws.on('f',function(d){
     console.log(d);
     switch(d.f){
-        case'edit_sub_account':
+        case'edit_account':
+            d.msg='Account Edited';
             $.each(d.form,function(n,v){
-                $.ccio.subs[d.uid][n]=v;
+                $.ccio.accounts[d.ke][n]=v;
             });
         break;
-        case'add_sub_account':
-            $.ccio.tm(0,d,'#sub_accounts')
+        case'add_account':
+            d.msg='Account Created';
+            $.ccio.tm(0,d,'#accounts')
+            $.aN.selected=$.ccio.accounts[d.ke];
         break;
-        case'delete_sub_account':
-            $('#sub_accounts tr[uid="'+d.uid+'"]').remove()
+        case'delete_account':
+            $('#accounts tr[ke="'+d.ke+'"]').remove()
         break;
     }
-})
-$.ccio.cx({f:'init',auth:$user.auth_token});
-    $.ccio.tm=function(x,d,z,k){
-        var tmp='';if(!d){d={}};if(!k){k={}};
-        if(d.id&&!d.mid){d.mid=d.id;}
-        switch(x){
-            case 0://sub account row
-                d.detailsJSON=JSON.parse(d.details);
-                $.ccio.subs[d.uid]=d;
-                tmp+='<tr uid="'+d.uid+'"><td><b class="mail">'+d.mail+'</b></td><td><span class="uid">'+d.uid+'</span></td><td><a class="permission btn btn-xs btn-primary"><i class="fa fa-lock"></i></a></td><td><a class="delete btn btn-xs btn-danger"><i class="fa fa-trash-o"></i></a></td></tr>';
-            break;
-        }
-        if(z){
-            $(z).prepend(tmp)
-        }
-        return tmp;
+    if(d.msg){
+        $('#msg').html(d.msg)
     }
-$subs=<%-JSON.stringify($subs)%>;
-$.each($subs,function(n,v){
-    $.ccio.tm(0,v,'#sub_accounts')
 })
+$.ccio.cx({f:'init',mail:$user.mail,pass:$user.pass});
+$.ccio.tm=function(x,d,z,k){
+    var tmp='';if(!d){d={}};if(!k){k={}};
+    if(d.id&&!d.mid){d.mid=d.id;}
+    switch(x){
+        case 0://account row
+            d.detailsJSON=JSON.parse(d.details);
+            $.ccio.accounts[d.ke]=d;
+            tmp+='<tr ke="'+d.ke+'"><td><b class="mail">'+d.mail+'</b></td><td>'+d.ke+'</td><td><a class="permission btn btn-xs btn-primary"><i class="fa fa-lock"></i></a></td><td><a class="delete btn btn-xs btn-danger"><i class="fa fa-trash-o"></i></a></td></tr>';
+        break;
+    }
+    if(z){
+        $(z).prepend(tmp)
+    }
+    return tmp;
+}
+users=<%-JSON.stringify(users)%>;
+if(users){
+    $.each(users,function(n,v){
+        $.ccio.tm(0,v,'#accounts')
+    })
+}
     
 //add new
-$.aN={e:$('#add_new')};
+$.aN={e:$('#add_edit')};
 $.aN.e.submit(function(e){
     e.preventDefault();
-    e.s=$.aN.e.serializeObject();e.m=$('#msg').empty()
-    $.post($user.auth_token+'/register/'+$user.ke+'/'+$user.uid,e.s,function(d){
-        if(d.msg){
-            e.m.text(d.msg)
-        };
-    });
+    e.s=$.aN.e.serializeObject()
+    e.cx={f:'accounts',ff:'register',form:e.s};
+    if($('#edit').is(':checked')){
+        e.cx.ff='edit';
+        e.cx.account=$.aN.selected;
+    }
+    $.ccio.cx(e.cx)
     return false;
 });
-//sub simple lister
-$.sU={e:$('#sub_accounts')};
-$.sU.e.on('click','.delete',function(e){
-    e.e=$(this).parents('tr');e.m=e.e.find('.mail').text();e.u=e.e.attr('uid');
+$.aN.e.find('[detail]').change(function(e){
+    e.ar={},e.f=$(this).parents('form');
+    $.each(e.f.find('[detail]'),function(n,v){
+        v=$(v);e.ar[v.attr('detail')]=v.val();
+    });
+    e.f.find('[name="details"]').val(JSON.stringify(e.ar));
+})
+$('#edit').change(function(e){
+    if($('#edit').is(':checked')){
+        $('#title').text('Edit Existing')
+        $.aN.e.find('[name="mail"],[name="ke"]').prop('disabled',true)
+    }else{
+        $('#title').text('Add New')
+        $.aN.e.find('input,select').prop('disabled',false)
+    }
+}).change()
+//simple lister
+$.aC={e:$('#accounts')};
+$.aC.e.on('click','.delete',function(e){
+    e.e=$(this).parents('tr');
+    e.u=e.e.attr('ke');
+    e.account=$.ccio.accounts[e.u];
     $.confirm.e.modal('show');
-    $.confirm.title.html('Delete Sub-Account <small>'+e.u+'</small>')
-    e.html='Do you want to delete <b>'+e.m+'</b>? You cannot recover this account.'
+    $.confirm.title.html('Delete Account <small>'+e.u+'</small>')
+    e.html='Do you want to delete <b>'+e.account.mail+'</b>? You cannot recover this account. Files will remain in the filesystem. If you choose to create an account with the same Group Key it will have the previous events activated in that account.'
     $.confirm.body.html(e.html)
     $.confirm.click({title:'Delete',class:'btn-danger'},function(){
-        $.ccio.cx({f:'accounts',ff:'delete',$uid:e.u,auth:$user.auth_token,mail:e.m})
+        $.ccio.cx({f:'accounts',ff:'delete',account:e.account})
     });
 })
-$.sU.e.on('click','.permission',function(e){
-    e.e=$(this).parents('tr');e.m=e.e.find('.mail').text();e.u=e.e.attr('uid');
-    $.pR.e.modal('show');
-    $.pR.l.text(e.m);
-    $.pR.user=e.u;
-    e.d=$.ccio.subs[e.u].detailsJSON;
-    //load values
-    $.each($.ccio.subs[$.pR.user],function(n,v){
-        $.pR.e.find('[name="'+n+'"]').val(v)
+$.aC.e.on('click','.permission',function(e){
+    $('#edit').prop('checked',true).change().parent().addClass('is-checked')
+    e.e=$(this).parents('tr');
+    e.u=e.e.attr('ke');
+    e.account=$.ccio.accounts[e.u];
+    $.aN.selected=e.account;
+    $.aN.e.find('input').val('');
+    $.each(e.account,function(n,v){
+        if(n=='pass'){return}
+        $.aN.e.find('[name="'+n+'"]').val(v)
     })
-    $.pR.e.find('[detail="allmonitors"]').val(e.d.allmonitors).change()
-    $.each(['monitors','monitor_edit','video_delete'],function(m,b){
-        if(e.d[b]){
-            $.each(e.d[b],function(n,v){
-                $.pR.e.find('[monitor="'+b+'"][mid="'+v+'"]').val(1)
-            })
-        }
+    $.each(JSON.parse(e.account.details),function(n,v){
+        $.aN.e.find('[detail="'+n+'"]').val(v)
     })
+//    $.pR.e.modal('show');
+    
 })
-
-//permission window
-$.pR={e:$('#permissions'),l:$('#permissionsLabel small')};$.pR.f=$.pR.e.find('form')
-$.pR.e.on('change','[detail="allmonitors"]',function(e){
-    e.e=$(this),
-    e.mon=$('#monitors_section,#monitors_edit_section,#video_delete_section')
-    e.details=$.pR.e.find('[name="details"]')
-    e.json=JSON.parse(e.details.val())
-    if(e.e.val()=='1'){
-        e.mon.hide();
-        e.json.allmonitors='1';
-    }else{
-        e.mon.show()
-        e.json.allmonitors='0';
-        $.pR.e.find('[monitor]').first().change()
-    }
-    e.details.val(JSON.stringify(e.json))
-})
-$.pR.e.on('click','[check]',function(e){
-    $(this).parents('.form-group-group').find('select').val($(this).attr('check')).first().change()
-})
-$.pR.e.on('change','[monitor]',function(e){
-    e.monitors=[];
-    e.key=$(this).attr('monitor');
-    e.details=$.pR.e.find('[name="details"]')
-    try{e.detail=JSON.parse(e.details.val())}catch(err){e.detail={}}
-    if(!e.detail){e.detail={}}
-    $.pR.e.find('[monitor="'+e.key+'"]').each(function(n,v){
-        v=$(v)
-        if(v.val()=='1'){
-            e.monitors.push(v.attr('mid'))
-        }
-    });
-    e.detail[e.key]=e.monitors;
-    e.details.val(JSON.stringify(e.detail))
-});
-$.pR.f.submit(function(e){
-    e.preventDefault();
-    e.s=$(this).serializeObject()
-    $.ccio.cx({f:'accounts',ff:'edit',$uid:$.pR.user,auth:$user.auth_token,mail:$.ccio.subs[$.pR.user].mail,form:e.s})
-    $.pR.e.modal('hide')
-    return false;
-})
-
 $('body')
 .on('click','.logout',function(e){
-    localStorage.removeItem('ShinobiLogin_'+location.host);location.href=location.href;
+    localStorage.removeItem('ShinobiLogin_'+location.host);location.href='/';
 })
 </script>

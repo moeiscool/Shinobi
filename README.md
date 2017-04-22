@@ -1,7 +1,7 @@
 # Shinobi
 
 <center>
-<a href="https://www.youtube.com/user/MrMoea92">YouTube</a> - <a href="https://shinobicctv.herokuapp.com/">Slack</a> - <a href="https://twitter.com/ShinobiCCTV">Twitter</a> - <a href="https://www.facebook.com/Shinobi-1223193167773738/?ref=bookmarks">Facebook</a> - <a href="https://www.reddit.com/r/ShinobiCCTV/">Reddit</a> - <a href="https://shinobi.video/docs/donate"><b>Donate</b></a>
+<a href="https://www.youtube.com/user/MrMoea92">YouTube</a> - <a href="https://discordapp.com/invite/mdhmvuH">Discord</a> - <a href="https://twitter.com/ShinobiCCTV">Twitter</a> - <a href="https://www.facebook.com/Shinobi-1223193167773738/?ref=bookmarks">Facebook</a> - <a href="https://www.reddit.com/r/ShinobiCCTV/">Reddit</a> - <a href="https://shinobi.video/docs/donate"><b>Donate</b></a>
 </center>
 
 Shinobi is the Open Source CCTV platform written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. Shinobi can record IP Cameras and Local Cameras.
@@ -79,7 +79,7 @@ Moe Alam
 
 Follow me on Twitter https://twitter.com/moe_alam
 
-<a title="Find me on Slack, Get an Invite" href="https://shinobicctv.herokuapp.com/"><img src="https://camo.githubusercontent.com/5843e066b5f0a7b5ff5942921aedcbac70766ed5/68747470733a2f2f612e736c61636b2d656467652e636f6d2f35656230302f696d672f6c616e64696e672f77686572655f776f726b5f68617070656e732f6c6f676f2d6461726b2d626c75652e706e67"></a>
+<a title="Find me on Discord, Get an Invite" href="https://discordapp.com/invite/mdhmvuH"><img src="https://cdn-images-1.medium.com/max/115/1*OoXboCzk0gYvTNwNnV4S9A@2x.png"></a>
 
 # License
 

@@ -1218,7 +1218,7 @@ var tx;
                                         if(r&&r[0]){
                                             r=r[0];
                                             d.d=JSON.parse(r.details);
-
+                                            console.log(d)
                                             if(d.form.id===''){d.form.id=s.gid(5)}
                                             if(!d.d.filters)d.d.filters={};
                                             //save/modify or delete
@@ -1684,8 +1684,94 @@ var tx;
         delete(d);
     })
     // admin page socket functions
+    cn.on('super',function(d){
+        if(!cn.init&&d.f=='init'){
+            d.ok=s.superAuth({mail:d.mail,pass:d.pass},function(data){
+                cn.join('SUPER');
+                cn.init='super';
+                cn.mail=d.mail;
+                s.tx({f:'init_success',mail:d.mail},cn.id);
+            })
+            if(d.ok===false){
+                cn.disconnect();
+            }
+        }else{
+            if(cn.mail&&cn.init=='super'){
+                switch(d.f){
+                    case'accounts':
+                        switch(d.ff){
+                            case'register':
+                                if(d.form.mail!==''&&d.form.pass!==''){
+                                    if(d.form.pass===d.form.password_again){
+                                        sql.query('SELECT * FROM Users WHERE mail=?',[d.form.mail],function(err,r) {
+                                            if(r&&r[0]){//found one exist
+                                                d.msg='Email address is in use.';
+                                                s.tx({f:'error',ff:'account_register',msg:d.msg},cn.id)
+                                            }else{//create new
+                                                //user id
+                                                d.form.uid=s.gid();
+                                                //check to see if custom key set
+                                                if(!d.form.ke||d.form.ke===''){
+                                                    d.form.ke=s.gid()
+                                                }
+                                                sql.query('INSERT INTO Users (ke,uid,mail,pass,details) VALUES (?,?,?,?,?)',[d.form.ke,d.form.uid,d.form.mail,s.md5(d.form.pass),d.form.details])
+                                                s.tx({f:'add_account',details:d.form.details,ke:d.form.ke,uid:d.form.uid,mail:d.form.mail},'SUPER');
+                                            }
+                                        })
+                                    }else{
+                                        d.msg='Passwords Don\'t Match';
+                                    }
+                                }else{
+                                    d.msg='Fields cannot be empty';
+                                }
+                                if(d.msg){
+                                    s.tx({f:'error',ff:'account_register',msg:d.msg},cn.id)
+                                }
+                            break;
+                            case'edit':
+                                if(d.form.pass&&d.form.pass!==''){
+                                   if(d.form.pass===d.form.password_again){
+                                       d.form.pass=s.md5(d.form.pass);
+                                   }else{
+                                       s.tx({f:'error',ff:'account_edit',msg:'Passwords don\'t match.'},cn.id)
+                                       return
+                                   }
+                                }else{
+                                    delete(d.form.pass);
+                                }
+                                delete(d.form.password_again);
+                                d.keys=Object.keys(d.form);
+                                d.set=[];
+                                d.values=[];
+                                d.keys.forEach(function(v,n){
+                                    if(d.set==='ke'||d.set==='password_again'||!d.form[v]){return}
+                                    d.set.push(v+'=?')
+                                    d.values.push(d.form[v])
+                                })
+                                d.values.push(d.account.mail)
+                                sql.query('UPDATE Users SET '+d.set.join(',')+' WHERE mail=?',d.values,function(err,r) {
+                                    if(err){
+                                        console.log('UPDATE Users SET '+d.set.join(',')+' WHERE mail=?',d.values,err)
+                                        s.tx({f:'error',ff:'account_edit',msg:'Could not edit. Refresh page if problem continues.'},cn.id)
+                                        return
+                                    }
+                                    s.tx({f:'edit_account',form:d.form,ke:d.account.ke,uid:d.account.uid},'SUPER');
+                                })
+                            break;
+                            case'delete':
+                                sql.query('DELETE FROM Users WHERE uid=? AND ke=? AND mail=?',[d.account.uid,d.account.ke,d.account.mail])
+                                sql.query('DELETE FROM API WHERE uid=? AND ke=?',[d.account.uid,d.account.ke])
+                                s.tx({f:'delete_account',ke:d.account.ke,uid:d.account.uid,mail:d.account.mail},'SUPER');
+                            break;
+                        }
+                    break;
+                }
+            }
+        }
+    })
+    // admin page socket functions
     cn.on('a',function(d){
-        if(!cn.shinobi_child&&d.f=='init'){
+        if(!cn.init&&d.f=='init'){
             sql.query('SELECT * FROM Users WHERE auth=? && uid=?',[d.auth,d.uid],function(err,r){
                 if(r&&r[0]){
                     r=r[0];
@@ -1696,6 +1782,7 @@ var tx;
                     cn.ke=d.ke;
                     cn.uid=d.uid;
                     cn.auth=d.auth;
+                    cn.init='admin';
                 }else{
                     cn.disconnect();
                 }
@@ -1883,6 +1970,30 @@ s.auth=function(xx,x,res,req){
         }
     }
 }
+s.superAuth=function(x,callback){
+    req={};
+    req.super=require('./super.json');
+    req.super.forEach(function(v,n){
+        if(x.md5===true){
+            x.pass=s.md5(x.pass);
+        }
+        if(x.mail.toLowerCase()===v.mail.toLowerCase()&&x.pass===v.pass){
+            req.found=1;
+            if(x.users===true){
+                sql.query('SELECT * FROM Users WHERE details NOT LIKE ?',['%sub%'],function(err,r) {
+                    callback({$user:v,users:r,config:config})
+                })
+            }else{
+                callback({$user:v,config:config})
+            }
+        }
+    })
+    if(req.found!==1){
+        return false;
+    }else{
+        return true;
+    }
+}
 ////Pages
 app.use(express.static(s.dir.videos));
 app.use(bodyParser.json());
@@ -1952,6 +2063,28 @@ app.post('/:auth/register/:ke/:uid',function (req,res){
         })
     },res,req);
 })
+//super login function
+app.post('/super',function (req,res){
+    req.failed=function(){
+        res.render("index",{failedLogin:true});
+        res.end();
+    }
+    if(req.body.mail&&req.body.pass){
+        if(!fs.existsSync('./super.json')){
+            res.send('"super.json" does not exist. Please rename "super.sample.json" to "super.json".')
+            res.end();
+            return
+        }
+        req.ok=s.superAuth({mail:req.body.mail,pass:req.body.pass,users:true,md5:true},function(data){
+            res.render("super",data);
+        })
+        if(req.ok===false){
+            req.failed()
+        }
+    }else{
+        req.failed()
+    }
+})
 //login function
 app.post('/',function (req,res){
     if(req.body.mail&&req.body.pass){
@@ -1964,33 +2097,29 @@ app.post('/',function (req,res){
             r.details=JSON.parse(r.details);
 
             req.fn=function(){
-                if(req.body.classic){
-                    res.render("classic",{$user:req.resp});
-                }else{
-                    if(req.body.admin){
-                        //admin checkbox selected
-                        if(!r.details.sub){
-                            sql.query('SELECT uid,mail,details FROM Users WHERE ke=? AND details LIKE \'%"sub"%\'',[r.ke],function(err,rr) {
-                                sql.query('SELECT * FROM Monitors WHERE ke=?',[r.ke],function(err,rrr) {
-                                    res.render("admin",{$user:req.resp,$subs:rr,$mons:rrr});
-                                })
+                if(req.body.admin){
+                    //admin checkbox selected
+                    if(!r.details.sub){
+                        sql.query('SELECT uid,mail,details FROM Users WHERE ke=? AND details LIKE \'%"sub"%\'',[r.ke],function(err,rr) {
+                            sql.query('SELECT * FROM Monitors WHERE ke=?',[r.ke],function(err,rrr) {
+                                res.render("admin",{$user:req.resp,$subs:rr,$mons:rrr});
                             })
-                        }else{
-                            //not admin user
-                            res.render("home",{$user:req.resp,config:config});
-                        }
+                        })
                     }else{
-                        //no admin checkbox selected
-                        if(!req.body.recorder){
-                            //dashboard
-                            res.render("home",{$user:req.resp,config:config});
-                        }else{
-                            //streamer
-                            sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
-                                req.resp.mons=rr;
-                                res.render("streamer",{$user:req.resp});
-                            })
-                        }
+                        //not admin user
+                        res.render("home",{$user:req.resp,config:config});
+                    }
+                }else{
+                    //no admin checkbox selected
+                    if(!req.body.recorder){
+                        //dashboard
+                        res.render("home",{$user:req.resp,config:config});
+                    }else{
+                        //streamer
+                        sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
+                            req.resp.mons=rr;
+                            res.render("streamer",{$user:req.resp});
+                        })
                     }
                 }
             }

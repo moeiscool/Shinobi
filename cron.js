@@ -139,8 +139,8 @@ s.cron=function(){
                 if(!arr[v.ke]){arr[v.ke]=0;}else{return false;}
                 //set permissions
                 v.d=JSON.parse(v.details);
-                if(!v.d.size){if(!v.d.super){v.d.size=10000}else{v.d.size=20000}}else{v.d.size=parseFloat(v.d.size)};//in Megabytes
-                if(!v.d.days){if(!v.d.super){v.d.days=3}else{v.d.days=15}}else{v.d.days=parseFloat(v.d.days)};
+                if(!v.d.size||v.d.size==''){v.d.size=10000}else{v.d.size=parseFloat(v.d.size)};//in Megabytes
+                if(!v.d.days||v.d.days==''){v.d.days=3}else{v.d.days=parseFloat(v.d.days)};
                 //filters
                 if(!v.d.filters||v.d.filters==''){
                     v.d.filters={};
