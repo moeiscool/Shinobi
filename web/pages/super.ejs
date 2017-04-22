@@ -8,6 +8,9 @@
 <link rel="stylesheet" href="libs/css/fullcalendar.min.css">
 <link rel="stylesheet" href="libs/css/bootstrap-table.min.css">
 <link rel="stylesheet" href="libs/css/main.dash2.css">
+<style>
+    .form-group label span{width:40%}
+</style>
 <body style="background:rgba(33,33,33,1);">
 <div class="container-fluid">
     <div class="container">
@@ -37,13 +40,13 @@
         
         
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-5">
                 <div class="form-group-group grey">
                     <h4>Accounts</h4>
                     <table class="table table-striped" id="accounts"></table>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-7">
                 <form id="add_edit">
                   <div class="form-group-group grey">
                         <h4><span id="title"></span><small id="msg" class="pull-right" style="color:#fff"></small></h4>
@@ -75,6 +78,38 @@
                         <div class="form-group">
                             <label><span>Max Days <small>Number of days to keep data</small></span>
                                 <input class="form-control" detail="days" placeholder="3">
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label><span>Permissions</span>
+                                <select class="form-control" detail="permissions" selector="h_l">
+                                    <option value selected>Default</option>  
+                                    <option value="limited">Limited</option>  
+                                </select>
+                            </label>
+                        </div>
+                        <div class="form-group h_l_input h_l_limited">
+                            <label><span>Can edit Max Storage</span>
+                                <select class="form-control" detail="edit_size">
+                                    <option value="1" selected>Yes</option>
+                                    <option value="0">No</option>  
+                                </select>
+                            </label>
+                        </div>
+                        <div class="form-group h_l_input h_l_limited">
+                            <label><span>Can edit Max Days</span>
+                                <select class="form-control" detail="edit_days">
+                                    <option value="1" selected>Yes</option>
+                                    <option value="0">No</option>  
+                                </select>
+                            </label>
+                        </div>
+                        <div class="form-group h_l_input h_l_limited">
+                            <label><span>Can use Admin Panel</span>
+                                <select class="form-control" detail="use_admin">
+                                    <option value="1" selected>Yes</option>
+                                    <option value="0">No</option>  
+                                </select>
                             </label>
                         </div>
                       <div>
@@ -166,7 +201,7 @@ $.aN.e.submit(function(e){
     $.ccio.cx(e.cx)
     return false;
 });
-$.aN.e.find('[detail]').change(function(e){
+$.aN.e.on('change','[detail]',function(e){
     e.ar={},e.f=$(this).parents('form');
     $.each(e.f.find('[detail]'),function(n,v){
         v=$(v);e.ar[v.attr('detail')]=v.val();
@@ -182,6 +217,11 @@ $('#edit').change(function(e){
         $.aN.e.find('input,select').prop('disabled',false)
     }
 }).change()
+$.aN.e.on('change','[selector]',function(e){
+    e.v=$(this).val();e.a=$(this).attr('selector')
+    $.aN.e.find('.'+e.a+'_input').hide()
+    $.aN.e.find('.'+e.a+'_'+e.v).show();
+}).find('[selector]').change();
 //simple lister
 $.aC={e:$('#accounts')};
 $.aC.e.on('click','.delete',function(e){
@@ -205,10 +245,10 @@ $.aC.e.on('click','.permission',function(e){
     $.aN.e.find('input').val('');
     $.each(e.account,function(n,v){
         if(n=='pass'){return}
-        $.aN.e.find('[name="'+n+'"]').val(v)
+        $.aN.e.find('[name="'+n+'"]').val(v).change()
     })
     $.each(JSON.parse(e.account.details),function(n,v){
-        $.aN.e.find('[detail="'+n+'"]').val(v)
+        $.aN.e.find('[detail="'+n+'"]').val(v).change()
     })
 //    $.pR.e.modal('show');
     
