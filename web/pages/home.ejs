@@ -15,9 +15,6 @@
 <%= details.css %>
 </style>
 <style>
-<% if(details.sub){ %>
-    .isSubAccount{display:none!important}
-<% } %>
 <% if(details.sub&&details.allmonitors==='0'){
     if(details.monitor_edit&&details.monitor_edit!==''){
         details.monitor_edit.forEach(function(v,n){ %>
@@ -117,9 +114,9 @@
                 <li class="mdl-menu__item" data-toggle="modal" data-target="#settings"><i class="fa fa-gears"></i> &nbsp; Settings</li>
                 <li class="mdl-menu__item" data-toggle="modal" data-target="#apis"><i class="fa fa-code"></i> &nbsp; API</li>
                 <% if(!details.sub){ %>
-                <li class="mdl-menu__item isSubAccount" data-toggle="modal" data-target="#onvif_probe"><i class="fa fa-rss"></i> &nbsp; ONVIF</li>
-                <li class="mdl-menu__item isSubAccount" data-toggle="modal" data-target="#probe"><i class="fa fa-search"></i> &nbsp; FFprobe</li>
-                <li class="mdl-menu__item isSubAccount" data-toggle="modal" data-target="#filters"><i class="fa fa-filter"></i> &nbsp; Filters</li>
+                <li class="mdl-menu__item" data-toggle="modal" data-target="#onvif_probe"><i class="fa fa-rss"></i> &nbsp; ONVIF</li>
+                <li class="mdl-menu__item" data-toggle="modal" data-target="#probe"><i class="fa fa-search"></i> &nbsp; FFprobe</li>
+                <li class="mdl-menu__item" data-toggle="modal" data-target="#filters"><i class="fa fa-filter"></i> &nbsp; Filters</li>
                 <% } %>
                 <li class="mdl-menu__item" data-toggle="modal" data-target="#logs_modal"><i class="fa fa-exclamation-triangle"></i> &nbsp; Logs</li>
                 <li class="mdl-menu__item" class_toggle="list-blocks" data-target="#left_menu"><i class="fa fa-camera"></i>&nbsp; List Toggle</li>

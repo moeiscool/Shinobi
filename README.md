@@ -87,38 +87,4 @@ Paid license required only if you choose to bill your users for the use of Shino
 Personal and Educational purposes do not require a license.
 Educational Institutions, such as high schools and universities, do not require the purchase of a license.
 
-<a href="http://cloudchat.online/cart/licenses/">http://cloudchat.online/cart/licenses/</a>
-
-    Shinobi
-    Copyright (C) 2016 Moe Alam, moeiscool
-
-    This program is free software; you can redistribute it and/or
-    modify it under the terms of the GNU General Public License
-    as published by the Free Software Foundation; either version 2
-    of the License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-    
-    # Libraries Used
-    
-    vbox.css (Classic Dashboard) - An unknown but seriously awesome dev
-    Material Design Lite (V2 Dashboard) - https://github.com/google/material-design-lite
-    jQuery - http://jquery.com/
-    Socket.io - http://socket.io/
-    Bootstrap - http://getbootstrap.com/
-    Moment.js - http://momentjs.com/
-    Livestamp.js - https://mattbradley.github.io/livestampjs/
-    Font Awesome - http://fontawesome.io/
-    Node.js - https://nodejs.org
-    MySQL - https://www.mysql.com/
-    NPM: mysql - https://www.npmjs.com/package/mysql
-    NPM: crypto - https://www.npmjs.com/package/crypto
-    NPM: express - http://expressjs.com/
-    NPM: request - https://www.npmjs.com/package/request
-    NPM: connection-tester - https://www.npmjs.com/package/connection-tester
-    
-    and maybe a few others.
-    
+<a href="http://shinobi.video/#licenses">http://shinobi.video/#licenses</a>
