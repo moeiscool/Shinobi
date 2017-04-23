@@ -1276,6 +1276,10 @@ var tx;
                                 });
                                 d.ar.push(d.ke),d.ar.push(d.uid);
                                 sql.query('UPDATE Users SET '+d.set.join(',')+' WHERE ke=? AND uid=?',d.ar,function(err,r){
+                                    if(!d.d.sub){
+                                        delete(s.group[d.d.ke].init)
+                                        s.init('apps',d)
+                                    }
                                     tx({f:'user_settings_change',uid:d.uid,ke:d.ke,form:d.form});
                                 });
                                 d.form.details=JSON.parse(d.form.details);
@@ -1779,6 +1783,8 @@ var tx;
                                         return
                                     }
                                     s.tx({f:'edit_account',form:d.form,ke:d.account.ke,uid:d.account.uid},'SUPER');
+                                    delete(s.group[d.account.ke].init);
+                                    s.init('apps',d.account)
                                 })
                             break;
                             case'delete':
