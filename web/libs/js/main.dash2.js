@@ -327,7 +327,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 tmp+='</div>';
             break;
             case 3://api key row
-                tmp+='<tr api_key="'+d.code+'"><td class="code">'+d.code+'</td><td class="ip">'+d.ip+'</td><td class="time">'+d.time+'</td><td><a class="delete btn btn-xs btn-danger">&nbsp;<i class="fa fa-trash"></i>&nbsp;</a></td></tr>';
+                tmp+='<tr api_key="'+d.code+'"><td class="code">'+d.code+'</td><td class="ip">'+d.ip+'</td><td class="time">'+d.time+'</td><td class="text-right"><a class="delete btn btn-xs btn-danger">&nbsp;<i class="fa fa-trash"></i>&nbsp;</a></td></tr>';
             break;
             case 4://log row, draw to global and monitor
                 if(!d.time){d.time=$.ccio.init('t')}
@@ -1246,7 +1246,13 @@ $.apM.f.submit(function(e){
 });
 $.apM.e.on('click','.delete',function(e){
     e.e=$(this);e.p=e.e.parents('[api_key]'),e.code=e.p.attr('api_key');
-    $.ccio.cx({f:'api',ff:'delete',form:{code:e.code}})
+    $.confirm.e.modal('show');
+    $.confirm.title.text('Delete API Key');
+    e.html='Do you want to delete this API key? You cannot recover it.';
+    $.confirm.body.html(e.html);
+    $.confirm.click({title:'Delete',class:'btn-danger'},function(){
+        $.ccio.cx({f:'api',ff:'delete',form:{code:e.code}})
+    });
 })
 //filters window
 try{$user.filters=JSON.parse($user.details).filters;}catch(er){}

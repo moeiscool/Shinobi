@@ -1955,15 +1955,6 @@ var tx;
 });
 //Authenticator functions
 s.api={};
-//permission handler
-s.perm=function(user,req,res){
-    if(user.details&&user.details.monitors&&user.details.allmonitors!=='1'){
-        try{user.details.monitors=JSON.parse(user.details.monitors)}catch(er){}
-        user.details.monitors.forEach(function(v,n){
-            req.sql+=' and mid=?';req.ar.push(v)
-        })
-    }
-}
 //auth handler
 s.auth=function(xx,x,res,req){
     if(s.group[xx.ke]&&s.group[xx.ke].users&&s.group[xx.ke].users[xx.auth]){
@@ -2244,16 +2235,19 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
 app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,res){
     res.header("Access-Control-Allow-Origin",req.headers.origin);
     s.auth(req.params,function(user){
-        req.sql='SELECT * FROM Monitors WHERE ke=? and mid=?';
-        req.ar=[req.params.ke,req.params.id];
         if(user.details&&user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
             res.end('Not Permitted')
             return
         }
-        sql.query(req.sql,req.ar,function(err,r){
-            if(r&&r[0]){r=r[0];}
-            res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,port:config.port,mon:r});
-        })
+        if(s.group[req.params.ke]&&s.group[req.params.ke].mon[req.params.id]){
+            if(s.group[req.params.ke].mon[req.params.id].started===1){
+                res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,port:config.port,mon:s.group[req.params.ke].mon_conf[req.params.id]});
+            }else{
+                res.end('Cannot watch a monitor that isn\'t running.')
+            }
+        }else{
+            res.end('No Monitor Exists with this ID.')
+        }
     },res,req);
 });
 // Get monitors json

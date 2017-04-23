@@ -1,5 +1,6 @@
 <script>var io=null;</script>
-<% data.name='SHINOBI_'+data.ke+'_'+data.id;
+<%
+data.name='SHINOBI_'+data.ke+'_'+data.id;
 if(!port||port===''||port==80){data.url=baseUrl}else{data.url=baseUrl+':'+port}
 %>
 <script src="<%=data.url%>/libs/js/socket.io.js"></script>
@@ -66,7 +67,7 @@ $(document).ready(function(){
 </script>
 <div class="shinobi_stream" id="<%= data.name %>">
     
-    <% switch(JSON.parse(mon.details).stream_type){
+    <% switch(mon.details.stream_type){
         case'hls':
             %><video class="stream-element" autoplay></video><%
         break;
