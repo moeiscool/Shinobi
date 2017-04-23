@@ -126,39 +126,39 @@ $(document).ready(function(){
                     $('#SHINOBI_'+d.ke+'_'+d.id+' .shinobi_viewers').html(d.viewers);
                 }
                 switch(d.f){
-                        case'monitor_frame':
-                            var image = new Image();
-                            var ctx = $('#SHINOBI_'+d.ke+'_'+d.id+' canvas')[0];
-                            image.onload = function() {
-                                ctx.getContext("2d").drawImage(image,0,0,ctx.width,ctx.height);
-                            };
-                            image.src='data:image/jpeg;base64,'+d.frame
+                    case'monitor_frame':
+                        var image = new Image();
+                        var ctx = $('#SHINOBI_'+d.ke+'_'+d.id+' canvas')[0];
+                        image.onload = function() {
+                            ctx.getContext("2d").drawImage(image,0,0,ctx.width,ctx.height);
                             delete(d.frame);
                             delete(image);
-                        break;
-                        case'monitor_watch_off':case'monitor_watch_on':
-                            $('#SHINOBI_'+d.ke+'_'+d.id+' .shinobi_viewers').html(d.viewers)
-                            $.shinobi.init(d)
-                        break;
-                        case'monitor_edit':
-                            d.e=$('#SHINOBI_'+d.ke+'_'+d.id+'');d.ee=d.e.find('.stream-element');
-                            switch(d.mon.details.stream_type){
-                                case'hls':
-                                    d.ee.after('<video class="stream-element" autoplay></video>').remove()
-                                break;
-                                case'mjpeg':
-                                    d.ee.after('<iframe class="stream-element"></iframe>').remove()
-                                break;
-                                default://base64
-                                    d.ee.after('<canvas class="stream-element"></canvas>').remove()
-                                break;
-                            }
-                            $(window).resize();
-                            d.mon.details=JSON.stringify(d.mon.details);
-                            $.shinobi.mon[d.mon.mid]=d.mon;
-                            $.shinobi.init(d.mon);
-                        break;
-                    }
+                        };
+                        image.src='data:image/jpeg;base64,'+d.frame
+                    break;
+                    case'monitor_watch_off':case'monitor_watch_on':
+                        $('#SHINOBI_'+d.ke+'_'+d.id+' .shinobi_viewers').html(d.viewers)
+                        $.shinobi.init(d)
+                    break;
+                    case'monitor_edit':
+                        d.e=$('#SHINOBI_'+d.ke+'_'+d.id+'');d.ee=d.e.find('.stream-element');
+                        switch(d.mon.details.stream_type){
+                            case'hls':
+                                d.ee.after('<video class="stream-element" autoplay></video>').remove()
+                            break;
+                            case'mjpeg':
+                                d.ee.after('<iframe class="stream-element"></iframe>').remove()
+                            break;
+                            default://base64
+                                d.ee.after('<canvas class="stream-element"></canvas>').remove()
+                            break;
+                        }
+                        $(window).resize();
+                        d.mon.details=JSON.stringify(d.mon.details);
+                        $.shinobi.mon[d.mon.mid]=d.mon;
+                        $.shinobi.init(d.mon);
+                    break;
+                  }
                     $.shinobi.callback()
                 });
             };

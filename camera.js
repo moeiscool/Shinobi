@@ -1915,6 +1915,7 @@ var tx;
 
                     s.camera('watch_on',d,cn,tx)
                     cn.join('MON_'+d.id);
+                    cn.join('MON_STREAM_'+d.id);
                     cn.join('STR_'+d.ke);
                     if(s.group[d.ke]&&s.group[d.ke].mon[d.id]&&s.group[d.ke].mon[d.id].watch){
 
