@@ -327,7 +327,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 tmp+='</div>';
             break;
             case 3://api key row
-                tmp+='<tr api_key="'+d.code+'"><td class="code">'+d.code+'</td><td class="ip">'+d.ip+'</td><td class="time">'+d.time+'</td><td><a class="delete btn btn-xs btn-danger">&nbsp;<i class="fa fa-trash"></i>&nbsp;</a></td></tr>';
+                tmp+='<tr api_key="'+d.code+'"><td class="code">'+d.code+'</td><td class="ip">'+d.ip+'</td><td class="time">'+d.time+'</td><td class="text-right"><a class="delete btn btn-xs btn-danger">&nbsp;<i class="fa fa-trash"></i>&nbsp;</a></td></tr>';
             break;
             case 4://log row, draw to global and monitor
                 if(!d.time){d.time=$.ccio.init('t')}
@@ -684,6 +684,15 @@ $.ccio.ws.on('f',function (d){
         case'monitor_delete':
             $('[mid="'+d.mid+'"][ke="'+d.ke+'"]:not(.modal)').remove();
             delete($.ccio.mon[d.mid]);
+        break;
+        case'monitor_edit_failed':
+            d.pnote={title:'Monitor Not Saved',text:'<b>'+d.mon.name+'</b> <small>'+d.mon.mid+'</small> has not been saved.',type:'error'}
+            switch(d.ff){
+                case'max_reached':
+                    d.pnote.text+=' Your account has reached the maximum number of cameras that can be created. Speak to an administrator if you would like this changed.'
+                break;
+            }
+            new PNotify(d.pnote);
         break;
         case'monitor_edit':
             d.e=$('[mid="'+d.mon.mid+'"][ke="'+d.mon.ke+'"]');
@@ -1237,7 +1246,13 @@ $.apM.f.submit(function(e){
 });
 $.apM.e.on('click','.delete',function(e){
     e.e=$(this);e.p=e.e.parents('[api_key]'),e.code=e.p.attr('api_key');
-    $.ccio.cx({f:'api',ff:'delete',form:{code:e.code}})
+    $.confirm.e.modal('show');
+    $.confirm.title.text('Delete API Key');
+    e.html='Do you want to delete this API key? You cannot recover it.';
+    $.confirm.body.html(e.html);
+    $.confirm.click({title:'Delete',class:'btn-danger'},function(){
+        $.ccio.cx({f:'api',ff:'delete',form:{code:e.code}})
+    });
 })
 //filters window
 try{$user.filters=JSON.parse($user.details).filters;}catch(er){}
@@ -1913,7 +1928,7 @@ $('body')
                             "timestamp_color":"white",
                             "timestamp_font_size":"10",
                             "timestamp_box_color":"0x00000000@1",
-                            "rtsp_transport":"no",
+                            "rtsp_transport":"tcp",
                             "detector_frame":"1",
                             "detector_mail":"0",
                             "fatal_max":"",
@@ -1941,7 +1956,7 @@ $('body')
                             "signal_check":"10",
                             "signal_check_log":"0",
                             "stream_quality":"15",
-                            "stream_fps":"",
+                            "stream_fps":"2",
                             "stream_scale_x":"",
                             "stream_scale_y":"",
                             "svf":"",

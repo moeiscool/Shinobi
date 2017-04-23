@@ -1,23 +1,18 @@
 <!--API Window-->
-<div class="modal fade" id="apis" tabindex="-1" role="dialog" aria-labelledby="apisLabel" aria-hidden="true">
+<div class="modal medium fade" id="apis" tabindex="-1" role="dialog" aria-labelledby="apisLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <form class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-        <h4 class="modal-title" id="apisLabel"><i class="fa fa-gears"></i> &nbsp; API Keys</h4>
+        <h4 class="modal-title" id="apisLabel"><i class="fa fa-code"></i> &nbsp; API Keys</h4>
       </div>
       <div class="modal-body">
           <div class="text-center msg"></div>
         <div class="form-group">
             <label><span>Allowed IPs <small>Separate with commas, no spaces</small></span>
-                <div class="input-group">
-                    <input class="form-control" name="ip">
-                    <div class="input-group-btn">
-                        <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> &nbsp; Add</button>
-                    </div>
-                </div>
+                <input class="form-control" name="ip">
             </label>
         </div>
         <div class="form-group">
@@ -26,7 +21,8 @@
         <input type="hidden" name="details">
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> &nbsp; Add</button>
       </div>
     </form>
   </div>

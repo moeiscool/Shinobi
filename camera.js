@@ -213,6 +213,7 @@ s.init=function(x,e){
             if(!s.group[e.ke].mon[e.mid].record){s.group[e.ke].mon[e.mid].record={yes:e.record}};
             if(!s.group[e.ke].mon[e.mid].started){s.group[e.ke].mon[e.mid].started=0};
             if(s.group[e.ke].mon[e.mid].delete){clearTimeout(s.group[e.ke].mon[e.mid].delete)}
+            if(!s.group[e.ke].mon_conf){s.group[e.ke].mon_conf={}}
             s.init('apps',e)
         break;
         case'apps':
@@ -376,7 +377,7 @@ s.video=function(x,e){
 
                             //cloud auto savers
                             //webdav
-                            if(s.group[e.ke].webdav&&s.group[e.ke].init.webdav_save=="1"){
+                            if(s.group[e.ke].webdav&&s.group[e.ke].init.use_webdav!=='0'&&s.group[e.ke].init.webdav_save=="1"){
                                fs.readFile(e.dir+e.filename+'.'+e.ext,function(err,data){
                                    s.group[e.ke].webdav.putFileContents(s.group[e.ke].init.webdav_dir+e.ke+'/'+e.mid+'/'+e.filename+'.'+e.ext,"binary",data)
                                 .catch(function(err) {
@@ -727,7 +728,6 @@ s.camera=function(x,e,cn,tx){
         break;
         case'start':case'record'://watch or record monitor url
             s.init(0,{ke:e.ke,mid:e.id})
-            if(!s.group[e.ke].mon_conf){s.group[e.ke].mon_conf={}}
             if(!s.group[e.ke].mon_conf[e.id]){s.group[e.ke].mon_conf[e.id]=s.init('clean',e);}
             e.url=s.init('url',e);
             if(s.group[e.ke].mon[e.id].started===1){return}
@@ -768,7 +768,7 @@ s.camera=function(x,e,cn,tx){
                     e.details.detector_notrigger_timeout=10
                 }
                 e.detector_notrigger_timeout=parseFloat(e.details.detector_notrigger_timeout)*1000*60;
-                sql.query('SELECT mail FROM Users WHERE ke=? AND details NOT LIKE ?',[e.ke,'%sub%'],function(err,r){
+                sql.query('SELECT mail FROM Users WHERE ke=? AND details NOT LIKE ?',[e.ke,'%"sub"%'],function(err,r){
                     r=r[0];
                     s.group[e.ke].mon[e.id].detector_notrigger_timeout_function=function(){
                         if(config.mail&&e.details.detector_notrigger_mail=='1'){
@@ -1107,7 +1107,7 @@ var tx;
                     }
                     d.used_space_info={f:'diskUsed',size:s.group[d.ke].users[d.auth].details.used_space,limit:s.group[d.ke].users[d.auth].details.size,ke:r.ke};
                     if(s.group[d.ke].users[d.auth].details.sub&&!d.used_space_info.used_space){
-                        sql.query('SELECT details FROM Users WHERE ke=? AND details NOT LIKE ?',[d.ke,'%sub%'],function(err,r) {
+                        sql.query('SELECT details FROM Users WHERE ke=? AND details NOT LIKE ?',[d.ke,'%"sub"%'],function(err,r) {
                             r=JSON.parse(r[0].details);
                             d.used_space_info.size=r.used_space;
                             d.used_space_info.limit=r.size;
@@ -1241,18 +1241,31 @@ var tx;
                                     r=r[0];
                                 d.d=JSON.parse(r.details);
                                 ///unchangeable from client side, so reset them in case they did.
+                                d.form.details=JSON.parse(d.form.details)
+                                //admin permissions
+                                d.form.details.permissions=d.d.permissions
+                                d.form.details.edit_size=d.d.edit_size
+                                d.form.details.edit_days=d.d.edit_days
+                                d.form.details.use_admin=d.d.use_admin
+                                d.form.details.use_webdav=d.d.use_webdav
+                                //check
+                                if(d.d.edit_days=="0"){
+                                    d.form.details.days=d.d.days;
+                                }
+                                if(d.d.edit_size=="0"){
+                                    d.form.details.size=d.d.size;
+                                }
                                 if(d.d.sub){
-                                    d.form.details=JSON.parse(d.form.details)
-                                    if(d.d.sub){d.form.details.sub=d.d.sub;}
+                                    d.form.details.sub=d.d.sub;
                                     if(d.d.monitors){d.form.details.monitors=d.d.monitors;}
                                     if(d.d.allmonitors){d.form.details.allmonitors=d.d.allmonitors;}
                                     if(d.d.video_delete){d.form.details.video_delete=d.d.video_delete;}
                                     if(d.d.monitor_edit){d.form.details.monitor_edit=d.d.monitor_edit;}
                                     if(d.d.size){d.form.details.size=d.d.size;}
-                                    if(d.d.super){d.form.details.super=d.d.super;}
+                                    if(d.d.days){d.form.details.days=d.d.days;}
                                     delete(d.form.details.mon_groups)
-                                    d.form.details=JSON.stringify(d.form.details)
                                 }
+                                d.form.details=JSON.stringify(d.form.details)
                                 ///
                                 d.set=[],d.ar=[];
                                 if(d.form.pass&&d.form.pass!==''){d.form.pass=s.md5(d.form.pass);}else{delete(d.form.pass)};
@@ -1263,6 +1276,10 @@ var tx;
                                 });
                                 d.ar.push(d.ke),d.ar.push(d.uid);
                                 sql.query('UPDATE Users SET '+d.set.join(',')+' WHERE ke=? AND uid=?',d.ar,function(err,r){
+                                    if(!d.d.sub){
+                                        delete(s.group[d.d.ke].init)
+                                        s.init('apps',d)
+                                    }
                                     tx({f:'user_settings_change',uid:d.uid,ke:d.ke,form:d.form});
                                 });
                                 d.form.details=JSON.parse(d.form.details);
@@ -1353,28 +1370,38 @@ var tx;
                                         d.ar.push(d.mon.ke),d.ar.push(d.mon.mid);
                                         s.log(d,{type:'Monitor Updated',msg:'by user : '+cn.uid});
                                         sql.query('UPDATE Monitors SET '+d.set+' WHERE ke=? AND mid=?',d.ar)
+                                        d.finish=1;
                                     }else{
-                                        d.tx.new=true;
-                                        d.st=[];
-                                        Object.keys(d.mon).forEach(function(v){
-                                            if(d.mon[v]&&d.mon[v]!==''){
-                                                d.set.push(v),d.st.push('?'),d.ar.push(d.mon[v]);
-                                            }
-                                        })
-//                                        d.set.push('ke'),d.st.push('?'),d.ar.push(d.mon.ke);
-                                        d.set=d.set.join(','),d.st=d.st.join(',');
-                                        s.log(d,{type:'Monitor Added',msg:'by user : '+cn.uid});
-                                        sql.query('INSERT INTO Monitors ('+d.set+') VALUES ('+d.st+')',d.ar)
+                                        if(!s.group[d.mon.ke].init.max_camera||s.group[d.mon.ke].init.max_camera==''||Object.keys(s.group[d.mon.ke].mon).length <= parseInt(s.group[d.mon.ke].init.max_camera)){
+                                            d.tx.new=true;
+                                            d.st=[];
+                                            Object.keys(d.mon).forEach(function(v){
+                                                if(d.mon[v]&&d.mon[v]!==''){
+                                                    d.set.push(v),d.st.push('?'),d.ar.push(d.mon[v]);
+                                                }
+                                            })
+    //                                        d.set.push('ke'),d.st.push('?'),d.ar.push(d.mon.ke);
+                                            d.set=d.set.join(','),d.st=d.st.join(',');
+                                            s.log(d,{type:'Monitor Added',msg:'by user : '+cn.uid});
+                                            sql.query('INSERT INTO Monitors ('+d.set+') VALUES ('+d.st+')',d.ar)
+                                            d.finish=1;
+                                        }else{
+                                            d.tx.f='monitor_edit_failed';
+                                            d.tx.ff='max_reached';
+                                        }
                                     }
-                                    s.group[d.mon.ke].mon_conf[d.mon.mid]=d.mon;
-                                    if(d.mon.mode==='stop'){
-                                        d.mon.delete=1;
-                                        s.camera('stop',d.mon);
-                                    }else{
-                                        s.camera('stop',d.mon);setTimeout(function(){s.camera(d.mon.mode,d.mon);},5000)
+                                    if(d.finish===1){
+                                        s.init(0,{mid:d.mon.mid,ke:d.mon.ke});
+                                        s.group[d.mon.ke].mon_conf[d.mon.mid]=d.mon;
+                                        if(d.mon.mode==='stop'){
+                                            d.mon.delete=1;
+                                            s.camera('stop',d.mon);
+                                        }else{
+                                            s.camera('stop',d.mon);setTimeout(function(){s.camera(d.mon.mode,d.mon);},5000)
+                                        };
+                                        s.tx(d.tx,'STR_'+d.mon.ke);
                                     };
                                     s.tx(d.tx,'GRP_'+d.mon.ke);
-                                    s.tx(d.tx,'STR_'+d.mon.ke);
                                 })
                             }
                                 }else{
@@ -1590,7 +1617,7 @@ var tx;
                     }
                     //mailer
                     if(config.mail&&!s.group[d.ke].mon[d.id].detector_mail&&d.mon.details.detector_mail==='1'){
-                        sql.query('SELECT mail FROM Users WHERE ke=? AND details NOT LIKE ?',[d.ke,'%sub%'],function(err,r){
+                        sql.query('SELECT mail FROM Users WHERE ke=? AND details NOT LIKE ?',[d.ke,'%"sub"%'],function(err,r){
                             r=r[0];
                             if(!d.mon.details.detector_mail_timeout||d.mon.details.detector_mail_timeout===''){
                                 d.mon.details.detector_mail_timeout=1000*60*10;
@@ -1756,6 +1783,8 @@ var tx;
                                         return
                                     }
                                     s.tx({f:'edit_account',form:d.form,ke:d.account.ke,uid:d.account.uid},'SUPER');
+                                    delete(s.group[d.account.ke].init);
+                                    s.init('apps',d.account)
                                 })
                             break;
                             case'delete':
@@ -1892,6 +1921,7 @@ var tx;
 
                     s.camera('watch_on',d,cn,tx)
                     cn.join('MON_'+d.id);
+                    cn.join('MON_STREAM_'+d.id);
                     cn.join('STR_'+d.ke);
                     if(s.group[d.ke]&&s.group[d.ke].mon[d.id]&&s.group[d.ke].mon[d.id].watch){
 
@@ -1931,15 +1961,6 @@ var tx;
 });
 //Authenticator functions
 s.api={};
-//permission handler
-s.perm=function(user,req,res){
-    if(user.details&&user.details.monitors&&user.details.allmonitors!=='1'){
-        try{user.details.monitors=JSON.parse(user.details.monitors)}catch(er){}
-        user.details.monitors.forEach(function(v,n){
-            req.sql+=' and mid=?';req.ar.push(v)
-        })
-    }
-}
 //auth handler
 s.auth=function(xx,x,res,req){
     if(s.group[xx.ke]&&s.group[xx.ke].users&&s.group[xx.ke].users[xx.auth]){
@@ -1980,7 +2001,7 @@ s.superAuth=function(x,callback){
         if(x.mail.toLowerCase()===v.mail.toLowerCase()&&x.pass===v.pass){
             req.found=1;
             if(x.users===true){
-                sql.query('SELECT * FROM Users WHERE details NOT LIKE ?',['%sub%'],function(err,r) {
+                sql.query('SELECT * FROM Users WHERE details NOT LIKE ?',['%"sub"%'],function(err,r) {
                     callback({$user:v,users:r,config:config})
                 })
             }else{
@@ -2124,7 +2145,7 @@ app.post('/',function (req,res){
                 }
             }
             if(r.details.sub){
-                sql.query('SELECT details FROM Users WHERE ke=? AND details NOT LIKE ?',[r.ke,'%sub%'],function(err,rr) {
+                sql.query('SELECT details FROM Users WHERE ke=? AND details NOT LIKE ?',[r.ke,'%"sub"%'],function(err,rr) {
                     rr=rr[0];
                     rr.details=JSON.parse(rr.details);
                     r.details.mon_groups=rr.details.mon_groups;
@@ -2220,16 +2241,19 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
 app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,res){
     res.header("Access-Control-Allow-Origin",req.headers.origin);
     s.auth(req.params,function(user){
-        req.sql='SELECT * FROM Monitors WHERE ke=? and mid=?';
-        req.ar=[req.params.ke,req.params.id];
         if(user.details&&user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
             res.end('Not Permitted')
             return
         }
-        sql.query(req.sql,req.ar,function(err,r){
-            if(r&&r[0]){r=r[0];}
-            res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,port:config.port,mon:r});
-        })
+        if(s.group[req.params.ke]&&s.group[req.params.ke].mon[req.params.id]){
+            if(s.group[req.params.ke].mon[req.params.id].started===1){
+                res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,port:config.port,mon:s.group[req.params.ke].mon_conf[req.params.id]});
+            }else{
+                res.end('Cannot watch a monitor that isn\'t running.')
+            }
+        }else{
+            res.end('No Monitor Exists with this ID.')
+        }
     },res,req);
 });
 // Get monitors json
