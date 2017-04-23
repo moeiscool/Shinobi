@@ -1922,7 +1922,7 @@ $('body')
                             "timestamp_color":"white",
                             "timestamp_font_size":"10",
                             "timestamp_box_color":"0x00000000@1",
-                            "rtsp_transport":"no",
+                            "rtsp_transport":"tcp",
                             "detector_frame":"1",
                             "detector_mail":"0",
                             "fatal_max":"",
