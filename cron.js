@@ -17,6 +17,8 @@ if(!config.cron.deleteOld)config.cron.deleteOld=true;
 if(!config.cron.deleteOrphans)config.cron.deleteOrphans=false;
 if(!config.cron.deleteNoVideo)config.cron.deleteNoVideo=true;
 if(!config.cron.deleteOverMax)config.cron.deleteOverMax=true;
+if(!config.cron.deleteLogs)config.cron.deleteLogs=true;
+if(!config.cron.deleteEvents)config.cron.deleteEvents=true;
 if(!config.cron.interval)config.cron.interval=1;
 
 if(!config.videosDir){config.videosDir=__dirname+'/videos/'}
@@ -139,8 +141,26 @@ s.cron=function(){
                 if(!arr[v.ke]){arr[v.ke]=0;}else{return false;}
                 //set permissions
                 v.d=JSON.parse(v.details);
-                if(!v.d.size||v.d.size==''){v.d.size=10000}else{v.d.size=parseFloat(v.d.size)};//in Megabytes
-                if(!v.d.days||v.d.days==''){v.d.days=3}else{v.d.days=parseFloat(v.d.days)};
+                //size
+                if(!v.d.size||v.d.size==''){v.d.size=10000}else{v.d.size=parseFloat(v.d.size)};
+                //days to keep videos
+                if(!v.d.days||v.d.days==''){v.d.days=5}else{v.d.days=parseFloat(v.d.days)};
+                //purge logs
+                if(!v.d.log_days||v.d.log_days==''){v.d.log_days=10}else{v.d.log_days=parseFloat(v.d.log_days)};
+                if(config.cron.deleteLogs===true&&v.d.log_days!==0){
+                    sql.query("DELETE FROM Logs WHERE ke=? AND `time` < DATE_SUB(NOW(), INTERVAL ? DAY)",[v.ke,v.d.log_days],function(err,rrr){
+                        if(err)return console.log(err);
+                        s.cx({f:'deleteLogs',msg:rrr.affectedRows+' SQL rows older than '+v.d.log_days+' days deleted',ke:v.ke,time:moment()})
+                    })
+                }
+                //purge events
+                if(!v.d.event_days||v.d.event_days==''){v.d.event_days=10}else{v.d.event_days=parseFloat(v.d.event_days)};
+                if(config.cron.deleteEvents===true&&v.d.event_days!==0){
+                    sql.query("DELETE FROM Events WHERE ke=? AND `time` < DATE_SUB(NOW(), INTERVAL ? DAY)",[v.ke,v.d.event_days],function(err,rrr){
+                        if(err)return console.log(err);
+                        s.cx({f:'deleteEvents',msg:rrr.affectedRows+' SQL rows older than '+v.d.event_days+' days deleted',ke:v.ke,time:moment()})
+                    })
+                }
                 //filters
                 if(!v.d.filters||v.d.filters==''){
                     v.d.filters={};

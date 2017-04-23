@@ -768,7 +768,7 @@ s.camera=function(x,e,cn,tx){
                     e.details.detector_notrigger_timeout=10
                 }
                 e.detector_notrigger_timeout=parseFloat(e.details.detector_notrigger_timeout)*1000*60;
-                sql.query('SELECT mail FROM Users WHERE ke=? AND details NOT LIKE ?',[e.ke,'%sub%'],function(err,r){
+                sql.query('SELECT mail FROM Users WHERE ke=? AND details NOT LIKE ?',[e.ke,'%"sub"%'],function(err,r){
                     r=r[0];
                     s.group[e.ke].mon[e.id].detector_notrigger_timeout_function=function(){
                         if(config.mail&&e.details.detector_notrigger_mail=='1'){
@@ -1107,7 +1107,7 @@ var tx;
                     }
                     d.used_space_info={f:'diskUsed',size:s.group[d.ke].users[d.auth].details.used_space,limit:s.group[d.ke].users[d.auth].details.size,ke:r.ke};
                     if(s.group[d.ke].users[d.auth].details.sub&&!d.used_space_info.used_space){
-                        sql.query('SELECT details FROM Users WHERE ke=? AND details NOT LIKE ?',[d.ke,'%sub%'],function(err,r) {
+                        sql.query('SELECT details FROM Users WHERE ke=? AND details NOT LIKE ?',[d.ke,'%"sub"%'],function(err,r) {
                             r=JSON.parse(r[0].details);
                             d.used_space_info.size=r.used_space;
                             d.used_space_info.limit=r.size;
@@ -1613,7 +1613,7 @@ var tx;
                     }
                     //mailer
                     if(config.mail&&!s.group[d.ke].mon[d.id].detector_mail&&d.mon.details.detector_mail==='1'){
-                        sql.query('SELECT mail FROM Users WHERE ke=? AND details NOT LIKE ?',[d.ke,'%sub%'],function(err,r){
+                        sql.query('SELECT mail FROM Users WHERE ke=? AND details NOT LIKE ?',[d.ke,'%"sub"%'],function(err,r){
                             r=r[0];
                             if(!d.mon.details.detector_mail_timeout||d.mon.details.detector_mail_timeout===''){
                                 d.mon.details.detector_mail_timeout=1000*60*10;
@@ -2003,7 +2003,7 @@ s.superAuth=function(x,callback){
         if(x.mail.toLowerCase()===v.mail.toLowerCase()&&x.pass===v.pass){
             req.found=1;
             if(x.users===true){
-                sql.query('SELECT * FROM Users WHERE details NOT LIKE ?',['%sub%'],function(err,r) {
+                sql.query('SELECT * FROM Users WHERE details NOT LIKE ?',['%"sub"%'],function(err,r) {
                     callback({$user:v,users:r,config:config})
                 })
             }else{
@@ -2147,7 +2147,7 @@ app.post('/',function (req,res){
                 }
             }
             if(r.details.sub){
-                sql.query('SELECT details FROM Users WHERE ke=? AND details NOT LIKE ?',[r.ke,'%sub%'],function(err,rr) {
+                sql.query('SELECT details FROM Users WHERE ke=? AND details NOT LIKE ?',[r.ke,'%"sub"%'],function(err,rr) {
                     rr=rr[0];
                     rr.details=JSON.parse(rr.details);
                     r.details.mon_groups=rr.details.mon_groups;

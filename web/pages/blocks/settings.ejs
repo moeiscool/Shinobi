@@ -28,17 +28,31 @@
                     </label>
                 </div>
               <% if(!details.sub){ %>
-                <% if(details.edit_days!=='0'){ %>
-                <div class="form-group">
-                    <label><span>Number of Days to keep Videos</span>
-                        <input class="form-control" detail="days">
-                    </label>
-                </div>
-                <% } %>
                 <% if(details.edit_size!=='0'){ %>
                 <div class="form-group">
                     <label><span>Max Storage Amount <small>in Megabytes</small></span>
                         <input class="form-control" detail="size" placeholder="10000">
+                    </label>
+                </div>
+                <% } %>
+                <% if(details.edit_days!=='0'){ %>
+                <div class="form-group">
+                    <label><span>Number of Days to keep <b>Videos</b></span>
+                        <input class="form-control" detail="days" placeholder="5">
+                    </label>
+                </div>
+                <% } %>
+                <% if(details.edit_event_days!=='0'){ %>
+                <div class="form-group">
+                    <label><span>Number of Days to keep <b>Events</b></span>
+                        <input class="form-control" detail="event_days" placeholder="10">
+                    </label>
+                </div>
+                <% } %>
+                <% if(details.edit_log_days!=='0'){ %>
+                <div class="form-group">
+                    <label><span>Number of Days to keep <b>Logs</b></span>
+                        <input class="form-control" detail="log_days" placeholder="10">
                     </label>
                 </div>
                 <% } %>
