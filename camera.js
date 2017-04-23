@@ -213,6 +213,7 @@ s.init=function(x,e){
             if(!s.group[e.ke].mon[e.mid].record){s.group[e.ke].mon[e.mid].record={yes:e.record}};
             if(!s.group[e.ke].mon[e.mid].started){s.group[e.ke].mon[e.mid].started=0};
             if(s.group[e.ke].mon[e.mid].delete){clearTimeout(s.group[e.ke].mon[e.mid].delete)}
+            if(!s.group[e.ke].mon_conf){s.group[e.ke].mon_conf={}}
             s.init('apps',e)
         break;
         case'apps':
@@ -376,7 +377,7 @@ s.video=function(x,e){
 
                             //cloud auto savers
                             //webdav
-                            if(s.group[e.ke].webdav&&s.group[e.ke].init.webdav_save=="1"){
+                            if(s.group[e.ke].webdav&&s.group[e.ke].init.use_webdav!=='0'&&s.group[e.ke].init.webdav_save=="1"){
                                fs.readFile(e.dir+e.filename+'.'+e.ext,function(err,data){
                                    s.group[e.ke].webdav.putFileContents(s.group[e.ke].init.webdav_dir+e.ke+'/'+e.mid+'/'+e.filename+'.'+e.ext,"binary",data)
                                 .catch(function(err) {
@@ -727,7 +728,6 @@ s.camera=function(x,e,cn,tx){
         break;
         case'start':case'record'://watch or record monitor url
             s.init(0,{ke:e.ke,mid:e.id})
-            if(!s.group[e.ke].mon_conf){s.group[e.ke].mon_conf={}}
             if(!s.group[e.ke].mon_conf[e.id]){s.group[e.ke].mon_conf[e.id]=s.init('clean',e);}
             e.url=s.init('url',e);
             if(s.group[e.ke].mon[e.id].started===1){return}
@@ -1241,18 +1241,31 @@ var tx;
                                     r=r[0];
                                 d.d=JSON.parse(r.details);
                                 ///unchangeable from client side, so reset them in case they did.
+                                d.form.details=JSON.parse(d.form.details)
+                                //admin permissions
+                                d.form.details.permissions=d.d.permissions
+                                d.form.details.edit_size=d.d.edit_size
+                                d.form.details.edit_days=d.d.edit_days
+                                d.form.details.use_admin=d.d.use_admin
+                                d.form.details.use_webdav=d.d.use_webdav
+                                //check
+                                if(d.d.edit_days=="0"){
+                                    d.form.details.days=d.d.days;
+                                }
+                                if(d.d.edit_size=="0"){
+                                    d.form.details.size=d.d.size;
+                                }
                                 if(d.d.sub){
-                                    d.form.details=JSON.parse(d.form.details)
-                                    if(d.d.sub){d.form.details.sub=d.d.sub;}
+                                    d.form.details.sub=d.d.sub;
                                     if(d.d.monitors){d.form.details.monitors=d.d.monitors;}
                                     if(d.d.allmonitors){d.form.details.allmonitors=d.d.allmonitors;}
                                     if(d.d.video_delete){d.form.details.video_delete=d.d.video_delete;}
                                     if(d.d.monitor_edit){d.form.details.monitor_edit=d.d.monitor_edit;}
                                     if(d.d.size){d.form.details.size=d.d.size;}
-                                    if(d.d.super){d.form.details.super=d.d.super;}
+                                    if(d.d.days){d.form.details.days=d.d.days;}
                                     delete(d.form.details.mon_groups)
-                                    d.form.details=JSON.stringify(d.form.details)
                                 }
+                                d.form.details=JSON.stringify(d.form.details)
                                 ///
                                 d.set=[],d.ar=[];
                                 if(d.form.pass&&d.form.pass!==''){d.form.pass=s.md5(d.form.pass);}else{delete(d.form.pass)};
@@ -1353,28 +1366,38 @@ var tx;
                                         d.ar.push(d.mon.ke),d.ar.push(d.mon.mid);
                                         s.log(d,{type:'Monitor Updated',msg:'by user : '+cn.uid});
                                         sql.query('UPDATE Monitors SET '+d.set+' WHERE ke=? AND mid=?',d.ar)
+                                        d.finish=1;
                                     }else{
-                                        d.tx.new=true;
-                                        d.st=[];
-                                        Object.keys(d.mon).forEach(function(v){
-                                            if(d.mon[v]&&d.mon[v]!==''){
-                                                d.set.push(v),d.st.push('?'),d.ar.push(d.mon[v]);
-                                            }
-                                        })
-//                                        d.set.push('ke'),d.st.push('?'),d.ar.push(d.mon.ke);
-                                        d.set=d.set.join(','),d.st=d.st.join(',');
-                                        s.log(d,{type:'Monitor Added',msg:'by user : '+cn.uid});
-                                        sql.query('INSERT INTO Monitors ('+d.set+') VALUES ('+d.st+')',d.ar)
+                                        if(!s.group[d.mon.ke].init.max_camera||s.group[d.mon.ke].init.max_camera==''||Object.keys(s.group[d.mon.ke].mon).length <= parseInt(s.group[d.mon.ke].init.max_camera)){
+                                            d.tx.new=true;
+                                            d.st=[];
+                                            Object.keys(d.mon).forEach(function(v){
+                                                if(d.mon[v]&&d.mon[v]!==''){
+                                                    d.set.push(v),d.st.push('?'),d.ar.push(d.mon[v]);
+                                                }
+                                            })
+    //                                        d.set.push('ke'),d.st.push('?'),d.ar.push(d.mon.ke);
+                                            d.set=d.set.join(','),d.st=d.st.join(',');
+                                            s.log(d,{type:'Monitor Added',msg:'by user : '+cn.uid});
+                                            sql.query('INSERT INTO Monitors ('+d.set+') VALUES ('+d.st+')',d.ar)
+                                            d.finish=1;
+                                        }else{
+                                            d.tx.f='monitor_edit_failed';
+                                            d.tx.ff='max_reached';
+                                        }
                                     }
-                                    s.group[d.mon.ke].mon_conf[d.mon.mid]=d.mon;
-                                    if(d.mon.mode==='stop'){
-                                        d.mon.delete=1;
-                                        s.camera('stop',d.mon);
-                                    }else{
-                                        s.camera('stop',d.mon);setTimeout(function(){s.camera(d.mon.mode,d.mon);},5000)
+                                    if(d.finish===1){
+                                        s.init(0,{mid:d.mon.mid,ke:d.mon.ke});
+                                        s.group[d.mon.ke].mon_conf[d.mon.mid]=d.mon;
+                                        if(d.mon.mode==='stop'){
+                                            d.mon.delete=1;
+                                            s.camera('stop',d.mon);
+                                        }else{
+                                            s.camera('stop',d.mon);setTimeout(function(){s.camera(d.mon.mode,d.mon);},5000)
+                                        };
+                                        s.tx(d.tx,'STR_'+d.mon.ke);
                                     };
                                     s.tx(d.tx,'GRP_'+d.mon.ke);
-                                    s.tx(d.tx,'STR_'+d.mon.ke);
                                 })
                             }
                                 }else{

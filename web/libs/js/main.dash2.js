@@ -685,6 +685,15 @@ $.ccio.ws.on('f',function (d){
             $('[mid="'+d.mid+'"][ke="'+d.ke+'"]:not(.modal)').remove();
             delete($.ccio.mon[d.mid]);
         break;
+        case'monitor_edit_failed':
+            d.pnote={title:'Monitor Not Saved',text:'<b>'+d.mon.name+'</b> <small>'+d.mon.mid+'</small> has not been saved.',type:'error'}
+            switch(d.ff){
+                case'max_reached':
+                    d.pnote.text+=' Your account has reached the maximum number of cameras that can be created. Speak to an administrator if you would like this changed.'
+                break;
+            }
+            new PNotify(d.pnote);
+        break;
         case'monitor_edit':
             d.e=$('[mid="'+d.mon.mid+'"][ke="'+d.mon.ke+'"]');
             $.ccio.tm('stream-element',d.mon)

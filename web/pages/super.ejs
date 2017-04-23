@@ -81,9 +81,14 @@
                             </label>
                         </div>
                         <div class="form-group">
+                            <label><span>Max Number of Cameras</span>
+                                <input class="form-control" detail="max_camera" placeholder="Leave blank for unlimited.">
+                            </label>
+                        </div>
+                        <div class="form-group">
                             <label><span>Permissions</span>
                                 <select class="form-control" detail="permissions" selector="h_l">
-                                    <option value selected>Default</option>  
+                                    <option value="all" selected>All Privileges</option>  
                                     <option value="limited">Limited</option>  
                                 </select>
                             </label>
@@ -107,6 +112,14 @@
                         <div class="form-group h_l_input h_l_limited">
                             <label><span>Can use Admin Panel</span>
                                 <select class="form-control" detail="use_admin">
+                                    <option value="1" selected>Yes</option>
+                                    <option value="0">No</option>  
+                                </select>
+                            </label>
+                        </div>
+                        <div class="form-group h_l_input h_l_limited">
+                            <label><span>Can use WebDAV</span>
+                                <select class="form-control" detail="use_webdav">
                                     <option value="1" selected>Yes</option>
                                     <option value="0">No</option>  
                                 </select>
