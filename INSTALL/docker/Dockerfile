@@ -5,7 +5,7 @@ RUN apt-get update \
 RUN ln -s /usr/bin/nodejs /usr/bin/node && mkdir /opt/shinobi
 WORKDIR /opt/shinobi
 ADD . .
-RUN cp conf.sample.json conf.json
-RUN npm install \
+RUN cp conf.sample.json conf.json \
+    npm install \
     && chmod +x ./INSTALL/docker/docker-entrypoint.sh
 ENTRYPOINT ./INSTALL/docker/docker-entrypoint.sh
