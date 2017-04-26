@@ -6,5 +6,5 @@ RUN ln -s /usr/bin/nodejs /usr/bin/node && mkdir /opt/shinobi
 WORKDIR /opt/shinobi
 ADD . .
 RUN npm install \
-    && chmod +x ./INSTALL/docker/docker-entrypoint.sh
-ENTRYPOINT ./INSTALL/docker/docker-entrypoint.sh
+    && chmod +x ./docker-entrypoint.sh
+ENTRYPOINT ./docker-entrypoint.sh
