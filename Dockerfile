@@ -4,6 +4,7 @@ RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y ffmpeg nodejs npm libav-tools
 RUN ln -s /usr/bin/nodejs /usr/bin/node && mkdir /opt/shinobi
+RUN npm cache clean -f && npm install -g n && n stable
 ADD . /opt/shinobi
 WORKDIR /opt/shinobi
 RUN cp /opt/shinobi/conf.sample.json /opt/shinobi/conf.json
