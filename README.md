@@ -1,12 +1,10 @@
 # Shinobi
 
 <center>
-<a href="https://www.youtube.com/user/MrMoea92">YouTube</a> - <a href="https://discordapp.com/invite/mdhmvuH">Discord</a> - <a href="https://twitter.com/ShinobiCCTV">Twitter</a> - <a href="https://www.facebook.com/Shinobi-1223193167773738/?ref=bookmarks">Facebook</a> - <a href="https://www.reddit.com/r/ShinobiCCTV/">Reddit</a> - <a href="https://shinobi.video/docs/donate"><b>Donate</b></a>
+<a href="http://shinobi.video/docs">Documentation</a> - <a href="https://www.youtube.com/user/MrMoea92">YouTube</a> - <a href="https://discordapp.com/invite/mdhmvuH">Discord</a> - <a href="https://twitter.com/ShinobiCCTV">Twitter</a> - <a href="https://www.facebook.com/Shinobi-1223193167773738/?ref=bookmarks">Facebook</a> - <a href="https://www.reddit.com/r/ShinobiCCTV/">Reddit</a> - <a href="https://shinobi.video/docs/donate"><b>Donate</b></a>
 </center>
 
 Shinobi is the Open Source CCTV platform written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. Shinobi can record IP Cameras and Local Cameras.
-
-Shinobi is not made by the current or previous ZoneMinder developers. This app is inspired by ZoneMinder and all it's glory.
 
 <img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo5.jpg?raw=true">
 
@@ -52,7 +50,7 @@ As much as Shinobi is free, development and research is not. Please consider sup
 
 # Why make this?
 
-https://github.com/moeiscool/Shinobi/wiki#why-make-this-other-solutions-already-exist
+https://shinobi.video/why
 
 # More about Shinobi in the Wiki
 

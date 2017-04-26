@@ -1817,7 +1817,7 @@ var tx;
                 }
             })
         }else{
-            s.auth({auth:d.auth,ke:d.ke,id:d.id},function(user){
+            s.auth({auth:d.auth,ke:d.ke,id:d.id,ip:cn.ip},function(user){
                 if(!user.details.sub){
                     switch(d.f){
                         case'accounts':
@@ -1910,7 +1910,7 @@ var tx;
         switch(d.f){
             case'init':
                     if(!s.group[d.ke]||!s.group[d.ke].mon[d.id]||s.group[d.ke].mon[d.id].started===0){return false}
-                s.auth({auth:d.auth,ke:d.ke,id:d.id},function(user){
+                s.auth({auth:d.auth,ke:d.ke,id:d.id,ip:cn.ip},function(user){
                     cn.embedded=1;
                     cn.ke=d.ke;
                     if(!cn.mid){cn.mid={}}
@@ -1963,29 +1963,44 @@ var tx;
 s.api={};
 //auth handler
 s.auth=function(xx,x,res,req){
+    if(req){
+        xx.ip=req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        xx.failed=function(){
+            if(!req.ret){req.ret={ok:false}}
+            req.ret.msg='Not Authorized';
+            res.send(s.s(req.ret, null, 3));
+        }
+    }else{
+        xx.failed=function(){
+            //maybe log
+        }
+    }
+    xx.checkIP=function(ee){
+        if(s.api[xx.auth].ip.indexOf('0.0.0.0')>-1||s.api[xx.auth].ip.indexOf(xx.ip)>-1){
+            x(s.api[xx.auth]);
+        }else{
+            xx.failed();
+        }
+    }
     if(s.group[xx.ke]&&s.group[xx.ke].users&&s.group[xx.ke].users[xx.auth]){
         x(s.group[xx.ke].users[xx.auth]);
     }else{
         if(s.api[xx.auth]&&s.api[xx.auth].details){
-            x(s.api[xx.auth]);
+            xx.checkIP();
         }else{
             sql.query('SELECT * FROM API WHERE code=? AND ke=?',[xx.auth,xx.ke],function(err,r){
                 if(r&&r[0]){
                     r=r[0];
-                    s.api[xx.auth]={};
+                    s.api[xx.auth]={ip:r.ip};
                     sql.query('SELECT details FROM Users WHERE uid=? AND ke=?',[r.uid,r.ke],function(err,rr){
                         if(rr&&rr[0]){
                             rr=rr[0];
                             try{s.api[xx.auth].details=JSON.parse(rr.details)}catch(er){}
                         }
-                        x(s.api[xx.auth]);
+                        xx.checkIP();
                     })
                 }else{
-                    if(req){
-                        if(!req.ret){req.ret={ok:false}}
-                        req.ret.msg='Not Authorized';
-                        res.send(s.s(req.ret, null, 3));
-                    }
+                    xx.failed();
                 }
             })
         }
