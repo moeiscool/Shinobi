@@ -1,10 +1,10 @@
 FROM ubuntu:xenial
 MAINTAINER Moe Alam <shinobi@m03.ca>
+RUN add-apt-repository ppa:jonathonf/ffmpeg-3
 RUN apt-get update \
     && apt-get upgrade -y \
-    && apt-get install -y ffmpeg nodejs npm libav-tools
+    && apt-get install -y ffmpeg nodejs npm libav-tools x264 x265
 RUN ln -s /usr/bin/nodejs /usr/bin/node && mkdir /opt/shinobi
-RUN npm cache clean -f && npm install -g n && n stable
 ADD . /opt/shinobi
 WORKDIR /opt/shinobi
 RUN cp /opt/shinobi/conf.sample.json /opt/shinobi/conf.json
