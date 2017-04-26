@@ -29,4 +29,9 @@
             x.e.unbind('click');$.confirm.e.modal('hide');e();
         })
     }
+    $(document).ready(function(){
+        $.confirm.e.on('hidden.bs.modal', function () {
+            $.confirm.e.find('.confirmaction').unbind('click');
+        })
+    })
 </script>

@@ -10,14 +10,72 @@
       </div>
       <div class="modal-body">
           <div class="text-center msg"></div>
-        <div class="form-group">
-            <label><span>Allowed IPs <small>Separate with commas, no spaces</small></span>
-                <input class="form-control" name="ip">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label><span>Allowed IPs <small>Separate with commas, no spaces</small></span>
+                    <input class="form-control" name="ip">
+                </label>
+            </div>
+            <div class="form-group">
+            <label><span>Can get Monitors</span>
+                <select class="form-control" detail="get_monitors">
+                    <option value="1" selected>Yes</option>
+                    <option value="0">No</option>
+                </select>
             </label>
-        </div>
-        <div class="form-group">
-            <table class="table table-striped" id="api_list"></table>
+            </div>
+            <div class="form-group">
+            <label><span>Can Control Monitors</span>
+                <select class="form-control" detail="control_monitors">
+                    <option value="1" selected>Yes</option>
+                    <option value="0">No</option>
+                </select>
+            </label>
+            </div>
+            <div class="form-group">
+            <label><span>Can get Logs</span>
+                <select class="form-control" detail="get_logs">
+                    <option value="1" selected>Yes</option>
+                    <option value="0">No</option>
+                </select>
+            </label>
+            </div>
+            <div class="form-group">
+            <label><span>Can view Streams</span>
+                <select class="form-control" detail="watch_stream">
+                    <option value="1" selected>Yes</option>
+                    <option value="0">No</option>
+                </select>
+            </label>
+            </div>
+            <div class="form-group">
+            <label><span>Can view Snapshots</span>
+                <select class="form-control" detail="watch_snapshot">
+                    <option value="1" selected>Yes</option>
+                    <option value="0">No</option>
+                </select>
+            </label>
+            </div>
+            <div class="form-group">
+            <label><span>Can View Videos</span>
+                <select class="form-control" detail="watch_videos">
+                    <option value="1" selected>Yes</option>
+                    <option value="0">No</option>
+                </select>
+            </label>
+            </div>
+            <div class="form-group">
+            <label><span>Can Delete Videos</span>
+                <select class="form-control" detail="delete_videos">
+                    <option value="1" selected>Yes</option>
+                    <option value="0">No</option>
+                </select>
+            </label>
+            </div>
           </div>
+        <div class="col-md-6">
+            <table class="table table-striped" id="api_list"></table>
+        </div>
         <input type="hidden" name="details">
       </div>
       <div class="modal-footer">
