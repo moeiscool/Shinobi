@@ -13,11 +13,9 @@ COPY . /opt/shinobi
 RUN cp /opt/shinobi/conf.sample.json /opt/shinobi/conf.json
 RUN chmod -R 755 /opt/shinobi
 WORKDIR /opt/shinobi
-RUN mysql -u root -pnight < /opt/shinobi/sql/user.sql
-RUN mysql -u root -pnight < /opt/shinobi/sql/framework.sql
-RUN mysql -u root -pnight --database ccio < /opt/shinobi/sql/default_data.sql
 RUN /bin/bash -c "/usr/bin/mysqld_safe &" && \
   sleep 5 && \
+  mysql -u root -pnight < /opt/shinobi/sql/user.sql && \
   mysql -u root -pnight < /opt/shinobi/sql/framework.sql && \
   mysql -u root -pnight --database ccio < /opt/shinobi/sql/default_data.sql
 RUN npm install
