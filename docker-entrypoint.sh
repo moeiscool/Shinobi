@@ -23,5 +23,5 @@ cd /opt/shinobi
 npm install
 pm2 start /opt/shinobi/cron.js
 pm2 start /opt/shinobi/camera.js
-pm2 start /opt/shinobi/plugins/motion/shinobi-motion.js
+#pm2 start /opt/shinobi/plugins/motion/shinobi-motion.js
 pm2 logs
