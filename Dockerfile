@@ -12,7 +12,7 @@ COPY . /opt/shinobi
 RUN cp /opt/shinobi/conf.sample.json /opt/shinobi/conf.json
 RUN chmod -R 755 /opt/shinobi
 WORKDIR /opt/shinobi
-ADD /opt/shinobi/INSTALL/docker-install.sh /tmp/db.sh
+RUN cp /opt/shinobi/INSTALL/docker-install.sh /tmp/db.sh
 RUN chmod +x /tmp/db.sh
 RUN /tmp/db.sh
 RUN npm install
