@@ -8,3 +8,4 @@ npm cache clean -f && npm install -g n && n stable
 pm2 start /opt/shinobi/cron.js
 pm2 start /opt/shinobi/camera.js
 #pm2 start /opt/shinobi/plugins/motion/shinobi-motion.js
+while true; do sleep 1000; done
