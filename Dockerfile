@@ -19,6 +19,6 @@ RUN mysql -u root -pnight --database ccio -e "source /opt/shinobi/sql/default_da
 RUN npm install
 RUN npm install pm2 -g
 RUN chmod +x ./docker-entrypoint.sh
-VOLUME ['/opt/shinobi']
+#VOLUME /opt/shinobi
 EXPOSE 8080
 ENTRYPOINT ./docker-entrypoint.sh
