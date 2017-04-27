@@ -10,5 +10,5 @@ npm install
 pm2 start /opt/shinobi/cron.js
 pm2 start /opt/shinobi/camera.js
 pm2 start /opt/shinobi/plugins/motion/shinobi-motion.js
-#pm2 logs
-while true; do sleep 1000; done
+mysqld_safe
+pm2 logs

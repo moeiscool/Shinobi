@@ -7,7 +7,7 @@ RUN echo 'mysql-server mysql-server/root_password password night' | debconf-set-
 RUN echo 'mysql-server mysql-server/root_password_again password night' | debconf-set-selections
 RUN apt-get -y install mysql-server --no-install-recommends
 RUN sed -ie "s/^bind-address\s*=\s*127\.0\.0\.1$/bind-address = 0.0.0.0/" /etc/mysql/my.cnf 
-RUN service mysql start
+RUN /etc/init.d/mysql start
 RUN ln -s /usr/bin/nodejs /usr/bin/node
 RUN mkdir /opt/shinobi
 COPY . /opt/shinobi
@@ -20,6 +20,7 @@ RUN mysql -u root -pnight --database ccio -e "source /opt/shinobi/sql/default_da
 RUN npm install
 RUN npm install pm2 -g
 RUN chmod +x ./docker-entrypoint.sh
-#VOLUME /opt/shinobi
+VOLUME ["/var/log/mysql/","/opt/shinobi/"]
 EXPOSE 8080
+EXPOSE 3306
 ENTRYPOINT ./docker-entrypoint.sh
