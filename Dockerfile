@@ -6,7 +6,7 @@ RUN apt-get update \
 RUN ln -s /usr/bin/nodejs /usr/bin/node
 RUN mkdir /opt/shinobi
 COPY . /opt/shinobi
-RUN cp conf.sample.json conf.json
+RUN cp /opt/shinobi/conf.sample.json /opt/shinobi/conf.json
 RUN chmod -R 755 /opt/shinobi
 WORKDIR /opt/shinobi
 RUN npm install
