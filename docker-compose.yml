@@ -7,7 +7,7 @@ services:
      volumes:
        - shinobi-db:/var/lib/mysql
        - ./sql/framework.sql:/docker-entrypoint-initdb.d/framework.sql 
-       - ./sql/default_data.sql:/docker-entrypoint-initdb.d/zz_default_data.sql
+       - ./sql/default_data.sql:/docker-entrypoint-initdb.d/default_data.sql
      restart: always
 
    shinobi:
