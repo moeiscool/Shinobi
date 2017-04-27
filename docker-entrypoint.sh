@@ -14,11 +14,14 @@ if [ ! -e "/opt/shinobi/installed.txt" ]; then
     #mysql -u root -pnight < /opt/shinobi/sql/user.sql || true
     mysql -u root -pnight < /opt/shinobi/sql/framework.sql || true
     mysql -u root -pnight --database ccio < /opt/shinobi/sql/default_data.sql || true
+    sed -i 's/"user": "majesticflame"/"user": "root"/g' $SHIN_BIN_DIR/conf.json
+    sed -i 's/"password": ""/"password": "night"/g' $SHIN_BIN_DIR/conf.json
+    sed -i 's/"port":3306/"port":3314/g' $SHIN_BIN_DIR/conf.json
+    sed -i 's/"port": 8080/"port": 8083/g' $SHIN_BIN_DIR/conf.json
+    sed -i 's/"port":8080/"port":8083/g' $SHIN_BIN_DIR/plugins/motion/conf.json
+    npm cache clean -f && npm install -g n && n stable
 fi
 
-sed -i 's/"user": "majesticflame"/"user": "root"/g' $SHIN_BIN_DIR/conf.json
-sed -i 's/"password": ""/"password": "night"/g' $SHIN_BIN_DIR/conf.json
-npm cache clean -f && npm install -g n && n stable
 cd /opt/shinobi
 npm install
 pm2 start /opt/shinobi/cron.js
