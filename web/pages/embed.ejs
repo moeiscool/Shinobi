@@ -97,7 +97,7 @@ $(document).ready(function(){
                 $.shinobi.mon={}
             };
             $.shinobi.init=function(d){
-                  switch(JSON.parse($.shinobi.mon[d.id].details).stream_type){
+                  switch($.shinobi.mon[d.id].details.stream_type){
                     case'hls':
                     var video = $('#SHINOBI_'+d.ke+'_'+d.id+' .stream-element')[0];
                     d.url='<%=data.url%>/<%=data.auth%>/hls/'+d.ke+'/'+d.id+'/s.m3u8';

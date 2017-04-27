@@ -1188,7 +1188,7 @@ var tx;
                             sql.query('DELETE FROM API WHERE '+d.set.join(' AND '),d.ar,function(err,r){
                                 if(!err){
                                     tx({f:'api_key_deleted',form:d.form});
-                                    s.api[xx.auth]=d.form.code;
+                                    delete(s.api[d.form.code]);
                                 }else{
                                     console.log(err)
                                 }
@@ -1196,7 +1196,7 @@ var tx;
                         break;
                         case'add':
                             d.set=[],d.qu=[],d.ar=[];
-                            d.form.ke=cn.ke,d.form.uid=cn.uid,d.form.code=s.gid(30),d.form.details='{}';
+                            d.form.ke=cn.ke,d.form.uid=cn.uid,d.form.code=s.gid(30);
                             d.for=Object.keys(d.form);
                             d.for.forEach(function(v){
                                 d.set.push(v),d.qu.push('?'),d.ar.push(d.form[v]);
@@ -1817,7 +1817,7 @@ var tx;
                 }
             })
         }else{
-            s.auth({auth:d.auth,ke:d.ke,id:d.id},function(user){
+            s.auth({auth:d.auth,ke:d.ke,id:d.id,ip:cn.request.connection.remoteAddress},function(user){
                 if(!user.details.sub){
                     switch(d.f){
                         case'accounts':
@@ -1910,7 +1910,7 @@ var tx;
         switch(d.f){
             case'init':
                     if(!s.group[d.ke]||!s.group[d.ke].mon[d.id]||s.group[d.ke].mon[d.id].started===0){return false}
-                s.auth({auth:d.auth,ke:d.ke,id:d.id},function(user){
+                s.auth({auth:d.auth,ke:d.ke,id:d.id,ip:cn.request.connection.remoteAddress},function(user){
                     cn.embedded=1;
                     cn.ke=d.ke;
                     if(!cn.mid){cn.mid={}}
@@ -1963,29 +1963,45 @@ var tx;
 s.api={};
 //auth handler
 s.auth=function(xx,x,res,req){
+    if(req){
+        xx.ip=req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        xx.failed=function(){
+            if(!req.ret){req.ret={ok:false}}
+            req.ret.msg='Not Authorized';
+            res.send(s.s(req.ret, null, 3));
+        }
+    }else{
+        xx.failed=function(){
+            //maybe log
+        }
+    }
+    xx.checkIP=function(ee){
+        if(s.api[xx.auth].ip.indexOf('0.0.0.0')>-1||s.api[xx.auth].ip.indexOf(xx.ip)>-1){
+            x(s.api[xx.auth]);
+        }else{
+            xx.failed();
+        }
+    }
     if(s.group[xx.ke]&&s.group[xx.ke].users&&s.group[xx.ke].users[xx.auth]){
+        s.group[xx.ke].users[xx.auth].permissions={};
         x(s.group[xx.ke].users[xx.auth]);
     }else{
         if(s.api[xx.auth]&&s.api[xx.auth].details){
-            x(s.api[xx.auth]);
+            xx.checkIP();
         }else{
             sql.query('SELECT * FROM API WHERE code=? AND ke=?',[xx.auth,xx.ke],function(err,r){
                 if(r&&r[0]){
                     r=r[0];
-                    s.api[xx.auth]={};
+                    s.api[xx.auth]={ip:r.ip,permissions:JSON.parse(r.details)};
                     sql.query('SELECT details FROM Users WHERE uid=? AND ke=?',[r.uid,r.ke],function(err,rr){
                         if(rr&&rr[0]){
                             rr=rr[0];
                             try{s.api[xx.auth].details=JSON.parse(rr.details)}catch(er){}
                         }
-                        x(s.api[xx.auth]);
+                        xx.checkIP();
                     })
                 }else{
-                    if(req){
-                        if(!req.ret){req.ret={ok:false}}
-                        req.ret.msg='Not Authorized';
-                        res.send(s.s(req.ret, null, 3));
-                    }
+                    xx.failed();
                 }
             })
         }
@@ -2206,7 +2222,7 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
         res.render('mjpeg',{url:'/'+req.params.auth+'/mjpeg/'+req.params.ke+'/'+req.params.id})
     }else{
         s.auth(req.params,function(user){
-            if(user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
+            if(user.permissions.watch_stream==="0"||user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
                 res.end('Not Permitted')
                 return
             }
@@ -2241,7 +2257,7 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
 app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,res){
     res.header("Access-Control-Allow-Origin",req.headers.origin);
     s.auth(req.params,function(user){
-        if(user.details&&user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
+        if(user.permissions.watch_stream==="0"||user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
             res.end('Not Permitted')
             return
         }
@@ -2261,6 +2277,10 @@ app.get(['/:auth/monitor/:ke','/:auth/monitor/:ke/:id'], function (req,res){
     req.ret={ok:false};
     res.setHeader('Content-Type', 'application/json');
     req.fn=function(user){
+    if(user.permissions.get_monitors==="0"){
+        res.end('Not Permitted')
+        return
+    }
         req.sql='SELECT * FROM Monitors WHERE ke=?';req.ar=[req.params.ke];
         if(!req.params.id){
             if(user.details.sub&&user.details.monitors&&user.details.allmonitors!=='1'){
@@ -2288,6 +2308,10 @@ app.get(['/:auth/monitor/:ke','/:auth/monitor/:ke/:id'], function (req,res){
 // Get videos json
 app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
     s.auth(req.params,function(user){
+        if(user.permissions.watch_videos==="0"){
+            res.end('Not Permitted')
+            return
+        }
         req.sql='SELECT * FROM Videos WHERE ke=?';req.ar=[req.params.ke];
         if(!req.params.id){
             if(user.details.sub&&user.details.monitors&&user.details.allmonitors!=='1'){
@@ -2332,6 +2356,10 @@ app.get(['/:auth/events/:ke','/:auth/events/:ke/:id','/:auth/events/:ke/:id/:lim
     req.ret={ok:false};
     res.setHeader('Content-Type', 'application/json');
     s.auth(req.params,function(user){
+        if(user.permissions.watch_videos==="0"){
+            res.end('Not Permitted')
+            return
+        }
         req.sql='SELECT * FROM Events WHERE ke=?';req.ar=[req.params.ke];
         if(!req.params.id){
             if(user.details.sub&&user.details.monitors&&user.details.allmonitors!=='1'){
@@ -2378,6 +2406,10 @@ app.get(['/:auth/logs/:ke','/:auth/logs/:ke/:id','/:auth/logs/:ke/:limit','/:aut
     req.ret={ok:false};
     res.setHeader('Content-Type', 'application/json');
     s.auth(req.params,function(user){
+        if(user.permissions.get_logs==="0"){
+            res.end('Not Permitted')
+            return
+        }
         req.sql='SELECT * FROM Logs WHERE ke=?';req.ar=[req.params.ke];
         if(!req.params.id){
             if(user.details.sub&&user.details.monitors&&user.details.allmonitors!=='1'){
@@ -2412,6 +2444,10 @@ app.get('/:auth/smonitor/:ke', function (req,res){
     req.ret={ok:false};
     res.setHeader('Content-Type', 'application/json');
     req.fn=function(user){
+        if(user.permissions.get_monitors==="0"){
+            res.end('Not Permitted')
+            return
+        }
         req.sql='SELECT * FROM Monitors WHERE ke=?';req.ar=[req.params.ke];
         if(user.details.sub&&user.details.monitors&&user.details.allmonitors!=='1'){
             try{user.details.monitors=JSON.parse(user.details.monitors);}catch(er){}
@@ -2442,7 +2478,7 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
     req.ret={ok:false};
     res.setHeader('Content-Type', 'application/json');
     req.fn=function(user){
-        if(user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitor_edit.indexOf(req.params.id)===-1){
+        if(user.permissions.control_monitors==="0"||user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitor_edit.indexOf(req.params.id)===-1){
             res.end('Not Permitted')
             return
         }
@@ -2516,7 +2552,7 @@ app.get(['/libs/:f/:f2','/libs/:f/:f2/:f3'], function (req,res){
 // Get video file
 app.get('/:auth/videos/:ke/:id/:file', function (req,res){
     req.fn=function(user){
-        if(user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
+        if(user.permissions.watch_videos==="0"||user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
             res.end('Not Permitted')
             return
         }
@@ -2535,7 +2571,7 @@ app.get(['/:auth/videos/:ke/:id/:file/:mode','/:auth/videos/:ke/:id/:file/:mode/
     req.ret={ok:false};
     res.setHeader('Content-Type', 'application/json');
     s.auth(req.params,function(user){
-        if(user.details.sub&&user.details.allmonitors!=='1'&&user.details.video_delete.indexOf(req.params.id)===-1){
+        if(user.permissions.watch_videos==="0"||user.details.sub&&user.details.allmonitors!=='1'&&user.details.video_delete.indexOf(req.params.id)===-1){
             res.end('Not Permitted')
             return
         }

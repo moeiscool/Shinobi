@@ -1235,7 +1235,7 @@ $.aM.e.on('dblclick','.edit_id',function(e){
 //api window
 $.apM={e:$('#apis')};$.apM.f=$.apM.e.find('form');
 $.apM.md=$.apM.f.find('[detail]');
-$.apM.md.change($.ccio.form.details);
+$.apM.md.change($.ccio.form.details).first().change();
 $.apM.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
     e.er=[];

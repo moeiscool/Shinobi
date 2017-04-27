@@ -48,8 +48,15 @@
             </div>
             <div class="col-md-7">
                 <form id="add_edit">
-                  <div class="form-group-group grey">
-                        <h4><span id="title"></span></h4>
+                  <div class="form-group-group">
+                      <h4><span id="title"></span>
+                          <div class="pull-right">
+                              <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="edit">
+                                  <input type="checkbox" id="edit" value="1" class="mdl-switch__input">
+                                  <span class="monospace mdl-switch__label"></span>
+                              </label>
+                          </div>
+                      </h4>
                         <div class="form-group">
                             <label><span>Email</span>
                                 <input class="form-control" type="email" name="mail">
@@ -152,12 +159,7 @@
                             </label>
                         </div>
                       <div>
-                          <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="edit">
-                              <input type="checkbox" id="edit" value="1" class="mdl-switch__input">
-                              <span class="monospace mdl-switch__label"></span>
-                          </label>
                           <div class="pull-right">
-                              <small id="msg" style="display:inline-block;margin-right:20px"></small>
                               <button type="submit" class="btn btn-primary">Submit</button>
                           </div>
                       </div>
@@ -169,6 +171,10 @@
     </div>
 </div>
 <% include blocks/confirm.html %>
+<div id="toast" class="mdl-js-snackbar mdl-snackbar">
+  <div class="mdl-snackbar__text"></div>
+  <button class="mdl-snackbar__action" type="button"></button>
+</div>
 </body>
 <script src="libs/js/pnotify.custom.min.js"></script>
 <script src="libs/js/socket.io.js"></script>
@@ -202,7 +208,7 @@ $.ccio.ws.on('f',function(d){
         break;
     }
     if(d.msg){
-        $('#msg').html(d.msg)
+        $('#toast')[0].MaterialSnackbar.showSnackbar({message:d.msg})
     }
 })
 $.ccio.cx({f:'init',mail:$user.mail,pass:$user.pass});

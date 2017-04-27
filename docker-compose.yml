@@ -1,0 +1,12 @@
+version: '2'
+services:
+   shinobi:
+     container_name: shinobi
+     build: 
+       context: .
+     env_file: ./docker.env
+     depends_on: 
+       - shinobi-db
+     restart: always
+     ports:
+       - "8080:8080"
