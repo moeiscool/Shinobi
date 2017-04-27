@@ -2,7 +2,7 @@ FROM ubuntu:xenial
 MAINTAINER Moe Alam <shinobi@m03.ca>
 RUN apt-get update \
     && apt-get upgrade -y \
-    && apt-get install -y ffmpeg nodejs npm libav-tools libx264-dev libx265-dev
+    && apt-get install -y ffmpeg nodejs npm libav-tools libx264-dev libx265-dev wget curl
 RUN ln -s /usr/bin/nodejs /usr/bin/node && mkdir /opt/shinobi
 ADD . /opt/shinobi
 WORKDIR /opt/shinobi
