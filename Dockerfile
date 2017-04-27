@@ -1,9 +1,8 @@
 FROM ubuntu:xenial
 MAINTAINER Moe Alam <shinobi@m03.ca>
-RUN add-apt-repository ppa:jonathonf/ffmpeg-3
 RUN apt-get update \
     && apt-get upgrade -y \
-    && apt-get install -y ffmpeg nodejs npm libav-tools x264 x265
+    && apt-get install -y ffmpeg nodejs npm libav-tools libx264-dev libx265-dev
 RUN ln -s /usr/bin/nodejs /usr/bin/node && mkdir /opt/shinobi
 ADD . /opt/shinobi
 WORKDIR /opt/shinobi
