@@ -7,6 +7,7 @@ RUN echo 'mysql-server mysql-server/root_password password night' | debconf-set-
 RUN echo 'mysql-server mysql-server/root_password_again password night' | debconf-set-selections
 RUN apt-get -y install mysql-server --no-install-recommends
 RUN sed -ie "s/^bind-address\s*=\s*127\.0\.0\.1$/bind-address = 0.0.0.0/" /etc/mysql/my.cnf 
+RUN service mysql start
 RUN ln -s /usr/bin/nodejs /usr/bin/node
 RUN mkdir /opt/shinobi
 COPY . /opt/shinobi
