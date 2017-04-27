@@ -1,7 +1,7 @@
 FROM ubuntu:xenial
 RUN apt update \
     && apt upgrade -y \
-    && apt install -y ffmpeg nodejs npm libav-tools wget libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev build-essential g++ --no-install-recommends
+    && apt install -y ffmpeg nodejs npm libav-tools wget --no-install-recommends
 RUN echo 'mysql-server mysql-server/root_password password night' | debconf-set-selections
 RUN echo 'mysql-server mysql-server/root_password_again password night' | debconf-set-selections
 RUN apt -y install mysql-server --no-install-recommends
@@ -11,14 +11,14 @@ RUN ln -s /usr/bin/nodejs /usr/bin/node
 RUN mkdir /opt/shinobi
 COPY . /opt/shinobi
 RUN cp /opt/shinobi/conf.sample.json /opt/shinobi/conf.json
-RUN cp /opt/shinobi/plugins/motion/conf.sample.json /opt/shinobi/plugins/motion/conf.json
+#RUN cp /opt/shinobi/plugins/motion/conf.sample.json /opt/shinobi/plugins/motion/conf.json
 RUN chmod -R 755 /opt/shinobi
 WORKDIR /opt/shinobi
 RUN npm install
 RUN npm install canvas
 RUN npm install pm2 -g
 RUN chmod +x ./docker-entrypoint.sh
-#VOLUME ["/var/log/mysql/"]
+VOLUME ["/var/log/mysql/"]
 EXPOSE 8080
 EXPOSE 3306
 ENTRYPOINT ./docker-entrypoint.sh
