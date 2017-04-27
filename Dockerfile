@@ -11,11 +11,11 @@ RUN ln -s /usr/bin/nodejs /usr/bin/node
 RUN mkdir /opt/shinobi
 COPY . /opt/shinobi
 RUN cp /opt/shinobi/conf.sample.json /opt/shinobi/conf.json
+RUN cp /opt/shinobi/super.sample.json /opt/shinobi/super.json
 #RUN cp /opt/shinobi/plugins/motion/conf.sample.json /opt/shinobi/plugins/motion/conf.json
 RUN chmod -R 755 /opt/shinobi
 WORKDIR /opt/shinobi
 RUN npm install
-RUN npm install canvas
 RUN npm install pm2 -g
 RUN chmod +x ./docker-entrypoint.sh
 VOLUME ["/var/log/mysql/"]
