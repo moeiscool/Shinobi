@@ -6,4 +6,5 @@ sed -i 's/"user": "majesticflame"/"user": "'${MYSQL_USER}'"/g' $SHIN_BIN_DIR/con
 sed -i 's/"password": ""/"password": "'${MYSQL_PASSWORD}'"/g' $SHIN_BIN_DIR/conf.json
 npm cache clean -f && npm install -g n && n stable
 pm2 start /opt/shinobi/cron.js
-/usr/bin/nodejs camera.js
+pm2 start /opt/shinobi/camera.js
+#pm2 start /opt/shinobi/plugins/motion/shinobi-motion.js
