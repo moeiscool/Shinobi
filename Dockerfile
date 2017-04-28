@@ -19,7 +19,7 @@ WORKDIR /opt/shinobi
 RUN npm install
 RUN npm install pm2 -g
 RUN chmod +x ./docker-entrypoint.sh
-VOLUME ["/var/log/mysql/"]
+VOLUME ["/var/log/mysql/","/opt/shinobi/videos"]
 EXPOSE 8083
 EXPOSE 3314
 ENTRYPOINT ./docker-entrypoint.sh
