@@ -1277,7 +1277,7 @@ var tx;
                                 d.ar.push(d.ke),d.ar.push(d.uid);
                                 sql.query('UPDATE Users SET '+d.set.join(',')+' WHERE ke=? AND uid=?',d.ar,function(err,r){
                                     if(!d.d.sub){
-                                        delete(s.group[d.d.ke].init)
+                                        delete(s.group[d.ke].init)
                                         s.init('apps',d)
                                     }
                                     tx({f:'user_settings_change',uid:d.uid,ke:d.ke,form:d.form});
