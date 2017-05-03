@@ -1,12 +1,21 @@
 version: '2'
 services:
-   shinobi:
-     container_name: shinobi
-     build: 
-       context: .
-     env_file: ./docker.env
-     depends_on: 
-       - shinobi-db
-     restart: always
-     ports:
-       - "8080:8080"
+  mysql:
+    image: mysql:5.7
+    env_file: ./docker.env
+    volumes:
+      - ../shinobi-mysql:/var/lib/mysql
+  shinobi:
+    build: 
+      context: .
+    env_file: ./docker.env
+    depends_on: 
+      - mysql
+    #restart: always
+    ports:
+      - "8080:8080"
+    links:
+      - mysql:mysql
+    volumes:
+      - ../shinobi-conf:/etc/shinobi
+      - ../shinobi-videos:/opt/shinobi/videos
