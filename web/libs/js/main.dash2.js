@@ -1880,7 +1880,7 @@ $('body')
             if($("#monitor_live_"+e.mid).length===0||$.ccio.mon[e.mid].watch!==1){
                 $.ccio.cx({f:'monitor',ff:'watch_on',id:e.mid})
             }else{
-//                $("#monitor_live_"+e.mid+' [monitor="bigify"]').click()
+                $("#main_canvas").animate({scrollTop:$("#monitor_live_"+e.mid).offset().top-($('#main_header').height()+10)},500);
             }
         break;
         case'watch_off':
