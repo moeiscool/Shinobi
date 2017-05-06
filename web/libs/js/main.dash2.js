@@ -1210,6 +1210,10 @@ $.aM.e.find('.save_config').click(function(e){
         .attr('download','Shinobi_'+e.mid+'_config.json')
         [0].click()
 });
+$.aM.f.find('[detail="stream_type"]').change(function(e){
+    e.e=$(this);
+    if(e.e.val()==='jpeg'){$.aM.f.find('[detail="snap"]').val('1').change()}
+})
 $.aM.f.find('[name="type"]').change(function(e){
     e.e=$(this);
     if(e.e.val()==='h264'){$.aM.f.find('[name="protocol"]').val('rtsp').change()}
