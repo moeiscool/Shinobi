@@ -530,7 +530,7 @@ s.ffmpeg=function(e,x){
             if(x.stream_quality)x.stream_quality=' -q:v '+x.stream_quality;
             x.pipe=' -c:v mjpeg -f mpjpeg -boundary_tag shinobi'+x.cust_stream+x.svf+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
         break;
-        case'b64'://base64
+        case'b64':case'':case undefined:case null://base64
             if(x.stream_quality)x.stream_quality=' -q:v '+x.stream_quality;
             x.pipe=' -c:v mjpeg -f image2pipe'+x.cust_stream+x.svf+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
         break;
@@ -849,6 +849,7 @@ s.camera=function(x,e,cn,tx){
                 }
                 e.error_fatal_count=0;
                 e.fn=function(){//this function loops to create new files
+                    clearTimeout(s.group[e.ke].mon[e.id].checker)
                     if(s.group[e.ke].mon[e.id].started===1){
                     e.error_count=0;
                     s.group[e.ke].mon[e.id].error_socket_timeout_count=0;
