@@ -31,6 +31,7 @@ var app = express();
 var http = require('http');
 var server = http.Server(app);
 var bodyParser = require('body-parser');
+var CircularJSON = require('circular-json');
 var ejs = require('ejs');
 var io = require('socket.io')(server);
 var execSync = require('child_process').execSync;
@@ -2241,7 +2242,7 @@ app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,re
         }
         if(s.group[req.params.ke]&&s.group[req.params.ke].mon[req.params.id]){
             if(s.group[req.params.ke].mon[req.params.id].started===1){
-                res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,port:config.port,mon:s.group[req.params.ke].mon_conf[req.params.id]});
+                res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,port:config.port,mon:CircularJSON.parse(CircularJSON.stringify(s.group[req.params.ke].mon_conf[req.params.id]))});
             }else{
                 res.end('Cannot watch a monitor that isn\'t running.')
             }

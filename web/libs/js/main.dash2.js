@@ -1527,7 +1527,6 @@ $.pwrvid.drawTimeline=function(mid){
     e.eventURL+='/500/'+$.ccio.init('th',e.dateRange.startDate)+'/'+$.ccio.init('th',e.dateRange.endDate);
     e.live_header.text($.ccio.mon[mid].name)
     e.live.attr('src','/'+$user.auth_token+'/embed/'+$user.ke+'/'+mid+'/fullscreen|jquery')
-    
     $.getJSON(e.eventURL,function(events){
         $.getJSON(e.videoURL,function(videos){
             if($.pwrvid.t&&$.pwrvid.t.destroy){$.pwrvid.t.destroy()}
