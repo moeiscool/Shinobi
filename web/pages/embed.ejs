@@ -68,6 +68,9 @@ $(document).ready(function(){
 <div class="shinobi_stream" id="<%= data.name %>">
     
     <% switch(mon.details.stream_type){
+        case'jpeg':
+            %><img class="stream-element"><%
+        break;
         case'hls':
             %><video class="stream-element" autoplay></video><%
         break;
@@ -98,6 +101,18 @@ $(document).ready(function(){
             };
             $.shinobi.init=function(d){
                   switch($.shinobi.mon[d.id].details.stream_type){
+                    case'jpeg':
+                        d.mon=$.shinobi.mon[d.id]
+                        k=d.mon.details;
+                        k.jpegInterval=parseFloat(k.jpegInterval);
+                        if(!k.jpegInterval||k.jpegInterval===''||isNaN(k.jpegInterval)){k.jpegInterval=1}
+                        if(!$.shinobi.mon[d.mon.mid].jpegInterval){
+                            clearInterval($.shinobi.mon[d.mon.mid].jpegInterval);
+                            $.shinobi.mon[d.mon.mid].jpegInterval=setInterval(function(){
+                                $('#SHINOBI_'+d.ke+'_'+d.id+' .stream-element').attr('src','<%=data.url%>/<%=data.auth%>/jpeg/'+d.mon.ke+'/'+d.mon.mid+'/s.jpg?time='+(new Date()).getTime())
+                            },1000/k.jpegInterval);
+                        }
+                    break;
                     case'hls':
                     var video = $('#SHINOBI_'+d.ke+'_'+d.id+' .stream-element')[0];
                     d.url='<%=data.url%>/<%=data.auth%>/hls/'+d.ke+'/'+d.id+'/s.m3u8';
@@ -144,6 +159,9 @@ $(document).ready(function(){
                     case'monitor_edit':
                         d.e=$('#SHINOBI_'+d.ke+'_'+d.id+'');d.ee=d.e.find('.stream-element');
                         switch(d.mon.details.stream_type){
+                            case'jpeg':
+                                d.ee.after('<img class="stream-element">').remove()
+                            break;
                             case'hls':
                                 d.ee.after('<video class="stream-element" autoplay></video>').remove()
                             break;

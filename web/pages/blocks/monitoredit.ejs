@@ -125,9 +125,10 @@
               <div class="form-group">
                 <label><span>Stream Type</span>
                     <select class="form-control" detail="stream_type" selector="h_st">
-                        <option value="mjpeg" selected>MJPEG</option>
+                        <option value="b64" selected>Base64 over Websocket</option>
+                        <option value="jpeg">JPEG (Auto Enables JPEG API)</option>
+                        <option value="mjpeg">MJPEG</option>
                         <option value="hls">HLS (includes Audio)</option>
-                        <option value="b64">Base64</option>
                     </select>
                 </label>
               </div>
@@ -192,37 +193,71 @@
                       </label>
                   </div>
               </div>
-              <div class="row">
-                  <div class="form-group col-md-12">
-                    <label><span>Quality <small>1 is High, 23 is Low</small></span>
-                    <input class="form-control" placeholder="23" detail="stream_quality">
+              <div class=" h_st_input h_st_mjpeg h_st_b64 h_st_hls">
+                  <div class="row">
+                      <div class="form-group col-md-12">
+                        <label><span>Quality <small>1 is High, 23 is Low</small></span>
+                        <input class="form-control" placeholder="23" detail="stream_quality">
+                        </label>
+                      </div>
+                      <div class="form-group col-md-12">
+                        <label><span>Rate <small>(FPS)</small></span>
+                        <input class="form-control" detail="stream_fps" placeholder="1">
+                        </label>
+                      </div>
+                  </div>
+                  <div class="row">
+                      <div class="form-group col-md-12">
+                        <label><span>Width</span>
+                        <input class="form-control" type="number" min="1" detail="stream_scale_x" placeholder="640">
+                        </label>
+                      </div>
+                      <div class="form-group col-md-12">
+                        <label><span>Height</span>
+                        <input class="form-control" type="number" min="1" detail="stream_scale_y" placeholder="480">
+                        </label>
+                      </div>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Video Filter</span>
+                    <input class="form-control" detail="svf">
                     </label>
                   </div>
-                  <div class="form-group col-md-12">
-                    <label><span>Rate <small>(FPS)</small></span>
-                    <input class="form-control" detail="stream_fps" placeholder="1">
-                    </label>
-                  </div>
-              </div>
-              <div class="row">
-                  <div class="form-group col-md-12">
-                    <label><span>Width</span>
-                    <input class="form-control" type="number" min="1" detail="stream_scale_x" placeholder="640">
-                    </label>
-                  </div>
-                  <div class="form-group col-md-12">
-                    <label><span>Height</span>
-                    <input class="form-control" type="number" min="1" detail="stream_scale_y" placeholder="480">
-                    </label>
-                  </div>
-              </div>
-              <div class="form-group">
-                <label><span>Video Filter</span>
-                <input class="form-control" detail="svf">
-                </label>
               </div>
           </div>
 <!--     END of Stream     -->
+<!--     START of JPEG     -->
+          <div class="form-group-group forestgreen">
+          <h4>JPEG API <small>Snapshot (cgi-bin)</small></h4>
+              <div class="form-group">
+                <label><span>Enabled</span>
+                    <select class="form-control" detail="snap" selector="h_sn">
+                        <option value="0" selected>No</option>
+                        <option value="1">Yes (More Options)</option>
+                    </select>
+                </label>
+              </div>
+              <div class="h_sn_input h_sn_1" style="display:none">
+                  <div class="form-group">
+                    <label><span>Frame Rate <small>(FPS)</small></span>
+                    <input class="form-control" detail="snap_fps" placeholder="1">
+                    </label>
+                  </div>
+                  <div class="row">
+                      <div class="form-group col-md-12">
+                        <label><span>Image Width</span>
+                        <input class="form-control" detail="snap_scale_x" placeholder="">
+                        </label>
+                      </div>
+                      <div class="form-group col-md-12">
+                        <label><span>Image Height</span>
+                        <input class="form-control" detail="snap_scale_y" placeholder="">
+                        </label>
+                      </div>
+                  </div>
+              </div>
+          </div>
+<!--     END of JPEG     -->
 <!--     Start of Record     -->
           <div class="form-group-group red h_m_input h_m_record">
           <h4>Recording</h4>
@@ -402,38 +437,6 @@
               </div>
           </div>
 <!--     END of Custom     -->
-<!--     START of JPEG     -->
-          <div class="form-group-group green">
-          <h4>Snapshot (cgi-bin)</h4>
-              <div class="form-group">
-                <label><span>Enabled</span>
-                    <select class="form-control" detail="snap" selector="h_sn">
-                        <option value="0" selected>No</option>
-                        <option value="1">Yes</option>
-                    </select>
-                </label>
-              </div>
-              <div class="h_sn_input h_sn_1" style="display:none">
-                  <div class="form-group">
-                    <label><span>Frame Rate <small>(FPS)</small></span>
-                    <input class="form-control" detail="snap_fps" placeholder="1">
-                    </label>
-                  </div>
-                  <div class="row">
-                      <div class="form-group col-md-12">
-                        <label><span>Image Width</span>
-                        <input class="form-control" detail="snap_scale_x" placeholder="">
-                        </label>
-                      </div>
-                      <div class="form-group col-md-12">
-                        <label><span>Image Height</span>
-                        <input class="form-control" detail="snap_scale_y" placeholder="">
-                        </label>
-                      </div>
-                  </div>
-              </div>
-          </div>
-<!--     END of JPEG     -->
 <!--     START of Detector     -->
           <div class="form-group-group orange">
           <h4>Detector : <span><b class="shinobi-detector_name"></b> <b class="shinobi-detector-invert">Not </b>Connected</span></h4>

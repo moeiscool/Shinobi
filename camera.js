@@ -530,9 +530,12 @@ s.ffmpeg=function(e,x){
             if(x.stream_quality)x.stream_quality=' -q:v '+x.stream_quality;
             x.pipe=' -c:v mjpeg -f mpjpeg -boundary_tag shinobi'+x.cust_stream+x.svf+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
         break;
-        default://base64
+        case'b64'://base64
             if(x.stream_quality)x.stream_quality=' -q:v '+x.stream_quality;
             x.pipe=' -c:v mjpeg -f image2pipe'+x.cust_stream+x.svf+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
+        break;
+        default:
+            x.pipe=''
         break;
     }
     //motion detector, opencv
@@ -543,7 +546,7 @@ s.ffmpeg=function(e,x){
         x.pipe+=' -f singlejpeg -vf fps='+e.details.detector_fps+x.cust_detect+x.dratio+' pipe:0';
     }
     //snapshot bin/ cgi.bin (JPEG Mode)
-    if(e.details.snap==='1'){
+    if(e.details.snap==='1'||e.details.stream_type==='jpeg'){
         if(!e.details.snap_fps||e.details.snap_fps===''){e.details.snap_fps=1}
         if(e.details.snap_scale_x&&e.details.snap_scale_x!==''&&e.details.snap_scale_y&&e.details.snap_scale_y!==''){x.sratio=' -s '+e.details.snap_scale_x+'x'+e.details.snap_scale_y}else{x.sratio=''}
         if(e.details.cust_snap&&e.details.cust_snap!==''){x.cust_snap=' '+e.details.cust_snap;}else{x.cust_snap=''}
