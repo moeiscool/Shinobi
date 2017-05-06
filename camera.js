@@ -718,6 +718,7 @@ s.camera=function(x,e,cn,tx){
             s.kill(s.group[e.ke].mon[e.id].spawn,e);
             clearInterval(s.group[e.ke].mon[e.id].running);
             clearInterval(s.group[e.ke].mon[e.id].detector_notrigger_timeout)
+            clearTimeout(s.group[e.ke].mon[e.id].err_fatal_timeout);
             s.group[e.ke].mon[e.id].started=0;
             if(s.group[e.ke].mon[e.id].record){s.group[e.ke].mon[e.id].record.yes=0}
             s.log(e,{type:'Monitor Stopped',msg:'Monitor session has been ordered to stop.'});
@@ -829,10 +830,10 @@ s.camera=function(x,e,cn,tx){
             e.hosty=e.host.split('@');if(e.hosty[1]){e.hosty=e.hosty[1];}else{e.hosty=e.hosty[0];};
 
                 e.error_fatal=function(x){
-                    clearTimeout(e.err_fatal_timeout);
+                    clearTimeout(s.group[e.ke].mon[e.id].err_fatal_timeout);
                     ++e.error_fatal_count;
                     if(s.group[e.ke].mon[e.id].started===1){
-                        e.err_fatal_timeout=setTimeout(function(){
+                        s.group[e.ke].mon[e.id].err_fatal_timeout=setTimeout(function(){
                             if(e.error_fatal_count>e.details.fatal_max){
                                 s.camera('stop',{id:e.id,ke:e.ke})
                             }else{
