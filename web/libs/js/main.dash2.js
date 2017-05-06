@@ -1150,6 +1150,8 @@ $.aM.e.on('change','[group]',function(){
 })
 $.aM.e.find('.probe_config').click(function(){
     e={};
+    e.user=$.aM.e.find('[detail="muser"]').val();
+    e.pass=$.aM.e.find('[detail="mpass"]').val();
     e.host=$.aM.e.find('[name="host"]').val();
     e.protocol=$.aM.e.find('[name="protocol"]').val();
     e.port=$.aM.e.find('[name="port"]').val();
@@ -1157,6 +1159,9 @@ $.aM.e.find('.probe_config').click(function(){
     if($.aM.e.find('[name="type"]').val()==='local'){
         e.url=e.path;
     }else{
+        if(e.host.indexOf('@')===-1&&e.user!==''){
+            e.host=e.user+':'+e.pass+'@'+e.host;
+        }
         e.url=$.ccio.init('url',e)+e.path;
     }
     $.pB.e.find('[name="url"]').val(e.url);
