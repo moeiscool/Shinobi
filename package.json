@@ -33,7 +33,8 @@
     "node-df": "^0.1.1",
     "request": "^2.79.0",
     "socket.io": "^1.7.1",
-    "socket.io-client": "^1.7.2"
+    "socket.io-client": "^1.7.2",
+    "circular-json":"0.3.1"
   },
   "devDependencies": {}
 }

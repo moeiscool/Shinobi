@@ -31,6 +31,7 @@ var app = express();
 var http = require('http');
 var server = http.Server(app);
 var bodyParser = require('body-parser');
+var CircularJSON = require('circular-json');
 var ejs = require('ejs');
 var io = require('socket.io')(server);
 var execSync = require('child_process').execSync;
@@ -529,9 +530,12 @@ s.ffmpeg=function(e,x){
             if(x.stream_quality)x.stream_quality=' -q:v '+x.stream_quality;
             x.pipe=' -c:v mjpeg -f mpjpeg -boundary_tag shinobi'+x.cust_stream+x.svf+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
         break;
-        default://base64
+        case'b64'://base64
             if(x.stream_quality)x.stream_quality=' -q:v '+x.stream_quality;
             x.pipe=' -c:v mjpeg -f image2pipe'+x.cust_stream+x.svf+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
+        break;
+        default:
+            x.pipe=''
         break;
     }
     //motion detector, opencv
@@ -542,7 +546,7 @@ s.ffmpeg=function(e,x){
         x.pipe+=' -f singlejpeg -vf fps='+e.details.detector_fps+x.cust_detect+x.dratio+' pipe:0';
     }
     //snapshot bin/ cgi.bin (JPEG Mode)
-    if(e.details.snap==='1'){
+    if(e.details.snap==='1'||e.details.stream_type==='jpeg'){
         if(!e.details.snap_fps||e.details.snap_fps===''){e.details.snap_fps=1}
         if(e.details.snap_scale_x&&e.details.snap_scale_x!==''&&e.details.snap_scale_y&&e.details.snap_scale_y!==''){x.sratio=' -s '+e.details.snap_scale_x+'x'+e.details.snap_scale_y}else{x.sratio=''}
         if(e.details.cust_snap&&e.details.cust_snap!==''){x.cust_snap=' '+e.details.cust_snap;}else{x.cust_snap=''}
@@ -717,6 +721,7 @@ s.camera=function(x,e,cn,tx){
             s.kill(s.group[e.ke].mon[e.id].spawn,e);
             clearInterval(s.group[e.ke].mon[e.id].running);
             clearInterval(s.group[e.ke].mon[e.id].detector_notrigger_timeout)
+            clearTimeout(s.group[e.ke].mon[e.id].err_fatal_timeout);
             s.group[e.ke].mon[e.id].started=0;
             if(s.group[e.ke].mon[e.id].record){s.group[e.ke].mon[e.id].record.yes=0}
             s.log(e,{type:'Monitor Stopped',msg:'Monitor session has been ordered to stop.'});
@@ -828,10 +833,10 @@ s.camera=function(x,e,cn,tx){
             e.hosty=e.host.split('@');if(e.hosty[1]){e.hosty=e.hosty[1];}else{e.hosty=e.hosty[0];};
 
                 e.error_fatal=function(x){
-                    clearTimeout(e.err_fatal_timeout);
+                    clearTimeout(s.group[e.ke].mon[e.id].err_fatal_timeout);
                     ++e.error_fatal_count;
                     if(s.group[e.ke].mon[e.id].started===1){
-                        e.err_fatal_timeout=setTimeout(function(){
+                        s.group[e.ke].mon[e.id].err_fatal_timeout=setTimeout(function(){
                             if(e.error_fatal_count>e.details.fatal_max){
                                 s.camera('stop',{id:e.id,ke:e.ke})
                             }else{
@@ -2241,7 +2246,7 @@ app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,re
         }
         if(s.group[req.params.ke]&&s.group[req.params.ke].mon[req.params.id]){
             if(s.group[req.params.ke].mon[req.params.id].started===1){
-                res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,port:config.port,mon:s.group[req.params.ke].mon_conf[req.params.id]});
+                res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,port:config.port,mon:CircularJSON.parse(CircularJSON.stringify(s.group[req.params.ke].mon_conf[req.params.id]))});
             }else{
                 res.end('Cannot watch a monitor that isn\'t running.')
             }
