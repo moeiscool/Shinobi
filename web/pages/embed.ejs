@@ -157,6 +157,9 @@ $(document).ready(function(){
                         $.shinobi.init(d)
                     break;
                     case'monitor_edit':
+                        if($.shinobi.mon[d.id]){
+                            clearInterval($.shinobi.mon[d.id].jpegInterval);
+                        }
                         d.e=$('#SHINOBI_'+d.ke+'_'+d.id+'');d.ee=d.e.find('.stream-element');
                         switch(d.mon.details.stream_type){
                             case'jpeg':

@@ -266,10 +266,10 @@ s.init=function(x,e){
         break;
         case'url':
             e.authd='';
-            if(e.details.muser&&e.details.muser!==''&&e.details.mpass&&e.details.mpass!==''&&e.host.indexOf('@')===-1) {
+            if(e.details.muser&&e.details.muser!==''&&e.host.indexOf('@')===-1) {
                 e.authd=e.details.muser+':'+e.details.mpass+'@';
             }
-            if(e.port==80){e.porty=''}else{e.porty=':'+e.port}
+            if(e.port==80&&e.details.port_force!=='1'){e.porty=''}else{e.porty=':'+e.port}
             e.url=e.protocol+'://'+e.authd+e.host+e.porty+e.path;return e.url;
         break;
         case'url_no_path':
@@ -279,7 +279,7 @@ s.init=function(x,e){
             if(e.details.muser!==''&&e.host.indexOf('@')===-1) {
                 e.authd=e.details.muser+':'+e.details.mpass+'@';
             }
-            if(e.port==80){e.porty=''}else{e.porty=':'+e.port}
+            if(e.port==80&&e.details.port_force!=='1'){e.porty=''}else{e.porty=':'+e.port}
             e.url=e.protocol+'://'+e.authd+e.host+e.porty;return e.url;
         break;
     }
