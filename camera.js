@@ -397,7 +397,9 @@ s.video=function(x,e){
                         if(e.mode&&config.restart.onVideoNotExist===true&&e.fn){
                             delete(s.group[e.ke].mon[e.id].open);
                             s.log(e,{type:'FFMPEG Not Recording',msg:{msg:'Restarting Process'}});
-                            s.camera('restart',e)
+                            if(s.group[e.ke].mon[e.id].started===1){
+                                s.camera('restart',e)
+                            }
                         }
                     }
                 }
@@ -543,6 +545,7 @@ s.ffmpeg=function(e,x){
         if(!e.details.detector_fps||e.details.detector_fps===''){e.details.detector_fps=0.5}
         if(e.details.detector_scale_x&&e.details.detector_scale_x!==''&&e.details.detector_scale_y&&e.details.detector_scale_y!==''){x.dratio=' -s '+e.details.detector_scale_x+'x'+e.details.detector_scale_y}else{x.dratio=' -s 320x240'}
         if(e.details.cust_detect&&e.details.cust_detect!==''){x.cust_detect+=e.details.cust_detect;}
+//        x.pipe+=' -f singlejpeg -pix_fmt gray -vf fps='+e.details.detector_fps+x.cust_detect+' -s 320x240 pipe:0';
         x.pipe+=' -f singlejpeg -vf fps='+e.details.detector_fps+x.cust_detect+x.dratio+' pipe:0';
     }
     //snapshot bin/ cgi.bin (JPEG Mode)
@@ -811,7 +814,7 @@ s.camera=function(x,e,cn,tx){
                                 e.fn();
                                 s.log(e,{type:'FFMPEG Not Recording',msg:{msg:'Restarting Process'}});
                             }
-                        },60000*2);
+                        },60000*5);
                     break;
                     case'rename':
                         fs.exists(e.dir+filename,function(exists){
@@ -863,10 +866,12 @@ s.camera=function(x,e,cn,tx){
                             s.group[e.ke].mon[e.id].spawn = s.ffmpeg(e);
                             //on unexpected exit restart
                             s.group[e.ke].mon[e.id].spawn_exit=function(){
-                                if(e.details.loglevel!=='quiet'){
-                                    s.log(e,{type:'FFMPEG Unexpected Exit',msg:{msg:'Process Crashed for Monitor : '+e.id,cmd:s.group[e.ke].mon[e.id].ffmpeg}});
+                                if(s.group[e.ke].mon[e.id].started===1){
+                                    if(e.details.loglevel!=='quiet'){
+                                        s.log(e,{type:'FFMPEG Unexpected Exit',msg:{msg:'Process Crashed for Monitor : '+e.id,cmd:s.group[e.ke].mon[e.id].ffmpeg}});
+                                    }
+                                    e.error_fatal();
                                 }
-                                e.error_fatal();
                             }
                             s.group[e.ke].mon[e.id].spawn.on('end',s.group[e.ke].mon[e.id].spawn_exit)
                             s.group[e.ke].mon[e.id].spawn.on('exit',s.group[e.ke].mon[e.id].spawn_exit)
@@ -997,6 +1002,27 @@ s.camera=function(x,e,cn,tx){
                                     d=d.toString();
                                     e.chk=function(x){return d.indexOf(x)>-1;}
                                     switch(true){
+                                            //mp4 output with webm encoder chosen
+                                        case e.chk('Could not find tag for vp8'):
+                                        case e.chk('Only VP8 or VP9 Video'):
+                                        case e.chk('Could not write header'):
+                                            switch(e.ext){
+                                                case'mp4':
+                                                    e.details.vcodec='libx264'
+                                                    e.details.acodec='none'
+                                                break;
+                                                case'webm':
+                                                    e.details.vcodec='libvpx'
+                                                    e.details.acodec='none'
+                                                break;
+                                            }
+                                            if(e.details.stream_type==='hls'){
+                                                e.details.stream_vcodec='libx264'
+                                                e.details.stream_acodec='no'
+                                            }
+                                            s.camera('restart',e)
+                                            return s.log(e,{type:"Incorrect Settings Chosen",msg:{msg:'Automatic reselection in progress...'}})
+                                        break;
                                         case e.chk('NULL @'):
                                         case e.chk('RTP: missed'):
                                         case e.chk('deprecated pixel format used, make sure you did set range correctly'):
@@ -2016,6 +2042,7 @@ s.superAuth=function(x,callback){
     }
 }
 ////Pages
+app.enable('trust proxy');
 app.use(express.static(s.dir.videos));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
