@@ -15,6 +15,6 @@ WORKDIR /opt/shinobi
 RUN npm install
 RUN npm install pm2 -g
 RUN chmod +x ./docker-entrypoint.sh
-VOLUME ["/opt/shinobi/videos", "/opt/shinobi/conf"]
+VOLUME ["/opt/shinobi/videos"]
 EXPOSE 8080
 ENTRYPOINT ./docker-entrypoint.sh
