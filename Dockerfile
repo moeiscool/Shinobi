@@ -1,20 +1,16 @@
 FROM ubuntu:xenial
-RUN apt update \
-    && apt upgrade -y \
-    && apt install -y ffmpeg nodejs npm libav-tools wget --no-install-recommends
-RUN apt -y install mysql-client --no-install-recommends
+RUN apt update && apt install -y \
+    ffmpeg nodejs npm libav-tools wget \
+    mysql-client --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN ln -s /usr/bin/nodejs /usr/bin/node
-RUN mkdir /opt/shinobi
+RUN ln -s /usr/bin/nodejs /usr/bin/node && mkdir /opt/shinobi
 COPY . /opt/shinobi
-RUN cp /opt/shinobi/conf.sample.json /opt/shinobi/conf.json
-RUN cp /opt/shinobi/super.sample.json /opt/shinobi/super.json
+RUN cp /opt/shinobi/conf.sample.json /opt/shinobi/conf.json && cp /opt/shinobi/super.sample.json /opt/shinobi/super.json \
+    && chmod -R 755 /opt/shinobi
 #RUN cp /opt/shinobi/plugins/motion/conf.sample.json /opt/shinobi/plugins/motion/conf.json
-RUN chmod -R 755 /opt/shinobi
 WORKDIR /opt/shinobi
-RUN npm install
-RUN npm install pm2 -g
-RUN chmod +x ./docker-entrypoint.sh
+RUN npm install && npm install pm2 -g && chmod +x ./docker-entrypoint.sh
 VOLUME ["/opt/shinobi/videos"]
 EXPOSE 8080
 ENTRYPOINT ./docker-entrypoint.sh
