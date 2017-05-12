@@ -396,7 +396,7 @@ s.video=function(x,e){
                         s.log(e,{type:'File Not Exist',msg:'Cannot save non existant file. Something went wrong.',ffmpeg:s.group[e.ke].mon[e.id].ffmpeg})
                         if(e.mode&&config.restart.onVideoNotExist===true&&e.fn){
                             delete(s.group[e.ke].mon[e.id].open);
-                            s.log(e,{type:'FFMPEG Not Recording',msg:{msg:'Restarting Process'}});
+                            s.log(e,{type:'FFMPEG Not Recording',msg:{msg:'Settings may be incompatible. Check encoders. Restarting...'}});
                             if(s.group[e.ke].mon[e.id].started===1){
                                 s.camera('restart',e)
                             }
@@ -814,7 +814,7 @@ s.camera=function(x,e,cn,tx){
                                 e.fn();
                                 s.log(e,{type:'FFMPEG Not Recording',msg:{msg:'Restarting Process'}});
                             }
-                        },60000*5);
+                        },60000*2);
                     break;
                     case'rename':
                         fs.exists(e.dir+filename,function(exists){
