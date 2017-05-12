@@ -1671,6 +1671,16 @@ var tx;
                         d.cx.f='detector_save_event';
                         s.tx(d.cx,'GRP_'+d.ke);
                     }
+                    if(d.mon.details.detector_command_enable==='1'){
+                        d.mon.details.detector_command=d.mon.details.detector_command
+                            .replace(/{{MONITOR_ID}}/g,d.id)
+                            .replace(/{{GROUP_KEY}}/g,d.ke)
+                        if(d.details.confidence){
+                            d.mon.details.detector_command=d.mon.details.detector_command
+                            .replace(/{{CONFIDENCE}}/g,d.details.confidence)
+                        }
+                        exec(d.mon.details.detector_command)
+                    }
                 }
             break;
             case'frame':
