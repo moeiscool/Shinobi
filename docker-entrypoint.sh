@@ -1,23 +1,22 @@
 #!/bin/bash
 SHIN_BIN_DIR=/opt/shinobi
-source $SHIN_BIN_DIR/docker.env
-
-/etc/init.d/mysql start
-sleep 2
 cd /opt/shinobi
 
 if [ ! -e "/opt/shinobi/installed.txt" ]; then
 #install stuff if not installed
     touch /opt/shinobi/installed.txt
-    mysql -u root -pnight -e "CREATE USER 'root'@'192.168.99.1' IDENTIFIED BY 'night';" || true
-    mysql -u root -pnight -e "GRANT ALL PRIVILEGES ON * . * TO 'root'@'192.168.99.1';" || true
-    mysql -u root -pnight -e "FLUSH PRIVILEGES;" || true
+    my_mysql="/usr/bin/mysql -u root -p${MYSQL_ROOT_PASSWORD} -h mysql"
+    /usr/bin/mysql -u root -p${MYSQL_ROOT_PASSWORD} -h mysql -e "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DATABASE\` ;"
+    /usr/bin/mysql -u root -p${MYSQL_ROOT_PASSWORD} -h mysql -e "CREATE USER '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD' ;"
+    /usr/bin/mysql -u root -p${MYSQL_ROOT_PASSWORD} -h mysql -e "GRANT ALL ON $MYSQL_DATABASE.* TO '$MYSQL_USER'@'%';"
+    /usr/bin/mysql -u root -p${MYSQL_ROOT_PASSWORD} -h mysql -e 'FLUSH PRIVILEGES ;'
     #mysql -u root -pnight < /opt/shinobi/sql/user.sql || true
-    mysql -u root -pnight < /opt/shinobi/sql/framework.sql || true
-    mysql -u root -pnight --database ccio < /opt/shinobi/sql/default_data.sql || true
-    sed -i 's/"user": "majesticflame"/"user": "root"/g' $SHIN_BIN_DIR/conf.json
-    sed -i 's/"password": ""/"password": "night"/g' $SHIN_BIN_DIR/conf.json
-    sed -i 's/"port":3306/"port":3314/g' $SHIN_BIN_DIR/conf.json
+    /usr/bin/mysql -u root -p${MYSQL_ROOT_PASSWORD} -h mysql --database $MYSQL_DATABASE < /opt/shinobi/sql/framework.sql || true
+    /usr/bin/mysql -u root -p${MYSQL_ROOT_PASSWORD} -h mysql --database $MYSQL_DATABASE < /opt/shinobi/sql/default_data.sql || true
+    sed -i 's/"user": "majesticflame"/"user": "'"${MYSQL_USER}"'"/g' $SHIN_BIN_DIR/conf.json
+    sed -i 's/"password": ""/"password": "'"${MYSQL_PASSWORD}"'"/g' $SHIN_BIN_DIR/conf.json
+    sed -i 's/"host": "127.0.0.1"/"host": "mysql"/g' $SHIN_BIN_DIR/conf.json
+    sed -i 's/"database": "ccio"/"database": "'"${MYSQL_DATABASE}"'"/g' $SHIN_BIN_DIR/conf.json
     sed -i 's/"port": 8080/"port": 8083/g' $SHIN_BIN_DIR/conf.json
     sed -i 's/"port":8080/"port":8083/g' $SHIN_BIN_DIR/plugins/motion/conf.json
     npm cache clean -f && npm install -g n && n stable

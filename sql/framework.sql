@@ -11,9 +11,6 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 
 -- Dumping database structure for ccio
-CREATE DATABASE IF NOT EXISTS `ccio` /*!40100 DEFAULT CHARACTER SET utf8 */;
-USE `ccio`;
-
 
 -- Dumping structure for table ccio.API
 CREATE TABLE IF NOT EXISTS `API` (
