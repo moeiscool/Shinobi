@@ -97,6 +97,9 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .form-group label{display: flex}
 .form-group label span small{margin-left: 2px;display:block;font-weight: 600;}
 .form-group-group{padding:0 10px 10px 10px;overflow:hidden;margin-bottom:15px;border-radius:5px;border:1px solid #ddd;background:#fff}
+.form-group-group table{width:100%}
+.form-group-group table tr td{padding:10px 5px}
+.form-group-group table tr:not(:last-child) td{border-bottom:1px dotted #eee}
 .form-group-group .mdl-list__item{border-bottom:1px solid #eee;}
 .form-group-group .mdl-list__item:hover{background:#e6e6e6;border-radius:4px;}
 .form-group-group:last-child,.form-group-group > .form-group:last-child{margin-bottom:0}
