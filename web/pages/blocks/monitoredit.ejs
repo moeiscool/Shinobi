@@ -21,7 +21,7 @@
                 </select>
             </label>
             </div>
-              <div class="form-group" style="display:none">
+              <div class="form-group">
                 <label><span>Monitor ID <small>No spaces or special characters.</small></span>
                     <input class="form-control" name="mid">
                 </label>
@@ -525,7 +525,7 @@
                       </div>
                   </div>
               </div>
-              <div class="shinobi-detector-stemkoski shinobi-detector_plug" style="display:none">
+              <div class="shinobi-detector-stemkoski shinobi-detector-motion shinobi-detector_plug" style="display:none">
                   <div class="row">
                       <div class="form-group col-md-12">
                         <label><span>Full Frame Detection</span>
@@ -540,6 +540,24 @@
                         <input class="form-control" detail="detector_sensitivity" placeholder="0.5">
                         </label>
                       </div>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Detector Command</span>
+                        <select class="form-control" detail="detector_command_enable" selector="h_det_com">
+                            <option value="0" selected>No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </label>
+                  </div>
+                  <div class="form-group h_det_com_input h_det_com_1">
+                    <label><span>Command</span>
+                    <input class="form-control" detail="detector_command" placeholder="Example : /home/script.sh {{MONITOR_ID}} {{GROUP_KEY}} {{CONFIDENCE}}">
+                    </label>
+                  </div>
+                  <div class="form-group col-md-12">
+                    <label><span>Allow Next Command <small>in Minutes</small></span>
+                    <input class="form-control" detail="detector_command_timeout" placeholder="10">
+                    </label>
                   </div>
                   <div class="hidden">
                     <input detail="cords" placeholder="">
@@ -723,7 +741,7 @@
             <button type="button" class="btn btn-default save_config"><i class="fa fa-download"></i> Export</button>
             <button type="button" class="btn btn-default import_config"><i class="fa fa-upload"></i> Import</button>
             <button type="button" class="btn btn-primary probe_config"><i class="fa fa-search"></i> Probe</button>
-            <span class="h_det_input h_det_1"><button type="button" style="display:none" class="btn btn-warning shinobi-detector-stemkoski shinobi-detector_plug" monitor="region"><i class="fa fa-grav"></i> Region Editor</button></span>
+            <span class="h_det_input h_det_1"><button type="button" style="display:none" class="btn btn-warning shinobi-detector-stemkoski shinobi-detector-motion shinobi-detector_plug" monitor="region"><i class="fa fa-grav"></i> Region Editor</button></span>
           </div>
           <button type="submit" class="btn btn-success"><i class="fa fa-check"></i> Save</button>
       </div>

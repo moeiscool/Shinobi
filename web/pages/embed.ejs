@@ -157,24 +157,28 @@ $(document).ready(function(){
                         $.shinobi.init(d)
                     break;
                     case'monitor_edit':
+                        if(!d.id){d.id=d.mon.mid;}
                         if($.shinobi.mon[d.id]){
                             clearInterval($.shinobi.mon[d.id].jpegInterval);
                         }
-                        d.e=$('#SHINOBI_'+d.ke+'_'+d.id+'');d.ee=d.e.find('.stream-element');
+                        d.e=$('#SHINOBI_'+d.ke+'_'+d.id+'');
+                        d.e.find('.stream-element').remove();
+                        d.tmp='';
                         switch(d.mon.details.stream_type){
-                            case'jpeg':
-                                d.ee.after('<img class="stream-element">').remove()
-                            break;
                             case'hls':
-                                d.ee.after('<video class="stream-element" autoplay></video>').remove()
+                                d.tmp+='<video class="stream-element" controls autoplay></video>';
                             break;
                             case'mjpeg':
-                                d.ee.after('<iframe class="stream-element"></iframe>').remove()
+                                d.tmp+='<iframe class="stream-element"></iframe>';
+                            break;
+                            case'jpeg'://base64
+                                d.tmp+='<img class="stream-element">';
                             break;
                             default://base64
-                                d.ee.after('<canvas class="stream-element"></canvas>').remove()
+                                d.tmp+='<canvas class="stream-element"></canvas>';
                             break;
                         }
+                        d.e.append(d.tmp).find('.stream-element').resize();
                         $(window).resize();
                         d.mon.details=JSON.stringify(d.mon.details);
                         $.shinobi.mon[d.mon.mid]=d.mon;

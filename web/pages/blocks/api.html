@@ -6,14 +6,14 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-        <h4 class="modal-title" id="apisLabel"><i class="fa fa-code"></i> &nbsp; API Keys</h4>
+        <h4 class="modal-title" id="apisLabel"><i class="fa fa-code"></i> &nbsp; API Keys <small>Group Key : <%- $user.ke %></small></h4>
       </div>
       <div class="modal-body">
           <div class="text-center msg"></div>
         <div class="col-md-6">
             <div class="form-group">
                 <label><span>Allowed IPs <small>Separate with commas, no spaces</small></span>
-                    <input class="form-control" name="ip">
+                    <input class="form-control" name="ip" placeholder="0.0.0.0 for Global Access">
                 </label>
             </div>
             <div class="form-group">
