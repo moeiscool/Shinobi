@@ -1672,6 +1672,16 @@ var tx;
                         s.tx(d.cx,'GRP_'+d.ke);
                     }
                     if(d.mon.details.detector_command_enable==='1'){
+                        if(!d.mon.details.detector_command_timeout||d.mon.details.detector_command_timeout===''){
+                            d.mon.details.detector_command_timeout=1000*60*10;
+                        }else{
+                            d.mon.details.detector_command_timeout=parseFloat(d.mon.details.detector_command_timeout)*1000*60;
+                        }
+                        s.group[d.ke].mon[d.id].detector_command=setTimeout(function(){
+                            clearTimeout(s.group[d.ke].mon[d.id].detector_command);
+                            delete(s.group[d.ke].mon[d.id].detector_command);
+                            
+                        },d.mon.details.detector_command_timeout);
                         d.mon.details.detector_command=d.mon.details.detector_command
                             .replace(/{{MONITOR_ID}}/g,d.id)
                             .replace(/{{GROUP_KEY}}/g,d.ke)
