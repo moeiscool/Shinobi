@@ -2344,6 +2344,7 @@ app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
             return
         }
         req.sql='SELECT * FROM Videos WHERE ke=?';req.ar=[req.params.ke];
+        req.count_sql='SELECT COUNT(*) FROM Videos WHERE ke=?';req.count_ar=[req.params.ke];
         if(!req.params.id){
             if(user.details.sub&&user.details.monitors&&user.details.allmonitors!=='1'){
                 try{user.details.monitors=JSON.parse(user.details.monitors);}catch(er){}
@@ -2352,10 +2353,12 @@ app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
                     req.or.push('mid=?');req.ar.push(v)
                 })
                 req.sql+=' AND ('+req.or.join(' OR ')+')'
+                req.count_sql+=' AND ('+req.or.join(' OR ')+')'
             }
         }else{
             if(!user.details.sub||user.details.allmonitors!=='0'||user.details.monitors.indexOf(req.params.id)>-1){
                 req.sql+=' and mid=?';req.ar.push(req.params.id)
+                req.count_sql+=' and mid=?';req.count_ar.push(req.params.id)
             }else{
                 res.send('[]');return;
             }
@@ -2365,20 +2368,34 @@ app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
             if(req.query.end&&req.query.end!==''){
                 req.query.end=req.query.end.replace('T',' ')
                 req.sql+=' AND `time` >= ? AND `time` <= ?';
+                req.count_sql+=' AND `time` >= ? AND `time` <= ?';
                 req.ar.push(req.query.start)
                 req.ar.push(req.query.end)
+                req.count_ar.push(req.query.start)
+                req.count_ar.push(req.query.end)
             }else{
                 req.sql+=' AND `time` >= ?';
+                req.count_sql+=' AND `time` >= ?';
                 req.ar.push(req.query.start)
+                req.count_ar.push(req.query.start)
             }
         }
         if(!req.query.limit||req.query.limit==''){req.query.limit=100}
         req.sql+=' ORDER BY `time` DESC LIMIT '+req.query.limit+'';
         sql.query(req.sql,req.ar,function(err,r){
+        sql.query(req.count_sql,req.count_ar,function(err,count){
             r.forEach(function(v){
                 v.href='/'+req.params.auth+'/videos/'+v.ke+'/'+v.mid+'/'+s.moment(v.time)+'.'+v.ext;
             })
-            res.send(s.s(r, null, 3));
+            if(req.query.limit.indexOf(',')>-1){
+                req.skip=parseInt(req.query.limit.split(',')[0])
+                req.limit=parseInt(req.query.limit.split(',')[0])
+            }else{
+                req.skip=0
+                req.limit=parseInt(req.query.limit)
+            }
+            res.send(s.s({total:count[0]['COUNT(*)'],limit:req.limit,skip:req.skip,videos:r}, null, 3));
+        })
         })
     },res,req);
 });
@@ -2420,8 +2437,8 @@ app.get(['/:auth/events/:ke','/:auth/events/:ke/:id','/:auth/events/:ke/:id/:lim
                 req.ar.push(decodeURIComponent(req.params.start))
             }
         }
-        if(!req.params.limit||req.params.limit==''){req.params.limit=100}
-        req.sql+=' ORDER BY `time` DESC LIMIT '+req.params.limit+'';
+//        if(!req.params.limit||req.params.limit==''){req.params.limit=100}
+//        req.sql+=' ORDER BY `time` DESC LIMIT '+req.params.limit+'';
         sql.query(req.sql,req.ar,function(err,r){
             if(err){err.sql=req.sql;return res.send(s.s(err, null, 3));}
             if(!r){r=[]}

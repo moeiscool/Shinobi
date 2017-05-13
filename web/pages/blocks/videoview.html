@@ -9,7 +9,18 @@
         <h4 class="modal-title" id="videos_viewerLabel"><i class="fa fa-film"></i> &nbsp; Videos</h4>
       </div>
       <div class="modal-body">
-          <div style="padding:20px 0"><input type="text" id="videos_viewer_daterange" class="form-control text-center" value="" /></div>
+          <div style="padding:20px 0" class="row">
+              <div class="col-md-4">
+                  <input type="text" id="videos_viewer_daterange" class="form-control text-center" value="" />
+                  <input type="hidden" id="videos_viewer_limit" value="" />
+              </div>
+              <div class="col-md-4">
+                  <span class="video_viewer_total"></span>
+              </div>
+              <div class="col-md-4">
+                  <div class="text-center" id="videos_viewer_pages"></div>
+              </div>
+          </div>
         <div class="contents"></div>  
       </div>
       <div class="modal-footer">

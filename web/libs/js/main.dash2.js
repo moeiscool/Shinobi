@@ -827,7 +827,7 @@ $.ccio.ws.on('f',function (d){
             if(d.e.find('.videos_monitor_list li').length===0){
                 d.dr=$('#videos_viewer_daterange').data('daterangepicker');
                 $.getJSON('/'+$user.auth_token+'/videos/'+d.ke+'/'+d.id+'?limit=10',function(f){
-                    $.ccio.pm(0,{videos:f,ke:d.ke,mid:d.id})
+                    $.ccio.pm(0,{videos:f.videos,ke:d.ke,mid:d.id})
                 })
             }
         break;
@@ -1397,7 +1397,7 @@ $.sM.f.on('click','.mon_groups .add',function(e){
     $.sM.g.change();
 });
 //videos window
-$.vidview={e:$('#videos_viewer')};
+$.vidview={e:$('#videos_viewer'),pages:$('#videos_viewer_pages'),limit:$('#videos_viewer_limit')};
 $.vidview.f=$.vidview.e.find('form')
 $('#videos_viewer_daterange').daterangepicker({
     startDate:moment().subtract(moment.duration("24:00:00")),
@@ -1420,6 +1420,11 @@ $.vidview.e.on('change','#videos_select_all',function(e){
         e.a.prop('checked',false)
     }
 })
+$.vidview.e.find('form').submit(function(e){
+    e.preventDefault();
+    $.vidview.launcher.click()
+    return false;
+})
 $.vidview.e.find('.delete_selected').click(function(e){
     e.s=$.vidview.f.serializeObject();
     $.confirm.e.modal('show');
@@ -1435,6 +1440,21 @@ $.vidview.e.find('.delete_selected').click(function(e){
             $.ccio.cx({f:'video',ff:'delete',filename:n[0],ext:n[1],mid:v});
         })
     });
+})
+$.vidview.pages.on('click','[page]',function(e){
+    e.limit=$.vidview.limit.val();
+    if(e.limit.replace(/ /g,'')===''){
+        e.limit='100';
+    }
+    if(e.limit.indexOf(',')>-1){
+        e.skip=parseInt(e.limit.split(',')[0])
+        e.limit=parseInt(e.limit.split(',')[1])
+    }else{
+        e.skip=0
+        e.limit=parseInt(e.limit)
+    }
+    $.vidview.limit.val((parseInt($(this).attr('page'))-1)+'00,'+e.limit)
+    $.vidview.launcher.click()
 })
 //POWER videos window
 $.pwrvid={e:$('#pvideo_viewer')};
@@ -1554,7 +1574,7 @@ $.pwrvid.drawTimeline=function(mid){
                     items.push({src:v,x:v.time,yy:v.details.confidence})
                 });
             }
-            $.each(videos,function(n,v){
+            $.each(videos.videos,function(n,v){
                 v.mon=$.ccio.mon[v.mid];
                 v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
                 if(v.status>0){
@@ -1764,9 +1784,26 @@ $('body')
         break;
         case'videos_table':case'calendar'://call videos table or calendar
             $.vidview.launcher=$(this);
+            e.limit_val=$.vidview.limit.val()
+            if(e.limit_val.replace(/ /g,'')===''){e.limit_val=100}
             e.dateRange=$('#videos_viewer_daterange').data('daterangepicker');
-            e.videoURL='/'+$user.auth_token+'/videos/'+e.ke+'/'+e.mid+'?limit=100&start='+$.ccio.init('th',e.dateRange.startDate)+'&end='+$.ccio.init('th',e.dateRange.endDate);
+            e.videoURL='/'+$user.auth_token+'/videos/'+e.ke+'/'+e.mid+'?limit='+e.limit_val+'&start='+$.ccio.init('th',e.dateRange.startDate)+'&end='+$.ccio.init('th',e.dateRange.endDate);
             $.getJSON(e.videoURL,function(d){
+                d.pages=d.total/100;
+                $('.video_viewer_total').text(d.total+' Videos')
+                if(d.pages+''.indexOf('.')>-1){++d.pages}
+                $.vidview.page_count=d.pages;
+                d.count=1
+                $.vidview.pages.empty()
+                d.fn=function(drawOne){
+                    if(d.count<=$.vidview.page_count){
+                        $.vidview.pages.append('<a class="btn btn-primary" page="'+d.count+'">'+d.count+'</a> ')
+                        ++d.count;
+                        d.fn()
+                    }
+                }
+                d.fn()
+                $.vidview.pages.find('[page="1"]').addClass('active')
                 e.v=$.vidview.e;e.o=e.v.find('.options').hide()
                 e.b=e.v.modal('show').find('.modal-body .contents');
                 e.t=e.v.find('.modal-title i');
@@ -1774,7 +1811,7 @@ $('body')
                     case'calendar':
                        e.t.attr('class','fa fa-calendar')
                        e.ar=[];
-                        $.each(d,function(n,v){
+                        $.each(d.videos,function(n,v){
                             if(v.status!==0){
                                 var n=$.ccio.mon[v.mid];
                                 if(n){v.title=n.name+' - '+(parseInt(v.size)/1000000).toFixed(2)+'mb';}
@@ -1821,7 +1858,7 @@ $('body')
                         e.tmp+='</tr>';
                         e.tmp+='</thead>';
                         e.tmp+='<tbody>';
-                        $.each(d,function(n,v){
+                        $.each(d.videos,function(n,v){
                             if(v.status!==0){
                                 v.mon=$.ccio.mon[v.mid];
                                 v.start=v.time;
