@@ -28,27 +28,19 @@
 									</div>
 									<div class="form-group">
 									<div class="row">
-                                        <div class="col-md-6">
+                                        <div class="col-md-12 monospace" style="width:calc(100% - 48px)">
+                                            <select class="form-control" name="function">
+                                                <option value="dash" selected>Dashboard</option>
+                                                <option value="streamer">Streamer</option>
+                                                <option value="admin">Admin</option>
+                                                <option value="super">Superuser</option>
+                                            </select>
+                                        </div>
+                                        <div class="text-right" title="Remember Me" style="display:inline-block">
                                             <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="remember_me">
                                               <input type="checkbox" id="remember_me" value="1" name="remember" class="mdl-switch__input">
-                                                <span class="monospace mdl-switch__label">Remember Me</span>
+                                                <span class="monospace mdl-switch__label"></span>
                                             </label>
-                                            <div style="padding:5px"></div>
-                                            <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="super">
-                                                <input type="checkbox" id="super" value="1" name="super" class="mdl-switch__input">
-                                                <span class="monospace mdl-switch__label">Superuser</span>
-                                            </label>
-                                        </div>
-                                        <div class="col-md-6">
-                                        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="admin">
-                                            <input type="checkbox" id="admin" value="1" name="admin" class="mdl-switch__input">
-                                            <span class="monospace mdl-switch__label">Admin</span>
-                                        </label>
-                                        <div style="padding:5px"></div>
-                                        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="recorder">
-                                            <input type="checkbox" id="recorder" value="1" name="recorder" class="mdl-switch__input">
-                                            <span class="monospace mdl-switch__label">Streamer</span>
-                                        </label>
                                         </div>
 									</div>
 									</div>
@@ -76,7 +68,7 @@
         $('input').css('border-color','')
         e.e=$(this),e.s=e.e.serializeObject(),e.inputs=e.e.find('input,button');
         if(e.s.remember){
-            localStorage.setItem('ShinobiLogin_'+location.host,JSON.stringify({mail:e.s.mail,pass:e.s.pass,admin:e.s.admin,recorder:e.s.recorder,mobile:e.s.mobile}))
+            localStorage.setItem('ShinobiLogin_'+location.host,JSON.stringify({mail:e.s.mail,pass:e.s.pass,function:e.s.function}))
         }else{localStorage.removeItem('ShinobiLogin_'+location.host)}
     })
     if($.ccio.ls){
@@ -92,13 +84,23 @@
         $.ccio.f.find('[name="remember"]').prop('checked',true);
         $.ccio.f.submit()
     }
-    $('#super').change(function(e){
-        e.e=$(this);
-        e.f=$('form');
-        if(e.e.is(':checked')){
-            e.f.attr('action','/super')
-        }else{
-            e.f.attr('action','/')
+    $('[name="function"]').change(function(){
+        e={};
+        e.removeClass='btn-danger btn-primary btn-success'
+        switch($(this).val()){
+            case'streamer':
+                e.addClass='btn-warning'
+            break;
+            case'admin':
+                e.addClass='btn-primary'
+            break;
+            case'super':
+                e.addClass='btn-danger'
+            break;
+            default:
+                e.addClass='btn-success'
+            break;
         }
+        $('#login-submit').removeClass(e.removeClass).addClass(e.addClass)
     })
 </script>

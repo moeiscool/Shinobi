@@ -520,8 +520,10 @@ $.ccio={fr:$('#files_recent'),mon:{}};
     }
 $.ccio.ws=io(location.origin);
 $.ccio.ws.on('connect',function (d){
-    $.ccio.init('id',$user);
-    $.ccio.cx({f:'init',ke:$user.ke,auth:$user.auth_token,uid:$user.uid})
+    $(document).ready(function(e){
+        $.ccio.init('id',$user);
+        $.ccio.cx({f:'init',ke:$user.ke,auth:$user.auth_token,uid:$user.uid})
+    })
 })
 PNotify.prototype.options.styling = "fontawesome";
 $.ccio.ws.on('ping', function(d){

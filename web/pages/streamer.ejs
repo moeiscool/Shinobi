@@ -6,10 +6,13 @@
     <div>
         <img id="img">
     </div>
-    <div id="msg">Monitor to Save under <span id="selected"></span></div>
+    <div id="msg">Monitor to Stream and Save under <span id="selected"></span></div>
 requires https or firefox
     <div style="margin-top:30px;">
         <div id="monitors" class="list-group"></div>
+    </div>
+    <div style="margin-top:30px;">
+        <a class="logout btn-danger btn btn-xs">Logout</a>
     </div>
 </div>
 <video id="video"><source></video>
@@ -116,6 +119,11 @@ window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
     
     
 if($user.mons.length>0&&$.ls.getItem('Shinobi_socket_camera')){$('[monitor="'+$.ls.getItem('Shinobi_socket_camera')+'"]').click()}else{$.ccio.selected=null;}
+    
+$('body')
+.on('click','.logout',function(e){
+    localStorage.removeItem('ShinobiLogin_'+location.host);location.href='/';
+})
 </script>
 <style>
     a{cursor:pointer}

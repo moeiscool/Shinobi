@@ -2131,86 +2131,81 @@ app.post('/:auth/register/:ke/:uid',function (req,res){
         })
     },res,req);
 })
-//super login function
-app.post('/super',function (req,res){
+//login function
+app.post('/',function (req,res){
     req.failed=function(){
         res.render("index",{failedLogin:true});
         res.end();
     }
     if(req.body.mail&&req.body.pass){
-        if(!fs.existsSync('./super.json')){
-            res.send('"super.json" does not exist. Please rename "super.sample.json" to "super.json".')
-            res.end();
-            return
-        }
-        req.ok=s.superAuth({mail:req.body.mail,pass:req.body.pass,users:true,md5:true},function(data){
-            res.render("super",data);
-        })
-        if(req.ok===false){
-            req.failed()
+        if(req.body.function==='super'){
+            if(!fs.existsSync('./super.json')){
+                res.send('"super.json" does not exist. Please rename "super.sample.json" to "super.json".')
+                res.end();
+                return
+            }
+            req.ok=s.superAuth({mail:req.body.mail,pass:req.body.pass,users:true,md5:true},function(data){
+                res.render("super",data);
+            })
+            if(req.ok===false){
+                req.failed()
+            }
+        }else{
+            sql.query('SELECT * FROM Users WHERE mail=? AND pass=?',[req.body.mail,s.md5(req.body.pass)],function(err,r) {
+                req.resp={ok:false};
+                if(!err&&r&&r[0]){
+                    r=r[0];r.auth=s.md5(s.gid());
+                    sql.query("UPDATE Users SET auth=? WHERE ke=? AND uid=?",[r.auth,r.ke,r.uid])
+                    req.resp={ok:true,auth_token:r.auth,ke:r.ke,uid:r.uid,mail:r.mail,details:r.details};
+                    r.details=JSON.parse(r.details);
+
+                    req.fn=function(){
+                        switch(req.body.function){
+                            case'streamer':
+                                sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
+                                    req.resp.mons=rr;
+                                    res.render("streamer",{$user:req.resp});
+                                })
+                            break;
+                            case'admin':
+                                if(!r.details.sub){
+                                    sql.query('SELECT uid,mail,details FROM Users WHERE ke=? AND details LIKE \'%"sub"%\'',[r.ke],function(err,rr) {
+                                        sql.query('SELECT * FROM Monitors WHERE ke=?',[r.ke],function(err,rrr) {
+                                            res.render("admin",{$user:req.resp,$subs:rr,$mons:rrr});
+                                        })
+                                    })
+                                }else{
+                                    //not admin user
+                                    res.render("home",{$user:req.resp,config:config});
+                                }
+                            break;
+                            default:
+                                res.render("home",{$user:req.resp,config:config});
+                            break;
+                        }
+                    }
+                    if(r.details.sub){
+                        sql.query('SELECT details FROM Users WHERE ke=? AND details NOT LIKE ?',[r.ke,'%"sub"%'],function(err,rr) {
+                            rr=rr[0];
+                            rr.details=JSON.parse(rr.details);
+                            r.details.mon_groups=rr.details.mon_groups;
+                            req.resp.details=JSON.stringify(r.details);
+                            req.fn();
+                        })
+                    }else{
+                        req.fn()
+                    }
+
+
+
+
+                }else{
+                    req.failed()
+                }
+            })
         }
     }else{
         req.failed()
-    }
-})
-//login function
-app.post('/',function (req,res){
-    if(req.body.mail&&req.body.pass){
-    sql.query('SELECT * FROM Users WHERE mail=? AND pass=?',[req.body.mail,s.md5(req.body.pass)],function(err,r) {
-        req.resp={ok:false};
-        if(!err&&r&&r[0]){
-            r=r[0];r.auth=s.md5(s.gid());
-            sql.query("UPDATE Users SET auth=? WHERE ke=? AND uid=?",[r.auth,r.ke,r.uid])
-            req.resp={ok:true,auth_token:r.auth,ke:r.ke,uid:r.uid,mail:r.mail,details:r.details};
-            r.details=JSON.parse(r.details);
-
-            req.fn=function(){
-                if(req.body.admin){
-                    //admin checkbox selected
-                    if(!r.details.sub){
-                        sql.query('SELECT uid,mail,details FROM Users WHERE ke=? AND details LIKE \'%"sub"%\'',[r.ke],function(err,rr) {
-                            sql.query('SELECT * FROM Monitors WHERE ke=?',[r.ke],function(err,rrr) {
-                                res.render("admin",{$user:req.resp,$subs:rr,$mons:rrr});
-                            })
-                        })
-                    }else{
-                        //not admin user
-                        res.render("home",{$user:req.resp,config:config});
-                    }
-                }else{
-                    //no admin checkbox selected
-                    if(!req.body.recorder){
-                        //dashboard
-                        res.render("home",{$user:req.resp,config:config});
-                    }else{
-                        //streamer
-                        sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
-                            req.resp.mons=rr;
-                            res.render("streamer",{$user:req.resp});
-                        })
-                    }
-                }
-            }
-            if(r.details.sub){
-                sql.query('SELECT details FROM Users WHERE ke=? AND details NOT LIKE ?',[r.ke,'%"sub"%'],function(err,rr) {
-                    rr=rr[0];
-                    rr.details=JSON.parse(rr.details);
-                    r.details.mon_groups=rr.details.mon_groups;
-                    req.resp.details=JSON.stringify(r.details);
-                    req.fn();
-                })
-            }else{
-                req.fn()
-            }
-
-
-
-
-        }else{
-            res.render("index",{failedLogin:true});
-            res.end();
-        }
-    })
     }
 });
 // Get HLS stream (m3u8)
