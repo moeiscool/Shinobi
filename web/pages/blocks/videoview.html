@@ -6,28 +6,29 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-        <h4 class="modal-title" id="videos_viewerLabel"><i class="fa fa-film"></i> &nbsp; Videos</h4>
+        <h4 class="modal-title" id="videos_viewerLabel"><i class="fa fa-film"></i> &nbsp; Videos <small> <span class="video_viewer_total"></span> total</small></h4>
       </div>
       <div class="modal-body">
           <div style="padding:20px 0" class="row">
-              <div class="col-md-4">
+              <div class="col-md-12">
                   <input type="text" id="videos_viewer_daterange" class="form-control text-center" value="" />
                   <input type="hidden" id="videos_viewer_limit" value="" />
-              </div>
-              <div class="col-md-4">
-                  <span class="video_viewer_total"></span>
-              </div>
-              <div class="col-md-4">
-                  <div class="text-center" id="videos_viewer_pages"></div>
               </div>
           </div>
         <div class="contents"></div>  
       </div>
       <div class="modal-footer">
-          <div class="pull-left">
-              <a class="btn btn-danger delete_selected"><i class="fa fa-trash-o"></i> &nbsp; Delete selected</a>
+          <div class="row">
+              <div class="col-md-4 text-left">
+                  <a class="btn btn-danger delete_selected"><i class="fa fa-trash-o"></i> &nbsp; Delete selected</a> 
+              </div>
+              <div class="col-md-4">
+                  <div class="text-center" id="videos_viewer_pages"></div>
+              </div>
+              <div class="col-md-4">
+                  <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+              </div>
           </div>
-        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
       </div>
     </form>
   </div>

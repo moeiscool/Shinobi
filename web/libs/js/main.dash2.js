@@ -1804,7 +1804,7 @@ $('body')
             e.videoURL='/'+$user.auth_token+'/videos/'+e.ke+'/'+e.mid+'?limit='+e.limit+'&start='+$.ccio.init('th',e.dateRange.startDate)+'&end='+$.ccio.init('th',e.dateRange.endDate);
             $.getJSON(e.videoURL,function(d){
                 d.pages=d.total/100;
-                $('.video_viewer_total').text(d.total+' Videos')
+                $('.video_viewer_total').text(d.total)
                 if(d.pages+''.indexOf('.')>-1){++d.pages}
                 $.vidview.page_count=d.pages;
                 d.count=1
