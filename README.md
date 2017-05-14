@@ -1,14 +1,12 @@
 # Shinobi
 
-<center>
-<a href="http://shinobi.video/docs">Documentation</a> - <a href="https://www.youtube.com/user/MrMoea92">YouTube</a> - <a href="https://discordapp.com/invite/mdhmvuH">Discord</a> - <a href="https://twitter.com/ShinobiCCTV">Twitter</a> - <a href="https://www.facebook.com/Shinobi-1223193167773738/?ref=bookmarks">Facebook</a> - <a href="https://www.reddit.com/r/ShinobiCCTV/">Reddit</a> - <a href="https://shinobi.video/docs/donate"><b>Donate</b></a>
-</center>
-
-Shinobi is the Open Source CCTV platform written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. Shinobi can record IP Cameras and Local Cameras.
+Shinobi is the Open Source CCTV Solution written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. Shinobi can record IP Cameras and Local Cameras.
 
 <img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo5.jpg?raw=true">
 
 # Key Aspects
+
+For an updated list of features visit the official website. http://shinobi.video/features
 
 - Defeats stream limit imposed by browsers
   - With Base64 (Stream Type) and JPEG Mode (Option)
@@ -42,40 +40,29 @@ Shinobi is the Open Source CCTV platform written in Node.JS. Designed with multi
 - Dashboard Framework made with Google Material Design Lite, jQuery, and Bootstrap
 
 ## Help make Shinobi the best Open Source CCTV Solution.
-<a href="https://shinobi.video/docs/donate">Donate</a>
+Donate - http://shinobi.video/docs/donate
 
-As much as Shinobi is free, development and research is not. Please consider supporting Shinobi.
+Ordering a License, Paid Support, or anything from <a href="//camera.observer">here</a> will allow a lot more time to be spent on Shinobi.
 
-**Paid Support / Donation :** <a href="http://cloudchat.online/cart/shinobi/">from @moeiscool, The Lead Developer</a></p>
+Order Support - http://shinobi.video/support
 
 # Why make this?
 
-https://shinobi.video/why
-
-# More about Shinobi in the Wiki
-
-https://github.com/moeiscool/Shinobi/wiki
-
-# Supported Cameras
-
-https://github.com/moeiscool/Shinobi/wiki/Supported-Cameras
-
-
-# Supported Systems
-
-https://github.com/moeiscool/Shinobi/wiki/Supported-Systems
+http://shinobi.video/why
 
 # How to Install and Run
 
-<a href="https://github.com/moeiscool/Shinobi/wiki/Install">Installation Tutorials</a>
+Installation Tutorials - http://shinobi.video/docs/start
 
-<a href="https://github.com/moeiscool/Shinobi/wiki/Troubleshooting">Troubleshooting Guide</a>
+Troubleshooting Guide - http://shinobi.video/docs/start#trouble-section
 
 # Author
 
 Moe Alam
 
-Follow me on Twitter https://twitter.com/moe_alam
+Follow Shinobi on Twitter https://twitter.com/ShinobiCCTV
+
+Join the Community Chat
 
 <a title="Find me on Discord, Get an Invite" href="https://discordapp.com/invite/mdhmvuH"><img src="https://cdn-images-1.medium.com/max/115/1*OoXboCzk0gYvTNwNnV4S9A@2x.png"></a>
 
@@ -85,4 +72,24 @@ Paid license required only if you choose to bill your users for the use of Shino
 Personal and Educational purposes do not require a license.
 Educational Institutions, such as high schools and universities, do not require the purchase of a license.
 
-<a href="http://shinobi.video/#licenses">http://shinobi.video/#licenses</a>
+http://shinobi.video/#licenses
+
+# Links
+
+Documentation - http://shinobi.video/docs
+
+Donate - https://shinobi.video/docs/donate
+
+Tested Cameras and Systems - http://shinobi.video/docs/supported
+
+Features - http://shinobi.video/features
+
+Reddit (Forum) - https://www.reddit.com/r/ShinobiCCTV/
+
+YouTube (Tutorials) - https://www.youtube.com/channel/UCbgbBLTK-koTyjOmOxA9msQ
+
+Discord (Community Chat) - https://discordapp.com/invite/mdhmvuH
+
+Twitter (News) - https://twitter.com/ShinobiCCTV
+
+Facebook (News) - https://www.facebook.com/Shinobi-1223193167773738/?ref=bookmarks
