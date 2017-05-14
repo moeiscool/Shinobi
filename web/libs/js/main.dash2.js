@@ -1445,17 +1445,17 @@ $.vidview.e.find('.delete_selected').click(function(e){
 })
 $.vidview.pages.on('click','[page]',function(e){
     e.limit=$.vidview.limit.val();
+    e.page=$(this).attr('page');
+    $.vidview.current_page=e.page;
     if(e.limit.replace(/ /g,'')===''){
         e.limit='100';
     }
     if(e.limit.indexOf(',')>-1){
-        e.skip=parseInt(e.limit.split(',')[0])
         e.limit=parseInt(e.limit.split(',')[1])
     }else{
-        e.skip=0
         e.limit=parseInt(e.limit)
     }
-    $.vidview.limit.val((parseInt($(this).attr('page'))-1)+'00,'+e.limit)
+    $.vidview.limit.val((parseInt(e.page)-1)+'00,'+e.limit)
     $.vidview.launcher.click()
 })
 //POWER videos window
@@ -1786,10 +1786,22 @@ $('body')
         break;
         case'videos_table':case'calendar'://call videos table or calendar
             $.vidview.launcher=$(this);
-            e.limit_val=$.vidview.limit.val()
-            if(e.limit_val.replace(/ /g,'')===''){e.limit_val=100}
+            e.limit=$.vidview.limit.val();
+            if(!$.vidview.current_mid||$.vidview.current_mid!==e.mid){
+                $.vidview.current_mid=e.mid
+                $.vidview.current_page=1;
+                if(e.limit.replace(/ /g,'')===''){
+                    e.limit='100';
+                }
+                if(e.limit.indexOf(',')===-1){
+                    e.limit='0,'+e.limit
+                }else{
+                    e.limit='0,'+e.limit.split(',')[1]
+                }
+                $.vidview.limit.val(e.limit)
+            }
             e.dateRange=$('#videos_viewer_daterange').data('daterangepicker');
-            e.videoURL='/'+$user.auth_token+'/videos/'+e.ke+'/'+e.mid+'?limit='+e.limit_val+'&start='+$.ccio.init('th',e.dateRange.startDate)+'&end='+$.ccio.init('th',e.dateRange.endDate);
+            e.videoURL='/'+$user.auth_token+'/videos/'+e.ke+'/'+e.mid+'?limit='+e.limit+'&start='+$.ccio.init('th',e.dateRange.startDate)+'&end='+$.ccio.init('th',e.dateRange.endDate);
             $.getJSON(e.videoURL,function(d){
                 d.pages=d.total/100;
                 $('.video_viewer_total').text(d.total+' Videos')
@@ -1805,8 +1817,8 @@ $('body')
                     }
                 }
                 d.fn()
-                $.vidview.pages.find('[page="1"]').addClass('active')
-                e.v=$.vidview.e;e.o=e.v.find('.options').hide()
+                $.vidview.pages.find('[page="'+$.vidview.current_page+'"]').addClass('active')
+                e.v=$.vidview.e;
                 e.b=e.v.modal('show').find('.modal-body .contents');
                 e.t=e.v.find('.modal-title i');
                 switch(e.a){
@@ -1843,7 +1855,6 @@ $('body')
                     break;
                     case'videos_table':
                         e.t.attr('class','fa fa-film')
-                        e.o.show();
                         e.tmp='<table class="table table-striped" style="max-height:500px">';
                         e.tmp+='<thead>';
                         e.tmp+='<tr>';
