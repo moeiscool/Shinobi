@@ -2131,86 +2131,81 @@ app.post('/:auth/register/:ke/:uid',function (req,res){
         })
     },res,req);
 })
-//super login function
-app.post('/super',function (req,res){
+//login function
+app.post('/',function (req,res){
     req.failed=function(){
         res.render("index",{failedLogin:true});
         res.end();
     }
     if(req.body.mail&&req.body.pass){
-        if(!fs.existsSync('./super.json')){
-            res.send('"super.json" does not exist. Please rename "super.sample.json" to "super.json".')
-            res.end();
-            return
-        }
-        req.ok=s.superAuth({mail:req.body.mail,pass:req.body.pass,users:true,md5:true},function(data){
-            res.render("super",data);
-        })
-        if(req.ok===false){
-            req.failed()
+        if(req.body.function==='super'){
+            if(!fs.existsSync('./super.json')){
+                res.send('"super.json" does not exist. Please rename "super.sample.json" to "super.json".')
+                res.end();
+                return
+            }
+            req.ok=s.superAuth({mail:req.body.mail,pass:req.body.pass,users:true,md5:true},function(data){
+                res.render("super",data);
+            })
+            if(req.ok===false){
+                req.failed()
+            }
+        }else{
+            sql.query('SELECT * FROM Users WHERE mail=? AND pass=?',[req.body.mail,s.md5(req.body.pass)],function(err,r) {
+                req.resp={ok:false};
+                if(!err&&r&&r[0]){
+                    r=r[0];r.auth=s.md5(s.gid());
+                    sql.query("UPDATE Users SET auth=? WHERE ke=? AND uid=?",[r.auth,r.ke,r.uid])
+                    req.resp={ok:true,auth_token:r.auth,ke:r.ke,uid:r.uid,mail:r.mail,details:r.details};
+                    r.details=JSON.parse(r.details);
+
+                    req.fn=function(){
+                        switch(req.body.function){
+                            case'streamer':
+                                sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
+                                    req.resp.mons=rr;
+                                    res.render("streamer",{$user:req.resp});
+                                })
+                            break;
+                            case'admin':
+                                if(!r.details.sub){
+                                    sql.query('SELECT uid,mail,details FROM Users WHERE ke=? AND details LIKE \'%"sub"%\'',[r.ke],function(err,rr) {
+                                        sql.query('SELECT * FROM Monitors WHERE ke=?',[r.ke],function(err,rrr) {
+                                            res.render("admin",{$user:req.resp,$subs:rr,$mons:rrr});
+                                        })
+                                    })
+                                }else{
+                                    //not admin user
+                                    res.render("home",{$user:req.resp,config:config});
+                                }
+                            break;
+                            default:
+                                res.render("home",{$user:req.resp,config:config});
+                            break;
+                        }
+                    }
+                    if(r.details.sub){
+                        sql.query('SELECT details FROM Users WHERE ke=? AND details NOT LIKE ?',[r.ke,'%"sub"%'],function(err,rr) {
+                            rr=rr[0];
+                            rr.details=JSON.parse(rr.details);
+                            r.details.mon_groups=rr.details.mon_groups;
+                            req.resp.details=JSON.stringify(r.details);
+                            req.fn();
+                        })
+                    }else{
+                        req.fn()
+                    }
+
+
+
+
+                }else{
+                    req.failed()
+                }
+            })
         }
     }else{
         req.failed()
-    }
-})
-//login function
-app.post('/',function (req,res){
-    if(req.body.mail&&req.body.pass){
-    sql.query('SELECT * FROM Users WHERE mail=? AND pass=?',[req.body.mail,s.md5(req.body.pass)],function(err,r) {
-        req.resp={ok:false};
-        if(!err&&r&&r[0]){
-            r=r[0];r.auth=s.md5(s.gid());
-            sql.query("UPDATE Users SET auth=? WHERE ke=? AND uid=?",[r.auth,r.ke,r.uid])
-            req.resp={ok:true,auth_token:r.auth,ke:r.ke,uid:r.uid,mail:r.mail,details:r.details};
-            r.details=JSON.parse(r.details);
-
-            req.fn=function(){
-                if(req.body.admin){
-                    //admin checkbox selected
-                    if(!r.details.sub){
-                        sql.query('SELECT uid,mail,details FROM Users WHERE ke=? AND details LIKE \'%"sub"%\'',[r.ke],function(err,rr) {
-                            sql.query('SELECT * FROM Monitors WHERE ke=?',[r.ke],function(err,rrr) {
-                                res.render("admin",{$user:req.resp,$subs:rr,$mons:rrr});
-                            })
-                        })
-                    }else{
-                        //not admin user
-                        res.render("home",{$user:req.resp,config:config});
-                    }
-                }else{
-                    //no admin checkbox selected
-                    if(!req.body.recorder){
-                        //dashboard
-                        res.render("home",{$user:req.resp,config:config});
-                    }else{
-                        //streamer
-                        sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
-                            req.resp.mons=rr;
-                            res.render("streamer",{$user:req.resp});
-                        })
-                    }
-                }
-            }
-            if(r.details.sub){
-                sql.query('SELECT details FROM Users WHERE ke=? AND details NOT LIKE ?',[r.ke,'%"sub"%'],function(err,rr) {
-                    rr=rr[0];
-                    rr.details=JSON.parse(rr.details);
-                    r.details.mon_groups=rr.details.mon_groups;
-                    req.resp.details=JSON.stringify(r.details);
-                    req.fn();
-                })
-            }else{
-                req.fn()
-            }
-
-
-
-
-        }else{
-            res.render("index",{failedLogin:true});
-            res.end();
-        }
-    })
     }
 });
 // Get HLS stream (m3u8)
@@ -2344,6 +2339,7 @@ app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
             return
         }
         req.sql='SELECT * FROM Videos WHERE ke=?';req.ar=[req.params.ke];
+        req.count_sql='SELECT COUNT(*) FROM Videos WHERE ke=?';req.count_ar=[req.params.ke];
         if(!req.params.id){
             if(user.details.sub&&user.details.monitors&&user.details.allmonitors!=='1'){
                 try{user.details.monitors=JSON.parse(user.details.monitors);}catch(er){}
@@ -2352,10 +2348,12 @@ app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
                     req.or.push('mid=?');req.ar.push(v)
                 })
                 req.sql+=' AND ('+req.or.join(' OR ')+')'
+                req.count_sql+=' AND ('+req.or.join(' OR ')+')'
             }
         }else{
             if(!user.details.sub||user.details.allmonitors!=='0'||user.details.monitors.indexOf(req.params.id)>-1){
                 req.sql+=' and mid=?';req.ar.push(req.params.id)
+                req.count_sql+=' and mid=?';req.count_ar.push(req.params.id)
             }else{
                 res.send('[]');return;
             }
@@ -2365,20 +2363,34 @@ app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
             if(req.query.end&&req.query.end!==''){
                 req.query.end=req.query.end.replace('T',' ')
                 req.sql+=' AND `time` >= ? AND `time` <= ?';
+                req.count_sql+=' AND `time` >= ? AND `time` <= ?';
                 req.ar.push(req.query.start)
                 req.ar.push(req.query.end)
+                req.count_ar.push(req.query.start)
+                req.count_ar.push(req.query.end)
             }else{
                 req.sql+=' AND `time` >= ?';
+                req.count_sql+=' AND `time` >= ?';
                 req.ar.push(req.query.start)
+                req.count_ar.push(req.query.start)
             }
         }
         if(!req.query.limit||req.query.limit==''){req.query.limit=100}
         req.sql+=' ORDER BY `time` DESC LIMIT '+req.query.limit+'';
         sql.query(req.sql,req.ar,function(err,r){
+        sql.query(req.count_sql,req.count_ar,function(err,count){
             r.forEach(function(v){
                 v.href='/'+req.params.auth+'/videos/'+v.ke+'/'+v.mid+'/'+s.moment(v.time)+'.'+v.ext;
             })
-            res.send(s.s(r, null, 3));
+            if(req.query.limit.indexOf(',')>-1){
+                req.skip=parseInt(req.query.limit.split(',')[0])
+                req.limit=parseInt(req.query.limit.split(',')[0])
+            }else{
+                req.skip=0
+                req.limit=parseInt(req.query.limit)
+            }
+            res.send(s.s({total:count[0]['COUNT(*)'],limit:req.limit,skip:req.skip,videos:r}, null, 3));
+        })
         })
     },res,req);
 });
@@ -2420,8 +2432,8 @@ app.get(['/:auth/events/:ke','/:auth/events/:ke/:id','/:auth/events/:ke/:id/:lim
                 req.ar.push(decodeURIComponent(req.params.start))
             }
         }
-        if(!req.params.limit||req.params.limit==''){req.params.limit=100}
-        req.sql+=' ORDER BY `time` DESC LIMIT '+req.params.limit+'';
+//        if(!req.params.limit||req.params.limit==''){req.params.limit=100}
+//        req.sql+=' ORDER BY `time` DESC LIMIT '+req.params.limit+'';
         sql.query(req.sql,req.ar,function(err,r){
             if(err){err.sql=req.sql;return res.send(s.s(err, null, 3));}
             if(!r){r=[]}

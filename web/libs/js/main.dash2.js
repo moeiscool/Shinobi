@@ -520,8 +520,10 @@ $.ccio={fr:$('#files_recent'),mon:{}};
     }
 $.ccio.ws=io(location.origin);
 $.ccio.ws.on('connect',function (d){
-    $.ccio.init('id',$user);
-    $.ccio.cx({f:'init',ke:$user.ke,auth:$user.auth_token,uid:$user.uid})
+    $(document).ready(function(e){
+        $.ccio.init('id',$user);
+        $.ccio.cx({f:'init',ke:$user.ke,auth:$user.auth_token,uid:$user.uid})
+    })
 })
 PNotify.prototype.options.styling = "fontawesome";
 $.ccio.ws.on('ping', function(d){
@@ -827,7 +829,7 @@ $.ccio.ws.on('f',function (d){
             if(d.e.find('.videos_monitor_list li').length===0){
                 d.dr=$('#videos_viewer_daterange').data('daterangepicker');
                 $.getJSON('/'+$user.auth_token+'/videos/'+d.ke+'/'+d.id+'?limit=10',function(f){
-                    $.ccio.pm(0,{videos:f,ke:d.ke,mid:d.id})
+                    $.ccio.pm(0,{videos:f.videos,ke:d.ke,mid:d.id})
                 })
             }
         break;
@@ -1397,7 +1399,7 @@ $.sM.f.on('click','.mon_groups .add',function(e){
     $.sM.g.change();
 });
 //videos window
-$.vidview={e:$('#videos_viewer')};
+$.vidview={e:$('#videos_viewer'),pages:$('#videos_viewer_pages'),limit:$('#videos_viewer_limit')};
 $.vidview.f=$.vidview.e.find('form')
 $('#videos_viewer_daterange').daterangepicker({
     startDate:moment().subtract(moment.duration("24:00:00")),
@@ -1420,6 +1422,11 @@ $.vidview.e.on('change','#videos_select_all',function(e){
         e.a.prop('checked',false)
     }
 })
+$.vidview.e.find('form').submit(function(e){
+    e.preventDefault();
+    $.vidview.launcher.click()
+    return false;
+})
 $.vidview.e.find('.delete_selected').click(function(e){
     e.s=$.vidview.f.serializeObject();
     $.confirm.e.modal('show');
@@ -1435,6 +1442,21 @@ $.vidview.e.find('.delete_selected').click(function(e){
             $.ccio.cx({f:'video',ff:'delete',filename:n[0],ext:n[1],mid:v});
         })
     });
+})
+$.vidview.pages.on('click','[page]',function(e){
+    e.limit=$.vidview.limit.val();
+    e.page=$(this).attr('page');
+    $.vidview.current_page=e.page;
+    if(e.limit.replace(/ /g,'')===''){
+        e.limit='100';
+    }
+    if(e.limit.indexOf(',')>-1){
+        e.limit=parseInt(e.limit.split(',')[1])
+    }else{
+        e.limit=parseInt(e.limit)
+    }
+    $.vidview.limit.val((parseInt(e.page)-1)+'00,'+e.limit)
+    $.vidview.launcher.click()
 })
 //POWER videos window
 $.pwrvid={e:$('#pvideo_viewer')};
@@ -1554,7 +1576,7 @@ $.pwrvid.drawTimeline=function(mid){
                     items.push({src:v,x:v.time,yy:v.details.confidence})
                 });
             }
-            $.each(videos,function(n,v){
+            $.each(videos.videos,function(n,v){
                 v.mon=$.ccio.mon[v.mid];
                 v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
                 if(v.status>0){
@@ -1764,17 +1786,46 @@ $('body')
         break;
         case'videos_table':case'calendar'://call videos table or calendar
             $.vidview.launcher=$(this);
+            e.limit=$.vidview.limit.val();
+            if(!$.vidview.current_mid||$.vidview.current_mid!==e.mid){
+                $.vidview.current_mid=e.mid
+                $.vidview.current_page=1;
+                if(e.limit.replace(/ /g,'')===''){
+                    e.limit='100';
+                }
+                if(e.limit.indexOf(',')===-1){
+                    e.limit='0,'+e.limit
+                }else{
+                    e.limit='0,'+e.limit.split(',')[1]
+                }
+                $.vidview.limit.val(e.limit)
+            }
             e.dateRange=$('#videos_viewer_daterange').data('daterangepicker');
-            e.videoURL='/'+$user.auth_token+'/videos/'+e.ke+'/'+e.mid+'?limit=100&start='+$.ccio.init('th',e.dateRange.startDate)+'&end='+$.ccio.init('th',e.dateRange.endDate);
+            e.videoURL='/'+$user.auth_token+'/videos/'+e.ke+'/'+e.mid+'?limit='+e.limit+'&start='+$.ccio.init('th',e.dateRange.startDate)+'&end='+$.ccio.init('th',e.dateRange.endDate);
             $.getJSON(e.videoURL,function(d){
-                e.v=$.vidview.e;e.o=e.v.find('.options').hide()
+                d.pages=d.total/100;
+                $('.video_viewer_total').text(d.total)
+                if(d.pages+''.indexOf('.')>-1){++d.pages}
+                $.vidview.page_count=d.pages;
+                d.count=1
+                $.vidview.pages.empty()
+                d.fn=function(drawOne){
+                    if(d.count<=$.vidview.page_count){
+                        $.vidview.pages.append('<a class="btn btn-primary" page="'+d.count+'">'+d.count+'</a> ')
+                        ++d.count;
+                        d.fn()
+                    }
+                }
+                d.fn()
+                $.vidview.pages.find('[page="'+$.vidview.current_page+'"]').addClass('active')
+                e.v=$.vidview.e;
                 e.b=e.v.modal('show').find('.modal-body .contents');
                 e.t=e.v.find('.modal-title i');
                 switch(e.a){
                     case'calendar':
                        e.t.attr('class','fa fa-calendar')
                        e.ar=[];
-                        $.each(d,function(n,v){
+                        $.each(d.videos,function(n,v){
                             if(v.status!==0){
                                 var n=$.ccio.mon[v.mid];
                                 if(n){v.title=n.name+' - '+(parseInt(v.size)/1000000).toFixed(2)+'mb';}
@@ -1804,7 +1855,6 @@ $('body')
                     break;
                     case'videos_table':
                         e.t.attr('class','fa fa-film')
-                        e.o.show();
                         e.tmp='<table class="table table-striped" style="max-height:500px">';
                         e.tmp+='<thead>';
                         e.tmp+='<tr>';
@@ -1821,7 +1871,7 @@ $('body')
                         e.tmp+='</tr>';
                         e.tmp+='</thead>';
                         e.tmp+='<tbody>';
-                        $.each(d,function(n,v){
+                        $.each(d.videos,function(n,v){
                             if(v.status!==0){
                                 v.mon=$.ccio.mon[v.mid];
                                 v.start=v.time;
