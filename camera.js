@@ -743,7 +743,7 @@ s.camera=function(x,e,cn,tx){
                 s.group[e.ke].mon[e.id].motion_lock=setTimeout(function(){
                     clearTimeout(s.group[e.ke].mon[e.id].motion_lock);
                     delete(s.group[e.ke].mon[e.id].motion_lock);
-                },20000)
+                },30000)
             }
             //every 15 minutes start a new file.
             s.group[e.ke].mon[e.id].started=1;
