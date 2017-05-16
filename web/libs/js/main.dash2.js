@@ -1088,8 +1088,8 @@ $.pB={e:$('#probe')};$.pB.f=$.pB.e.find('form');$.pB.o=$.pB.e.find('.output_data
 $.pB.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
     e.s.url=e.s.url.trim();
-    if(e.s.url.indexOf('-i ')===-1){
-        e.s.url='-i '+e.s.url
+    if(e.s.url.indexOf('{{JSON}}')>-1){
+        e.s.url='-v quiet -print_format json -show_format -show_streams '+e.s.url
     }
     $.ccio.cx({f:'ffprobe',query:e.s.url})
     return false;
