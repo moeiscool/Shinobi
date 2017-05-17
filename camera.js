@@ -1255,6 +1255,8 @@ var tx;
                     if(s.ocv){
                         tx({f:'detector_plugged',plug:s.ocv.plug})
                     }
+                    tx({f:'users_online',users:s.group[d.ke].users})
+                    s.tx({f:'user_status_change',ke:d.ke,uid:cn.uid,status:1,user:s.group[d.ke].users[d.auth]})
                     d.used_space_info={f:'diskUsed',size:s.group[d.ke].users[d.auth].details.used_space,limit:s.group[d.ke].users[d.auth].details.size,ke:r.ke};
                     if(s.group[d.ke].users[d.auth].details.sub&&!d.used_space_info.used_space){
                         sql.query('SELECT details FROM Users WHERE ke=? AND details NOT LIKE ?',[d.ke,'%"sub"%'],function(err,r) {
@@ -1978,6 +1980,7 @@ var tx;
                 }
             }
             if(!cn.embedded){
+                s.tx({f:'user_status_change',ke:cn.ke,uid:cn.uid,status:0})
                 delete(s.group[cn.ke].users[cn.auth]);
             }
         }

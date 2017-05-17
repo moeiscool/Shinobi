@@ -390,6 +390,9 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 }
                 k.e.append(tmp).find('.stream-element').resize();
             break;
+            case'user-row':
+                tmp+='';
+            break;
             case'filters-where':
                 if(!d)d={};
                 d.id=$('#filters_where .row').length;
@@ -552,6 +555,12 @@ $.ccio.ws.on('f',function (d){
             new PNotify({title:'Settings Changed',text:'Your settings have been saved and applied.',type:'success'});
             $.ccio.init('id',d.form);
             $('#custom_css').append(d.form.details.css)
+        break;
+        case'users_online':
+            
+        break;
+        case'user_status_change':
+
         break;
         case'ffprobe_stop':
             $.pB.o.append('<div><b>END</b></div>');
