@@ -1246,7 +1246,7 @@ var tx;
 //                    if(!s.group[d.ke].vid)s.group[d.ke].vid={};
                     if(!s.group[d.ke].users)s.group[d.ke].users={};
 //                    s.group[d.ke].vid[cn.id]={uid:d.uid};
-                    s.group[d.ke].users[d.auth]={cnid:cn.id,uid:r.uid}
+                    s.group[d.ke].users[d.auth]={cnid:cn.id,uid:r.uid,logged_in_at:moment(new Date).format()}
                     try{s.group[d.ke].users[d.auth].details=JSON.parse(r.details)}catch(er){}
                     if(!s.group[d.ke].mon){
                         s.group[d.ke].mon={}
@@ -1980,7 +1980,6 @@ var tx;
             if(!cn.embedded){
                 delete(s.group[cn.ke].users[cn.auth]);
             }
-//            delete(s.group[cn.ke].vid[cn.id]);
         }
         if(cn.ocv){
             s.tx({f:'detector_unplugged',plug:s.ocv.plug},'CPU')
@@ -2619,7 +2618,7 @@ app.get('/:auth/motion/:ke/:id', function (req,res){
     s.auth(req.params,function(){
         if(req.query.data){
             try{
-                var d=JSON.parse(req.query.data);
+                var d={id:req.params.id,ke:req.params.ke,details:JSON.parse(req.query.data)};
             }catch(err){
                 res.end('Data Broken');
                 return;
