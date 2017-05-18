@@ -1,22 +1,22 @@
 version: '2'
 services:
-   shinobi:
-     container_name: shinobi
-     build: 
-       context: .
-     depends_on: 
-       - mysql
-     links:
-       - mysql:mysql
-     restart: always
-     environment:
-       - MYSQL_USER=shinobi
-       - MYSQL_DATABASE=cctv
-       - MYSQL_PASSWORD=shinobi_pass
-       - MYSQL_ROOT_PASSWORD=rootpass
-     ports:
-       - "8080:8080"
-   mysql:
-     image: mysql:latest
-     environment:
-       - MYSQL_ROOT_PASSWORD=rootpass
+  shinobi:
+    container_name: shinobi
+    build:
+      context: .
+    depends_on:
+      - mysql
+    restart: always
+    environment:
+      - MYSQL_HOST=shinobi-db
+      - MYSQL_USER=shinobi
+      - MYSQL_DATABASE=cctv
+      - MYSQL_PASSWORD=shinobi_pass
+      - MYSQL_ROOT_PASSWORD=rootpass
+    ports:
+      - "8080:8080"
+  mysql:
+    image: mysql:latest
+    container_name: shinobi-db
+    environment:
+     - MYSQL_ROOT_PASSWORD=rootpass
