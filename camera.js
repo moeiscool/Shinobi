@@ -724,6 +724,11 @@ s.camera=function(x,e,cn,tx){
             if(s.group[e.ke].mon[e.id].last_frame){delete(s.group[e.ke].mon[e.id].last_frame)}
             if(s.group[e.ke].mon[e.id].started!==1){return}
             s.kill(s.group[e.ke].mon[e.id].spawn,e);
+            if(e.neglectTriggerTimer===1){
+                delete(e.neglectTriggerTimer);
+            }else{
+                clearTimeout(s.group[e.ke].mon[e.id].trigger_timer)
+            }
             clearInterval(s.group[e.ke].mon[e.id].running);
             clearInterval(s.group[e.ke].mon[e.id].detector_notrigger_timeout)
             clearTimeout(s.group[e.ke].mon[e.id].err_fatal_timeout);
@@ -821,7 +826,7 @@ s.camera=function(x,e,cn,tx){
                     case'rename':
                         fs.exists(e.dir+filename,function(exists){
                             if(exists){
-                                if(s.group[e.ke].mon[e.id].open&&s.group[e.ke].mon[e.id].record.yes===1){
+                                if(s.group[e.ke].mon[e.id].open){
                                     s.video('close',e);
                                 }
                                 e.filename=filename.split('.')[0];
@@ -2535,24 +2540,26 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
         if(req.params.f===''){req.ret.msg='incomplete request, remove last slash in URL or put acceptable value.';res.send(s.s(req.ret, null, 3));return}
         if(req.params.f!=='stop'&&req.params.f!=='start'&&req.params.f!=='record'){
             req.ret.msg='Mode not recognized.';
-            res.send(s.s(req.ret, null, 3));
+            res.end(s.s(req.ret, null, 3));
             return;
         }
         sql.query('SELECT * FROM Monitors WHERE ke=? AND mid=?',[req.params.ke,req.params.id],function(err,r){
             if(r&&r[0]){
                 r=r[0];
-                if(r.mode!==req.params.f){
+                if(req.query.reset==='1'||s.group[r.ke]&&s.group[r.ke].mon_conf[r.mid].mode!==req.params.f){
+                    req.currentState=r.mode.toString()
                     r.mode=req.params.f;
+                    r.id=r.mid;
+                    sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',[r.mode,r.ke,r.mid]);
                     s.group[r.ke].mon_conf[r.mid]=r;
-                    s.tx({f:'monitor_edit',mid:r.id,ke:r.ke,mon:r},'GRP_'+r.ke);
-                    s.tx({f:'monitor_edit',mid:r.id,ke:r.ke,mon:r},'STR_'+r.ke);
-                    s.camera('stop',r);
+                    s.tx({f:'monitor_edit',mid:r.mid,ke:r.ke,mon:r},'GRP_'+r.ke);
+                    s.tx({f:'monitor_edit',mid:r.mid,ke:r.ke,mon:r},'STR_'+r.ke);
+                    s.camera('stop',s.init('clean',r));
                     if(req.params.f!=='stop'){
-                        s.camera(req.params.f,r);
+                        s.camera(req.params.f,s.init('clean',r));
                     }
                     req.ret.cmd_at=s.moment(new Date,'YYYY-MM-DD HH:mm:ss');
                     req.ret.msg='Monitor mode changed to : '+req.params.f,req.ret.ok=true;
-                    sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',[req.params.f,r.ke,r.mid]);
                     if(req.params.ff&&req.params.f!=='stop'){
                         req.params.ff=parseFloat(req.params.ff);
                         clearTimeout(s.group[r.ke].mon[r.mid].trigger_timer)
@@ -2571,20 +2578,27 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
                             break;
                         }
                         s.group[r.ke].mon[r.mid].trigger_timer=setTimeout(function(){
-                            sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',['stop',r.ke,r.mid]);
-                            s.camera('stop',r);r.mode='stop';s.group[r.ke].mon_conf[r.mid]=r;
-                            s.tx({f:'monitor_edit',mid:r.id,ke:r.ke,mon:r},'GRP_'+r.ke);
-                            s.tx({f:'monitor_edit',mid:r.id,ke:r.ke,mon:r},'STR_'+r.ke);
+                            sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',[req.currentState,r.ke,r.mid]);
+                            r.neglectTriggerTimer=1;
+                            r.mode=req.currentState;
+                            s.camera('stop',s.init('clean',r),function(){
+                                if(req.currentState!=='stop'){
+                                    s.camera(req.currentState,s.init('clean',r));
+                                }
+                                s.group[r.ke].mon_conf[r.mid]=r;
+                            });
+                            s.tx({f:'monitor_edit',mid:r.mid,ke:r.ke,mon:r},'GRP_'+r.ke);
+                            s.tx({f:'monitor_edit',mid:r.mid,ke:r.ke,mon:r},'STR_'+r.ke);
                         },req.timeout);
-                        req.ret.end_at=s.moment(new Date,'YYYY-MM-DD HH:mm:ss').add(req.timeout,'milliseconds');
+//                        req.ret.end_at=s.moment(new Date,'YYYY-MM-DD HH:mm:ss').add(req.timeout,'milliseconds');
                     }
-                }else{
+                 }else{
                     req.ret.msg='Monitor mode is already : '+req.params.f;
                 }
             }else{
                 req.ret.msg='Monitor or Key does not exist.';
             }
-            res.send(s.s(req.ret, null, 3));
+            res.end(s.s(req.ret, null, 3));
         })
     }
     s.auth(req.params,req.fn,res,req);
