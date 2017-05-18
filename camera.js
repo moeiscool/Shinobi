@@ -1246,7 +1246,7 @@ var tx;
 //                    if(!s.group[d.ke].vid)s.group[d.ke].vid={};
                     if(!s.group[d.ke].users)s.group[d.ke].users={};
 //                    s.group[d.ke].vid[cn.id]={uid:d.uid};
-                    s.group[d.ke].users[d.auth]={cnid:cn.id,uid:r.uid,logged_in_at:moment(new Date).format()}
+                    s.group[d.ke].users[d.auth]={cnid:cn.id,uid:r.uid,mail:r.mail,details:JSON.parse(r.details),logged_in_at:moment(new Date).format()}
                     try{s.group[d.ke].users[d.auth].details=JSON.parse(r.details)}catch(er){}
                     if(!s.group[d.ke].mon){
                         s.group[d.ke].mon={}
@@ -1256,7 +1256,7 @@ var tx;
                         tx({f:'detector_plugged',plug:s.ocv.plug})
                     }
                     tx({f:'users_online',users:s.group[d.ke].users})
-                    s.tx({f:'user_status_change',ke:d.ke,uid:cn.uid,status:1,user:s.group[d.ke].users[d.auth]})
+                    s.tx({f:'user_status_change',ke:d.ke,uid:cn.uid,status:1,user:s.group[d.ke].users[d.auth]},'GRP_'+d.ke)
                     d.used_space_info={f:'diskUsed',size:s.group[d.ke].users[d.auth].details.used_space,limit:s.group[d.ke].users[d.auth].details.size,ke:r.ke};
                     if(s.group[d.ke].users[d.auth].details.sub&&!d.used_space_info.used_space){
                         sql.query('SELECT details FROM Users WHERE ke=? AND details NOT LIKE ?',[d.ke,'%"sub"%'],function(err,r) {

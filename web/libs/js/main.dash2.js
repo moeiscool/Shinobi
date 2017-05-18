@@ -391,7 +391,16 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 k.e.append(tmp).find('.stream-element').resize();
             break;
             case'user-row':
-                tmp+='';
+                d.e=$('.user-row[uid="'+d.uid+'"][ke="'+d.ke+'"]')
+                if(d.e.length===0){
+                    tmp+='<li class="user-row" uid="'+d.uid+'" ke="'+d.ke+'">';
+                    tmp+='<span><div><span class="mail">'+d.mail+'</span> : <b class="uid">'+d.uid+'</b></div><span>Logged in</span> <b class="time livestamped" title="'+d.logged_in_at+'"></b></span>';
+                    tmp+='</li>';
+                }else{
+                    d.e.find('.mail').text(d.mail)
+                    d.e.find('.time').livestamp('destroy').toggleClass('livestamped livestamp').text(d.logged_in_at)
+                }
+                $.ccio.init('ls')
             break;
             case'filters-where':
                 if(!d)d={};
@@ -497,6 +506,12 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                     tmp+=$.ccio.tm('option',v);
                 })
             break;
+            case'user-row':
+                $.each(d,function(n,v){
+                    tmp+=$.ccio.tm('user-row',v);
+                })
+                z='#users_online'
+            break;
         }
         if(z){
             $(z).prepend(tmp)
@@ -557,10 +572,14 @@ $.ccio.ws.on('f',function (d){
             $('#custom_css').append(d.form.details.css)
         break;
         case'users_online':
-            
+            $.ccio.pm('user-row',d.users);
         break;
         case'user_status_change':
-
+            if(d.status===1){
+                $.ccio.tm('user-row',d.user)
+            }else{
+                $('.user-row[uid="'+d.uid+'"][ke="'+d.ke+'"]').remove()
+            }
         break;
         case'ffprobe_stop':
             $.pB.o.append('<div><b>END</b></div>');
