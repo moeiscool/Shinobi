@@ -2548,10 +2548,10 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
             if(r&&r[0]){
                 r=r[0];
                 if(req.query.reset==='1'||(s.group[r.ke]&&s.group[r.ke].mon_conf[r.mid].mode!==req.params.f)){
-                    req.currentState=r.mode.toString()
-                    r.mode=req.params.f;
-                    r.id=r.mid;
                     if(req.query.reset!=='1'||!s.group[r.ke].mon[r.mid].trigger_timer){
+                        s.group[r.ke].mon[r.mid].currentState=r.mode.toString()
+                        r.mode=req.params.f;
+                        r.id=r.mid;
                         sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',[r.mode,r.ke,r.mid]);
                         s.group[r.ke].mon_conf[r.mid]=r;
                         s.tx({f:'monitor_edit',mid:r.mid,ke:r.ke,mon:r},'GRP_'+r.ke);
@@ -2585,12 +2585,12 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
                         }
                         s.group[r.ke].mon[r.mid].trigger_timer=setTimeout(function(){
                             delete(s.group[r.ke].mon[r.mid].trigger_timer)
-                            sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',[req.currentState,r.ke,r.mid]);
+                            sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',[s.group[r.ke].mon[r.mid].currentState,r.ke,r.mid]);
                             r.neglectTriggerTimer=1;
-                            r.mode=req.currentState;
+                            r.mode=s.group[r.ke].mon[r.mid].currentState;
                             s.camera('stop',s.init('noReference',r),function(){
-                                if(req.currentState!=='stop'){
-                                    s.camera(req.currentState,s.init('noReference',r));
+                                if(s.group[r.ke].mon[r.mid].currentState!=='stop'){
+                                    s.camera(s.group[r.ke].mon[r.mid].currentState,s.init('noReference',r));
                                 }
                                 s.group[r.ke].mon_conf[r.mid]=r;
                             });
