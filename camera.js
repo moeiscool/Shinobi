@@ -164,7 +164,7 @@ s.kill=function(x,e,p){
 //            if(s.group[e.ke].mon[e.id].record.request){s.group[e.ke].mon[e.id].record.request.abort();delete(s.group[e.ke].mon[e.id].record.request);}
         };
         if(s.group[e.ke].mon[e.id].child_node){
-            s.cx({f:'kill',d:s.init('clean',e)},s.group[e.ke].mon[e.id].child_node_id)
+            s.cx({f:'kill',d:s.init('noReference',e)},s.group[e.ke].mon[e.id].child_node_id)
         }else{
             if(!x||x===1){return};p=x.pid;x.stdin.pause();setTimeout(function(){x.kill('SIGTERM');delete(x);setTimeout(function(){exec('kill -9 '+p)},1000)},1000)
         }
@@ -253,11 +253,11 @@ s.init=function(x,e){
             e.cn=Object.keys(s.child_nodes);
             e.cn.forEach(function(v){
                 if(s.group[e.ke]){
-                   s.cx({f:'sync',sync:s.init('clean',s.group[e.ke].mon[e.mid]),ke:e.ke,mid:e.mid},s.child_nodes[v].cnid);
+                   s.cx({f:'sync',sync:s.init('noReference',s.group[e.ke].mon[e.mid]),ke:e.ke,mid:e.mid},s.child_nodes[v].cnid);
                 }
             });
         break;
-        case'clean':
+        case'noReference':
             x={keys:Object.keys(e),ar:{}};
             x.keys.forEach(function(v){
                 if(v!=='last_frame'&&v!=='record'&&v!=='spawn'&&v!=='running'&&(v!=='time'&&typeof e[v]!=='function')){x.ar[v]=e[v];}
@@ -364,7 +364,7 @@ s.video=function(x,e){
             if(s.group[e.ke]&&s.group[e.ke].mon[e.id]){
                 if(s.group[e.ke].mon[e.id].open&&!e.filename){e.filename=s.group[e.ke].mon[e.id].open;e.ext=s.group[e.ke].mon[e.id].open_ext}
                 if(s.group[e.ke].mon[e.id].child_node){
-                    s.cx({f:'close',d:s.init('clean',e)},s.group[e.ke].mon[e.id].child_node_id);
+                    s.cx({f:'close',d:s.init('noReference',e)},s.group[e.ke].mon[e.id].child_node_id);
                 }else{
                     if(fs.existsSync(e.dir+e.filename+'.'+e.ext)===true){
                         e.stat=fs.statSync(e.dir+e.filename+'.'+e.ext);
@@ -613,7 +613,7 @@ s.file=function(x,e){
 }
 s.camera=function(x,e,cn,tx){
     if(x!=='motion'){
-        var ee=s.init('clean',e);
+        var ee=s.init('noReference',e);
         if(!e){e={}};if(cn&&cn.ke&&!e.ke){e.ke=cn.ke};
         if(!e.mode){e.mode=x;}
         if(!e.id&&e.mid){e.id=e.mid}
@@ -743,7 +743,7 @@ s.camera=function(x,e,cn,tx){
         break;
         case'start':case'record'://watch or record monitor url
             s.init(0,{ke:e.ke,mid:e.id})
-            if(!s.group[e.ke].mon_conf[e.id]){s.group[e.ke].mon_conf[e.id]=s.init('clean',e);}
+            if(!s.group[e.ke].mon_conf[e.id]){s.group[e.ke].mon_conf[e.id]=s.init('noReference',e);}
             e.url=s.init('url',e);
             if(s.group[e.ke].mon[e.id].started===1){return}
             if(x==='start'&&e.details.detector_trigger=='1'){
@@ -1092,7 +1092,7 @@ s.camera=function(x,e,cn,tx){
                                 e.frames=0;
                                 s.group[e.ke].mon[e.id].spawn={};
                                 s.group[e.ke].mon[e.id].child_node=n;
-                                s.cx({f:'spawn',d:s.init('clean',e),mon:s.init('clean',s.group[e.ke].mon[e.mid])},s.group[e.ke].mon[e.mid].child_node_id)
+                                s.cx({f:'spawn',d:s.init('noReference',e),mon:s.init('noReference',s.group[e.ke].mon[e.mid])},s.group[e.ke].mon[e.mid].child_node_id)
                             }else{
                                 console.log('Cannot Connect, Retrying...',e.id);e.error_fatal();return;
                             }
@@ -2554,9 +2554,9 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
                     s.group[r.ke].mon_conf[r.mid]=r;
                     s.tx({f:'monitor_edit',mid:r.mid,ke:r.ke,mon:r},'GRP_'+r.ke);
                     s.tx({f:'monitor_edit',mid:r.mid,ke:r.ke,mon:r},'STR_'+r.ke);
-                    s.camera('stop',s.init('clean',r));
+                    s.camera('stop',s.init('noReference',r));
                     if(req.params.f!=='stop'){
-                        s.camera(req.params.f,s.init('clean',r));
+                        s.camera(req.params.f,s.init('noReference',r));
                     }
                     req.ret.cmd_at=s.moment(new Date,'YYYY-MM-DD HH:mm:ss');
                     req.ret.msg='Monitor mode changed to : '+req.params.f,req.ret.ok=true;
@@ -2581,9 +2581,9 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
                             sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',[req.currentState,r.ke,r.mid]);
                             r.neglectTriggerTimer=1;
                             r.mode=req.currentState;
-                            s.camera('stop',s.init('clean',r),function(){
+                            s.camera('stop',s.init('noReference',r),function(){
                                 if(req.currentState!=='stop'){
-                                    s.camera(req.currentState,s.init('clean',r));
+                                    s.camera(req.currentState,s.init('noReference',r));
                                 }
                                 s.group[r.ke].mon_conf[r.mid]=r;
                             });
