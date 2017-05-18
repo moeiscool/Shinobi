@@ -15,3 +15,4 @@ ALTER TABLE Videos MODIFY COLUMN `ext` varchar(15);
 ALTER TABLE Videos ADD `details` longtext;
 ALTER TABLE Videos DROP COLUMN `frames`;
 ALTER TABLE Videos DROP COLUMN `duration`;
+UPDATE Videos SET details='{}' WHERE details IS NULL;
