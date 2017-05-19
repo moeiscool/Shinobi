@@ -677,11 +677,18 @@ $.ccio.ws.on('f',function (d){
         case'get_videos':
             $.ccio.pm(0,d)
         break;
-        case'video_fix_start':
-            $('[mid="'+d.mid+'"][ke="'+d.ke+'"] [video="fix"] i').removeClass('fa-wrench').addClass('fa-pulse fa-spinner')
-        break;
-        case'video_fix_success':
-            $('[mid="'+d.mid+'"][ke="'+d.ke+'"] [video="fix"] i').addClass('fa-wrench').removeClass('fa-pulse fa-spinner')
+         case'video_fix_success':case'video_fix_start':
+            switch(d.f){
+                case'video_fix_success':
+                    d.addClass='fa-wrench'
+                    d.removeClass='fa-pulse fa-spinner'
+                break;
+                case'video_fix_start':
+                    d.removeClass='fa-wrench'
+                    d.addClass='fa-pulse fa-spinner'
+                break;
+            }
+            $('[mid="'+d.mid+'"][ke="'+d.ke+'"][file="'+d.filename+'"] [video="fix"] i,[data-mid="'+d.mid+'"][data-ke="'+d.ke+'"][data-file="'+d.filename+'"] [video="fix"] i').addClass(d.addClass).removeClass(d.removeClass)
         break;
         case'video_edit':case'video_archive':
             $.ccio.init('data-video',d)
