@@ -210,6 +210,7 @@ s.init=function(x,e){
             if(!s.group[e.ke].users){s.group[e.ke].users={}}
             if(!s.group[e.ke].mon[e.mid]){s.group[e.ke].mon[e.mid]={}}
             if(!s.group[e.ke].mon[e.mid].watch){s.group[e.ke].mon[e.mid].watch={}};
+            if(!s.group[e.ke].mon[e.mid].fixingVideos){s.group[e.ke].mon[e.mid].fixingVideos={}};
             if(e.type==='record'){e.record=1}else{e.record=0}
             if(!s.group[e.ke].mon[e.mid].record){s.group[e.ke].mon[e.mid].record={yes:e.record}};
             if(!s.group[e.ke].mon[e.mid].started){s.group[e.ke].mon[e.mid].started=0};
@@ -334,6 +335,34 @@ s.video=function(x,e){
     if(!e){e={}};
     if(e.mid&&!e.id){e.id=e.mid};
     switch(x){
+        case'fix':
+            e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
+            e.sdir=s.dir.streams+e.ke+'/'+e.id+'/';
+            if(!e.filename&&e.time){e.filename=s.moment(e.time)}
+            if(e.filename.indexOf('.')===-1){
+                e.filename=e.filename+'.'+e.ext
+            }
+            s.tx({f:'video_fix_start',mid:e.mid,ke:e.ke,filename:e.filename},'GRP_'+e.ke)
+            s.group[e.ke].mon[e.id].fixingVideos[e.filename]={}
+            switch(e.ext){
+                case'mp4':
+                    e.fixFlags='-vcodec libx264 -acodec aac -strict -2';
+                break;
+                case'webm':
+                    e.fixFlags='-vcodec libvpx -acodec libvorbis';
+                break;
+            }
+            e.spawn=spawn('ffmpeg',('-i '+e.dir+e.filename+' '+e.fixFlags+' '+e.sdir+e.filename).split(' '))
+            e.spawn.stdout.on('data',function(data){
+                s.tx({f:'video_fix_data',mid:e.mid,ke:e.ke,filename:e.filename},'GRP_'+e.ke)
+            });
+            e.spawn.on('close',function(data){
+                exec('mv '+e.dir+e.filename+' '+e.sdir+e.filename).on('exit',function(){
+                    s.tx({f:'video_fix_success',mid:e.mid,ke:e.ke,filename:e.filename},'GRP_'+e.ke)
+                    delete(s.group[e.ke].mon[e.id].fixingVideos[e.filename]);
+                })
+            });
+        break;
         case'archive':
             e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
             if(!e.filename&&e.time){e.filename=s.moment(e.time)}
@@ -814,6 +843,7 @@ s.camera=function(x,e,cn,tx){
             if(!e.details.cutoff||e.details.cutoff===''){e.cutoff=15}else{e.cutoff=parseFloat(e.details.cutoff)};
             if(isNaN(e.cutoff)===true){e.cutoff=15}
             s.group[e.ke].mon[e.id].fswatch=fs.watch(e.dir,{encoding:'utf8'},function(eventType,filename){
+                if(s.group[e.ke].mon[e.id].fixingVideos[filename]){return}
                 switch(eventType){
                     case'change':
                         clearTimeout(s.group[e.ke].mon[e.id].checker)
@@ -1594,6 +1624,9 @@ var tx;
                 break;
                 case'video':
                     switch(d.ff){
+                        case'fix':
+                            s.video('fix',d)
+                        break;
                         case'delete':
                             s.video('delete',d)
                         break;
@@ -2675,6 +2708,10 @@ app.get(['/:auth/videos/:ke/:id/:file/:mode','/:auth/videos/:ke/:id/:file/:mode/
             if(r&&r[0]){
                 r=r[0];r.filename=s.moment(r.time)+'.'+r.ext;
                 switch(req.params.mode){
+                    case'fix':
+                        req.ret.ok=true;
+                        s.video('fix',r)
+                    break;
                     case'status':
                         req.params.f=parseInt(req.params.f)
                         if(isNaN(req.params.f)||req.params.f===0){

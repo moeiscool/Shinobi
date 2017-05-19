@@ -677,6 +677,12 @@ $.ccio.ws.on('f',function (d){
         case'get_videos':
             $.ccio.pm(0,d)
         break;
+        case'video_fix_start':
+            $('[mid="'+d.mid+'"][ke="'+d.ke+'"] [video="fix"] i').removeClass('fa-wrench').addClass('fa-pulse fa-spinner')
+        break;
+        case'video_fix_success':
+            $('[mid="'+d.mid+'"][ke="'+d.ke+'"] [video="fix"] i').addClass('fa-wrench').removeClass('fa-pulse fa-spinner')
+        break;
         case'video_edit':case'video_archive':
             $.ccio.init('data-video',d)
             d.e=$('[file="'+d.filename+'"][mid="'+d.mid+'"][ke="'+d.ke+'"]');
@@ -1692,6 +1698,17 @@ $('body')
                 })
             }
         break;
+        case'fix':
+            $.confirm.e.modal('show');
+            $.confirm.title.text('Fix Video : '+e.file)
+            e.html='Do you want to fix this video? You cannot undo this action.'
+            e.html+='<video class="video_video" autoplay loop controls><source src="'+e.p.find('[download]').attr('href')+'" type="video/'+e.mon.ext+'"></video>';
+            $.confirm.body.html(e.html)
+            $.confirm.click({title:'Fix Video',class:'btn-warning'},function(){
+                e.file=e.file.split('.')
+                $.ccio.cx({f:'video',ff:'fix',filename:e.file[0],ext:e.file[1],ke:e.ke,mid:e.mid});
+            });
+        break;
         case'delete':
             $.confirm.e.modal('show');
             $.confirm.title.text('Delete Video : '+e.file)
@@ -1896,6 +1913,7 @@ $('body')
                         e.tmp+='<th data-field="Watch" data-sortable="true">Watch</th>';
                         e.tmp+='<th data-field="Download" data-sortable="true">Download</th>';
                         e.tmp+='<th class="permission_video_delete" data-field="Delete" data-sortable="true">Delete</th>';
+                        e.tmp+='<th class="permission_video_delete" data-field="Fix" data-sortable="true">Fix</th>';
                         e.tmp+='</tr>';
                         e.tmp+='</thead>';
                         e.tmp+='<tbody>';
@@ -1915,6 +1933,7 @@ $('body')
                                 e.tmp+='<td><a class="btn btn-sm btn-primary" video="launch" href="'+v.href+'">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a></td>';
                                 e.tmp+='<td><a class="btn btn-sm btn-success" download="'+v.mid+'-'+v.filename+'" href="'+v.href+'">&nbsp;<i class="fa fa-download"></i>&nbsp;</a></td>';
                                 e.tmp+='<td class="permission_video_delete"><a class="btn btn-sm btn-danger" video="delete">&nbsp;<i class="fa fa-trash"></i>&nbsp;</a></td>';
+                                e.tmp+='<td class="permission_video_delete"><a class="btn btn-sm btn-warning" video="fix">&nbsp;<i class="fa fa-wrench"></i>&nbsp;</a></td>';
                                 e.tmp+='</tr>';
                             }
                         })
