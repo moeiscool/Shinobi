@@ -809,3 +809,10 @@ ul.msg_list li .message {
 .vis-time-axis .vis-text{color: #dedede}
 .vis-item.vis-range .vis-item-content{background:#333;color:#fff}
 .vis-time-axis .vis-grid.vis-minor{border-color:#444}
+
+
+@-moz-document url-prefix() {
+    .full.modal .modal-body, .medium.modal .modal-body {
+        height:70%
+    }
+}
