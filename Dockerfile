@@ -3,6 +3,7 @@ COPY . /opt/shinobi
 WORKDIR /opt/shinobi
 
 ENV MYSQL_HOST="shinobi-db" \
+    MYSQL_DATABASE="shinobi" \
     MYSQL_ROOT_USER="root" \
     MYSQL_ROOT_PASSWORD="rootpass" \
     MYSQL_USER="ccio" \

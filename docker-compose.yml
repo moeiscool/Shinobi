@@ -9,14 +9,17 @@ services:
     restart: always
     environment:
       - MYSQL_HOST=shinobi-db
+      - MYSQL_DATABASE=shinobi
       - MYSQL_USER=shinobi
-      - MYSQL_DATABASE=cctv
       - MYSQL_PASSWORD=shinobi_pass
       - MYSQL_ROOT_PASSWORD=rootpass
     ports:
-      - "8080:8080"
+      - "8088:8080"
   mysql:
-    image: mysql:latest
+    image: mysql:8
     container_name: shinobi-db
     environment:
-     - MYSQL_ROOT_PASSWORD=rootpass
+      - MYSQL_DATABASE=shinobi
+      - MYSQL_ROOT_PASSWORD=rootpass
+      - MYSQL_USER=shinobi
+      - MYSQL_PASSWORD=shinobi_pass
