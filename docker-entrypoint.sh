@@ -1,10 +1,13 @@
 #!/bin/bash
+
 SHIN_BIN_DIR=/opt/shinobi
-MYSQL_USER="${MYSQL_USER:-ccio}"
+MYSQL_HOST="${MYSQL_HOST:-shinobi-db}"
 MYSQL_ROOT_USER="${MYSQL_ROOT_USER:-root}"
-MYSQL_HOST="${MYSQL_HOST:-mysql}"
-MYSQL_PASSWORD="${MYSQL_PASSWORD:-testpass}"
-cd /opt/shinobi
+MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD:-rootpass}"
+MYSQL_USER="${MYSQL_USER:-ccio}"
+MYSQL_PASSWORD="${MYSQL_PASSWORD:-shinobi}"
+
+cd "$SHIN_BIN_DIR" || exit 9
 tables_check="select count(*) from information_schema.tables where table_schema='API' and table_name='${MYSQL_DATABASE}';"
 tables_num=$(/usr/bin/mysql -N -s -u ${MYSQL_ROOT_USER} -p${MYSQL_ROOT_PASSWORD} -h ${MYSQL_HOST} -e "${tables_check}")
 echo $tables_num
