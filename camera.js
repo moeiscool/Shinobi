@@ -164,7 +164,7 @@ s.kill=function(x,e,p){
 //            if(s.group[e.ke].mon[e.id].record.request){s.group[e.ke].mon[e.id].record.request.abort();delete(s.group[e.ke].mon[e.id].record.request);}
         };
         if(s.group[e.ke].mon[e.id].child_node){
-            s.cx({f:'kill',d:s.init('clean',e)},s.group[e.ke].mon[e.id].child_node_id)
+            s.cx({f:'kill',d:s.init('noReference',e)},s.group[e.ke].mon[e.id].child_node_id)
         }else{
             if(!x||x===1){return};p=x.pid;x.stdin.pause();setTimeout(function(){x.kill('SIGTERM');delete(x);setTimeout(function(){exec('kill -9 '+p)},1000)},1000)
         }
@@ -210,6 +210,7 @@ s.init=function(x,e){
             if(!s.group[e.ke].users){s.group[e.ke].users={}}
             if(!s.group[e.ke].mon[e.mid]){s.group[e.ke].mon[e.mid]={}}
             if(!s.group[e.ke].mon[e.mid].watch){s.group[e.ke].mon[e.mid].watch={}};
+            if(!s.group[e.ke].mon[e.mid].fixingVideos){s.group[e.ke].mon[e.mid].fixingVideos={}};
             if(e.type==='record'){e.record=1}else{e.record=0}
             if(!s.group[e.ke].mon[e.mid].record){s.group[e.ke].mon[e.mid].record={yes:e.record}};
             if(!s.group[e.ke].mon[e.mid].started){s.group[e.ke].mon[e.mid].started=0};
@@ -253,11 +254,11 @@ s.init=function(x,e){
             e.cn=Object.keys(s.child_nodes);
             e.cn.forEach(function(v){
                 if(s.group[e.ke]){
-                   s.cx({f:'sync',sync:s.init('clean',s.group[e.ke].mon[e.mid]),ke:e.ke,mid:e.mid},s.child_nodes[v].cnid);
+                   s.cx({f:'sync',sync:s.init('noReference',s.group[e.ke].mon[e.mid]),ke:e.ke,mid:e.mid},s.child_nodes[v].cnid);
                 }
             });
         break;
-        case'clean':
+        case'noReference':
             x={keys:Object.keys(e),ar:{}};
             x.keys.forEach(function(v){
                 if(v!=='last_frame'&&v!=='record'&&v!=='spawn'&&v!=='running'&&(v!=='time'&&typeof e[v]!=='function')){x.ar[v]=e[v];}
@@ -334,6 +335,34 @@ s.video=function(x,e){
     if(!e){e={}};
     if(e.mid&&!e.id){e.id=e.mid};
     switch(x){
+        case'fix':
+            e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
+            e.sdir=s.dir.streams+e.ke+'/'+e.id+'/';
+            if(!e.filename&&e.time){e.filename=s.moment(e.time)}
+            if(e.filename.indexOf('.')===-1){
+                e.filename=e.filename+'.'+e.ext
+            }
+            s.tx({f:'video_fix_start',mid:e.mid,ke:e.ke,filename:e.filename},'GRP_'+e.ke)
+            s.group[e.ke].mon[e.id].fixingVideos[e.filename]={}
+            switch(e.ext){
+                case'mp4':
+                    e.fixFlags='-vcodec libx264 -acodec aac -strict -2';
+                break;
+                case'webm':
+                    e.fixFlags='-vcodec libvpx -acodec libvorbis';
+                break;
+            }
+            e.spawn=spawn('ffmpeg',('-i '+e.dir+e.filename+' '+e.fixFlags+' '+e.sdir+e.filename).split(' '))
+            e.spawn.stdout.on('data',function(data){
+                s.tx({f:'video_fix_data',mid:e.mid,ke:e.ke,filename:e.filename},'GRP_'+e.ke)
+            });
+            e.spawn.on('close',function(data){
+                exec('mv '+e.dir+e.filename+' '+e.sdir+e.filename).on('exit',function(){
+                    s.tx({f:'video_fix_success',mid:e.mid,ke:e.ke,filename:e.filename},'GRP_'+e.ke)
+                    delete(s.group[e.ke].mon[e.id].fixingVideos[e.filename]);
+                })
+            });
+        break;
         case'archive':
             e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
             if(!e.filename&&e.time){e.filename=s.moment(e.time)}
@@ -364,7 +393,7 @@ s.video=function(x,e){
             if(s.group[e.ke]&&s.group[e.ke].mon[e.id]){
                 if(s.group[e.ke].mon[e.id].open&&!e.filename){e.filename=s.group[e.ke].mon[e.id].open;e.ext=s.group[e.ke].mon[e.id].open_ext}
                 if(s.group[e.ke].mon[e.id].child_node){
-                    s.cx({f:'close',d:s.init('clean',e)},s.group[e.ke].mon[e.id].child_node_id);
+                    s.cx({f:'close',d:s.init('noReference',e)},s.group[e.ke].mon[e.id].child_node_id);
                 }else{
                     if(fs.existsSync(e.dir+e.filename+'.'+e.ext)===true){
                         e.stat=fs.statSync(e.dir+e.filename+'.'+e.ext);
@@ -612,19 +641,21 @@ s.file=function(x,e){
     }
 }
 s.camera=function(x,e,cn,tx){
-    var ee=s.init('clean',e);
-    if(!e){e={}};if(cn&&cn.ke&&!e.ke){e.ke=cn.ke};
-    if(!e.mode){e.mode=x;}
-    if(!e.id&&e.mid){e.id=e.mid}
-    if(e.details&&(e.details instanceof Object)===false){
-        try{e.details=JSON.parse(e.details)}catch(err){}
-    }
-    if(e.details&&e.details.cords&&(e.details.cords instanceof Object)===false){
-        try{
-            e.details.cords=JSON.parse(e.details.cords);
-            if(!e.details.cords)e.details.cords={};
-        }catch(err){
-            e.details.cords={};
+    if(x!=='motion'){
+        var ee=s.init('noReference',e);
+        if(!e){e={}};if(cn&&cn.ke&&!e.ke){e.ke=cn.ke};
+        if(!e.mode){e.mode=x;}
+        if(!e.id&&e.mid){e.id=e.mid}
+        if(e.details&&(e.details instanceof Object)===false){
+            try{e.details=JSON.parse(e.details)}catch(err){}
+        }
+        if(e.details&&e.details.cords&&(e.details.cords instanceof Object)===false){
+            try{
+                e.details.cords=JSON.parse(e.details.cords);
+                if(!e.details.cords)e.details.cords={};
+            }catch(err){
+                e.details.cords={};
+            }
         }
     }
     switch(x){
@@ -722,6 +753,12 @@ s.camera=function(x,e,cn,tx){
             if(s.group[e.ke].mon[e.id].last_frame){delete(s.group[e.ke].mon[e.id].last_frame)}
             if(s.group[e.ke].mon[e.id].started!==1){return}
             s.kill(s.group[e.ke].mon[e.id].spawn,e);
+            if(e.neglectTriggerTimer===1){
+                delete(e.neglectTriggerTimer);
+            }else{
+                clearTimeout(s.group[e.ke].mon[e.id].trigger_timer)
+                delete(s.group[e.ke].mon[e.id].trigger_timer)
+            }
             clearInterval(s.group[e.ke].mon[e.id].running);
             clearInterval(s.group[e.ke].mon[e.id].detector_notrigger_timeout)
             clearTimeout(s.group[e.ke].mon[e.id].err_fatal_timeout);
@@ -736,14 +773,14 @@ s.camera=function(x,e,cn,tx){
         break;
         case'start':case'record'://watch or record monitor url
             s.init(0,{ke:e.ke,mid:e.id})
-            if(!s.group[e.ke].mon_conf[e.id]){s.group[e.ke].mon_conf[e.id]=s.init('clean',e);}
+            if(!s.group[e.ke].mon_conf[e.id]){s.group[e.ke].mon_conf[e.id]=s.init('noReference',e);}
             e.url=s.init('url',e);
             if(s.group[e.ke].mon[e.id].started===1){return}
             if(x==='start'&&e.details.detector_trigger=='1'){
                 s.group[e.ke].mon[e.id].motion_lock=setTimeout(function(){
                     clearTimeout(s.group[e.ke].mon[e.id].motion_lock);
                     delete(s.group[e.ke].mon[e.id].motion_lock);
-                },20000)
+                },30000)
             }
             //every 15 minutes start a new file.
             s.group[e.ke].mon[e.id].started=1;
@@ -806,6 +843,7 @@ s.camera=function(x,e,cn,tx){
             if(!e.details.cutoff||e.details.cutoff===''){e.cutoff=15}else{e.cutoff=parseFloat(e.details.cutoff)};
             if(isNaN(e.cutoff)===true){e.cutoff=15}
             s.group[e.ke].mon[e.id].fswatch=fs.watch(e.dir,{encoding:'utf8'},function(eventType,filename){
+                if(s.group[e.ke].mon[e.id].fixingVideos[filename]){return}
                 switch(eventType){
                     case'change':
                         clearTimeout(s.group[e.ke].mon[e.id].checker)
@@ -819,7 +857,7 @@ s.camera=function(x,e,cn,tx){
                     case'rename':
                         fs.exists(e.dir+filename,function(exists){
                             if(exists){
-                                if(s.group[e.ke].mon[e.id].open&&s.group[e.ke].mon[e.id].record.yes===1){
+                                if(s.group[e.ke].mon[e.id].open){
                                     s.video('close',e);
                                 }
                                 e.filename=filename.split('.')[0];
@@ -1085,7 +1123,7 @@ s.camera=function(x,e,cn,tx){
                                 e.frames=0;
                                 s.group[e.ke].mon[e.id].spawn={};
                                 s.group[e.ke].mon[e.id].child_node=n;
-                                s.cx({f:'spawn',d:s.init('clean',e),mon:s.init('clean',s.group[e.ke].mon[e.mid])},s.group[e.ke].mon[e.mid].child_node_id)
+                                s.cx({f:'spawn',d:s.init('noReference',e),mon:s.init('noReference',s.group[e.ke].mon[e.mid])},s.group[e.ke].mon[e.mid].child_node_id)
                             }else{
                                 console.log('Cannot Connect, Retrying...',e.id);e.error_fatal();return;
                             }
@@ -1106,10 +1144,126 @@ s.camera=function(x,e,cn,tx){
                     e.fn();
                 }
         break;
-    }
+        case'motion':
+            var d=e;
+            d.mon=s.group[d.ke].mon_conf[d.id];
+            if(s.group[d.ke].mon[d.id].motion_lock){return}
+            d.cx={f:'detector_trigger',id:d.id,ke:d.ke,details:d.details};
+            s.tx(d.cx,'GRP_'+d.ke);
+            if(d.mon.details.detector_notrigger=='1'){
+                if(!d.mon.details.detector_notrigger_timeout||d.mon.details.detector_notrigger_timeout===''){
+                    d.mon.details.detector_notrigger_timeout=10
+                }
+                d.mon.detector_notrigger_timeout=parseFloat(d.mon.details.detector_notrigger_timeout)*1000*60;
+                clearInterval(s.group[d.ke].mon[d.id].detector_notrigger_timeout)
+                s.group[d.ke].mon[d.id].detector_notrigger_timeout=setInterval(s.group[d.ke].mon[d.id].detector_notrigger_timeout_function,d.mon.detector_notrigger_timeout)
+            }
+            if(d.mon.mode==='start'&&d.mon.details.detector_trigger=='1'){
+                if(!s.group[d.ke].mon[d.id].watchdog_stop){
+                    d.cx.f='detector_record_start';
+                    s.tx(d.cx,'GRP_'+d.ke);
+                    d.mon.mode='stop';s.camera('stop',d.mon)
+                    setTimeout(function(){d.mon.mode='record';s.camera('record',d.mon)},1200)
+                }else{
+                    if(d.mon.details.watchdog_reset=='0'){
+                        return
+                    }
+                }
+                if(!d.mon.details.detector_timeout||d.mon.details.detector_timeout===''){
+                    d.mon.details.detector_timeout=10
+                }
+                d.detector_timeout=parseFloat(d.mon.details.detector_timeout)*1000*60;
+                clearTimeout(s.group[d.ke].mon[d.id].watchdog_stop);
+                d.cx.f='detector_record_timeout_start';
+                s.tx(d.cx,'GRP_'+d.ke);
+                s.group[d.ke].mon[d.id].watchdog_stop=setTimeout(function(){
+                    d.cx.f='detector_record_stop';
+                    s.tx(d.cx,'GRP_'+d.ke);
+                    d.mon.mode='stop';s.camera('stop',d.mon)
+                    setTimeout(function(){
+                        d.mon.mode='start';s.camera('start',d.mon);
+                        clearTimeout(s.group[d.ke].mon[d.id].watchdog_stop);
+                        delete(s.group[d.ke].mon[d.id].watchdog_stop);
+                    },500)
+                },d.detector_timeout)
+            }
+            //mailer
+            if(config.mail&&!s.group[d.ke].mon[d.id].detector_mail&&d.mon.details.detector_mail==='1'){
+                sql.query('SELECT mail FROM Users WHERE ke=? AND details NOT LIKE ?',[d.ke,'%"sub"%'],function(err,r){
+                    r=r[0];
+                    if(!d.mon.details.detector_mail_timeout||d.mon.details.detector_mail_timeout===''){
+                        d.mon.details.detector_mail_timeout=1000*60*10;
+                    }else{
+                        d.mon.details.detector_mail_timeout=parseFloat(d.mon.details.detector_mail_timeout)*1000*60;
+                    }
+                    //lock mailer so you don't get emailed on EVERY trigger event.
+                    s.group[d.ke].mon[d.id].detector_mail=setTimeout(function(){
+                        //unlock so you can mail again.
+                        clearTimeout(s.group[d.ke].mon[d.id].detector_mail);
+                        delete(s.group[d.ke].mon[d.id].detector_mail);
+                    },d.mon.details.detector_mail_timeout);
+                    d.frame_filename='Motion_'+d.id+'_'+d.ke+'_'+s.moment()+'.jpg';
+                    fs.readFile(s.dir.streams+'/'+d.ke+'/'+d.id+'/s.jpg',function(err, frame){
+                        d.mailOptions = {
+                            from: '"ShinobiCCTV" <no-reply@shinobi.video>', // sender address
+                            to: r.mail, // list of receivers
+                            subject: 'Motion Event - '+d.frame_filename, // Subject line
+                            html: '<i>Triggered a motion event at '+moment(new Date).format()+'.</i>',
+                        };
+                        if(err){
+                            console.log('Could not email image, file was not accessible '+d.ke+' '+d.id,err)
+                        }else{
+                            d.mailOptions.attachments=[
+                                {
+                                    filename: d.frame_filename,
+                                    content: frame
+                                }
+                            ]
+                            d.mailOptions.html='<i>The attached frame triggered a motion event.</i>'
+                        }
+                            Object.keys(d.details).forEach(function(v,n){
+                            d.mailOptions.html+='<div><b>'+v+'</b> : '+d.details[v]+'</div>'
+                        })
+                        nodemailer.sendMail(d.mailOptions, (error, info) => {
+                            if (error) {
+                                s.tx({f:'error',ff:'detector_trigger_mail',id:d.id,ke:d.ke,error:error},'GRP_'+d.ke);
+                                return ;
+                            }
+                            s.tx({f:'detector_trigger_mail',id:d.id,ke:d.ke,info:info},'GRP_'+d.ke);
+                        });
+                    })
+                });
+            }
+            //save this detection result in SQL, only coords. not image.
+            if(d.mon.details.detector_save==='1'){
+                sql.query('INSERT INTO Events (ke,mid,details) VALUES (?,?,?)',[d.ke,d.id,JSON.stringify(d.details)])
+                d.cx.f='detector_save_event';
+                s.tx(d.cx,'GRP_'+d.ke);
+            }
+            if(d.mon.details.detector_command_enable==='1'){
+                if(!d.mon.details.detector_command_timeout||d.mon.details.detector_command_timeout===''){
+                    d.mon.details.detector_command_timeout=1000*60*10;
+                }else{
+                    d.mon.details.detector_command_timeout=parseFloat(d.mon.details.detector_command_timeout)*1000*60;
+                }
+                s.group[d.ke].mon[d.id].detector_command=setTimeout(function(){
+                    clearTimeout(s.group[d.ke].mon[d.id].detector_command);
+                    delete(s.group[d.ke].mon[d.id].detector_command);
 
-    if(typeof cn==='function'){console.log(cn);setTimeout(function(){cn()},1000);}
-//    s.init('sync',e)
+                },d.mon.details.detector_command_timeout);
+                d.mon.details.detector_command=d.mon.details.detector_command
+                    .replace(/{{TIME}}/g,moment(new Date).format())
+                    .replace(/{{MONITOR_ID}}/g,d.id)
+                    .replace(/{{GROUP_KEY}}/g,d.ke)
+                if(d.details.confidence){
+                    d.mon.details.detector_command=d.mon.details.detector_command
+                    .replace(/{{CONFIDENCE}}/g,d.details.confidence)
+                }
+                exec(d.mon.details.detector_command)
+            }
+        break;
+    }
+    if(typeof cn==='function'){setTimeout(function(){cn()},1000);}
 }
 
 ////socket controller
@@ -1128,7 +1282,7 @@ var tx;
 //                    if(!s.group[d.ke].vid)s.group[d.ke].vid={};
                     if(!s.group[d.ke].users)s.group[d.ke].users={};
 //                    s.group[d.ke].vid[cn.id]={uid:d.uid};
-                    s.group[d.ke].users[d.auth]={cnid:cn.id,uid:r.uid}
+                    s.group[d.ke].users[d.auth]={cnid:cn.id,uid:r.uid,mail:r.mail,details:JSON.parse(r.details),logged_in_at:moment(new Date).format()}
                     try{s.group[d.ke].users[d.auth].details=JSON.parse(r.details)}catch(er){}
                     if(!s.group[d.ke].mon){
                         s.group[d.ke].mon={}
@@ -1137,6 +1291,8 @@ var tx;
                     if(s.ocv){
                         tx({f:'detector_plugged',plug:s.ocv.plug})
                     }
+                    tx({f:'users_online',users:s.group[d.ke].users})
+                    s.tx({f:'user_status_change',ke:d.ke,uid:cn.uid,status:1,user:s.group[d.ke].users[d.auth]},'GRP_'+d.ke)
                     d.used_space_info={f:'diskUsed',size:s.group[d.ke].users[d.auth].details.used_space,limit:s.group[d.ke].users[d.auth].details.size,ke:r.ke};
                     if(s.group[d.ke].users[d.auth].details.sub&&!d.used_space_info.used_space){
                         sql.query('SELECT details FROM Users WHERE ke=? AND details NOT LIKE ?',[d.ke,'%"sub"%'],function(err,r) {
@@ -1468,6 +1624,9 @@ var tx;
                 break;
                 case'video':
                     switch(d.ff){
+                        case'fix':
+                            s.video('fix',d)
+                        break;
                         case'delete':
                             s.video('delete',d)
                         break;
@@ -1582,120 +1741,7 @@ var tx;
                 console.log('Connected to plugin : Detector - '+d.plug)
             break;
             case'trigger':
-                //got a frame rendered with a marker
-                if(d.ke&&d.id&&s.group[d.ke]){
-                    d.mon=s.group[d.ke].mon_conf[d.id]
-                    if(s.group[d.ke].mon[d.id].motion_lock){return}
-                    d.cx={f:'detector_trigger',id:d.id,ke:d.ke,details:d.details};
-                    s.tx(d.cx,'GRP_'+d.ke);
-                    if(d.mon.details.detector_notrigger=='1'){
-                        if(!d.mon.details.detector_notrigger_timeout||d.mon.details.detector_notrigger_timeout===''){
-                            d.mon.details.detector_notrigger_timeout=10
-                        }
-                        d.mon.detector_notrigger_timeout=parseFloat(d.mon.details.detector_notrigger_timeout)*1000*60;
-                        clearInterval(s.group[d.ke].mon[d.id].detector_notrigger_timeout)
-                        s.group[d.ke].mon[d.id].detector_notrigger_timeout=setInterval(s.group[d.ke].mon[d.id].detector_notrigger_timeout_function,d.mon.detector_notrigger_timeout)
-                    }
-                    if(d.mon.mode==='start'&&d.mon.details.detector_trigger=='1'){
-                        if(!s.group[d.ke].mon[d.id].watchdog_stop){
-                            d.cx.f='detector_record_start';
-                            s.tx(d.cx,'GRP_'+d.ke);
-                            d.mon.mode='stop';s.camera('stop',d.mon)
-                            setTimeout(function(){d.mon.mode='record';s.camera('record',d.mon)},1200)
-                        }else{
-                            if(d.mon.details.watchdog_reset=='0'){
-                                return
-                            }
-                        }
-                        if(!d.mon.details.detector_timeout||d.mon.details.detector_timeout===''){
-                            d.mon.details.detector_timeout=10
-                        }
-                        d.detector_timeout=parseFloat(d.mon.details.detector_timeout)*1000*60;
-                        clearTimeout(s.group[d.ke].mon[d.id].watchdog_stop);
-                        d.cx.f='detector_record_timeout_start';
-                        s.tx(d.cx,'GRP_'+d.ke);
-                        s.group[d.ke].mon[d.id].watchdog_stop=setTimeout(function(){
-                            d.cx.f='detector_record_stop';
-                            s.tx(d.cx,'GRP_'+d.ke);
-                            d.mon.mode='stop';s.camera('stop',d.mon)
-                            setTimeout(function(){
-                                d.mon.mode='start';s.camera('start',d.mon);
-                                clearTimeout(s.group[d.ke].mon[d.id].watchdog_stop);
-                                delete(s.group[d.ke].mon[d.id].watchdog_stop);
-                            },500)
-                        },d.detector_timeout)
-                    }
-                    //mailer
-                    if(config.mail&&!s.group[d.ke].mon[d.id].detector_mail&&d.mon.details.detector_mail==='1'){
-                        sql.query('SELECT mail FROM Users WHERE ke=? AND details NOT LIKE ?',[d.ke,'%"sub"%'],function(err,r){
-                            r=r[0];
-                            if(!d.mon.details.detector_mail_timeout||d.mon.details.detector_mail_timeout===''){
-                                d.mon.details.detector_mail_timeout=1000*60*10;
-                            }else{
-                                d.mon.details.detector_mail_timeout=parseFloat(d.mon.details.detector_mail_timeout)*1000*60;
-                            }
-                            //lock mailer so you don't get emailed on EVERY trigger event.
-                            s.group[d.ke].mon[d.id].detector_mail=setTimeout(function(){
-                                //unlock so you can mail again.
-                                clearTimeout(s.group[d.ke].mon[d.id].detector_mail);
-                                delete(s.group[d.ke].mon[d.id].detector_mail);
-                            },d.mon.details.detector_mail_timeout);
-                            d.frame_filename='Motion_'+d.id+'_'+d.ke+'_'+s.moment()+'.jpg';
-                            d.mailOptions = {
-                                from: '"ShinobiCCTV" <no-reply@shinobi.video>', // sender address
-                                to: r.mail, // list of receivers
-                                subject: 'Motion Event - '+d.frame_filename, // Subject line
-                                html: '<i>The attached frame triggered a motion event.</i>',
-                                attachments: [
-                                    {
-                                        filename: d.frame_filename,
-                                        content: d.frame
-                                    }
-                                ]
-                            };
-                            Object.keys(d.details).forEach(function(v,n){
-                                d.mailOptions.html+='<div><b>'+v+'</b> : '+d.details[v]+'</div>'
-                            })
-                            nodemailer.sendMail(d.mailOptions, (error, info) => {
-                                if (error) {
-                                    s.tx({f:'error',ff:'detector_trigger_mail',id:d.id,ke:d.ke,error:error},'GRP_'+d.ke);
-                                    return ;
-                                }
-                                s.tx({f:'detector_trigger_mail',id:d.id,ke:d.ke,info:info},'GRP_'+d.ke);
-                            });
-                        });
-                    }
-                    //save this detection result in SQL, only coords. not image.
-                    if(d.mon.details.detector_save==='1'){
-                        sql.query('INSERT INTO Events (ke,mid,details) VALUES (?,?,?)',[d.ke,d.id,JSON.stringify(d.details)])
-                        d.cx.f='detector_save_event';
-                        s.tx(d.cx,'GRP_'+d.ke);
-                    }
-                    if(d.mon.details.detector_command_enable==='1'){
-                        if(!d.mon.details.detector_command_timeout||d.mon.details.detector_command_timeout===''){
-                            d.mon.details.detector_command_timeout=1000*60*10;
-                        }else{
-                            d.mon.details.detector_command_timeout=parseFloat(d.mon.details.detector_command_timeout)*1000*60;
-                        }
-                        s.group[d.ke].mon[d.id].detector_command=setTimeout(function(){
-                            clearTimeout(s.group[d.ke].mon[d.id].detector_command);
-                            delete(s.group[d.ke].mon[d.id].detector_command);
-                            
-                        },d.mon.details.detector_command_timeout);
-                        d.mon.details.detector_command=d.mon.details.detector_command
-                            .replace(/{{MONITOR_ID}}/g,d.id)
-                            .replace(/{{GROUP_KEY}}/g,d.ke)
-                        if(d.details.confidence){
-                            d.mon.details.detector_command=d.mon.details.detector_command
-                            .replace(/{{CONFIDENCE}}/g,d.details.confidence)
-                        }
-                        exec(d.mon.details.detector_command)
-                    }
-                }
-            break;
-            case'frame':
-                //got a frame rendered with a marker
-//                console.log('Look!',d.frame)
+                s.camera('motion',d)
             break;
             case'sql':
                 sql.query(d.query,d.values);
@@ -1973,9 +2019,9 @@ var tx;
                 }
             }
             if(!cn.embedded){
+                s.tx({f:'user_status_change',ke:cn.ke,uid:cn.uid,status:0})
                 delete(s.group[cn.ke].users[cn.auth]);
             }
-//            delete(s.group[cn.ke].vid[cn.id]);
         }
         if(cn.ocv){
             s.tx({f:'detector_unplugged',plug:s.ocv.plug},'CPU')
@@ -2528,24 +2574,31 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
         if(req.params.f===''){req.ret.msg='incomplete request, remove last slash in URL or put acceptable value.';res.send(s.s(req.ret, null, 3));return}
         if(req.params.f!=='stop'&&req.params.f!=='start'&&req.params.f!=='record'){
             req.ret.msg='Mode not recognized.';
-            res.send(s.s(req.ret, null, 3));
+            res.end(s.s(req.ret, null, 3));
             return;
         }
         sql.query('SELECT * FROM Monitors WHERE ke=? AND mid=?',[req.params.ke,req.params.id],function(err,r){
             if(r&&r[0]){
                 r=r[0];
-                if(r.mode!==req.params.f){
-                    r.mode=req.params.f;
-                    s.group[r.ke].mon_conf[r.mid]=r;
-                    s.tx({f:'monitor_edit',mid:r.id,ke:r.ke,mon:r},'GRP_'+r.ke);
-                    s.tx({f:'monitor_edit',mid:r.id,ke:r.ke,mon:r},'STR_'+r.ke);
-                    s.camera('stop',r);
-                    if(req.params.f!=='stop'){
-                        s.camera(req.params.f,r);
+                if(req.query.reset==='1'||(s.group[r.ke]&&s.group[r.ke].mon_conf[r.mid].mode!==req.params.f)){
+                    if(req.query.reset!=='1'||!s.group[r.ke].mon[r.mid].trigger_timer){
+                        s.group[r.ke].mon[r.mid].currentState=r.mode.toString()
+                        r.mode=req.params.f;
+                        r.id=r.mid;
+                        sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',[r.mode,r.ke,r.mid]);
+                        s.group[r.ke].mon_conf[r.mid]=r;
+                        s.tx({f:'monitor_edit',mid:r.mid,ke:r.ke,mon:r},'GRP_'+r.ke);
+                        s.tx({f:'monitor_edit',mid:r.mid,ke:r.ke,mon:r},'STR_'+r.ke);
+                        s.camera('stop',s.init('noReference',r));
+                        if(req.params.f!=='stop'){
+                            s.camera(req.params.f,s.init('noReference',r));
+                        }
+                        req.ret.msg='Monitor mode changed to : '+req.params.f;
+                    }else{
+                        req.ret.msg='Reset Timer';
                     }
                     req.ret.cmd_at=s.moment(new Date,'YYYY-MM-DD HH:mm:ss');
-                    req.ret.msg='Monitor mode changed to : '+req.params.f,req.ret.ok=true;
-                    sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',[req.params.f,r.ke,r.mid]);
+                    req.ret.ok=true;
                     if(req.params.ff&&req.params.f!=='stop'){
                         req.params.ff=parseFloat(req.params.ff);
                         clearTimeout(s.group[r.ke].mon[r.mid].trigger_timer)
@@ -2564,20 +2617,28 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
                             break;
                         }
                         s.group[r.ke].mon[r.mid].trigger_timer=setTimeout(function(){
-                            sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',['stop',r.ke,r.mid]);
-                            s.camera('stop',r);r.mode='stop';s.group[r.ke].mon_conf[r.mid]=r;
-                            s.tx({f:'monitor_edit',mid:r.id,ke:r.ke,mon:r},'GRP_'+r.ke);
-                            s.tx({f:'monitor_edit',mid:r.id,ke:r.ke,mon:r},'STR_'+r.ke);
+                            delete(s.group[r.ke].mon[r.mid].trigger_timer)
+                            sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',[s.group[r.ke].mon[r.mid].currentState,r.ke,r.mid]);
+                            r.neglectTriggerTimer=1;
+                            r.mode=s.group[r.ke].mon[r.mid].currentState;
+                            s.camera('stop',s.init('noReference',r),function(){
+                                if(s.group[r.ke].mon[r.mid].currentState!=='stop'){
+                                    s.camera(s.group[r.ke].mon[r.mid].currentState,s.init('noReference',r));
+                                }
+                                s.group[r.ke].mon_conf[r.mid]=r;
+                            });
+                            s.tx({f:'monitor_edit',mid:r.mid,ke:r.ke,mon:r},'GRP_'+r.ke);
+                            s.tx({f:'monitor_edit',mid:r.mid,ke:r.ke,mon:r},'STR_'+r.ke);
                         },req.timeout);
-                        req.ret.end_at=s.moment(new Date,'YYYY-MM-DD HH:mm:ss').add(req.timeout,'milliseconds');
+//                        req.ret.end_at=s.moment(new Date,'YYYY-MM-DD HH:mm:ss').add(req.timeout,'milliseconds');
                     }
-                }else{
+                 }else{
                     req.ret.msg='Monitor mode is already : '+req.params.f;
                 }
             }else{
                 req.ret.msg='Monitor or Key does not exist.';
             }
-            res.send(s.s(req.ret, null, 3));
+            res.end(s.s(req.ret, null, 3));
         })
     }
     s.auth(req.params,req.fn,res,req);
@@ -2609,6 +2670,29 @@ app.get('/:auth/videos/:ke/:id/:file', function (req,res){
     }
     s.auth(req.params,req.fn,res,req);
 });
+//motion trigger
+app.get('/:auth/motion/:ke/:id', function (req,res){
+    s.auth(req.params,function(){
+        if(req.query.data){
+            try{
+                var d={id:req.params.id,ke:req.params.ke,details:JSON.parse(req.query.data)};
+            }catch(err){
+                res.end('Data Broken');
+                return;
+            }
+        }else{
+            res.end('No Data');
+            return;
+        }
+        if(!d.ke||!d.id||!s.group[d.ke]){
+            res.end('No Group with this key exists');
+            return;
+        }
+        s.camera('motion',d,function(){
+            res.end('Trigger Successful')
+        });
+},res,req);
+})
 //modify video file
 app.get(['/:auth/videos/:ke/:id/:file/:mode','/:auth/videos/:ke/:id/:file/:mode/:f'], function (req,res){
     req.ret={ok:false};
@@ -2624,6 +2708,10 @@ app.get(['/:auth/videos/:ke/:id/:file/:mode','/:auth/videos/:ke/:id/:file/:mode/
             if(r&&r[0]){
                 r=r[0];r.filename=s.moment(r.time)+'.'+r.ext;
                 switch(req.params.mode){
+                    case'fix':
+                        req.ret.ok=true;
+                        s.video('fix',r)
+                    break;
                     case'status':
                         req.params.f=parseInt(req.params.f)
                         if(isNaN(req.params.f)||req.params.f===0){

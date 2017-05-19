@@ -390,6 +390,18 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 }
                 k.e.append(tmp).find('.stream-element').resize();
             break;
+            case'user-row':
+                d.e=$('.user-row[uid="'+d.uid+'"][ke="'+d.ke+'"]')
+                if(d.e.length===0){
+                    tmp+='<li class="user-row" uid="'+d.uid+'" ke="'+d.ke+'">';
+                    tmp+='<span><div><span class="mail">'+d.mail+'</span> : <b class="uid">'+d.uid+'</b></div><span>Logged in</span> <b class="time livestamped" title="'+d.logged_in_at+'"></b></span>';
+                    tmp+='</li>';
+                }else{
+                    d.e.find('.mail').text(d.mail)
+                    d.e.find('.time').livestamp('destroy').toggleClass('livestamped livestamp').text(d.logged_in_at)
+                }
+                $.ccio.init('ls')
+            break;
             case'filters-where':
                 if(!d)d={};
                 d.id=$('#filters_where .row').length;
@@ -494,6 +506,12 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                     tmp+=$.ccio.tm('option',v);
                 })
             break;
+            case'user-row':
+                $.each(d,function(n,v){
+                    tmp+=$.ccio.tm('user-row',v);
+                })
+                z='#users_online'
+            break;
         }
         if(z){
             $(z).prepend(tmp)
@@ -552,6 +570,16 @@ $.ccio.ws.on('f',function (d){
             new PNotify({title:'Settings Changed',text:'Your settings have been saved and applied.',type:'success'});
             $.ccio.init('id',d.form);
             $('#custom_css').append(d.form.details.css)
+        break;
+        case'users_online':
+            $.ccio.pm('user-row',d.users);
+        break;
+        case'user_status_change':
+            if(d.status===1){
+                $.ccio.tm('user-row',d.user)
+            }else{
+                $('.user-row[uid="'+d.uid+'"][ke="'+d.ke+'"]').remove()
+            }
         break;
         case'ffprobe_stop':
             $.pB.o.append('<div><b>END</b></div>');
@@ -648,6 +676,19 @@ $.ccio.ws.on('f',function (d){
         break;
         case'get_videos':
             $.ccio.pm(0,d)
+        break;
+         case'video_fix_success':case'video_fix_start':
+            switch(d.f){
+                case'video_fix_success':
+                    d.addClass='fa-wrench'
+                    d.removeClass='fa-pulse fa-spinner'
+                break;
+                case'video_fix_start':
+                    d.removeClass='fa-wrench'
+                    d.addClass='fa-pulse fa-spinner'
+                break;
+            }
+            $('[mid="'+d.mid+'"][ke="'+d.ke+'"][file="'+d.filename+'"] [video="fix"] i,[data-mid="'+d.mid+'"][data-ke="'+d.ke+'"][data-file="'+d.filename+'"] [video="fix"] i').addClass(d.addClass).removeClass(d.removeClass)
         break;
         case'video_edit':case'video_archive':
             $.ccio.init('data-video',d)
@@ -1088,8 +1129,8 @@ $.pB={e:$('#probe')};$.pB.f=$.pB.e.find('form');$.pB.o=$.pB.e.find('.output_data
 $.pB.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
     e.s.url=e.s.url.trim();
-    if(e.s.url.indexOf('-i ')===-1){
-        e.s.url='-i '+e.s.url
+    if(e.s.url.indexOf('{{JSON}}')>-1){
+        e.s.url='-v quiet -print_format json -show_format -show_streams '+e.s.url
     }
     $.ccio.cx({f:'ffprobe',query:e.s.url})
     return false;
@@ -1664,6 +1705,17 @@ $('body')
                 })
             }
         break;
+        case'fix':
+            $.confirm.e.modal('show');
+            $.confirm.title.text('Fix Video : '+e.file)
+            e.html='Do you want to fix this video? You cannot undo this action.'
+            e.html+='<video class="video_video" autoplay loop controls><source src="'+e.p.find('[download]').attr('href')+'" type="video/'+e.mon.ext+'"></video>';
+            $.confirm.body.html(e.html)
+            $.confirm.click({title:'Fix Video',class:'btn-warning'},function(){
+                e.file=e.file.split('.')
+                $.ccio.cx({f:'video',ff:'fix',filename:e.file[0],ext:e.file[1],ke:e.ke,mid:e.mid});
+            });
+        break;
         case'delete':
             $.confirm.e.modal('show');
             $.confirm.title.text('Delete Video : '+e.file)
@@ -1868,6 +1920,7 @@ $('body')
                         e.tmp+='<th data-field="Watch" data-sortable="true">Watch</th>';
                         e.tmp+='<th data-field="Download" data-sortable="true">Download</th>';
                         e.tmp+='<th class="permission_video_delete" data-field="Delete" data-sortable="true">Delete</th>';
+                        e.tmp+='<th class="permission_video_delete" data-field="Fix" data-sortable="true">Fix</th>';
                         e.tmp+='</tr>';
                         e.tmp+='</thead>';
                         e.tmp+='<tbody>';
@@ -1887,6 +1940,7 @@ $('body')
                                 e.tmp+='<td><a class="btn btn-sm btn-primary" video="launch" href="'+v.href+'">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a></td>';
                                 e.tmp+='<td><a class="btn btn-sm btn-success" download="'+v.mid+'-'+v.filename+'" href="'+v.href+'">&nbsp;<i class="fa fa-download"></i>&nbsp;</a></td>';
                                 e.tmp+='<td class="permission_video_delete"><a class="btn btn-sm btn-danger" video="delete">&nbsp;<i class="fa fa-trash"></i>&nbsp;</a></td>';
+                                e.tmp+='<td class="permission_video_delete"><a class="btn btn-sm btn-warning" video="fix">&nbsp;<i class="fa fa-wrench"></i>&nbsp;</a></td>';
                                 e.tmp+='</tr>';
                             }
                         })

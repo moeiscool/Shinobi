@@ -237,7 +237,6 @@ ul.msg_list li .time {
     font-style: italic;
     font-weight: bold;
     position: absolute;
-    right: 35px
 }
 
 ul.msg_list li .message {

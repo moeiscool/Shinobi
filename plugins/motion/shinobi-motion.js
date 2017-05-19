@@ -89,7 +89,7 @@ s.blenderRegion=function(d,cord){
     }
     average = (average / (blendedData.data.length * 0.25))*100;
     if (average > cord.sensitivity){
-        s.cx({f:'trigger',id:d.id,ke:d.ke,frame:d.buffer,details:{plug:config.plug,name:cord.name,reason:'motion',confidence:average}})
+        s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:cord.name,reason:'motion',confidence:average}})
 
     }
     s.canvasContext[d.id+'_'+cord.name].clearRect(0, 0, d.width, d.height);
@@ -150,12 +150,6 @@ s.checkAreas=function(d){
     }
 }
 
-
-sql={
-    query:function(x,y,z){
-        s.cx({f:'sql',query:x,values:y});if(typeof z==='function'){z();}
-    }
-}
 io = require('socket.io-client')('ws://'+config.host+':'+config.port);//connect to master
 s.cx=function(x){return io.emit('ocv',x)}
 io.on('connect',function(d){
@@ -167,14 +161,16 @@ io.on('disconnect',function(d){
 io.on('f',function(d){
     switch(d.f){
         case'init_monitor':
-           s.globalCoords[d.id].forEach(function(v,n){
-                delete(s.canvas[d.id+'_'+v.name])
-                delete(s.canvasContext[d.id+'_'+v.name])
-                delete(s.blendRegion[d.id+'_'+v.name])
-                delete(s.blendRegionContext[d.id+'_'+v.name])
-            })
-            delete(s.globalCoords[d.id])
-            delete(s.globalCoordsObject[d.id])
+            if(s.globalCoords[d.id]){
+               s.globalCoords[d.id].forEach(function(v,n){
+                    delete(s.canvas[d.id+'_'+v.name])
+                    delete(s.canvasContext[d.id+'_'+v.name])
+                    delete(s.blendRegion[d.id+'_'+v.name])
+                    delete(s.blendRegionContext[d.id+'_'+v.name])
+                })
+                delete(s.globalCoords[d.id])
+                delete(s.globalCoordsObject[d.id])
+            }
         break;
         case'frame':
             if(!d.buffer){
