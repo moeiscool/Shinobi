@@ -21,14 +21,15 @@ if(!config.cron.deleteLogs)config.cron.deleteLogs=true;
 if(!config.cron.deleteEvents)config.cron.deleteEvents=true;
 if(!config.cron.interval)config.cron.interval=1;
 
-if(!config.videosDir){config.videosDir=__dirname+'/videos/'}
+if(!config.ip||config.ip===''||config.ip.indexOf('0.0.0.0')>-1)config.ip='localhost';
+if(!config.videosDir)config.videosDir=__dirname+'/videos/';
 s.dir={videos:config.videosDir};
 s.moment=function(e,x){
     if(!e){e=new Date};if(!x){x='YYYY-MM-DDTHH-mm-ss'};
     return moment(e).format(x);
 }
 s.nameToTime=function(x){x=x.replace('.webm','').replace('.mp4','').split('T'),x[1]=x[1].replace(/-/g,':');x=x.join(' ');return x;}
-io = require('socket.io-client')('ws://localhost:'+config.port);//connect to master
+io = require('socket.io-client')('ws://'+config.ip+':'+config.port);//connect to master
 s.cx=function(x){return io.emit('cron',x)}
 //emulate master socket emitter
 s.tx=function(x,y){s.cx({f:'s.tx',data:x,to:y})}
