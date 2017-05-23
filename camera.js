@@ -52,7 +52,7 @@ if(!config.autoDropCache){config.autoDropCache=true}
 if(!config.doSnapshot){config.doSnapshot=true}
 if(!config.restart){config.restart={}}
 if(!config.restart.onVideoNotExist){config.restart.onVideoNotExist=true}
-server.listen(config.port);
+server.listen(config.port,config.ip);
 try{
     console.log('Shinobi - PORT : '+config.port+', NODE.JS : '+execSync("node -v"));
 }catch(err){
