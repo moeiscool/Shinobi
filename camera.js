@@ -52,7 +52,9 @@ if(!config.autoDropCache){config.autoDropCache=true}
 if(!config.doSnapshot){config.doSnapshot=true}
 if(!config.restart){config.restart={}}
 if(!config.restart.onVideoNotExist){config.restart.onVideoNotExist=true}
-server.listen(config.port,config.ip);
+if(!config.ip||config.ip===''||config.ip.indexOf('0.0.0.0')>-1){config.ip='localhost'}else{config.bindip=config.ip};
+
+server.listen(config.port,config.bindip);
 try{
     console.log('Shinobi - PORT : '+config.port+', NODE.JS : '+execSync("node -v"));
 }catch(err){
@@ -81,7 +83,6 @@ sql.query('SELECT * FROM Videos WHERE status=?',[0],function(err,r){
         })
     }
 })
-
 //key for child servers
 s.child_nodes={};
 s.child_key='3123asdasdf1dtj1hjk23sdfaasd12asdasddfdbtnkkfgvesra3asdsd3123afdsfqw345';
@@ -646,16 +647,16 @@ s.camera=function(x,e,cn,tx){
         if(!e){e={}};if(cn&&cn.ke&&!e.ke){e.ke=cn.ke};
         if(!e.mode){e.mode=x;}
         if(!e.id&&e.mid){e.id=e.mid}
-        if(e.details&&(e.details instanceof Object)===false){
-            try{e.details=JSON.parse(e.details)}catch(err){}
-        }
-        if(e.details&&e.details.cords&&(e.details.cords instanceof Object)===false){
-            try{
-                e.details.cords=JSON.parse(e.details.cords);
-                if(!e.details.cords)e.details.cords={};
-            }catch(err){
-                e.details.cords={};
-            }
+    }
+    if(e.details&&(e.details instanceof Object)===false){
+        try{e.details=JSON.parse(e.details)}catch(err){}
+    }
+    if(e.details&&e.details.cords&&(e.details.cords instanceof Object)===false){
+        try{
+            e.details.cords=JSON.parse(e.details.cords);
+            if(!e.details.cords)e.details.cords={};
+        }catch(err){
+            e.details.cords={};
         }
     }
     switch(x){
@@ -1098,9 +1099,9 @@ s.camera=function(x,e,cn,tx){
                                     s.log(e,{type:"FFMPEG STDERR",msg:d})
                                 });
                             }
-                            }else{
-                                s.log(e,{type:"Can't Connect",msg:'Retrying...'});e.error_fatal();return;
-                            }
+                          }else{
+                            s.log(e,{type:"Can't Connect",msg:'Retrying...'});e.error_fatal();return;
+                        }
                     }
                     if(e.type!=='socket'&&e.protocol!=='udp'&&e.type!=='local'){
                         connectionTester.test(e.hosty,e.port,2000,e.draw);
@@ -1159,33 +1160,31 @@ s.camera=function(x,e,cn,tx){
                 s.group[d.ke].mon[d.id].detector_notrigger_timeout=setInterval(s.group[d.ke].mon[d.id].detector_notrigger_timeout_function,d.mon.detector_notrigger_timeout)
             }
             if(d.mon.mode==='start'&&d.mon.details.detector_trigger=='1'){
-                if(!s.group[d.ke].mon[d.id].watchdog_stop){
-                    d.cx.f='detector_record_start';
-                    s.tx(d.cx,'GRP_'+d.ke);
-                    d.mon.mode='stop';s.camera('stop',d.mon)
-                    setTimeout(function(){d.mon.mode='record';s.camera('record',d.mon)},1200)
-                }else{
-                    if(d.mon.details.watchdog_reset=='0'){
-                        return
-                    }
-                }
                 if(!d.mon.details.detector_timeout||d.mon.details.detector_timeout===''){
                     d.mon.details.detector_timeout=10
                 }
-                d.detector_timeout=parseFloat(d.mon.details.detector_timeout)*1000*60;
-                clearTimeout(s.group[d.ke].mon[d.id].watchdog_stop);
-                d.cx.f='detector_record_timeout_start';
-                s.tx(d.cx,'GRP_'+d.ke);
-                s.group[d.ke].mon[d.id].watchdog_stop=setTimeout(function(){
-                    d.cx.f='detector_record_stop';
-                    s.tx(d.cx,'GRP_'+d.ke);
-                    d.mon.mode='stop';s.camera('stop',d.mon)
-                    setTimeout(function(){
-                        d.mon.mode='start';s.camera('start',d.mon);
-                        clearTimeout(s.group[d.ke].mon[d.id].watchdog_stop);
-                        delete(s.group[d.ke].mon[d.id].watchdog_stop);
-                    },500)
-                },d.detector_timeout)
+                d.auth=s.gid();
+                s.group[d.ke].users[d.auth]={system:1,details:{}}
+                d.url='http://'+config.ip+':'+config.port+'/'+d.auth+'/monitor/'+d.ke+'/'+d.id+'/record/'+d.mon.details.detector_timeout+'/min';
+                if(d.mon.details.watchdog_reset!=='0'){
+                    d.url+='?reset=1'
+                }
+                http.get(d.url, function(data) {
+                      data.setEncoding('utf8');
+                      var chunks='';
+                      data.on('data', (chunk) => {
+                          chunks+=chunk;
+                      });
+                      data.on('end', () => {
+                          delete(s.group[d.ke].users[d.auth])
+                          d.cx.f='detector_record_engaged';
+                          d.cx.msg=JSON.parse(chunks);
+                          s.tx(d.cx,'GRP_'+d.ke);
+                      });
+
+                }).on('error', function(e) {
+                    
+                }).end();
             }
             //mailer
             if(config.mail&&!s.group[d.ke].mon[d.id].detector_mail&&d.mon.details.detector_mail==='1'){
@@ -1316,7 +1315,7 @@ var tx;
                                 totalmem:os.totalmem()
                             }
                         })
-                        http.get('http://localhost:'+config.port+'/'+cn.auth+'/monitor/'+cn.ke, function(res){
+                        http.get('http://'+config.ip+':'+config.port+'/'+cn.auth+'/monitor/'+cn.ke, function(res){
                             var body = '';
                             res.on('data', function(chunk){
                                 body += chunk;
@@ -2584,6 +2583,7 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
                     if(req.query.reset!=='1'||!s.group[r.ke].mon[r.mid].trigger_timer){
                         s.group[r.ke].mon[r.mid].currentState=r.mode.toString()
                         r.mode=req.params.f;
+                        try{r.details=JSON.parse(r.details);}catch(er){}
                         r.id=r.mid;
                         sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',[r.mode,r.ke,r.mid]);
                         s.group[r.ke].mon_conf[r.mid]=r;
