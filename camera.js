@@ -55,6 +55,7 @@ if(!config.restart.onVideoNotExist){config.restart.onVideoNotExist=true}
 if(!config.ip||config.ip===''||config.ip.indexOf('0.0.0.0')>-1){config.ip='localhost'}else{config.bindip=config.ip};
 if(!config.cron)config.cron={};
 if(!config.cron.deleteOverMax)config.cron.deleteOverMax=true;
+if(!config.cron.deleteOverMaxOffset)config.cron.deleteOverMaxOffset=0.9;
 
 server.listen(config.port,config.bindip);
 try{
@@ -442,7 +443,7 @@ s.video=function(x,e){
                                 if(config.cron.deleteOverMax===true&&s.group[e.ke].checkSpaceLock!==1){
                                     //check space
                                     var check=function(){
-                                        if(s.group[e.ke].init.used_space>s.group[e.ke].init.size){
+                                        if(s.group[e.ke].init.used_space>(s.group[e.ke].init.size*config.cron.deleteOverMaxOffset)){
                                             s.group[e.ke].checkSpaceLock=1;
                                             sql.query('SELECT * FROM Videos WHERE status != 0 AND ke=? ORDER BY `time` ASC LIMIT 2',[e.ke],function(err,evs){
                                                 k.del=[];k.ar=[e.ke];
