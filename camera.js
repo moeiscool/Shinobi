@@ -81,7 +81,34 @@ s.child_key='3123asdasdf1dtj1hjk23sdfaasd12asdasddfdbtnkkfgvesra3asdsd3123afdsfq
 s.md5=function(x){return crypto.createHash('md5').update(x).digest("hex");}
 s.tx=function(z,y,x){if(x){return x.broadcast.to(y).emit('f',z)};io.to(y).emit('f',z);}
 s.cx=function(z,y,x){if(x){return x.broadcast.to(y).emit('c',z)};io.to(y).emit('c',z);}
-
+s.txWithSubPermissions=function(z,y,permissionChoices){
+    if(typeof permissionChoices==='string'){
+        permissionChoices=[permissionChoices]
+    }
+    if(s.group[z.ke]){
+        Object.keys(s.group[z.ke].users).forEach(function(v){
+            var user = s.group[z.ke].users[v]
+            if(user.details.sub){
+                if(user.details.allmonitors!=='1'){
+                    var valid=0
+                    var checked=permissionChoices.length
+                    permissionChoices.forEach(function(b){
+                        if(user.details[b].indexOf(z.mid)!==-1){
+                            ++valid
+                        }
+                    })
+                    if(valid===checked){
+                       s.tx(z,user.cnid)
+                    }
+                }else{
+                    s.tx(z,user.cnid)
+                }
+            }else{
+                s.tx(z,user.cnid)
+            }
+        })
+    }
+}
 //load camera controller vars
 s.nameToTime=function(x){x=x.split('.')[0].split('T'),x[1]=x[1].replace(/-/g,':');x=x.join(' ');return x;}
 s.ratio=function(width,height,ratio){ratio = width / height;return ( Math.abs( ratio - 4 / 3 ) < Math.abs( ratio - 16 / 9 ) ) ? '4:3' : '16:9';}
@@ -424,7 +451,7 @@ s.video=function(x,e){
                             e.save=[e.filesize,1,e.end_time,e.id,e.ke,s.nameToTime(e.filename)];
                             if(!e.status){e.save.push(0)}else{e.save.push(e.status)}
                             sql.query('UPDATE Videos SET `size`=?,`status`=?,`end`=? WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save)
-                            s.tx({f:'video_build_success',hrefNoAuth:'/videos/'+e.ke+'/'+e.mid+'/'+e.filename+'.'+e.ext,filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:moment(s.nameToTime(e.filename)).format(),size:e.filesize,end:moment(e.end_time).format()},'GRP_'+e.ke);
+                            s.txWithSubPermissions({f:'video_build_success',hrefNoAuth:'/videos/'+e.ke+'/'+e.mid+'/'+e.filename+'.'+e.ext,filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:moment(s.nameToTime(e.filename)).format(),size:e.filesize,end:moment(e.end_time).format()},'GRP_'+e.ke,'video_view');
 
                             //cloud auto savers
                             //webdav
