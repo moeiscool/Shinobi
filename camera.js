@@ -53,6 +53,8 @@ if(!config.doSnapshot){config.doSnapshot=true}
 if(!config.restart){config.restart={}}
 if(!config.restart.onVideoNotExist){config.restart.onVideoNotExist=true}
 if(!config.ip||config.ip===''||config.ip.indexOf('0.0.0.0')>-1){config.ip='localhost'}else{config.bindip=config.ip};
+if(!config.cron)config.cron={};
+if(!config.cron.deleteOverMax)config.cron.deleteOverMax=true;
 
 server.listen(config.port,config.bindip);
 try{
@@ -431,7 +433,7 @@ s.video=function(x,e){
                                    });
                                 });
                             }
-                            if(s.group[e.ke].init&&s.group[e.ke].checkSpaceLock!==1){
+                            if(config.cron.deleteOverMax===true&&s.group[e.ke].init&&s.group[e.ke].checkSpaceLock!==1){
                                 if(!s.group[e.ke].init.used_space){s.group[e.ke].init.used_space=0}else{s.group[e.ke].init.used_space=parseFloat(s.group[e.ke].init.used_space)}
                                 s.group[e.ke].init.used_space=s.group[e.ke].init.used_space+e.filesizeMB;
                                 //check space
