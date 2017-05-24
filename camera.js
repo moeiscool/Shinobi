@@ -278,7 +278,7 @@ s.init=function(x,e,k){
             if(e.port==80&&e.details.port_force!=='1'){e.porty=''}else{e.porty=':'+e.port}
             e.url=e.protocol+'://'+e.authd+e.host+e.porty;return e.url;
         break;
-        case'diskUsed':
+        case'diskSet':
             if(s.group[e.ke]){
                 if(!e.limit||e.limit===''){e.limit=10000}else{e.limit=parseFloat(e.limit)}
                 k.keys=Object.keys(s.group[e.ke].users);
@@ -295,8 +295,11 @@ s.init=function(x,e,k){
                 //save global used space as megabyte value
                 s.group[e.ke].init.used_space=e.size/1000000;
                 //emit the changes to connected users
-                s.tx({f:'diskUsed',size:s.group[e.ke].init.used_space,limit:e.limit},'GRP_'+e.ke);
+                s.init('diskUsed',e)
             }
+        break;
+        case'diskUsed':
+            s.tx({f:'diskUsed',size:s.group[e.ke].init.used_space,limit:s.group[e.ke].init.size},'GRP_'+e.ke);
         break;
     }
     if(typeof e.callback==='function'){setTimeout(function(){e.callback()},500);}
@@ -433,36 +436,40 @@ s.video=function(x,e){
                                    });
                                 });
                             }
-                            if(config.cron.deleteOverMax===true&&s.group[e.ke].init&&s.group[e.ke].checkSpaceLock!==1){
+                            if(s.group[e.ke].init){
                                 if(!s.group[e.ke].init.used_space){s.group[e.ke].init.used_space=0}else{s.group[e.ke].init.used_space=parseFloat(s.group[e.ke].init.used_space)}
                                 s.group[e.ke].init.used_space=s.group[e.ke].init.used_space+e.filesizeMB;
-                                //check space
-                                var check=function(){
-                                    if(s.group[e.ke].init.used_space>s.group[e.ke].init.size){
-                                        s.group[e.ke].checkSpaceLock=1;
-                                        sql.query('SELECT * FROM Videos WHERE status != 0 AND ke=? ORDER BY `time` ASC LIMIT 2',[e.ke],function(err,evs){
-                                            k.del=[];k.ar=[e.ke];
-                                            evs.forEach(function(ev){
-                                                ev.dir=s.dir.videos+e.ke+'/'+ev.mid+'/'+s.moment(ev.time)+'.'+ev.ext;
-                                                k.del.push('(mid=? AND time=?)');
-                                                k.ar.push(ev.mid),k.ar.push(ev.time);
-                                                exec('rm '+ev.dir);
-                                               s.group[e.ke].init.used_space=s.group[e.ke].init.used_space-ev.size/1000000;
-                                                s.tx({f:'video_delete',ff:'over_max',size:s.group[e.ke].init.used_space,limit:s.group[e.ke].init.size,filename:s.moment(ev.time)+'.'+ev.ext,mid:ev.mid,ke:ev.ke,time:ev.time,end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
-                                            });
-                                            if(k.del.length>0){
-                                                k.qu=k.del.join(' OR ');
-                                                sql.query('DELETE FROM Videos WHERE ke =? AND ('+k.qu+')',k.ar,function(){
-                                                    check()
-                                                })
-                                            }
-                                        })
-                                    }else{
-                                        s.group[e.ke].checkSpaceLock=0
-                                        s.tx({f:'diskUsed',size:s.group[e.ke].init.used_space,limit:s.group[e.ke].init.size,ke:e.ke},'GRP_'+e.ke)
+                                if(config.cron.deleteOverMax===true&&s.group[e.ke].checkSpaceLock!==1){
+                                    //check space
+                                    var check=function(){
+                                        if(s.group[e.ke].init.used_space>s.group[e.ke].init.size){
+                                            s.group[e.ke].checkSpaceLock=1;
+                                            sql.query('SELECT * FROM Videos WHERE status != 0 AND ke=? ORDER BY `time` ASC LIMIT 2',[e.ke],function(err,evs){
+                                                k.del=[];k.ar=[e.ke];
+                                                evs.forEach(function(ev){
+                                                    ev.dir=s.dir.videos+e.ke+'/'+ev.mid+'/'+s.moment(ev.time)+'.'+ev.ext;
+                                                    k.del.push('(mid=? AND time=?)');
+                                                    k.ar.push(ev.mid),k.ar.push(ev.time);
+                                                    exec('rm '+ev.dir);
+                                                   s.group[e.ke].init.used_space=s.group[e.ke].init.used_space-ev.size/1000000;
+                                                    s.tx({f:'video_delete',ff:'over_max',size:s.group[e.ke].init.used_space,limit:s.group[e.ke].init.size,filename:s.moment(ev.time)+'.'+ev.ext,mid:ev.mid,ke:ev.ke,time:ev.time,end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
+                                                });
+                                                if(k.del.length>0){
+                                                    k.qu=k.del.join(' OR ');
+                                                    sql.query('DELETE FROM Videos WHERE ke =? AND ('+k.qu+')',k.ar,function(){
+                                                        check()
+                                                    })
+                                                }
+                                            })
+                                        }else{
+                                            s.group[e.ke].checkSpaceLock=0
+                                            s.init('diskUsed',e)
+                                        }
                                     }
+                                    check()
+                                }else{
+                                    s.init('diskUsed',e)
                                 }
-                                check()
                             }
                         }else{
                             s.video('delete',e);
@@ -1338,7 +1345,7 @@ var tx;
                     }
                     tx({f:'users_online',users:s.group[d.ke].users})
                     s.tx({f:'user_status_change',ke:d.ke,uid:cn.uid,status:1,user:s.group[d.ke].users[d.auth]},'GRP_'+d.ke)
-                    tx({f:'diskUsed',size:s.group[d.ke].init.used_space,limit:s.group[d.ke].init.size,ke:d.ke},'GRP_'+r.ke)
+                    s.init('diskUsed',d)
                     s.init('apps',d)
                     sql.query('SELECT * FROM API WHERE ke=? && uid=?',[d.ke,d.uid],function(err,rrr) {
                         tx({
@@ -1785,9 +1792,6 @@ var tx;
     //functions for retrieving cron announcements
     cn.on('cron',function(d){
         switch(d.f){
-            case'diskUsed':
-                s.init('diskUsed',d)
-            break;
             case'filters':
                 s.filter(d.ff,d);
             break;
@@ -2830,7 +2834,7 @@ setTimeout(function(){
                         v.size+=b.size
                     })
                 }
-                s.init('diskUsed',v)
+                s.init('diskSet',v)
             })
         })
     })
