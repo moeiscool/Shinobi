@@ -431,12 +431,13 @@ s.video=function(x,e){
                                    });
                                 });
                             }
-                            if(s.group[e.ke].init){
+                            if(s.group[e.ke].init&&s.group[e.ke].checkSpaceLock!==1){
                                 if(!s.group[e.ke].init.used_space){s.group[e.ke].init.used_space=0}else{s.group[e.ke].init.used_space=parseFloat(s.group[e.ke].init.used_space)}
                                 s.group[e.ke].init.used_space=s.group[e.ke].init.used_space+e.filesizeMB;
                                 //check space
                                 var check=function(){
                                     if(s.group[e.ke].init.used_space>s.group[e.ke].init.size){
+                                        s.group[e.ke].checkSpaceLock=1;
                                         sql.query('SELECT * FROM Videos WHERE status != 0 AND ke=? ORDER BY `time` ASC LIMIT 2',[e.ke],function(err,evs){
                                             k.del=[];k.ar=[e.ke];
                                             evs.forEach(function(ev){
@@ -455,6 +456,7 @@ s.video=function(x,e){
                                             }
                                         })
                                     }else{
+                                        s.group[e.ke].checkSpaceLock=0
                                         s.tx({f:'diskUsed',size:s.group[e.ke].init.used_space,limit:s.group[e.ke].init.size,ke:e.ke},'GRP_'+e.ke)
                                     }
                                 }
