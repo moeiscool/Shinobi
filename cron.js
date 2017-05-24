@@ -219,7 +219,7 @@ s.cron=function(){
                             s.lock[v.ke]=0;
                             setTimeout(function(){
                                 s.checkForOrphanedFiles(v);
-                                s.updateUserUsedSpace(v);
+//                                s.updateUserUsedSpace(v);
                             },3000)
                         })
                     }

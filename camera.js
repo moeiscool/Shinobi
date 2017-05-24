@@ -438,14 +438,24 @@ s.video=function(x,e){
                                 var check=function(){
                                     if(s.group[e.ke].init.used_space>s.group[e.ke].init.size){
                                         sql.query('SELECT * FROM Videos WHERE status != 0 AND ke=? ORDER BY `time` ASC LIMIT 2',[e.ke],function(err,evs){
+                                            k.del=[];k.ar=[e.ke];
                                             evs.forEach(function(ev){
                                                 ev.dir=s.dir.videos+e.ke+'/'+ev.mid+'/'+s.moment(ev.time)+'.'+ev.ext;
+                                                k.del.push('(mid=? AND time=?)');
+                                                k.ar.push(ev.mid),k.ar.push(ev.time);
                                                 exec('rm '+ev.dir);
                                                s.group[e.ke].init.used_space=s.group[e.ke].init.used_space-ev.size/100000;
                                                 s.tx({f:'video_delete',ff:'over_max',size:s.group[e.ke].init.used_space,limit:s.group[e.ke].init.size,filename:s.moment(ev.time)+'.'+ev.ext,mid:ev.mid,ke:ev.ke,time:ev.time,end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+ev.ke);
                                             });
-                                            check()
+                                            if(k.del.length>0){
+                                                k.qu=k.del.join(' OR ');
+                                                sql.query('DELETE FROM Videos WHERE ke =? AND ('+k.qu+')',k.ar,function(){
+                                                    check()
+                                                })
+                                            }
                                         })
+                                    }else{
+                                        s.tx({f:'diskUsed',size:s.group[e.ke].init.used_space,limit:s.group[e.ke].init.size,ke:e.ke},'GRP_'+e.ke)
                                     }
                                 }
                                 check()
