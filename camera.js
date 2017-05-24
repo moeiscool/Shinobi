@@ -72,17 +72,6 @@ s.disc();
 s.ffmpegKill=function(){exec("ps aux | grep -ie ffmpeg | awk '{print $2}' | xargs kill -9")};
 process.on('exit',s.ffmpegKill.bind(null,{cleanup:true}));
 process.on('SIGINT',s.ffmpegKill.bind(null, {exit:true}));
-////close open videos
-sql.query('SELECT * FROM Videos WHERE status=?',[0],function(err,r){
-    if(r&&r[0]){
-        r.forEach(function(v){
-            s.init(0,v);
-            v.filename=s.moment(v.time);
-            s.video('close',v);
-//            delete(s.group[v.ke].mon[v.mid]);
-        })
-    }
-})
 //key for child servers
 s.child_nodes={};
 s.child_key='3123asdasdf1dtj1hjk23sdfaasd12asdasddfdbtnkkfgvesra3asdsd3123afdsfqw345';
@@ -202,8 +191,9 @@ if(!fs.existsSync(s.dir.videos)){
     fs.mkdirSync(s.dir.videos);
 }
 ////Camera Controller
-s.init=function(x,e){
+s.init=function(x,e,k){
     if(!e){e={}}
+    if(!k){k={}}
     switch(x){
         case 0://camera
             if(!s.group[e.ke]){s.group[e.ke]={}};
@@ -222,31 +212,33 @@ s.init=function(x,e){
         case'apps':
             if(!s.group[e.ke].init){
                 s.group[e.ke].init={};
+            }
+            if(!s.group[e.ke].webdav||!s.group[e.ke].init.size){
                 sql.query('SELECT * FROM Users WHERE ke=? AND details NOT LIKE ?',[e.ke,'%"sub"%'],function(ar,r){
                     if(r&&r[0]){
                         r=r[0];
                         ar=JSON.parse(r.details);
-                        if(!ar.sub){
-                            //owncloud/webdav
-                            if(ar.webdav_user&&
-                               ar.webdav_user!==''&&
-                               ar.webdav_pass&&
-                               ar.webdav_pass!==''&&
-                               ar.webdav_url&&
-                               ar.webdav_url!==''
-                              ){
-                                if(!ar.webdav_dir||ar.webdav_dir===''){
-                                    ar.webdav_dir='/';
-                                    if(ar.webdav_dir.slice(-1)!=='/'){ar.webdav_dir+='/';}
-                                }
-                                s.group[e.ke].webdav = webdav(
-                                    ar.webdav_url,
-                                    ar.webdav_user,
-                                    ar.webdav_pass
-                                );
+                        //owncloud/webdav
+                        if(ar.webdav_user&&
+                           ar.webdav_user!==''&&
+                           ar.webdav_pass&&
+                           ar.webdav_pass!==''&&
+                           ar.webdav_url&&
+                           ar.webdav_url!==''
+                          ){
+                            if(!ar.webdav_dir||ar.webdav_dir===''){
+                                ar.webdav_dir='/';
+                                if(ar.webdav_dir.slice(-1)!=='/'){ar.webdav_dir+='/';}
                             }
-                            s.group[e.ke].init=ar;
+                            s.group[e.ke].webdav = webdav(
+                                ar.webdav_url,
+                                ar.webdav_user,
+                                ar.webdav_pass
+                            );
                         }
+                        Object.keys(ar).forEach(function(v){
+                            s.group[e.ke].init[v]=ar[v]
+                        })
                     }
                 });
             }
@@ -283,6 +275,26 @@ s.init=function(x,e){
             }
             if(e.port==80&&e.details.port_force!=='1'){e.porty=''}else{e.porty=':'+e.port}
             e.url=e.protocol+'://'+e.authd+e.host+e.porty;return e.url;
+        break;
+        case'diskUsed':
+            if(s.group[e.ke]){
+                if(!e.limit||e.limit===''){e.limit=10000}else{e.limit=parseFloat(e.limit)}
+                k.keys=Object.keys(s.group[e.ke].users);
+                if(k.keys.length>0){
+                    k.keys.forEach(function(v,n){
+                        if(s.group[e.ke].users[v].uid===e.uid){
+                            s.group[e.ke].users[v].details.used_space=e.size;
+                        }
+                    })
+
+                }
+                //save global space limit for group key (mb)
+                s.group[e.ke].init.size=e.limit;
+                //save global used space as megabyte value
+                s.group[e.ke].init.used_space=e.size/1000000;
+                //emit the changes to connected users
+                s.tx({f:'diskUsed',size:s.group[e.ke].init.used_space,limit:e.limit},'GRP_'+e.ke);
+            }
         break;
     }
     if(typeof e.callback==='function'){setTimeout(function(){e.callback()},500);}
@@ -334,6 +346,7 @@ s.filter=function(x,d){
 }
 s.video=function(x,e){
     if(!e){e={}};
+    k={}
     if(e.mid&&!e.id){e.id=e.mid};
     switch(x){
         case'fix':
@@ -397,10 +410,11 @@ s.video=function(x,e){
                     s.cx({f:'close',d:s.init('noReference',e)},s.group[e.ke].mon[e.id].child_node_id);
                 }else{
                     if(fs.existsSync(e.dir+e.filename+'.'+e.ext)===true){
-                        e.stat=fs.statSync(e.dir+e.filename+'.'+e.ext);
-                        e.filesize=e.stat.size;
-                        e.end_time=s.moment(e.stat.mtime,'YYYY-MM-DD HH:mm:ss');
-                        if((e.filesize/100000).toFixed(2)>0.25){
+                        k.stat=fs.statSync(e.dir+e.filename+'.'+e.ext);
+                        e.filesize=k.stat.size;
+                        e.filesizeMB=parseFloat((e.filesize/100000).toFixed(2));
+                        e.end_time=s.moment(k.stat.mtime,'YYYY-MM-DD HH:mm:ss');
+                        if(e.filesizeMB>0.25){
                             e.save=[e.filesize,1,e.end_time,e.id,e.ke,s.nameToTime(e.filename)];
                             if(!e.status){e.save.push(0)}else{e.save.push(e.status)}
                             sql.query('UPDATE Videos SET `size`=?,`status`=?,`end`=? WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save)
@@ -417,9 +431,28 @@ s.video=function(x,e){
                                    });
                                 });
                             }
+                            if(s.group[e.ke].init){
+                                if(!s.group[e.ke].init.used_space){s.group[e.ke].init.used_space=0}else{s.group[e.ke].init.used_space=parseFloat(s.group[e.ke].init.used_space)}
+                                s.group[e.ke].init.used_space=s.group[e.ke].init.used_space+e.filesizeMB;
+                                //check space
+                                var check=function(){
+                                    if(s.group[e.ke].init.used_space>s.group[e.ke].init.size){
+                                        sql.query('SELECT * FROM Videos WHERE status != 0 AND ke=? ORDER BY `time` ASC LIMIT 2',[e.ke],function(err,evs){
+                                            evs.forEach(function(ev){
+                                                ev.dir=s.dir.videos+e.ke+'/'+ev.mid+'/'+s.moment(ev.time)+'.'+ev.ext;
+                                                exec('rm '+ev.dir);
+                                               s.group[e.ke].init.used_space=s.group[e.ke].init.used_space-ev.size/100000;
+                                                s.tx({f:'video_delete',ff:'over_max',size:s.group[e.ke].init.used_space,limit:s.group[e.ke].init.size,filename:s.moment(ev.time)+'.'+ev.ext,mid:ev.mid,ke:ev.ke,time:ev.time,end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+ev.ke);
+                                            });
+                                            check()
+                                        })
+                                    }
+                                }
+                                check()
+                            }
                         }else{
                             s.video('delete',e);
-                            s.log(e,{type:'File Corrupt',msg:{ffmpeg:s.group[e.ke].mon[e.mid].ffmpeg,filesize:(e.filesize/100000).toFixed(2)}})
+                            s.log(e,{type:'File Corrupt',msg:{ffmpeg:s.group[e.ke].mon[e.mid].ffmpeg,filesize:e.filesizeMB}})
                         }
                     }else{
                         s.video('delete',e);
@@ -435,7 +468,6 @@ s.video=function(x,e){
                 }
             }
             delete(s.group[e.ke].mon[e.id].open);
-//            s.init('sync',e)
         break;
     }
 }
@@ -1292,17 +1324,7 @@ var tx;
                     }
                     tx({f:'users_online',users:s.group[d.ke].users})
                     s.tx({f:'user_status_change',ke:d.ke,uid:cn.uid,status:1,user:s.group[d.ke].users[d.auth]},'GRP_'+d.ke)
-                    d.used_space_info={f:'diskUsed',size:s.group[d.ke].users[d.auth].details.used_space,limit:s.group[d.ke].users[d.auth].details.size,ke:r.ke};
-                    if(s.group[d.ke].users[d.auth].details.sub&&!d.used_space_info.used_space){
-                        sql.query('SELECT details FROM Users WHERE ke=? AND details NOT LIKE ?',[d.ke,'%"sub"%'],function(err,r) {
-                            r=JSON.parse(r[0].details);
-                            d.used_space_info.size=r.used_space;
-                            d.used_space_info.limit=r.size;
-                            tx(d.used_space_info,'GRP_'+r.ke)
-                        })
-                    }else{
-                        tx(d.used_space_info,'GRP_'+r.ke)
-                    }
+                    tx({f:'diskUsed',size:s.group[d.ke].init.used_space,limit:s.group[d.ke].init.size,ke:d.ke},'GRP_'+r.ke)
                     s.init('apps',d)
                     sql.query('SELECT * FROM API WHERE ke=? && uid=?',[d.ke,d.uid],function(err,rrr) {
                         tx({
@@ -1464,7 +1486,6 @@ var tx;
                                     d.ar.push(d.ke),d.ar.push(d.uid);
                                     sql.query('UPDATE Users SET '+d.set.join(',')+' WHERE ke=? AND uid=?',d.ar,function(err,r){
                                         if(!d.d.sub){
-                                            delete(s.group[d.ke].init)
                                             delete(s.group[d.ke].webdav)
                                             s.init('apps',d)
                                         }
@@ -1751,18 +1772,7 @@ var tx;
     cn.on('cron',function(d){
         switch(d.f){
             case'diskUsed':
-                if(s.group[d.ke]){
-                    d.keys=Object.keys(s.group[d.ke].users);
-                    if(d.keys.length>0){
-                        d.keys.forEach(function(v,n){
-                            if(s.group[d.ke].users[v].uid===d.uid){
-                                s.group[d.ke].users[v].details.used_space=d.size;
-                            }
-                        })
-
-                    }
-                    s.tx({f:'diskUsed',size:d.size,limit:d.limit},'GRP_'+d.ke);
-                }
+                s.init('diskUsed',d)
             break;
             case'filters':
                 s.filter(d.ff,d);
@@ -2737,22 +2747,6 @@ app.get(['/:auth/videos/:ke/:id/:file/:mode','/:auth/videos/:ke/:id/:file/:mode/
         })
     },res,req);
 })
-//preliminary monitor start
-setTimeout(function(){
-sql.query('SELECT * FROM Monitors WHERE mode != "stop"', function(err,r) {
-    if(err){console.log(err)}
-    if(r&&r[0]){
-        r.forEach(function(v){
-            r.ar={};
-            r.ar.id=v.mid;
-            Object.keys(v).forEach(function(b){
-                r.ar[b]=v[b];
-            })
-            s.camera(v.mode,r.ar);
-        });
-    }
-});
-},1500)
 try{
 s.cpuUsage=function(e,f){
     switch(s.platform){
@@ -2795,3 +2789,46 @@ s.beat=function(){
     io.sockets.emit('ping',{beat:1});
 }
 s.beat();
+//preliminary monitor start
+sql.query('SELECT * FROM Monitors', function(err,r) {
+    if(err){console.log(err)}
+    if(r&&r[0]){
+        r.forEach(function(v){
+            s.init(0,v);
+            r.ar={};
+            r.ar.id=v.mid;
+            Object.keys(v).forEach(function(b){
+                r.ar[b]=v[b];
+            })
+            s.camera(v.mode,r.ar);
+        });
+    }
+});
+setTimeout(function(){
+    //get current disk used for each isolated account (admin user) on startup
+    sql.query('SELECT * FROM Users WHERE details NOT LIKE ?',['%"sub"%'],function(err,r){
+        r.forEach(function(v){
+            v.size=0;
+            v.limit=JSON.parse(v.details).size
+            sql.query('SELECT * FROM Videos WHERE ke=?',[v.ke],function(err,rr){
+                if(r&&r[0]){
+                    rr.forEach(function(b){
+                        v.size+=b.size
+                    })
+                }
+                s.init('diskUsed',v)
+            })
+        })
+    })
+},1500)
+setTimeout(function(){
+    ////close open videos
+    sql.query('SELECT * FROM Videos WHERE status=?',[0],function(err,r){
+        if(r&&r[0]){
+            r.forEach(function(v){
+                v.filename=s.moment(v.time);
+                s.video('close',v);
+            })
+        }
+    })
+},2500)
