@@ -412,7 +412,7 @@ s.video=function(x,e){
                     if(fs.existsSync(e.dir+e.filename+'.'+e.ext)===true){
                         k.stat=fs.statSync(e.dir+e.filename+'.'+e.ext);
                         e.filesize=k.stat.size;
-                        e.filesizeMB=parseFloat((e.filesize/100000).toFixed(2));
+                        e.filesizeMB=parseFloat((e.filesize/1000000).toFixed(2));
                         e.end_time=s.moment(k.stat.mtime,'YYYY-MM-DD HH:mm:ss');
                         if(e.filesizeMB>0.25){
                             e.save=[e.filesize,1,e.end_time,e.id,e.ke,s.nameToTime(e.filename)];
@@ -445,8 +445,8 @@ s.video=function(x,e){
                                                 k.del.push('(mid=? AND time=?)');
                                                 k.ar.push(ev.mid),k.ar.push(ev.time);
                                                 exec('rm '+ev.dir);
-                                               s.group[e.ke].init.used_space=s.group[e.ke].init.used_space-ev.size/100000;
-                                                s.tx({f:'video_delete',ff:'over_max',size:s.group[e.ke].init.used_space,limit:s.group[e.ke].init.size,filename:s.moment(ev.time)+'.'+ev.ext,mid:ev.mid,ke:ev.ke,time:ev.time,end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+ev.ke);
+                                               s.group[e.ke].init.used_space=s.group[e.ke].init.used_space-ev.size/1000000;
+                                                s.tx({f:'video_delete',ff:'over_max',size:s.group[e.ke].init.used_space,limit:s.group[e.ke].init.size,filename:s.moment(ev.time)+'.'+ev.ext,mid:ev.mid,ke:ev.ke,time:ev.time,end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
                                             });
                                             if(k.del.length>0){
                                                 k.qu=k.del.join(' OR ');
@@ -2822,7 +2822,7 @@ setTimeout(function(){
         r.forEach(function(v){
             v.size=0;
             v.limit=JSON.parse(v.details).size
-            sql.query('SELECT * FROM Videos WHERE ke=?',[v.ke],function(err,rr){
+            sql.query('SELECT * FROM Videos WHERE ke=? AND status!=?',[v.ke,0],function(err,rr){
                 if(r&&r[0]){
                     rr.forEach(function(b){
                         v.size+=b.size
@@ -2843,4 +2843,4 @@ setTimeout(function(){
             })
         }
     })
-},2500)
+},4500)
