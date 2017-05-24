@@ -216,41 +216,11 @@ s.cron=function(){
                                 }
                             }
                             //delete files when over specified maximum
-                            if(config.cron.deleteOverMax===true&&(v.size/1000000)>v.d.size){
-                                sql.query('SELECT * FROM Videos WHERE status != 0 AND ke=? ORDER BY `time` ASC LIMIT 15',[v.ke],function(err,evs){
-                                es.del=[];es.ar=[v.ke];
-                                    evs.forEach(function(ev){
-                                        ev.dir=s.dir.videos+v.ke+'/'+ev.mid+'/'+s.moment(ev.time)+'.'+ev.ext;
-                                        es.del.push('(mid=? AND time=?)');
-                                        es.ar.push(ev.mid),es.ar.push(ev.time);
-                                        exec('rm '+ev.dir);
-                                       s.tx({f:'video_delete',filename:s.moment(ev.time)+'.'+ev.ext,mid:ev.mid,ke:ev.ke,time:ev.time,end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+ev.ke);
-
-                                    });
-                                    if(es.del.length>0){
-                                        es.qu=es.del.join(' OR ');
-                                        sql.query('DELETE FROM Videos WHERE ke =? AND ('+es.qu+')',es.ar,function(){
-                                            s.lock[v.ke]=0;
-                                            setTimeout(function(){
-                                                v.fn()
-                                            },3000)
-                                        })
-                                        s.cx({f:'deleteOverMax',msg:es.del.length+' old videos deleted because over max of '+v.d.size+' MB',ke:v.ke,time:moment()})
-                                    }else{
-                                        s.lock[v.ke]=0;
-                                        setTimeout(function(){
-                                            s.checkForOrphanedFiles(v);
-                                            s.updateUserUsedSpace(v);
-                                        },3000)
-                                    }
-                                })
-                            }else{
-                                s.lock[v.ke]=0;
-                                setTimeout(function(){
-                                    s.checkForOrphanedFiles(v);
-                                    s.updateUserUsedSpace(v);
-                                },3000)
-                            }
+                            s.lock[v.ke]=0;
+                            setTimeout(function(){
+                                s.checkForOrphanedFiles(v);
+                                s.updateUserUsedSpace(v);
+                            },3000)
                         })
                     }
                 };
