@@ -1490,6 +1490,7 @@ var tx;
                                         if(d.d.monitors){d.form.details.monitors=d.d.monitors;}
                                         if(d.d.allmonitors){d.form.details.allmonitors=d.d.allmonitors;}
                                         if(d.d.video_delete){d.form.details.video_delete=d.d.video_delete;}
+                                        if(d.d.video_view){d.form.details.video_view=d.d.video_view;}
                                         if(d.d.monitor_edit){d.form.details.monitor_edit=d.d.monitor_edit;}
                                         if(d.d.size){d.form.details.size=d.d.size;}
                                         if(d.d.days){d.form.details.days=d.d.days;}
@@ -2377,7 +2378,7 @@ app.get(['/:auth/monitor/:ke','/:auth/monitor/:ke/:id'], function (req,res){
     res.setHeader('Content-Type', 'application/json');
     req.fn=function(user){
     if(user.permissions.get_monitors==="0"){
-        res.end('Not Permitted')
+        res.end(s.s([]))
         return
     }
         req.sql='SELECT * FROM Monitors WHERE ke=?';req.ar=[req.params.ke];
@@ -2407,8 +2408,8 @@ app.get(['/:auth/monitor/:ke','/:auth/monitor/:ke/:id'], function (req,res){
 // Get videos json
 app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
     s.auth(req.params,function(user){
-        if(user.permissions.watch_videos==="0"){
-            res.end('Not Permitted')
+        if(user.permissions.watch_videos==="0"||user.details.sub&&user.details.allmonitors!=='1'&&user.details.video_view.indexOf(req.params.id)===-1){
+            res.end(s.s([]))
             return
         }
         req.sql='SELECT * FROM Videos WHERE ke=?';req.ar=[req.params.ke];
@@ -2462,7 +2463,7 @@ app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
                 req.skip=0
                 req.limit=parseInt(req.query.limit)
             }
-            res.send(s.s({total:count[0]['COUNT(*)'],limit:req.limit,skip:req.skip,videos:r}, null, 3));
+            res.end(s.s({total:count[0]['COUNT(*)'],limit:req.limit,skip:req.skip,videos:r}, null, 3));
         })
         })
     },res,req);
@@ -2472,8 +2473,8 @@ app.get(['/:auth/events/:ke','/:auth/events/:ke/:id','/:auth/events/:ke/:id/:lim
     req.ret={ok:false};
     res.setHeader('Content-Type', 'application/json');
     s.auth(req.params,function(user){
-        if(user.permissions.watch_videos==="0"){
-            res.end('Not Permitted')
+        if(user.permissions.watch_videos==="0"||user.details.sub&&user.details.allmonitors!=='1'&&user.details.video_view.indexOf(req.params.id)===-1){
+            res.end(s.s([]))
             return
         }
         req.sql='SELECT * FROM Events WHERE ke=?';req.ar=[req.params.ke];
@@ -2523,7 +2524,7 @@ app.get(['/:auth/logs/:ke','/:auth/logs/:ke/:id','/:auth/logs/:ke/:limit','/:aut
     res.setHeader('Content-Type', 'application/json');
     s.auth(req.params,function(user){
         if(user.permissions.get_logs==="0"){
-            res.end('Not Permitted')
+            res.end(s.s([]))
             return
         }
         req.sql='SELECT * FROM Logs WHERE ke=?';req.ar=[req.params.ke];
@@ -2561,7 +2562,7 @@ app.get('/:auth/smonitor/:ke', function (req,res){
     res.setHeader('Content-Type', 'application/json');
     req.fn=function(user){
         if(user.permissions.get_monitors==="0"){
-            res.end('Not Permitted')
+            res.end(s.s([]))
             return
         }
         req.sql='SELECT * FROM Monitors WHERE ke=?';req.ar=[req.params.ke];
