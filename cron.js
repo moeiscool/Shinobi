@@ -123,15 +123,6 @@ s.checkForOrphanedFiles=function(v){
         });
     }
 }
-s.updateUserUsedSpace=function(v){
-    sql.query('SELECT details FROM Users WHERE ke=? AND uid=?',[v.ke,v.uid], function(arr,r) {
-        r=r[0];
-        r.details=JSON.parse(r.details);
-        r.details.used_space=v.size;
-        s.cx({f:'diskUsed',size:v.size,limit:v.d.size,ke:v.ke,uid:v.uid})
-        sql.query('UPDATE Users SET details=? WHERE ke=? AND uid=?',[JSON.stringify(r.details),v.ke,v.uid])
-    })
-}
 s.cron=function(){
     x={};
     s.cx({f:'start',time:moment()})
@@ -219,7 +210,6 @@ s.cron=function(){
                             s.lock[v.ke]=0;
                             setTimeout(function(){
                                 s.checkForOrphanedFiles(v);
-//                                s.updateUserUsedSpace(v);
                             },3000)
                         })
                     }
