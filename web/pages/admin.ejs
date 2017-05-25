@@ -177,7 +177,7 @@ $.sU.e.on('click','.permission',function(e){
         $.pR.e.find('[name="'+n+'"]').val(v)
     })
     $.pR.e.find('[detail="allmonitors"]').val(e.d.allmonitors).change()
-    $.each(['monitors','monitor_edit','video_delete'],function(m,b){
+    $.each(['monitors','monitor_edit','video_delete','video_view'],function(m,b){
         if(e.d[b]){
             $.each(e.d[b],function(n,v){
                 $.pR.e.find('[monitor="'+b+'"][mid="'+v+'"]').val(1)
