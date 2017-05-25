@@ -37,9 +37,6 @@ npm install pm2 -g
 if [ ! -e "./conf.json" ]; then
     cp conf.sample.json conf.json
 fi
-if [ ! -e "./super.json" ]; then
-    cp super.sample.json super.json
-fi
 pm2 start camera.js
 pm2 start cron.js
 pm2 list
