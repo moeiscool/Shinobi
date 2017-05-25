@@ -327,7 +327,9 @@ s.init=function(x,e,k){
             }
         break;
         case'diskUsed':
-            s.tx({f:'diskUsed',size:s.group[e.ke].init.used_space,limit:s.group[e.ke].init.size},'GRP_'+e.ke);
+            if(s.group[e.ke]&&s.group[e.ke].init){
+                s.tx({f:'diskUsed',size:s.group[e.ke].init.used_space,limit:s.group[e.ke].init.size},'GRP_'+e.ke);
+            }
         break;
     }
     if(typeof e.callback==='function'){setTimeout(function(){e.callback()},500);}
