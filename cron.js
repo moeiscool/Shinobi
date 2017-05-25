@@ -21,14 +21,15 @@ if(!config.cron.deleteLogs)config.cron.deleteLogs=true;
 if(!config.cron.deleteEvents)config.cron.deleteEvents=true;
 if(!config.cron.interval)config.cron.interval=1;
 
-if(!config.videosDir){config.videosDir=__dirname+'/videos/'}
+if(!config.ip||config.ip===''||config.ip.indexOf('0.0.0.0')>-1)config.ip='localhost';
+if(!config.videosDir)config.videosDir=__dirname+'/videos/';
 s.dir={videos:config.videosDir};
 s.moment=function(e,x){
     if(!e){e=new Date};if(!x){x='YYYY-MM-DDTHH-mm-ss'};
     return moment(e).format(x);
 }
 s.nameToTime=function(x){x=x.replace('.webm','').replace('.mp4','').split('T'),x[1]=x[1].replace(/-/g,':');x=x.join(' ');return x;}
-io = require('socket.io-client')('ws://localhost:'+config.port);//connect to master
+io = require('socket.io-client')('ws://'+config.ip+':'+config.port);//connect to master
 s.cx=function(x){return io.emit('cron',x)}
 //emulate master socket emitter
 s.tx=function(x,y){s.cx({f:'s.tx',data:x,to:y})}
@@ -122,15 +123,6 @@ s.checkForOrphanedFiles=function(v){
         });
     }
 }
-s.updateUserUsedSpace=function(v){
-    sql.query('SELECT details FROM Users WHERE ke=? AND uid=?',[v.ke,v.uid], function(arr,r) {
-        r=r[0];
-        r.details=JSON.parse(r.details);
-        r.details.used_space=v.size;
-        s.cx({f:'diskUsed',size:v.size,limit:v.d.size,ke:v.ke,uid:v.uid})
-        sql.query('UPDATE Users SET details=? WHERE ke=? AND uid=?',[JSON.stringify(r.details),v.ke,v.uid])
-    })
-}
 s.cron=function(){
     x={};
     s.cx({f:'start',time:moment()})
@@ -215,41 +207,10 @@ s.cron=function(){
                                 }
                             }
                             //delete files when over specified maximum
-                            if(config.cron.deleteOverMax===true&&(v.size/1000000)>v.d.size){
-                                sql.query('SELECT * FROM Videos WHERE status != 0 AND ke=? ORDER BY `time` ASC LIMIT 15',[v.ke],function(err,evs){
-                                es.del=[];es.ar=[v.ke];
-                                    evs.forEach(function(ev){
-                                        ev.dir=s.dir.videos+v.ke+'/'+ev.mid+'/'+s.moment(ev.time)+'.'+ev.ext;
-                                        es.del.push('(mid=? AND time=?)');
-                                        es.ar.push(ev.mid),es.ar.push(ev.time);
-                                        exec('rm '+ev.dir);
-                                       s.tx({f:'video_delete',filename:s.moment(ev.time)+'.'+ev.ext,mid:ev.mid,ke:ev.ke,time:ev.time,end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+ev.ke);
-
-                                    });
-                                    if(es.del.length>0){
-                                        es.qu=es.del.join(' OR ');
-                                        sql.query('DELETE FROM Videos WHERE ke =? AND ('+es.qu+')',es.ar,function(){
-                                            s.lock[v.ke]=0;
-                                            setTimeout(function(){
-                                                v.fn()
-                                            },3000)
-                                        })
-                                        s.cx({f:'deleteOverMax',msg:es.del.length+' old videos deleted because over max of '+v.d.size+' MB',ke:v.ke,time:moment()})
-                                    }else{
-                                        s.lock[v.ke]=0;
-                                        setTimeout(function(){
-                                            s.checkForOrphanedFiles(v);
-                                            s.updateUserUsedSpace(v);
-                                        },3000)
-                                    }
-                                })
-                            }else{
-                                s.lock[v.ke]=0;
-                                setTimeout(function(){
-                                    s.checkForOrphanedFiles(v);
-                                    s.updateUserUsedSpace(v);
-                                },3000)
-                            }
+                            s.lock[v.ke]=0;
+                            setTimeout(function(){
+                                s.checkForOrphanedFiles(v);
+                            },3000)
                         })
                     }
                 };

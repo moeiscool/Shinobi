@@ -25,6 +25,7 @@ var Canvas = require('canvas');
 var config=require('./conf.json');
 s={
     lock:{},
+    buffer:{},
     canvas:{},
     canvasContext:{},
     img:{},
@@ -173,13 +174,19 @@ io.on('f',function(d){
             }
         break;
         case'frame':
-            if(!d.buffer){
-              d.buffer=[d.frame];
+            if(typeof d.mon ==='string'){
+                try{d.mon=JSON.parse(d.mon)}catch(er){d.mon={}}
+            }
+            if(typeof d.mon.cords ==='string'){
+                try{d.mon.cords=JSON.parse(d.mon.cords)}catch(er){d.mon.cords={}}
+            }
+            if(!s.buffer[d.id]){
+              s.buffer[d.id]=[d.frame];
             }else{
-              d.buffer.push(d.frame)
+              s.buffer[d.id].push(d.frame)
             }
             if(d.frame[d.frame.length-2] === 0xFF && d.frame[d.frame.length-1] === 0xD9){
-                d.buffer=Buffer.concat(d.buffer);
+                s.buffer[d.id]=Buffer.concat(s.buffer[d.id]);
                 s.globalCoords[d.id]=Object.values(d.mon.cords);
                 s.globalCoordsObject[d.id]=d.mon.cords;
                 if(!s.img[d.id]){
@@ -196,9 +203,11 @@ io.on('f',function(d){
                     s.img[d.id].width=d.mon.detector_scale_x;
                     s.img[d.id].height=d.mon.detector_scale_y;
                 }
-                s.img[d.id].src = d.buffer;
-                s.checkAreas(d);
-                d.buffer=null;
+                s.img[d.id].src = s.buffer[d.id];
+                s.img[d.id].onload = function() { 
+                    s.checkAreas(d);
+                }
+                s.buffer[d.id]=null;
             }
         break;
     }

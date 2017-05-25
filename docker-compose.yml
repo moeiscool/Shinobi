@@ -1,12 +1,25 @@
 version: '2'
 services:
-   shinobi:
-     container_name: shinobi
-     build: 
-       context: .
-     env_file: ./docker.env
-     depends_on: 
-       - shinobi-db
-     restart: always
-     ports:
-       - "8080:8080"
+  shinobi:
+    container_name: shinobi
+    build:
+      context: .
+    depends_on:
+      - mysql
+    restart: always
+    environment:
+      - MYSQL_HOST=shinobi-db
+      - MYSQL_DATABASE=shinobi
+      - MYSQL_USER=shinobi
+      - MYSQL_PASSWORD=shinobi_pass
+      - MYSQL_ROOT_PASSWORD=rootpass
+    ports:
+      - "8080:8080"
+  mysql:
+    image: mysql:8
+    container_name: shinobi-db
+    environment:
+      - MYSQL_DATABASE=shinobi
+      - MYSQL_ROOT_PASSWORD=rootpass
+      - MYSQL_USER=shinobi
+      - MYSQL_PASSWORD=shinobi_pass

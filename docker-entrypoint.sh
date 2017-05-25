@@ -1,44 +1,46 @@
 #!/bin/bash
+
 SHIN_BIN_DIR=/opt/shinobi
-source $SHIN_BIN_DIR/docker.env
+MYSQL_HOST="${MYSQL_HOST:-shinobi-db}"
+MYSQL_DATABASE="${MYSQL_DATABASE:-shinobi}"
+MYSQL_ROOT_USER="${MYSQL_ROOT_USER:-root}"
+MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD:-rootpass}"
+MYSQL_USER="${MYSQL_USER:-ccio}"
+MYSQL_PASSWORD="${MYSQL_PASSWORD:-shinobi}"
 
-/etc/init.d/mysql start
-sleep 2
-cd /opt/shinobi
+cd "$SHIN_BIN_DIR" || exit 9
 
-if [ ! -e "/opt/shinobi/installed.txt" ]; then
-#install stuff if not installed
-    touch /opt/shinobi/installed.txt
-    mysql -u root -pnight -e "CREATE USER 'root'@'192.168.99.1' IDENTIFIED BY 'night';" || true
-    mysql -u root -pnight -e "GRANT ALL PRIVILEGES ON * . * TO 'root'@'192.168.99.1';" || true
-    mysql -u root -pnight -e "FLUSH PRIVILEGES;" || true
-    #mysql -u root -pnight < /opt/shinobi/sql/user.sql || true
-    mysql -u root -pnight < /opt/shinobi/sql/framework.sql || true
-    mysql -u root -pnight --database ccio < /opt/shinobi/sql/default_data.sql || true
-    sed -i 's/"user": "majesticflame"/"user": "root"/g' $SHIN_BIN_DIR/conf.json
-    sed -i 's/"password": ""/"password": "night"/g' $SHIN_BIN_DIR/conf.json
-    sed -i 's/"port":3306/"port":3314/g' $SHIN_BIN_DIR/conf.json
-    sed -i 's/"port": 8080/"port": 8083/g' $SHIN_BIN_DIR/conf.json
-    sed -i 's/"port":8080/"port":8083/g' $SHIN_BIN_DIR/plugins/motion/conf.json
+check_port() {
+    timeout 3 bash -c "</dev/tcp/$1/$2" 2>/dev/null
+}
+
+_mysql() {
+    mysql -u "${MYSQL_ROOT_USER}" -p"${MYSQL_ROOT_PASSWORD}" -h "${MYSQL_HOST}" $@
+}
+
+echo -n "Waiting for MYSQL server..."
+while ! check_port "$MYSQL_HOST" 3306
+do
+    :
+done
+echo 'Done!'
+
+tables_check="select count(*) from information_schema.tables where table_schema='API' and table_name='${MYSQL_DATABASE}';"
+tables_num=$(mysql -N -s -u "${MYSQL_ROOT_USER}" -p"${MYSQL_ROOT_PASSWORD}" -h "${MYSQL_HOST}" -e "${tables_check}")
+
+if [[ "${tables_num}" -eq "0" ]]
+then
+    # install stuff if not installed
+    _mysql --database "$MYSQL_DATABASE" < "${SHIN_BIN_DIR}/sql/framework.sql"
+    _mysql --database "$MYSQL_DATABASE" < "${SHIN_BIN_DIR}/sql/default_data.sql"
+    sed -i 's/"user": "majesticflame"/"user": "'"${MYSQL_USER}"'"/g' "$SHIN_BIN_DIR/conf.json"
+    sed -i 's/"password": ""/"password": "'"${MYSQL_PASSWORD}"'"/g' "$SHIN_BIN_DIR/conf.json"
+    sed -i 's/"host": "127.0.0.1"/"host": "'"${MYSQL_HOST}"'"/g' "$SHIN_BIN_DIR/conf.json"
+    sed -i 's/"database": "ccio"/"database": "'"${MYSQL_DATABASE}"'"/g' "$SHIN_BIN_DIR/conf.json"
     npm cache clean -f && npm install -g n && n stable
-else
-#update if already installed
-    wget https://github.com/moeiscool/Shinobi/tarball/master
-    mkdir master_temp
-    tar -xzf master -C master_temp --strip-components=1
-    rm -rf camera.js web UPDATE.sh package.json cron.js
-    mv master_temp/UPDATE.sh UPDATE.sh
-    chmod +x UPDATE.sh
-    mv master_temp/web web
-    mv master_temp/package.json package.json
-    mv master_temp/camera.js camera.js
-    mv master_temp/cron.js cron.js
-    mv master_temp/plugins/motion/shinobi-motion.js plugins/motion/shinobi-motion.js
-    npm install
-    rm -rf master master_temp
 fi
 
-pm2 start /opt/shinobi/cron.js
-pm2 start /opt/shinobi/camera.js
-#pm2 start /opt/shinobi/plugins/motion/shinobi-motion.js
+pm2 start "${SHIN_BIN_DIR}/cron.js"
+pm2 start "${SHIN_BIN_DIR}/camera.js"
+# pm2 start "${SHIN_BIN_DIR}/plugins/motion/shinobi-motion.js"
 pm2 logs

@@ -56,7 +56,26 @@
                 </div>
               <% }) %>
           </div>
-          <div class="form-group-group navy" id="video_delete_section">
+          <div class="form-group-group navy" id="video_view_section">
+              <h4>
+                  Can View Videos and Events
+                  <div class="pull-right">
+                    <a class="btn btn-success btn-xs" check="1"><i class="fa fa-check-square-o"></i></a>
+                    <a class="btn btn-danger btn-xs" check="0"><i class="fa fa-square-o"></i></a>
+                  </div>
+              </h4>
+              <% $mons.forEach(function(v,n){ %>
+                <div class="form-group">
+                    <label><span><%- v.name %></span>
+                        <select class="form-control" monitor="video_view" mid="<%- v.mid %>">
+                            <option value="0" selected>No</option>  
+                            <option value="1">Yes</option>  
+                        </select>
+                    </label>
+                </div>
+              <% }) %>
+          </div>
+          <div class="form-group-group red" id="video_delete_section">
               <h4>
                   Can Delete Videos and Events
                   <div class="pull-right">

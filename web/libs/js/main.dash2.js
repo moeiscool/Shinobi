@@ -638,9 +638,8 @@ $.ccio.ws.on('f',function (d){
         break;
         case'diskUsed':
             if(!d.limit||d.limit===''){d.limit=10000}
-            d.diskUsed=d.size/1000000;
-            d.percent=parseInt((d.diskUsed/d.limit)*100)+'%';
-            d.human=parseFloat(d.diskUsed)
+            d.percent=parseInt((d.size/d.limit)*100)+'%';
+            d.human=parseFloat(d.size)
             if(d.human>1000){d.human=(d.human/1000).toFixed(2)+' GB'}else{d.human=d.human.toFixed(2)+' MB'}
             $('.diskUsed .value').html(d.human)
             $('.diskUsed .percent').html(d.percent)
