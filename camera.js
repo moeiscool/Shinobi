@@ -2856,28 +2856,35 @@ sql.query('SELECT * FROM Monitors', function(err,r) {
 setTimeout(function(){
     //get current disk used for each isolated account (admin user) on startup
     sql.query('SELECT * FROM Users WHERE details NOT LIKE ?',['%"sub"%'],function(err,r){
-        r.forEach(function(v){
-            v.size=0;
-            v.limit=JSON.parse(v.details).size
-            sql.query('SELECT * FROM Videos WHERE ke=? AND status!=?',[v.ke,0],function(err,rr){
-                if(r&&r[0]){
-                    rr.forEach(function(b){
-                        v.size+=b.size
-                    })
-                }
-                s.init('diskSet',v)
-            })
-        })
-    })
-},1500)
-setTimeout(function(){
-    ////close open videos
-    sql.query('SELECT * FROM Videos WHERE status=?',[0],function(err,r){
         if(r&&r[0]){
-            r.forEach(function(v){
-                v.filename=s.moment(v.time);
-                s.video('close',v);
+            var count = r.length
+            var countFinished = 0
+            r.forEach(function(v,n){
+                v.size=0;
+                v.limit=JSON.parse(v.details).size
+                sql.query('SELECT * FROM Videos WHERE ke=? AND status!=?',[v.ke,0],function(err,rr){
+                    ++countFinished
+                    if(r&&r[0]){
+                        rr.forEach(function(b){
+                            v.size+=b.size
+                        })
+                    }
+                    s.init('diskSet',v)
+                    if(countFinished===count){
+                        setTimeout(function(){
+                            ////close open videos
+                            sql.query('SELECT * FROM Videos WHERE status=?',[0],function(err,r){
+                                if(r&&r[0]){
+                                    r.forEach(function(v){
+                                        v.filename=s.moment(v.time);
+                                        s.video('close',v);
+                                    })
+                                }
+                            })
+                        },4500)
+                    }
+                })
             })
         }
     })
-},4500)
+},1500)
