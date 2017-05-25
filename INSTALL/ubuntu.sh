@@ -5,8 +5,7 @@ apt-get update -y&&apt-get upgrade -y
 apt-get install wget -y
 echo "============="
 echo "Shinobi - Get dependencies"
-chmod +x INSTALL/ffmpeg.sh
-INSTALL/ffmpeg.sh
+apt install libav-tools ffmpeg -y
 echo "============="
 echo "Shinobi - Installing MariaDB"
 echo "Password for root SQL user, If you are installing SQL now then you may put anything:"
@@ -35,7 +34,12 @@ npm install
 echo "============="
 echo "Shinobi - Install PM2"
 npm install pm2 -g
-
 if [ ! -e "./conf.json" ]; then
     cp conf.sample.json conf.json
 fi
+if [ ! -e "./super.json" ]; then
+    cp super.sample.json super.json
+fi
+pm2 start camera.js
+pm2 start cron.js
+pm2 list
