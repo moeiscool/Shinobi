@@ -1,4 +1,3 @@
 CREATE USER 'majesticflame'@'127.0.0.1' IDENTIFIED BY '';
-CREATE DATABASE IF NOT EXISTS `ccio`;
-GRANT ALL PRIVILEGES ON ccio.* TO 'majesticflame'@'127.0.0.1';
+GRANT ALL PRIVILEGES ON * . * TO 'majesticflame'@'127.0.0.1';
 FLUSH PRIVILEGES;
