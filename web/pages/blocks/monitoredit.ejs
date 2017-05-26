@@ -8,7 +8,7 @@
         </button>
         <h4 class="modal-title" id="add_monitorLabel"><i class="fa fa-plus"></i> &nbsp; <span>Add</span> Monitor &nbsp; <small>Monitor ID : <t class="edit_id"></t></small></h4>
       </div>
-      <div class="modal-body">
+      <div class="modal-body form-group-group-group">
           <div class="text-center msg"></div>
         <div class="form-group-group grey">
           <h4>Identity</h4>
@@ -421,6 +421,8 @@
               </div>
           </div>
 <!--     END of Record     -->
+<!--     START of Advanced     -->
+          <div class=" h_us_input h_us_advanced" style="display:none">
 <!--     START of Custom     -->
           <div class="form-group-group navy">
           <h4>Custom</h4>
@@ -743,6 +745,7 @@
                 <input class="form-control" name="shfr" value="[]">
               </div>
           </div>
+          </div>
       </div>
       <div class="modal-footer">
           <div class="pull-left">
@@ -752,6 +755,12 @@
             <button type="button" class="btn btn-default import_config"><i class="fa fa-upload"></i> Import</button>
             <button type="button" class="btn btn-primary probe_config"><i class="fa fa-search"></i> Probe</button>
             <span class="h_det_input h_det_1"><button type="button" style="display:none" class="btn btn-warning shinobi-detector-stemkoski shinobi-detector-motion shinobi-detector_plug" monitor="region"><i class="fa fa-grav"></i> Region Editor</button></span>
+          </div>
+          <div style="display:inline-block;margin-right:5px">
+            <select class="form-control" id="monedit_user_type" selector="h_us">
+                <option value="simple" selected>Simple</option>  
+                <option value="advanced">Advanced</option>  
+            </select>
           </div>
           <button type="submit" class="btn btn-success"><i class="fa fa-check"></i> Save</button>
       </div>
