@@ -29,18 +29,28 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 })
                 return $.ccio.mon_groups;
             break;
+            case'jpegModeStop':
+                clearTimeout($.ccio.mon[d.mid].jpegInterval);
+                delete($.ccio.mon[d.mid].jpegInterval);
+                $('#monitor_live_'+d.mid+' .stream-element').unbind('load')
+            break;
             case'jpegMode':
                 if(d.watch===1){
                     k=JSON.parse(d.details);
                     k.jpegInterval=parseFloat(k.jpegInterval);
                     if(!k.jpegInterval||k.jpegInterval===''||isNaN(k.jpegInterval)){k.jpegInterval=1}
-                    if(!$.ccio.mon[d.mid].jpegInterval){
-                        $.ccio.tm('stream-element',$.ccio.mon[d.mid]);
-                        clearInterval($.ccio.mon[d.mid].jpegInterval);
-                        $.ccio.mon[d.mid].jpegInterval=setInterval(function(){
-                            $('#monitor_live_'+d.mid+' .stream-element').attr('src',$user.auth_token+'/jpeg/'+d.ke+'/'+d.mid+'/s.jpg?time='+(new Date()).getTime())
-                        },1000/k.jpegInterval);
+                    $.ccio.tm('stream-element',$.ccio.mon[d.mid]);
+                    k.e=$('#monitor_live_'+d.mid+' .stream-element');
+                    $.ccio.init('jpegModeStop',d);
+                    k.run=function(){
+                        k.e.attr('src',$user.auth_token+'/jpeg/'+d.ke+'/'+d.mid+'/s.jpg?time='+(new Date()).getTime())
                     }
+                    k.e.load(function(){
+                        $.ccio.mon[d.mid].jpegInterval=setTimeout(k.run,1000/k.jpegInterval);
+                    }).error(function(){
+                        $.ccio.mon[d.mid].jpegInterval=setTimeout(k.run,1000/k.jpegInterval);
+                    })
+                    k.run()
                 };
             break;
             case'jpegModeAll':
@@ -752,8 +762,7 @@ $.ccio.ws.on('f',function (d){
             if(d.mon.details.cords instanceof Object){d.mon.details.cords=JSON.stringify(d.mon.details.cords);}
             d.mon.details=JSON.stringify(d.mon.details);
             if(!$.ccio.mon[d.mid]){$.ccio.mon[d.mid]={}}
-            clearInterval($.ccio.mon[d.mid].jpegInterval);
-            delete($.ccio.mon[d.mid].jpegInterval);
+            $.ccio.init('jpegModeStop',d);
             $.each(d.mon,function(n,v){
                 $.ccio.mon[d.mid][n]=v;
             });
@@ -787,8 +796,7 @@ $.ccio.ws.on('f',function (d){
         case'mode_jpeg_off':
             $.ccio.op('jpeg_on',"0");
             $.each($.ccio.mon,function(n,v,x){
-                clearInterval($.ccio.mon[n].jpegInterval);
-                delete($.ccio.mon[n].jpegInterval);
+                $.ccio.init('jpegModeStop',v);
                 if(v.watch===1){
                     $.ccio.cx({f:'monitor',ff:'watch_on',id:v.mid})
                 }
@@ -803,8 +811,7 @@ $.ccio.ws.on('f',function (d){
         case'monitor_watch_off':case'monitor_stopping':
             d.o=$.ccio.op().watch_on;if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=0;$.ccio.op('watch_on',d.o);
             if($.ccio.mon[d.id]){
-                clearInterval($.ccio.mon[d.id].jpegInterval);
-                delete($.ccio.mon[d.id].jpegInterval);
+                $.ccio.init('jpegModeStop',{mid:d.id});
                 clearTimeout($.ccio.mon[d.id].sk)
                 clearInterval($.ccio.mon[d.id].signal);delete($.ccio.mon[d.id].signal);
                 $.ccio.mon[d.id].watch=0;
@@ -823,7 +830,7 @@ $.ccio.ws.on('f',function (d){
             d.d=JSON.parse($.ccio.mon[d.id].details);
             $.ccio.tm('stream-element',$.ccio.mon[d.id]);
             if($.ccio.op().jpeg_on===true){
-                $.ccio.init('jpegModeAll');
+                $.ccio.init('jpegMode',$.ccio.mon[d.id]);
             }else{
                 switch(d.d.stream_type){
                     case'jpeg':
@@ -1769,6 +1776,15 @@ $('body')
     $.ccio.op('class_toggle',e.o)
     $(e.n).toggleClass(e.v);
 })
+.on('change','[dropdown_toggle]',function(e){
+    e.e=$(this);
+    e.n=e.e.attr('dropdown_toggle');
+    e.v=e.e.val();
+    e.o=$.ccio.op().dropdown_toggle;
+    if(!e.o)e.o={};
+    e.o[e.n]=e.v;
+    $.ccio.op('dropdown_toggle',e.o)
+})
 //monitor functions
 .on('click','[monitor]',function(){
     e={}; 
@@ -2188,6 +2204,13 @@ $('body')
             }else{
                 $(n).removeClass(v[0])
             }
+        })
+    }
+    //set dropdown toggle preferences
+    e.o=$.ccio.op().dropdown_toggle;
+    if(e.o){
+        $.each(e.o,function(n,v){
+            $('[dropdown_toggle="'+n+'"]').val(v).change()
         })
     }
 })
