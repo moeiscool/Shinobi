@@ -15,7 +15,7 @@
 // # Donate
 //
 // If you like what I am doing here and want me to continue please consider donating :)
-// PayPal : paypal@m03.a
+// PayPal : paypal@m03.ca
 //
 process.on('uncaughtException', function (err) {
     console.error('uncaughtException',err);
@@ -480,7 +480,7 @@ s.video=function(x,e){
                                                     ev.dir=s.dir.videos+e.ke+'/'+ev.mid+'/'+s.moment(ev.time)+'.'+ev.ext;
                                                     k.del.push('(mid=? AND time=?)');
                                                     k.ar.push(ev.mid),k.ar.push(ev.time);
-                                                    exec('rm '+ev.dir);
+                                                    s.file('delete',ev.dir);
                                                    s.group[e.ke].init.used_space=s.group[e.ke].init.used_space-ev.size/1000000;
                                                     s.tx({f:'video_delete',ff:'over_max',size:s.group[e.ke].init.used_space,limit:s.group[e.ke].init.size,filename:s.moment(ev.time)+'.'+ev.ext,mid:ev.mid,ke:ev.ke,time:ev.time,end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
                                                 });
