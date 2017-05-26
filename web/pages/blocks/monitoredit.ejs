@@ -49,11 +49,13 @@
                   <div class="form-group col-md-12">
                     <label><span>Input Type</span>
                         <select class="form-control" name="type">
-                            <option value="jpeg">JPEG</option>  
-                            <option value="mjpeg">MJPEG</option>  
-                            <option value="h264">H.264 / H.265 / H.265+</option>  
-                            <option value="socket">Shinobi Streamer</option>  
-                            <option value="local">Local</option>  
+                            <option value="jpeg">JPEG</option>
+                            <option value="mjpeg">MJPEG</option>
+                            <option value="h264">H.264 / H.265 / H.265+</option>
+                            <option value="hls">HLS (.m3u8)</option>
+                            <option value="mp4">MPEG-4 (.mp4 / .ts)</option>
+                            <option value="socket">Shinobi Streamer</option>
+                            <option value="local">Local</option>
                         </select>
                     </label>
                   </div>
@@ -517,7 +519,7 @@
                   </div>
                   <div class="form-group">
                     <label><span>Detector Rate <small>(FPS)</small></span>
-                    <input class="form-control" detail="detector_fps" placeholder="0.5">
+                    <input class="form-control" detail="detector_fps" placeholder="2">
                     </label>
                   </div>
                   <div class="row">
