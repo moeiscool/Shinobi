@@ -50,6 +50,20 @@ Order Support - http://shinobi.video/support
 
 http://shinobi.video/why
 
+# What others say
+
+> "After trying zoneminder without success (heavy unstable and slow) I passed to Shinobi that despite being young spins a thousand times better (I have a setup with 16 cameras recording in FHD to ~ 10fps on a pentium of ~ 2009 and I turn with load below 1.5)."
+
+> A Reddit user
+> - /r/ItalyInformatica
+
+&nbsp;
+
+> "I would suggest Shinobi as a NVR. It's still in the early days but works a lot better than ZoneMinder for me. I'm able to record 16 cams at 1080p 15fps continously whith no load on server (Pentium E5500 3GB RAM) where zm crashed with 6 cams at 720p. Not to mention the better interface."
+
+> A Reddit user
+> /r/HomeNetworking
+
 # How to Install and Run
 
 Installation Tutorials - http://shinobi.video/docs/start

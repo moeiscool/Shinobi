@@ -15,7 +15,7 @@
 // # Donate
 //
 // If you like what I am doing here and want me to continue please consider donating :)
-// PayPal : paypal@m03.a
+// PayPal : paypal@m03.ca
 //
 process.on('uncaughtException', function (err) {
     console.error('uncaughtException',err);
@@ -480,7 +480,7 @@ s.video=function(x,e){
                                                     ev.dir=s.dir.videos+e.ke+'/'+ev.mid+'/'+s.moment(ev.time)+'.'+ev.ext;
                                                     k.del.push('(mid=? AND time=?)');
                                                     k.ar.push(ev.mid),k.ar.push(ev.time);
-                                                    exec('rm '+ev.dir);
+                                                    s.file('delete',ev.dir);
                                                    s.group[e.ke].init.used_space=s.group[e.ke].init.used_space-ev.size/1000000;
                                                     s.tx({f:'video_delete',ff:'over_max',size:s.group[e.ke].init.used_space,limit:s.group[e.ke].init.size,filename:s.moment(ev.time)+'.'+ev.ext,mid:ev.mid,ke:ev.ke,time:ev.time,end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
                                                 });
@@ -655,7 +655,7 @@ s.ffmpeg=function(e,x){
     }
     //motion detector, opencv
     if(e.details.detector==='1'){
-        if(!e.details.detector_fps||e.details.detector_fps===''){e.details.detector_fps=0.5}
+        if(!e.details.detector_fps||e.details.detector_fps===''){e.details.detector_fps=2}
         if(e.details.detector_scale_x&&e.details.detector_scale_x!==''&&e.details.detector_scale_y&&e.details.detector_scale_y!==''){x.dratio=' -s '+e.details.detector_scale_x+'x'+e.details.detector_scale_y}else{x.dratio=' -s 320x240'}
         if(e.details.cust_detect&&e.details.cust_detect!==''){x.cust_detect+=e.details.cust_detect;}
 //        x.pipe+=' -f singlejpeg -pix_fmt gray -vf fps='+e.details.detector_fps+x.cust_detect+' -s 320x240 pipe:0';
@@ -692,7 +692,7 @@ s.ffmpeg=function(e,x){
             }
             x.tmp=x.loglevel+' -reconnect 1 -r '+e.details.sfps+' -f mjpeg'+x.cust_input+' -i '+e.url+''+x.watch+x.pipe;
         break;
-        case'h264':
+        case'h264':case'hls':case'mp4':
             if(e.mode=='record'){
                 x.watch+=x.vcodec+x.time+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+x.vf+' '+x.segment;
             }
