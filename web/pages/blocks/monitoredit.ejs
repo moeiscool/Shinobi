@@ -440,6 +440,11 @@
                 <input class="form-control" detail="cust_detect">
                 </label>
               </div>
+              <div class="form-group shinobi-detector" style="display:none">
+                <label><span>Detector Buffer Flags</span>
+                <input class="form-control" detail="cust_detector_buffer">
+                </label>
+              </div>
               <div class="form-group">
                 <label><span>Stream Flags</span>
                 <input class="form-control" detail="cust_stream">
@@ -603,6 +608,80 @@
                     </label>
                   </div>
               </div>
+              </div>
+          </div>
+          <div class="h_det_input h_det_1" style="display:none">
+              <div class="form-group-group orange shinobi-detector" style="display:none">
+              <h4>Motion Buffer <small>Background HLS Recording</small></h4>
+                  <div class="form-group">
+                    <label><span>Enabled</span>
+                        <select class="form-control" detail="detector_buffer" selector="h_dbf">
+                            <option value="0" selected>No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </label>
+                  </div>
+                  <div class="h_dbf_input h_dbf_1" style="display:none">
+                      <div class="form-group">
+                        <label><span>Video Encoder</span>
+                            <select class="form-control" detail="detector_buffer_vcodec" selector="h_dbv">
+                                <option value="no" selected>Auto</option>
+                                <option value="libx264" selected>libx264</option>
+                                <option value="libx265">libx265</option>
+                                <option value="copy">copy</option>
+                            </select>
+                        </label>
+                      </div>
+                      <div class="form-group">
+                        <label><span>Audio Encoder</span>
+                            <select class="form-control" detail="detector_buffer_acodec">
+                                <option value="no" selected>No Audio</option>
+                                <option value="" selected>Auto</option>
+                                <option value="aac">aac</option>
+                                <option value="ac3">ac3</option>
+                                <option value="libmp3lame">libmp3lame</option>
+                                <option value="copy">copy</option>
+                            </select>
+                        </label>
+                      </div>
+                      <div class="form-group">
+                        <label><span>Segment Length <small>in Seconds</small></span>
+                            <input class="form-control" detail="detector_buffer_time" placeholder="2">
+                        </label>
+                      </div>
+                      <div class="form-group">
+                        <label><span>Preset</span>
+                            <input class="form-control" detail="preset_detector_buffer" placeholder="ultrafast">
+                        </label>
+                      </div>
+                      <div class="form-group">
+                        <label><span>List Size</span>
+                            <input class="form-control" detail="detector_buffer_list_size" placeholder="2">
+                        </label>
+                      </div>
+                      <div class="h_dbv_input h_dbv_no h_dbv_libx264 h_dbv_libx265">
+                          <div class="form-group">
+                            <label><span>FPS</span>
+                                <input class="form-control" detail="detector_buffer_fps" placeholder="Example : 5">
+                            </label>
+                          </div>
+                          <div class="form-group">
+                            <label><span>Quality</span>
+                                <input class="form-control" detail="detector_buffer_quality" placeholder="Example : 1 - 23">
+                            </label>
+                          </div>
+                          <div class="form-group">
+                            <label><span>Clip Width</span>
+                            <input class="form-control" detail="detector_buffer_scale_x" placeholder="320">
+                            </label>
+                          </div>
+                          <div class="form-group">
+                            <label><span>Clip Height</span>
+                            <input class="form-control" detail="detector_buffer_scale_y" placeholder="240">
+                            </label>
+                          </div>
+                      </div>
+                  </div>
               </div>
           </div>
           <div class="h_det_input h_det_1" style="display:none">
