@@ -132,24 +132,19 @@ s.differenceAccuracy=function(target, data1, data2) {
 }
 
 s.checkAreas=function(d){
-    try{
-        if(!s.globalCoords[d.id]){
-            if(!d.mon.cords){d.mon.cords={}}
-            s.globalCoords[d.id]=Object.values(d.mon.cords);
-            s.globalCoordsObject[d.id]=d.mon.cords;
-        }
-        if(d.mon.detector_frame==='1'&&!s.globalCoordsObject[d.id].frame){
-            s.globalCoordsObject[d.id].frame={name:'frame',s:d.mon.detector_sensitivity,points:[[0,0],[0,d.image.height],[d.image.width,d.image.height],[d.image.width,0]]};
-            s.globalCoords[d.id].push(s.globalCoordsObject[d.id].frame);
-        }
-        for (var b = 0; b < s.globalCoords[d.id].length; b++){
-            if(!s.globalCoords[d.id][b]){return}
-            s.blenderRegion(d,s.globalCoords[d.id][b])
-        }
-        delete(d.image)
-    }catch(err){
-        console.log(err)
+    if(!s.globalCoords[d.id]){
+        if(!d.mon.cords){d.mon.cords={}}
+        s.globalCoords[d.id]=Object.values(d.mon.cords);
     }
+    if(d.mon.detector_frame==='1'&&!d.mon.cords.frame){
+        d.mon.cords.frame={name:'frame',s:d.mon.detector_sensitivity,points:[[0,0],[0,d.image.height],[d.image.width,d.image.height],[d.image.width,0]]};
+        s.globalCoords[d.id].push(d.mon.cords.frame);
+    }
+    for (var b = 0; b < s.globalCoords[d.id].length; b++){
+        if(!s.globalCoords[d.id][b]){return}
+        s.blenderRegion(d,s.globalCoords[d.id][b])
+    }
+    delete(d.image)
 }
 
 io = require('socket.io-client')('ws://'+config.host+':'+config.port);//connect to master
@@ -171,16 +166,9 @@ io.on('f',function(d){
                     delete(s.blendRegionContext[d.id+'_'+v.name])
                 })
                 delete(s.globalCoords[d.id])
-                delete(s.globalCoordsObject[d.id])
             }
         break;
         case'frame':
-            if(typeof d.mon ==='string'){
-                try{d.mon=JSON.parse(d.mon)}catch(er){d.mon={}}
-            }
-            if(typeof d.mon.cords ==='string'){
-                try{d.mon.cords=JSON.parse(d.mon.cords)}catch(er){d.mon.cords={}}
-            }
             if(!s.buffer[d.id]){
               s.buffer[d.id]=[d.frame];
             }else{
@@ -189,7 +177,7 @@ io.on('f',function(d){
             if(d.frame[d.frame.length-2] === 0xFF && d.frame[d.frame.length-1] === 0xD9){
                 s.buffer[d.id]=Buffer.concat(s.buffer[d.id]);
                 s.globalCoords[d.id]=Object.values(d.mon.cords);
-                s.globalCoordsObject[d.id]=d.mon.cords;
+                d.mon.cords=d.mon.cords;
                 d.image = new Canvas.Image;
                 if(d.mon.detector_scale_x===''||d.mon.detector_scale_y===''){
                     console.log('Must set detector image size')

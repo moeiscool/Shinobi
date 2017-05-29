@@ -1,5 +1,4 @@
-# Shinobi stemkoski Motion Detector
-Based on <a href="https://stemkoski.github.io/Three.js/Webcam-Motion-Detection.html">stemkoski JS Motion Detection</a>
+# Shinobi Motion Detector
 
 Install required libraries.
 
@@ -38,17 +37,14 @@ nano conf.json
 Start the plugin.
 
 ```
-node shinobi-stemkoski.js
+node shinobi-motion.js
 ```
 
 Or to daemonize with PM2.
 
 ```
-pm2 start shinobi-stemkoski.js
+pm2 start shinobi-motion.js
 ```
 
 Doing this will reveal options in the monitor configuration. Shinobi does not need to be restarted when a plugin is initiated or stopped.
 
-*Thanks to Cairo and others for these dependencies. Thanks to stemkoski as the JS image comparing is based on their research. I or Shinobi are not affiliated with stemkoski or Cairo.*
-
-Shinobi Plugin by : Moe Alam
