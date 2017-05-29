@@ -38,13 +38,13 @@ nano conf.json
 Start the plugin.
 
 ```
-node shinobi-motion.js
+node shinobi-stemkoski.js
 ```
 
 Or to daemonize with PM2.
 
 ```
-pm2 start shinobi-motion.js
+pm2 start shinobi-stemkoski.js
 ```
 
 Doing this will reveal options in the monitor configuration. Shinobi does not need to be restarted when a plugin is initiated or stopped.
