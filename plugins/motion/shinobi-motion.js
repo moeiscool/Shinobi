@@ -38,8 +38,8 @@ s={
     globalCoordsObject:{}
 }
 s.blenderRegion=function(d,cord){
-    d.width  = s.img[d.id].width;
-    d.height = s.img[d.id].height;
+    d.width  = d.image.width;
+    d.height = d.image.height;
     if(!s.canvas[d.id+'_'+cord.name]){
         if(!cord.sensitivity||isNaN(cord.sensitivity)){
             cord.sensitivity=d.mon.detector_sensitivity;
@@ -65,7 +65,7 @@ s.blenderRegion=function(d,cord){
     if(!s.canvasContext[d.id+'_'+cord.name]){
        return
     }
-    s.canvasContext[d.id+'_'+cord.name].drawImage(s.img[d.id], 0, 0, d.width, d.height);
+    s.canvasContext[d.id+'_'+cord.name].drawImage(d.image, 0, 0, d.width, d.height);
     if(!s.blendRegion[d.id+'_'+cord.name]){
         s.blendRegion[d.id+'_'+cord.name] = new Canvas(d.width, d.height);
         s.blendRegionContext[d.id+'_'+cord.name] = s.blendRegion[d.id+'_'+cord.name].getContext('2d');
@@ -132,23 +132,19 @@ s.differenceAccuracy=function(target, data1, data2) {
 }
 
 s.checkAreas=function(d){
-    try{
-        if(!s.globalCoords[d.id]){
-            if(!d.mon.cords){d.mon.cords={}}
-            s.globalCoords[d.id]=Object.values(d.mon.cords);
-            s.globalCoordsObject[d.id]=d.mon.cords;
-        }
-        if(d.mon.detector_frame==='1'&&!s.globalCoordsObject[d.id].frame){
-            s.globalCoordsObject[d.id].frame={name:'frame',s:d.mon.detector_sensitivity,points:[[0,0],[0,s.img[d.id].height],[s.img[d.id].width,s.img[d.id].height],[s.img[d.id].width,0]]};
-            s.globalCoords[d.id].push(s.globalCoordsObject[d.id].frame);
-        }
-        for (var b = 0; b < s.globalCoords[d.id].length; b++){
-            if(!s.globalCoords[d.id][b]){return}
-            s.blenderRegion(d,s.globalCoords[d.id][b])
-        }
-    }catch(err){
-        console.log(err)
+    if(!s.globalCoords[d.id]){
+        if(!d.mon.cords){d.mon.cords={}}
+        s.globalCoords[d.id]=Object.values(d.mon.cords);
     }
+    if(d.mon.detector_frame==='1'&&!d.mon.cords.frame){
+        d.mon.cords.frame={name:'frame',s:d.mon.detector_sensitivity,points:[[0,0],[0,d.image.height],[d.image.width,d.image.height],[d.image.width,0]]};
+        s.globalCoords[d.id].push(d.mon.cords.frame);
+    }
+    for (var b = 0; b < s.globalCoords[d.id].length; b++){
+        if(!s.globalCoords[d.id][b]){return}
+        s.blenderRegion(d,s.globalCoords[d.id][b])
+    }
+    delete(d.image)
 }
 
 io = require('socket.io-client')('ws://'+config.host+':'+config.port);//connect to master
@@ -170,16 +166,9 @@ io.on('f',function(d){
                     delete(s.blendRegionContext[d.id+'_'+v.name])
                 })
                 delete(s.globalCoords[d.id])
-                delete(s.globalCoordsObject[d.id])
             }
         break;
         case'frame':
-            if(typeof d.mon ==='string'){
-                try{d.mon=JSON.parse(d.mon)}catch(er){d.mon={}}
-            }
-            if(typeof d.mon.cords ==='string'){
-                try{d.mon.cords=JSON.parse(d.mon.cords)}catch(er){d.mon.cords={}}
-            }
             if(!s.buffer[d.id]){
               s.buffer[d.id]=[d.frame];
             }else{
@@ -188,25 +177,19 @@ io.on('f',function(d){
             if(d.frame[d.frame.length-2] === 0xFF && d.frame[d.frame.length-1] === 0xD9){
                 s.buffer[d.id]=Buffer.concat(s.buffer[d.id]);
                 s.globalCoords[d.id]=Object.values(d.mon.cords);
-                s.globalCoordsObject[d.id]=d.mon.cords;
-                if(!s.img[d.id]){
-                    s.img[d.id] = new Canvas.Image;
-                }
+                d.mon.cords=d.mon.cords;
+                d.image = new Canvas.Image;
                 if(d.mon.detector_scale_x===''||d.mon.detector_scale_y===''){
                     console.log('Must set detector image size')
                     return
                 }else{
-                    s.img[d.id].width=d.mon.detector_scale_x;
-                    s.img[d.id].height=d.mon.detector_scale_y;
+                    d.image.width=d.mon.detector_scale_x;
+                    d.image.height=d.mon.detector_scale_y;
                 }
-                if(s.img[d.id].width===0||s.img[d.id].height===0){
-                    s.img[d.id].width=d.mon.detector_scale_x;
-                    s.img[d.id].height=d.mon.detector_scale_y;
-                }
-                s.img[d.id].src = s.buffer[d.id];
-                s.img[d.id].onload = function() { 
+                d.image.onload = function() { 
                     s.checkAreas(d);
                 }
+                d.image.src = s.buffer[d.id];
                 s.buffer[d.id]=null;
             }
         break;
