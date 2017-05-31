@@ -25,7 +25,8 @@ chmod -R 755 .
 echo "============="
 echo "Shinobi - Database Installation"
 mysql -u root -p$sqlpass -e "source sql/user.sql" || true
-mysql -u root -p$sqlpass -e "source sql/framework.sql" || true
+mysql -u root -p$sqlpass -e "source sql/database.sql" || true
+mysql -u root -p$sqlpass --database ccio -e "source sql/tables.sql" || true
 mysql -u root -p$sqlpass --database ccio -e "source sql/default_data.sql" || true
 echo "============="
 echo "Shinobi - Install NPM Libraries"

@@ -35,7 +35,7 @@ then
     _mysql -e "CREATE USER '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD';"
     _mysql -e "GRANT ALL ON $MYSQL_DATABASE.* TO '$MYSQL_USER'@'%';"
     _mysql -e "FLUSH PRIVILEGES;"
-    _mysql --database "$MYSQL_DATABASE" < "${SHIN_BIN_DIR}/sql/framework.sql"
+    _mysql --database "$MYSQL_DATABASE" < "${SHIN_BIN_DIR}/sql/tables.sql"
     _mysql --database "$MYSQL_DATABASE" < "${SHIN_BIN_DIR}/sql/default_data.sql"
     sed -i 's/"user": "majesticflame"/"user": "'"${MYSQL_USER}"'"/g' "$SHIN_BIN_DIR/conf.json"
     sed -i 's/"password": ""/"password": "'"${MYSQL_PASSWORD}"'"/g' "$SHIN_BIN_DIR/conf.json"
