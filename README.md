@@ -78,13 +78,11 @@ Join the Community Chat
 
 <a title="Find me on Discord, Get an Invite" href="https://discordapp.com/invite/mdhmvuH"><img src="https://cdn-images-1.medium.com/max/115/1*OoXboCzk0gYvTNwNnV4S9A@2x.png"></a>
 
-# License
+# Support the Development
 
-Paid license required only if you choose to bill your users for the use of Shinobi.
-Personal and Educational purposes do not require a license.
-Educational Institutions, such as high schools and universities, do not require the purchase of a license.
+Ordering a certificate or support package greatly boosts development. Please consider contributing :)
 
-http://shinobi.video/#licenses
+http://shinobi.video/support
 
 # Links
 
