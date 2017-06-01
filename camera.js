@@ -1458,7 +1458,7 @@ var tx;
 //                    if(!s.group[d.ke].vid)s.group[d.ke].vid={};
                     if(!s.group[d.ke].users)s.group[d.ke].users={};
 //                    s.group[d.ke].vid[cn.id]={uid:d.uid};
-                    s.group[d.ke].users[d.auth]={cnid:cn.id,uid:r.uid,mail:r.mail,details:JSON.parse(r.details),logged_in_at:moment(new Date).format()}
+                    s.group[d.ke].users[d.auth]={cnid:cn.id,uid:r.uid,mail:r.mail,details:JSON.parse(r.details),logged_in_at:moment(new Date).format(),login_type:'Dashboard'}
                     try{s.group[d.ke].users[d.auth].details=JSON.parse(r.details)}catch(er){}
                     if(!s.group[d.ke].mon){
                         s.group[d.ke].mon={}
@@ -2076,17 +2076,30 @@ var tx;
     })
     //functions for webcam recorder
     cn.on('r',function(d){
-        if(!s.group[d.ke]||!s.group[d.ke].mon[d.mid]){return}
-        switch(d.f){
-            case'monitor_frame':
-               if(s.group[d.ke].mon[d.mid].started!==1){s.tx({error:'Not Started'},cn.id);return false};if(s.group[d.ke]&&s.group[d.ke].mon[d.mid]&&s.group[d.ke].mon[d.mid].watch&&Object.keys(s.group[d.ke].mon[d.mid].watch).length>0){
-                        s.tx({f:'monitor_frame',ke:d.ke,id:d.mid,time:s.moment(),frame:d.frame.toString('base64')},'MON_STREAM_'+d.mid);
-
-                    }
-                if(s.group[d.ke].mon[d.mid].record.yes===1){
-                    s.group[d.ke].mon[d.mid].spawn.stdin.write(d.frame);
+        if(!cn.ke&&d.f==='init'){
+            sql.query('SELECT ke,uid,auth,mail,details FROM Users WHERE ke=? AND auth=? AND uid=?',[d.ke,d.auth,d.uid],function(err,r) {
+                if(r&&r[0]){
+                    r=r[0]
+                    cn.ke=d.ke,cn.uid=d.uid,cn.auth=d.auth;
+                    if(!s.group[d.ke])s.group[d.ke]={};
+                    if(!s.group[d.ke].users)s.group[d.ke].users={};
+                    s.group[d.ke].users[d.auth]={cnid:cn.id,uid:r.uid,mail:r.mail,details:JSON.parse(r.details),logged_in_at:moment(new Date).format(),login_type:'Streamer'}
                 }
-            break;
+            })
+        }else{
+            switch(d.f){
+                case'monitor_frame':
+                    if(!s.group[d.ke]||!s.group[d.ke].mon[d.mid]){return}
+                    if(s.group[d.ke].mon[d.mid].started!==1){s.tx({error:'Not Started'},cn.id);return false};
+                    if(s.group[d.ke]&&s.group[d.ke].mon[d.mid]&&s.group[d.ke].mon[d.mid].watch&&Object.keys(s.group[d.ke].mon[d.mid].watch).length>0){
+                            s.tx({f:'monitor_frame',ke:d.ke,id:d.mid,time:s.moment(),frame:d.frame.toString('base64')},'MON_STREAM_'+d.mid);
+
+                        }
+                    if(s.group[d.ke].mon[d.mid].record.yes===1){
+                        s.group[d.ke].mon[d.mid].spawn.stdin.write(d.frame);
+                    }
+                break;
+            }
         }
     })
     //functions for dispersing work to child servers;
@@ -2171,7 +2184,9 @@ var tx;
                 }
             }
             if(!cn.embedded){
-                s.tx({f:'user_status_change',ke:cn.ke,uid:cn.uid,status:0})
+                if(s.group[cn.ke].users[cn.auth].login_type==='Dashboard'){
+                   s.tx({f:'user_status_change',ke:cn.ke,uid:cn.uid,status:0})
+                }
                 delete(s.group[cn.ke].users[cn.auth]);
             }
         }
