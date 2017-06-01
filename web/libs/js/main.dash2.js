@@ -1071,14 +1071,23 @@ $.zO.e.on('change','[point]',function(e){
     })
     $.zO.regionViewerDetails.cords[$.zO.name.val()].points=e.points;
     $.zO.initCanvas();
-    $.zO.initCanvas();
 })
 $.zO.e.find('.erase').click(function(e){
-    if(Object.keys($.zO.regionViewerDetails.cords).length>1){
-        delete($.zO.regionViewerDetails.cords[$.zO.rl.val()]);
+    e.arr=[]
+    $.each($.zO.regionViewerDetails.cords,function(n,v){
+        if(v&&v!==$.zO.regionViewerDetails.cords[$.zO.rl.val()]){
+            e.arr.push(v)
+        }
+    })
+    $.zO.regionViewerDetails.cords=e.arr.concat([]);
+    if(Object.keys($.zO.regionViewerDetails.cords).length>0){
+        $.zO.initRegionList();
+    }else{
+        $.zO.f.find('input').prop('disabled',true)
+        $('#regions_points tbody').empty()
+        $('#regions_list [value="'+$.zO.rl.val()+'"]').remove()
+        $.aM.e.find('[detail="cords"]').val('[]')
     }
-    $.zO.initRegionList();
-    //$.zO.rl.append('<option value="'+e.gid+'">'+e.gid+'</option>');
 });
 //$.zO.e.find('.new').click(function(e){
 //    $.zO.regionViewerDetails.cords[$.zO.rl.val()]
@@ -1117,6 +1126,7 @@ $('#regions_points')
     $.zO.rl.change();
 })
 $.zO.e.on('click','.add',function(e){
+    $.zO.f.find('input').prop('disabled',false)
     e.gid=$.ccio.gid(5);
     e.save={};
     $.each($.zO.regionViewerDetails.cords,function(n,v){
