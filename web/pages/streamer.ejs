@@ -50,7 +50,7 @@ function _base64ToArrayBuffer(base64) {
     }
     return bytes.buffer;
 }
-$.ccio.framerate=200;
+$.ccio.framerate=2;
 $.ccio.end=function(){$('#main').removeClass('recording');clearInterval($.ccio.interval);$('[record]').unbind('click').click($.ccio.start)}
 $.ccio.start=function(){
     if($.ccio.selected===null){return false;}
@@ -62,7 +62,7 @@ $.ccio.start=function(){
         ctx=_base64ToArrayBuffer(ctx);
         $.ccio.cx({f:'monitor_frame',frame:ctx,mid:$.ccio.selected});
         delete(ctx);
-    },$.ccio.framerate/1000);
+    },1000/$.ccio.framerate);
 $('[record]').unbind('click').click($.ccio.end)
 };
     
