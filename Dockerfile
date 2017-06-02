@@ -10,10 +10,11 @@ ENV MYSQL_HOST="shinobi-db" \
     MYSQL_PASSWORD="shinobi"
 
 RUN apt update \
-    && apt install --no-install-recommends -y ffmpeg nodejs npm libav-tools \
+    && apt install -y curl \
+    && curl -sL https://deb.nodesource.com/setup_8.x | bash \
+    && apt install --no-install-recommends -y ffmpeg nodejs libav-tools \
     wget mysql-client \
     && rm -rf /var/lib/apt/lists/* \
-    && ln -s /usr/bin/nodejs /usr/bin/node \
     && cp /opt/shinobi/conf.sample.json /opt/shinobi/conf.json \
     && cp /opt/shinobi/super.sample.json /opt/shinobi/super.json \
     && npm install \
