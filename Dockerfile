@@ -1,4 +1,4 @@
-FROM ubuntu:xenial
+FROM jrottenberg/ffmpeg:ubuntu
 COPY . /opt/shinobi
 WORKDIR /opt/shinobi
 
@@ -12,7 +12,7 @@ ENV MYSQL_HOST="shinobi-db" \
 RUN apt update \
     && apt install -y curl \
     && curl -sL https://deb.nodesource.com/setup_8.x | bash \
-    && apt install --no-install-recommends -y ffmpeg nodejs libav-tools \
+    && apt install --no-install-recommends -y nodejs libav-tools \
     wget mysql-client \
     && rm -rf /var/lib/apt/lists/* \
     && cp /opt/shinobi/conf.sample.json /opt/shinobi/conf.json \
@@ -20,7 +20,7 @@ RUN apt update \
     && npm install \
     && npm install pm2 -g \
     && chmod +x ./docker-entrypoint.sh
-    # && cp /opt/shinobi/plugins/motion/conf.sample.json /opt/shinobi/plugins/motion/conf.json
+#    && cp /opt/shinobi/plugins/motion/conf.sample.json /opt/shinobi/plugins/motion/conf.json
 
 VOLUME ["/opt/shinobi/videos"]
 EXPOSE 8080
