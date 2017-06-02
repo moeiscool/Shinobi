@@ -148,7 +148,7 @@ s.checkAreas=function(d){
 }
 
 io = require('socket.io-client')('ws://'+config.host+':'+config.port);//connect to master
-s.cx=function(x){return io.emit('ocv',x)}
+s.cx=function(x){x.pluginKey=config.key;x.plug=config.plug;return io.emit('ocv',x)}
 io.on('connect',function(d){
     s.cx({f:'init',plug:config.plug});
 })

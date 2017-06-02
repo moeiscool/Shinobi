@@ -57,6 +57,8 @@ if(!config.ip||config.ip===''||config.ip.indexOf('0.0.0.0')>-1){config.ip='local
 if(!config.cron)config.cron={};
 if(!config.cron.deleteOverMax)config.cron.deleteOverMax=true;
 if(!config.cron.deleteOverMaxOffset)config.cron.deleteOverMaxOffset=0.9;
+if(!config.pluginKeys)config.pluginKeys={};
+
 
 server.listen(config.port,config.bindip);
 s={child_help:false,platform:os.platform(),s:JSON.stringify};
@@ -1899,19 +1901,34 @@ var tx;
     });
     //functions for receiving detector data
     cn.on('ocv',function(d){
-        switch(d.f){
-            case'init':
+        if(!cn.ocv&&d.f==='init'){
+            if(config.pluginKeys[d.plug]===d.pluginKey){
                 s.ocv={started:moment(),id:cn.id,plug:d.plug};
                 cn.ocv=1;
                 s.tx({f:'detector_plugged',plug:d.plug},'CPU')
                 s.systemLog('Connected to plugin : Detector - '+d.plug)
-            break;
-            case'trigger':
-                s.camera('motion',d)
-            break;
-            case'sql':
-                sql.query(d.query,d.values);
-            break;
+            }else{
+                cn.disconnect()
+            }
+        }else{
+            if(config.pluginKeys[d.plug]===d.pluginKey){
+                switch(d.f){
+                    case'trigger':
+                        s.camera('motion',d)
+                    break;
+                    case's.tx':
+                        s.tx(d.data,d.to)
+                    break;
+                    case'sql':
+                        sql.query(d.query,d.values);
+                    break;
+                    case'log':
+                        s.systemLog('PLUGIN : '+d.plug+' : ',d)
+                    break;
+                }
+            }else{
+                cn.disconnect()
+            }
         }
     })
     //functions for retrieving cron announcements
@@ -1920,6 +1937,8 @@ var tx;
             if(config.cron.key){
                 if(config.cron.key===d.cronKey){
                    s.cron={started:moment(),last_run:moment(),id:cn.id};
+                }else{
+                    cn.disconnect()
                 }
             }else{
                 s.cron={started:moment(),last_run:moment(),id:cn.id};
@@ -1940,6 +1959,8 @@ var tx;
                         s.systemLog('CRON : ',d)
                     break;
                 }
+            }else{
+                cn.disconnect()
             }
         }
     })
