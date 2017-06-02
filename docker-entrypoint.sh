@@ -37,12 +37,12 @@ then
     _mysql -e "FLUSH PRIVILEGES;"
     _mysql --database "$MYSQL_DATABASE" < "${SHIN_BIN_DIR}/sql/tables.sql"
     _mysql --database "$MYSQL_DATABASE" < "${SHIN_BIN_DIR}/sql/default_data.sql"
+    npm cache clean -f && npm install -g n && n stable
+fi
     sed -i 's/"user": "majesticflame"/"user": "'"${MYSQL_USER}"'"/g' "$SHIN_BIN_DIR/conf.json"
     sed -i 's/"password": ""/"password": "'"${MYSQL_PASSWORD}"'"/g' "$SHIN_BIN_DIR/conf.json"
     sed -i 's/"host": "127.0.0.1"/"host": "'"${MYSQL_HOST}"'"/g' "$SHIN_BIN_DIR/conf.json"
     sed -i 's/"database": "ccio"/"database": "'"${MYSQL_DATABASE}"'"/g' "$SHIN_BIN_DIR/conf.json"
-    npm cache clean -f && npm install -g n && n stable
-fi
 
 pm2 start "${SHIN_BIN_DIR}/cron.js"
 pm2 start "${SHIN_BIN_DIR}/camera.js"

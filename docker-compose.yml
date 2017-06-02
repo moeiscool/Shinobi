@@ -5,7 +5,7 @@ services:
     build:
       context: .
     depends_on:
-      - mysql
+      - database
     restart: always
     environment:
       - MYSQL_HOST=shinobi-db
@@ -15,11 +15,20 @@ services:
       - MYSQL_ROOT_PASSWORD=rootpass
     ports:
       - "8080:8080"
-  mysql:
-    image: mysql:8
+    volumes:
+      - ./videos:/opt/shinobi/videos
+  database:
     container_name: shinobi-db
+    image: mariadb
+    restart: always
     environment:
       - MYSQL_DATABASE=shinobi
       - MYSQL_ROOT_PASSWORD=rootpass
       - MYSQL_USER=shinobi
       - MYSQL_PASSWORD=shinobi_pass
+    volumes:
+      - dbdata:/var/lib/mysql
+volumes:
+## persistent data volume for mysql data
+  dbdata:
+    driver: local
