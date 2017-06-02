@@ -1916,27 +1916,32 @@ var tx;
     })
     //functions for retrieving cron announcements
     cn.on('cron',function(d){
-        switch(d.f){
-            case'filters':
-                s.filter(d.ff,d);
-            break;
-            case'init':
+        if(d.f==='init'){
+            if(config.cron.key){
+                if(config.cron.key===d.cronKey){
+                   s.cron={started:moment(),last_run:moment(),id:cn.id};
+                }
+            }else{
                 s.cron={started:moment(),last_run:moment(),id:cn.id};
-            break;
-            case'msg':
-
-            break;
-            case's.tx':
-                s.tx(d.data,d.to)
-            break;
-            case'start':case'end':
-                d.mid='_cron';s.log(d,{type:'cron',msg:d.msg})
-            break;
-            default:
-                s.systemLog('CRON : ',d)
-            break;
+            }
+        }else{
+            if(s.cron&&cn.id===s.cron.id){
+                switch(d.f){
+                    case'filters':
+                        s.filter(d.ff,d);
+                    break;
+                    case's.tx':
+                        s.tx(d.data,d.to)
+                    break;
+                    case'start':case'end':
+                        d.mid='_cron';s.log(d,{type:'cron',msg:d.msg})
+                    break;
+                    default:
+                        s.systemLog('CRON : ',d)
+                    break;
+                }
+            }
         }
-        delete(d);
     })
     // admin page socket functions
     cn.on('super',function(d){

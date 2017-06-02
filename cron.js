@@ -30,7 +30,7 @@ s.moment=function(e,x){
 }
 s.nameToTime=function(x){x=x.replace('.webm','').replace('.mp4','').split('T'),x[1]=x[1].replace(/-/g,':');x=x.join(' ');return x;}
 io = require('socket.io-client')('ws://'+config.ip+':'+config.port);//connect to master
-s.cx=function(x){return io.emit('cron',x)}
+s.cx=function(x){x.cronKey=config.cron.key;return io.emit('cron',x)}
 //emulate master socket emitter
 s.tx=function(x,y){s.cx({f:'s.tx',data:x,to:y})}
 //Cron Job
