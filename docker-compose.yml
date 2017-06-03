@@ -13,6 +13,8 @@ services:
       - MYSQL_USER=shinobi
       - MYSQL_PASSWORD=shinobi_pass
       - MYSQL_ROOT_PASSWORD=rootpass
+## Timezone - eg Europe/London
+      - TIMEZONE=UTC
     ports:
       - "8080:8080"
     volumes:

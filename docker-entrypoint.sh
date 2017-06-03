@@ -7,6 +7,7 @@ MYSQL_ROOT_USER="${MYSQL_ROOT_USER:-root}"
 MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD:-rootpass}"
 MYSQL_USER="${MYSQL_USER:-ccio}"
 MYSQL_PASSWORD="${MYSQL_PASSWORD:-shinobi}"
+TIMEZONE="${TIMEZONE:-UTC}"
 
 cd "$SHIN_BIN_DIR" || exit 9
 
@@ -17,6 +18,10 @@ check_port() {
 _mysql() {
     mysql -u "${MYSQL_ROOT_USER}" -p"${MYSQL_ROOT_PASSWORD}" -h "${MYSQL_HOST}" "$@"
 }
+
+echo "${TIMEZONE}" > /etc/timezone
+rm /etc/localtime
+dpkg-reconfigure -f noninteractive tzdata
 
 echo -n "Waiting for MYSQL server..."
 while ! check_port "$MYSQL_HOST" 3306

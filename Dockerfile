@@ -7,7 +7,8 @@ ENV MYSQL_HOST="shinobi-db" \
     MYSQL_ROOT_USER="root" \
     MYSQL_ROOT_PASSWORD="rootpass" \
     MYSQL_USER="ccio" \
-    MYSQL_PASSWORD="shinobi"
+    MYSQL_PASSWORD="shinobi" \
+	TIMEZONE="UTC"
 
 RUN apt update \
     && apt install -y curl \
