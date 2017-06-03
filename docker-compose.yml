@@ -10,8 +10,8 @@ services:
     environment:
       - MYSQL_HOST=shinobi-db
       - MYSQL_DATABASE=shinobi
-      - MYSQL_USER=shinobi
-      - MYSQL_PASSWORD=shinobi_pass
+      - MYSQL_USER=ccio
+      - MYSQL_PASSWORD=shinobi
       - MYSQL_ROOT_PASSWORD=rootpass
     ports:
       - "8080:8080"
@@ -22,10 +22,7 @@ services:
     image: mariadb
     restart: always
     environment:
-      - MYSQL_DATABASE=shinobi
       - MYSQL_ROOT_PASSWORD=rootpass
-      - MYSQL_USER=shinobi
-      - MYSQL_PASSWORD=shinobi_pass
     volumes:
       - dbdata:/var/lib/mysql
 volumes:
