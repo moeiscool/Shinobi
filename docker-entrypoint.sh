@@ -46,5 +46,5 @@ fi
 
 pm2 start "${SHIN_BIN_DIR}/cron.js"
 pm2 start "${SHIN_BIN_DIR}/camera.js"
-# pm2 start "${SHIN_BIN_DIR}/plugins/motion/shinobi-motion.js"
+pm2 start "${SHIN_BIN_DIR}/plugins/motion/shinobi-motion.js"
 pm2 logs

@@ -13,14 +13,16 @@ RUN apt update \
     && apt install -y curl \
     && curl -sL https://deb.nodesource.com/setup_8.x | bash \
     && apt install --no-install-recommends -y nodejs libav-tools \
-    wget mysql-client \
+    wget mysql-client libcairo2-dev libjpeg-dev libpango1.0-dev \
+    libgif-dev build-essential g++ \
     && rm -rf /var/lib/apt/lists/* \
     && cp /opt/shinobi/conf.sample.json /opt/shinobi/conf.json \
     && cp /opt/shinobi/super.sample.json /opt/shinobi/super.json \
     && npm install \
     && npm install pm2 -g \
-    && chmod +x ./docker-entrypoint.sh
-#    && cp /opt/shinobi/plugins/motion/conf.sample.json /opt/shinobi/plugins/motion/conf.json
+	&& npm install canvas \
+    && chmod +x ./docker-entrypoint.sh \
+    && cp /opt/shinobi/plugins/motion/conf.sample.json /opt/shinobi/plugins/motion/conf.json
 
 VOLUME ["/opt/shinobi/videos"]
 EXPOSE 8080
