@@ -854,9 +854,6 @@ s.camera=function(x,e,cn,tx){
             if(s.group[e.ke].mon[e.id]&&s.group[e.ke].mon[e.id].watch){
                 delete(s.group[e.ke].mon[e.id].watch[cn.id]),e.ob=Object.keys(s.group[e.ke].mon[e.id].watch).length
                 if(e.ob===0){
-                   if(s.group[e.ke].mon.type==='mjpeg'){
-    //                   s.camera({mode:'frame_emitter',id:e.id,ke:e.ke})
-                   }
                    delete(s.group[e.ke].mon[e.id].watch)
                 }
             }else{
@@ -1515,6 +1512,17 @@ var tx;
         if((d.id||d.uid||d.mid)&&cn.ke){
             try{
             switch(d.f){
+                case'monitorOrder':
+                    if(d.monitorOrder&&d.monitorOrder instanceof Array){
+                        sql.query('SELECT details FROM Users WHERE uid=? AND ke=?',[cn.uid,cn.ke],function(err,r){
+                            if(r&&r[0]){
+                                r=JSON.parse(r[0].details);
+                                r.monitorOrder=d.monitorOrder;
+                                sql.query('UPDATE Users SET details=? WHERE uid=? AND ke=?',[JSON.stringify(r),cn.uid,cn.ke])
+                            }
+                        })
+                    }
+                break;
                 case'update':
                     if(!config.updateKey){
                         tx({error:'"updateKey" is missing from "conf.json", cannot do updates this way until you add it.'});
@@ -2869,7 +2877,9 @@ app.get('/:auth/videos/:ke/:id/:file', function (req,res){
         }
         req.dir=s.dir.videos+req.params.ke+'/'+req.params.id+'/'+req.params.file;
         if (fs.existsSync(req.dir)){
-            res.setHeader('content-type','video/'+req.params.file.split('.')[1]);
+            req.ext=req.params.file.split('.')[1];
+            res.setHeader('content-type','video/'+req.ext);
+//            res.setHeader('content-disposition','attachment; filename="the_download"');
             res.sendFile(req.dir);
         }else{
             res.send('File Not Found')

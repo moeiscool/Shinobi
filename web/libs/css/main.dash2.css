@@ -17,7 +17,7 @@ img{max-width:100%}
 .small{font-size:80%}
 .super-center{position:absolute;left:0;top:0;right:0;bottom:0;margin:auto;width: 4em;height: 1em;}
 .jpegMode .cpu_load .progress-bar,.jpegMode .ram_load .progress-bar{background-color:#5cb85c}
-.jpegMode [system="jpegToggle"]{color:#5cb85c!important}
+.jpegMode [system="jpegToggle"],[system].text-success{color:#5cb85c!important}
 .permission_monitor_edit{display:none}
 .permission_video_delete{display:none}
 
@@ -155,6 +155,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .nav-xs.side-menu.list-blocks .monitor_block img{width:40px;height:40px;}
 .side-menu.list-blocks .monitor_block .box{width:calc(100% - 70px);display:inline-block}
 .nav-xs.side-menu.list-blocks .monitor_block .list-data{display:none}
+#monitors_list .monitor_block{transition:none}
 .dropdown-menu.scrollable{max-height:300px}
 .upload_file input{display:none}
 .monitor_item .stream-hud{opacity:0;position:absolute;top:0;left:0;width:100%;height:100%}
