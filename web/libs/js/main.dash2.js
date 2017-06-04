@@ -40,7 +40,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                         v.children('[mid=' + k.order[i] + ']').appendTo(v);
                     }
                     v.find('video').each(function(m,b){
-                        b=b.parents('.monitor_item')
+                        b=$(b).parents('.monitor_item')
                         $.ccio.cx({f:'monitor',ff:'watch_on',id:b.attr('mid')});
                     })
                 })
@@ -711,7 +711,7 @@ $.ccio.ws.on('f',function (d){
                     $.ccio.cx({f:'monitor',ff:'jpeg_on'})
                 }
                 $.gR.drawList();
-                $.ccio.init('monitorOrder')
+                setTimeout(function(){$.ccio.init('monitorOrder')},300)
             })
             $.ccio.pm(3,d.apis);
             $('.os_platform').html(d.os.platform)
@@ -2313,11 +2313,17 @@ $('body')
         handle:'.title',
         update: function(event, ui) {
             var arr=[]
+            var details=JSON.parse($user.details)
             $("#monitors_list .monitor_block").each(function(n,v){
                 arr.push($(this).attr('mid'))
             })
+            details.monitorOrder=arr;
+            $user.details=JSON.stringify(details)
             $.ccio.cx({f:'monitorOrder',monitorOrder:arr})
-            $.ccio.init('monitorOrder',{no:['#monitors_list']})
+            event.o=$.ccio.op().switches;
+            if(event.o&&event.o.monitorOrder===1){
+                $.ccio.init('monitorOrder',{no:['#monitors_list']})
+            }
         }
     });
 })
