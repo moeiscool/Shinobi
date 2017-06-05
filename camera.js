@@ -61,7 +61,7 @@ if(!config.pluginKeys)config.pluginKeys={};
 
 
 server.listen(config.port,config.bindip);
-s={child_help:false,platform:os.platform(),s:JSON.stringify};
+s={child_help:false,platform:os.platform(),s:JSON.stringify,isWin:(process.platform.indexOf('win')>-1)};
 s.systemLog=function(q,w,e){
     if(!w){w=''}
     if(!e){e=''}
@@ -208,12 +208,24 @@ s.log=function(e,x){
     s.tx({f:'log',ke:e.ke,mid:e.mid,log:x,time:moment()},'GRP_'+e.ke);
 //    s.systemLog('s.log : ',{f:'log',ke:e.ke,mid:e.mid,log:x,time:moment()},'GRP_'+e.ke)
 }
+//ffmpeg location
+if(!config.ffmpegDir){
+    if(s.isWin===true){
+        config.ffmpegDir=__dirname+'/ffmpeg/ffmpeg.exe'
+    }else{
+        config.ffmpegDir='ffmpeg'
+    }
+}
 //directories
 s.group={};
 if(!config.defaultMjpeg){config.defaultMjpeg=__dirname+'/web/libs/img/bg.jpg'}
 //default stream folder check
 if(!config.streamDir){
-    config.streamDir='/dev/shm'
+    if(s.isWin===false){
+        config.streamDir='/dev/shm'
+    }else{
+        config.streamDir='/tmp'
+    }
     if(!fs.existsSync(config.streamDir)){
         config.streamDir=__dirname+'/streams/'
     }else{
@@ -222,7 +234,11 @@ if(!config.streamDir){
 }
 //default buffer folder check
 if(!config.bufferDir){
-    config.bufferDir='/dev/shm'
+    if(s.isWin===false){
+        config.bufferDir='/dev/shm'
+    }else{
+        config.bufferDir='/tmp'
+    }
     if(!fs.existsSync(config.bufferDir)){
         config.bufferDir=__dirname+'/buffer/'
     }else{
@@ -404,7 +420,7 @@ s.video=function(x,e){
                     e.fixFlags='-vcodec libvpx -acodec libvorbis';
                 break;
             }
-            e.spawn=spawn('ffmpeg',('-i '+e.dir+e.filename+' '+e.fixFlags+' '+e.sdir+e.filename).split(' '))
+            e.spawn=spawn(config.ffmpegDir,('-i '+e.dir+e.filename+' '+e.fixFlags+' '+e.sdir+e.filename).split(' '))
             e.spawn.stdout.on('data',function(data){
                 s.tx({f:'video_fix_data',mid:e.mid,ke:e.ke,filename:e.filename},'GRP_'+e.ke)
             });
@@ -747,7 +763,7 @@ s.ffmpeg=function(e,x){
         break;
     }
     s.group[e.ke].mon[e.mid].ffmpeg=x.tmp;
-    return spawn('ffmpeg',x.tmp.replace(/\s+/g,' ').trim().split(' '));
+    return spawn(config.ffmpegDir,x.tmp.replace(/\s+/g,' ').trim().split(' '));
 }
 s.file=function(x,e){
     if(!e){e={}};
@@ -798,7 +814,7 @@ s.camera=function(x,e,cn,tx){
                         switch(e.mon.type){
                             case'mjpeg':case'h264':case'local':
                                 if(e.mon.type==='local'){e.url=e.mon.path;}
-                                e.spawn=spawn('ffmpeg',('-loglevel quiet -i '+e.url+' -s 400x400 -r 25 -ss 1.8 -frames:v 1 -f singlejpeg pipe:1').split(' '))
+                                e.spawn=spawn(config.ffmpegDir,('-loglevel quiet -i '+e.url+' -s 400x400 -r 25 -ss 1.8 -frames:v 1 -f singlejpeg pipe:1').split(' '))
                                 e.spawn.stdout.on('data',function(data){
                                    e.snapshot_sent=true; s.tx({f:'monitor_snapshot',snapshot:data.toString('base64'),snapshot_format:'b64',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
                                     e.spawn.kill();
@@ -1336,7 +1352,7 @@ s.camera=function(x,e,cn,tx){
 ////                                fs.createReadStream(d.bufferPath+v).pipe(s.group[d.ke].mon[d.id].motionBufferJoiner.stdin)
 ////                            }
 //                        }
-//                        s.group[d.ke].mon[d.id].motionBufferJoiner=spawn('ffmpeg',('-f concat -i - -c:v libx264 '+d.bufferPath+s.moment()+'.ts').replace(/\s+/g,' ').trim().split(' '))
+//                        s.group[d.ke].mon[d.id].motionBufferJoiner=spawn(config.ffmpegDir,('-f concat -i - -c:v libx264 '+d.bufferPath+s.moment()+'.ts').replace(/\s+/g,' ').trim().split(' '))
 //                        fs.readFile(s.dir.buffer+'/'+d.ke+'/'+d.id+'/b.m3u8','utf8',function(err,m3u8){
 //                            m3u8.split('\n').forEach(d.checkM3U8)
 //                            s.group[d.ke].mon[d.id].fswatch_buffer=fs.watch(s.dir.buffer+'/'+d.ke+'/'+d.id,{encoding:'utf8'},function(eventType,filename){
@@ -2955,33 +2971,53 @@ app.get(['/:auth/videos/:ke/:id/:file/:mode','/:auth/videos/:ke/:id/:file/:mode/
     },res,req);
 })
 try{
-s.cpuUsage=function(e,f){
+s.cpuUsage=function(e){
+    k={}
     switch(s.platform){
+        case'win32':
+//            k.cmd=""
+        break;
         case'darwin':
-            f="ps -A -o %cpu | awk '{s+=$1} END {print s}'";
+            k.cmd="ps -A -o %cpu | awk '{s+=$1} END {print s}'";
         break;
         case'linux':
-            f='top -b -n 2 | grep "^'+config.cpuUsageMarker+'" | awk \'{print $2}\' | tail -n1';
+            k.cmd='top -b -n 2 | grep "^'+config.cpuUsageMarker+'" | awk \'{print $2}\' | tail -n1';
         break;
     }
-     exec(f,{encoding:'utf8'},function(err,d){
-         e(d)
-     });
+    if(k.cmd){
+         exec(k.cmd,{encoding:'utf8'},function(err,d){
+             e(d)
+         });
+    }else{
+        e(0)
+    }
 }
-s.ramUsage=function(cmd){
+s.ramUsage=function(e){
+    k={}
     switch(s.platform){
+        case'win32':
+//            k.cmd = ""
+        break;
         case'darwin':
-            cmd = "vm_stat | awk '/^Pages free: /{f=substr($3,1,length($3)-1)} /^Pages active: /{a=substr($3,1,length($3-1))} /^Pages inactive: /{i=substr($3,1,length($3-1))} /^Pages speculative: /{s=substr($3,1,length($3-1))} /^Pages wired down: /{w=substr($4,1,length($4-1))} /^Pages occupied by compressor: /{c=substr($5,1,length($5-1)); print ((a+w)/(f+a+i+w+s+c))*100;}'"
+            k.cmd = "vm_stat | awk '/^Pages free: /{f=substr($3,1,length($3)-1)} /^Pages active: /{a=substr($3,1,length($3-1))} /^Pages inactive: /{i=substr($3,1,length($3-1))} /^Pages speculative: /{s=substr($3,1,length($3-1))} /^Pages wired down: /{w=substr($4,1,length($4-1))} /^Pages occupied by compressor: /{c=substr($5,1,length($5-1)); print ((a+w)/(f+a+i+w+s+c))*100;}'"
         break;
         default:
-            cmd = "free | grep Mem | awk '{print $4/$2 * 100.0}'";
+            k.cmd = "free | grep Mem | awk '{print $4/$2 * 100.0}'";
         break;
     }
-    return execSync(cmd,{encoding:'utf8'});
+    if(k.cmd){
+         exec(k.cmd,{encoding:'utf8'},function(err,d){
+             e(d)
+         });
+    }else{
+        e(0)
+    }
 }
     setInterval(function(){
-        s.cpuUsage(function(d){
-            s.tx({f:'os',cpu:d,ram:s.ramUsage()},'CPU');
+        s.cpuUsage(function(cpu){
+            s.ramUsage(function(ram){
+                s.tx({f:'os',cpu:cpu,ram:ram},'CPU');
+            })
         })
     },10000);
 }catch(err){s.systemLog('CPU indicator will not work. Continuing...')}
