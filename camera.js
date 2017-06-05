@@ -224,7 +224,7 @@ if(!config.streamDir){
     if(s.isWin===false){
         config.streamDir='/dev/shm'
     }else{
-        config.streamDir='/tmp'
+        config.streamDir='C:/Windows/Temp'
     }
     if(!fs.existsSync(config.streamDir)){
         config.streamDir=__dirname+'/streams/'
@@ -237,7 +237,7 @@ if(!config.bufferDir){
     if(s.isWin===false){
         config.bufferDir='/dev/shm'
     }else{
-        config.bufferDir='/tmp'
+        config.bufferDir='C:/Windows/Temp'
     }
     if(!fs.existsSync(config.bufferDir)){
         config.bufferDir=__dirname+'/buffer/'
