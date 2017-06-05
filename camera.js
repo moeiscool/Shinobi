@@ -2975,7 +2975,7 @@ s.cpuUsage=function(e){
     k={}
     switch(s.platform){
         case'win32':
-//            k.cmd=""
+            k.cmd="@for /f \"skip=1\" %p in ('wmic cpu get loadpercentage') do @echo %p%"
         break;
         case'darwin':
             k.cmd="ps -A -o %cpu | awk '{s+=$1} END {print s}'";
@@ -2986,6 +2986,9 @@ s.cpuUsage=function(e){
     }
     if(k.cmd){
          exec(k.cmd,{encoding:'utf8'},function(err,d){
+             if(s.isWin===true){
+                 d=d.replace(/(\r\n|\n|\r)/gm,"").replace(/%/g,"")
+             }
              e(d)
          });
     }else{
