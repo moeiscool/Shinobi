@@ -61,7 +61,7 @@ if(!config.pluginKeys)config.pluginKeys={};
 
 
 server.listen(config.port,config.bindip);
-s={child_help:false,platform:os.platform(),s:JSON.stringify,isWin:(process.platform.indexOf('win')>-1)};
+s={child_help:false,totalmem:os.totalmem(),platform:os.platform(),s:JSON.stringify,isWin:(process.platform.indexOf('win')>-1)};
 s.systemLog=function(q,w,e){
     if(!w){w=''}
     if(!e){e=''}
@@ -1494,7 +1494,7 @@ var tx;
                             os:{
                                 platform:s.platform,
                                 cpuCount:os.cpus().length,
-                                totalmem:os.totalmem()
+                                totalmem:s.totalmem
                             }
                         })
                         http.get('http://'+config.ip+':'+config.port+'/'+cn.auth+'/monitor/'+cn.ke, function(res){
@@ -2999,7 +2999,7 @@ s.ramUsage=function(e){
     k={}
     switch(s.platform){
         case'win32':
-//            k.cmd = ""
+            k.cmd = "wmic OS get FreePhysicalMemory /Value"
         break;
         case'darwin':
             k.cmd = "vm_stat | awk '/^Pages free: /{f=substr($3,1,length($3)-1)} /^Pages active: /{a=substr($3,1,length($3-1))} /^Pages inactive: /{i=substr($3,1,length($3-1))} /^Pages speculative: /{s=substr($3,1,length($3-1))} /^Pages wired down: /{w=substr($4,1,length($4-1))} /^Pages occupied by compressor: /{c=substr($5,1,length($5-1)); print ((a+w)/(f+a+i+w+s+c))*100;}'"
@@ -3010,6 +3010,9 @@ s.ramUsage=function(e){
     }
     if(k.cmd){
          exec(k.cmd,{encoding:'utf8'},function(err,d){
+             if(s.isWin===true){
+                 d=(parseInt(d.split('=')[1])/(s.totalmem/1000))*100
+             }
              e(d)
          });
     }else{
