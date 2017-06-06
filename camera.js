@@ -420,7 +420,7 @@ s.video=function(x,e){
                     e.fixFlags='-vcodec libvpx -acodec libvorbis';
                 break;
             }
-            e.spawn=spawn(config.ffmpegDir,('-i '+e.dir+e.filename+' '+e.fixFlags+' '+e.sdir+e.filename).split(' '))
+            e.spawn=spawn(config.ffmpegDir,('-i '+e.dir+e.filename+' '+e.fixFlags+' '+e.sdir+e.filename).split(' '),{detached: true})
             e.spawn.stdout.on('data',function(data){
                 s.tx({f:'video_fix_data',mid:e.mid,ke:e.ke,filename:e.filename},'GRP_'+e.ke)
             });
@@ -814,7 +814,7 @@ s.camera=function(x,e,cn,tx){
                         switch(e.mon.type){
                             case'mjpeg':case'h264':case'local':
                                 if(e.mon.type==='local'){e.url=e.mon.path;}
-                                e.spawn=spawn(config.ffmpegDir,('-loglevel quiet -i '+e.url+' -s 400x400 -r 25 -ss 1.8 -frames:v 1 -f singlejpeg pipe:1').split(' '))
+                                e.spawn=spawn(config.ffmpegDir,('-loglevel quiet -i '+e.url+' -s 400x400 -r 25 -ss 1.8 -frames:v 1 -f singlejpeg pipe:1').split(' '),{detached: true})
                                 e.spawn.stdout.on('data',function(data){
                                    e.snapshot_sent=true; s.tx({f:'monitor_snapshot',snapshot:data.toString('base64'),snapshot_format:'b64',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
                                     e.spawn.kill();
@@ -1319,7 +1319,7 @@ s.camera=function(x,e,cn,tx){
                 clearInterval(s.group[d.ke].mon[d.id].detector_notrigger_timeout)
                 s.group[d.ke].mon[d.id].detector_notrigger_timeout=setInterval(s.group[d.ke].mon[d.id].detector_notrigger_timeout_function,d.mon.detector_notrigger_timeout)
             }
-            if(d.mon.mode==='start'&&d.mon.details.detector_trigger=='1'){
+            if(d.mon.mode!=='record'&&d.mon.mode!=='stop'&&d.mon.details.detector_trigger=='1'){
                 if(!d.mon.details.detector_timeout||d.mon.details.detector_timeout===''){
                     d.mon.details.detector_timeout=10
                 }else{
@@ -1841,7 +1841,7 @@ var tx;
                                 if(s.group[cn.ke].users[cn.auth].ffprobe){
                                     exec('kill -9 '+s.group[cn.ke].users[cn.auth].ffprobe.pid)
                                 }
-                                s.group[cn.ke].users[cn.auth].ffprobe=spawn('ffprobe',d.query.split(' '))
+                                s.group[cn.ke].users[cn.auth].ffprobe=spawn('ffprobe',d.query.split(' '),{detached: true})
                                 tx({f:'ffprobe_start',pid:s.group[cn.ke].users[cn.auth].ffprobe.pid})
                                 s.group[cn.ke].users[cn.auth].ffprobe.on('exit',function(data){
                                     tx({f:'ffprobe_stop',pid:s.group[cn.ke].users[cn.auth].ffprobe.pid})
