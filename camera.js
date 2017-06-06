@@ -763,7 +763,7 @@ s.ffmpeg=function(e,x){
         break;
     }
     s.group[e.ke].mon[e.mid].ffmpeg=x.tmp;
-    return spawn(config.ffmpegDir,x.tmp.replace(/\s+/g,' ').trim().split(' '));
+    return spawn(config.ffmpegDir,x.tmp.replace(/\s+/g,' ').trim().split(' '),{detached: true});
 }
 s.file=function(x,e){
     if(!e){e={}};
@@ -884,7 +884,7 @@ s.camera=function(x,e,cn,tx){
                 s.camera(e.mode,e)
             },1300)
         break;
-        case'stop'://stop monitor
+        case'idle':case'stop'://stop monitor
             if(!s.group[e.ke]||!s.group[e.ke].mon[e.id]){return}
             if(s.group[e.ke].mon[e.id].fswatch){s.group[e.ke].mon[e.id].fswatch.close();delete(s.group[e.ke].mon[e.id].fswatch)}
             if(s.group[e.ke].mon[e.id].fswatch_buffer){s.group[e.ke].mon[e.id].fswatch_buffer.close();delete(s.group[e.ke].mon[e.id].fswatch_buffer)}
@@ -903,11 +903,18 @@ s.camera=function(x,e,cn,tx){
             clearTimeout(s.group[e.ke].mon[e.id].err_fatal_timeout);
             s.group[e.ke].mon[e.id].started=0;
             if(s.group[e.ke].mon[e.id].record){s.group[e.ke].mon[e.id].record.yes=0}
-            s.log(e,{type:'Monitor Stopped',msg:'Monitor session has been ordered to stop.'});
-            s.tx({f:'monitor_stopping',mid:e.id,ke:e.ke,time:s.moment(),reason:e.reason},'GRP_'+e.ke);
+            s.tx({f:'monitor_stopping',mid:e.id,ke:e.ke,time:s.moment()},'GRP_'+e.ke);
             s.camera('snapshot',{mid:e.id,ke:e.ke,mon:e})
-            if(e.delete===1){
-                s.group[e.ke].mon[e.id].delete=setTimeout(function(){delete(s.group[e.ke].mon[e.id]);},60000*60);
+            if(e.mode==='stop'){
+                s.log(e,{type:'Monitor Stopped',msg:'Monitor session has been ordered to stop.'});
+                clearTimeout(s.group[e.ke].mon[e.id].delete)
+                s.group[e.ke].mon[e.id].delete=setTimeout(function(){
+                    delete(s.group[e.ke].mon[e.id]);
+                    delete(s.group[e.ke].mon_conf[e.id]);
+                },1000*60);
+            }else{
+                s.tx({f:'monitor_idle',mid:e.id,ke:e.ke,time:s.moment()},'GRP_'+e.ke);
+                s.log(e,{type:'Monitor Idling',msg:'Monitor session has been ordered to idle.'});
             }
         break;
         case'start':case'record'://watch or record monitor url
@@ -2985,7 +2992,7 @@ s.cpuUsage=function(e){
         break;
     }
     if(k.cmd){
-         exec(k.cmd,{encoding:'utf8'},function(err,d){
+         exec(k.cmd,{encoding:'utf8',detached: true},function(err,d){
              if(s.isWin===true){
                  d=d.replace(/(\r\n|\n|\r)/gm,"").replace(/%/g,"")
              }
@@ -3009,7 +3016,7 @@ s.ramUsage=function(e){
         break;
     }
     if(k.cmd){
-         exec(k.cmd,{encoding:'utf8'},function(err,d){
+         exec(k.cmd,{encoding:'utf8',detached: true},function(err,d){
              if(s.isWin===true){
                  d=(parseInt(d.split('=')[1])/(s.totalmem/1000))*100
              }

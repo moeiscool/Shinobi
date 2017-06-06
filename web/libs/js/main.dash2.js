@@ -817,6 +817,9 @@ $.ccio.ws.on('f',function (d){
             d.e.find('.monitor_mid').text(d.mon.mid)
             d.e.find('.monitor_ext').text(d.mon.ext);
                 switch(d.mon.mode){
+                    case'idle':
+                        d.mode='Idle'
+                    break;
                     case'stop':
                         d.mode='Disabled'
                     break;
