@@ -39,6 +39,14 @@ For an updated list of features visit the official website. http://shinobi.video
   - Embedding streams
 - Dashboard Framework made with Google Material Design Lite, jQuery, and Bootstrap
 
+## Asking for help
+
+Before asking questions it would nice if you read the docs :) http://shinobi.video
+
+After doing so please head on over to the Discord community chat for support. https://discordapp.com/invite/mdhmvuH
+
+The Issues section is only for bugs with the software. Comments and feature requests may be closed without comment. http://shinobi.video/docs/contribute
+
 ## Help make Shinobi the best Open Source CCTV Solution.
 Donate - http://shinobi.video/docs/donate
 
