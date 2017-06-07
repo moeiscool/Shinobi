@@ -23,7 +23,13 @@ requires https or firefox
 <script>
 $.ccio={};$.ls=localStorage;
 $.ccio.ws=io(location.origin);
-$.ccio.cx=function(x){if(!x.ke){x.ke=$user.ke;};if(!x.uid){x.uid=$user.uid;};return $.ccio.ws.emit('r',x)}
+$.ccio.ws.on('connect',function (d){
+    $(document).ready(function(e){
+        $.ccio.cx=function(x){if(!x.ke){x.ke=$user.ke;};if(!x.uid){x.uid=$user.uid;};return $.ccio.ws.emit('r',x)}
+        console.log($user)
+        $.ccio.cx({f:'init',ke:$user.ke,auth:$user.auth_token,uid:$user.uid})
+    })
+})
 $.ccio.ws.on('f',function(d){
     if(d.f!=='monitor_frame'&&d.f!=='cpu'&&d.f!=='event_delete'){console.log(d);}
     switch(d.f){
@@ -44,7 +50,7 @@ function _base64ToArrayBuffer(base64) {
     }
     return bytes.buffer;
 }
-$.ccio.framerate=200;
+$.ccio.framerate=2;
 $.ccio.end=function(){$('#main').removeClass('recording');clearInterval($.ccio.interval);$('[record]').unbind('click').click($.ccio.start)}
 $.ccio.start=function(){
     if($.ccio.selected===null){return false;}
@@ -56,7 +62,7 @@ $.ccio.start=function(){
         ctx=_base64ToArrayBuffer(ctx);
         $.ccio.cx({f:'monitor_frame',frame:ctx,mid:$.ccio.selected});
         delete(ctx);
-    },$.ccio.framerate/1000);
+    },1000/$.ccio.framerate);
 $('[record]').unbind('click').click($.ccio.end)
 };
     

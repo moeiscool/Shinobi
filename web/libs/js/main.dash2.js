@@ -9,6 +9,43 @@ $.ccio={fr:$('#files_recent'),mon:{}};
     $.ccio.init=function(x,d,z,k){
         if(!k){k={}};k.tmp='';
         switch(x){
+            case'monitorOrder':
+                k.order = JSON.parse($user.details).monitorOrder;
+                if(!k.order){
+                    k.order=[];
+                    $('#monitors_list .monitor_block').each(function(n,v){
+                        v=$(v).attr('mid')
+                        if(v){
+                            k.order.push(v)
+                        }
+                    })
+                }
+                k.switches=$.ccio.op().switches
+                k.lists = ['#monitors_list']
+                if(k.switches&&k.switches.monitorOrder===1){
+                    k.lists.push('#monitors_live')
+                }
+                if(d&&d.no&&d.no instanceof Array){
+                    k.arr=[]
+                    $.each(k.lists,function(n,v){
+                        if(d.no.indexOf(v)===-1){
+                            k.arr.push(v)
+                        }
+                    })
+                    k.lists=k.arr;
+                }
+                $.each(k.lists,function(n,v){
+                    v = $(v);
+                    for(var i = 0, len = k.order.length; i < len; ++i) {
+                        v.children('[mid=' + k.order[i] + ']').appendTo(v);
+                    }
+                    v.find('video').each(function(m,b){
+                        b=$(b).parents('.monitor_item')
+                        $.ccio.cx({f:'monitor',ff:'watch_on',id:b.attr('mid')});
+                    })
+                })
+                return k.order
+            break;
             case'monGroup':
                 $.ccio.mon_groups={};
                 $.each($.ccio.mon,function(n,v,x){
@@ -464,8 +501,8 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 $.ccio.init('ls');
             break;
             case 2:
+                k.e=$('#monitor_live_'+d.mid);
                 try{
-                    k.e=$('#monitor_live_'+d.mid);
                     if(JSON.parse(d.details).control=="1"){
                         k.e.find('[monitor="control_toggle"]').show()
                     }else{
@@ -674,6 +711,7 @@ $.ccio.ws.on('f',function (d){
                     $.ccio.cx({f:'monitor',ff:'jpeg_on'})
                 }
                 $.gR.drawList();
+                setTimeout(function(){$.ccio.init('monitorOrder')},300)
             })
             $.ccio.pm(3,d.apis);
             $('.os_platform').html(d.os.platform)
@@ -779,6 +817,9 @@ $.ccio.ws.on('f',function (d){
             d.e.find('.monitor_mid').text(d.mon.mid)
             d.e.find('.monitor_ext').text(d.mon.ext);
                 switch(d.mon.mode){
+                    case'idle':
+                        d.mode='Idle'
+                    break;
                     case'stop':
                         d.mode='Disabled'
                     break;
@@ -1071,14 +1112,23 @@ $.zO.e.on('change','[point]',function(e){
     })
     $.zO.regionViewerDetails.cords[$.zO.name.val()].points=e.points;
     $.zO.initCanvas();
-    $.zO.initCanvas();
 })
 $.zO.e.find('.erase').click(function(e){
-    if(Object.keys($.zO.regionViewerDetails.cords).length>1){
-        delete($.zO.regionViewerDetails.cords[$.zO.rl.val()]);
+    e.arr=[]
+    $.each($.zO.regionViewerDetails.cords,function(n,v){
+        if(v&&v!==$.zO.regionViewerDetails.cords[$.zO.rl.val()]){
+            e.arr.push(v)
+        }
+    })
+    $.zO.regionViewerDetails.cords=e.arr.concat([]);
+    if(Object.keys($.zO.regionViewerDetails.cords).length>0){
+        $.zO.initRegionList();
+    }else{
+        $.zO.f.find('input').prop('disabled',true)
+        $('#regions_points tbody').empty()
+        $('#regions_list [value="'+$.zO.rl.val()+'"]').remove()
+        $.aM.e.find('[detail="cords"]').val('[]')
     }
-    $.zO.initRegionList();
-    //$.zO.rl.append('<option value="'+e.gid+'">'+e.gid+'</option>');
 });
 //$.zO.e.find('.new').click(function(e){
 //    $.zO.regionViewerDetails.cords[$.zO.rl.val()]
@@ -1117,6 +1167,7 @@ $('#regions_points')
     $.zO.rl.change();
 })
 $.zO.e.on('click','.add',function(e){
+    $.zO.f.find('input').prop('disabled',false)
     e.gid=$.ccio.gid(5);
     e.save={};
     $.each($.zO.regionViewerDetails.cords,function(n,v){
@@ -1750,6 +1801,36 @@ $('body')
     e.e=$(this),
     e.a=e.e.attr('system');//the function
     switch(e.a){
+        case'switch':
+            e.switch=e.e.attr('switch');
+            e.o=$.ccio.op().switches
+            if(!e.o){
+                e.o={}
+            }
+            if(!e.o[e.switch]){
+                e.o[e.switch]=0
+            }
+            if(e.o[e.switch]===1){
+                e.o[e.switch]=0
+            }else{
+                e.o[e.switch]=1
+            }
+            $.ccio.op('switches',e.o)
+            switch(e.switch){
+                case'monitorOrder':
+                    $.ccio.init('monitorOrder',{no:'#monitors_list'})
+                break;
+            }
+            switch(e.e.attr('type')){
+                case'text':
+                    if(e.o[e.switch]===1){
+                        e.e.addClass('text-success')
+                    }else{
+                        e.e.removeClass('text-success')
+                    }
+                break;
+            }
+        break;
         case'cronStop':
             $.ccio.cx({f:'cron',ff:'stop'})
         break;
@@ -2195,6 +2276,24 @@ $('body')
 .on('dblclick','.stream-hud',function(){
     $(this).parents('[mid]').find('[monitor="fullscreen"]').click();
 }); 
+    //check switch UI
+    e.o=$.ccio.op().switches;
+    if(e.o){
+        $.each(e.o,function(n,v){
+            $('[system="switch"][switch="'+n+'"]').each(function(m,b){
+                b=$(b);
+                switch(b.attr('type')){
+                    case'text':
+                    if(v===1){
+                        b.addClass('text-success')
+                    }else{
+                        b.removeClass('text-success')
+                    }
+                    break;
+                 }
+            })
+        })
+    }
     //set class toggle preferences
     e.o=$.ccio.op().class_toggle;
     if(e.o){
@@ -2213,6 +2312,23 @@ $('body')
             $('[dropdown_toggle="'+n+'"]').val(v).change()
         })
     }
+    $("#monitors_list").sortable({
+        handle:'.title',
+        update: function(event, ui) {
+            var arr=[]
+            var details=JSON.parse($user.details)
+            $("#monitors_list .monitor_block").each(function(n,v){
+                arr.push($(this).attr('mid'))
+            })
+            details.monitorOrder=arr;
+            $user.details=JSON.stringify(details)
+            $.ccio.cx({f:'monitorOrder',monitorOrder:arr})
+            event.o=$.ccio.op().switches;
+            if(event.o&&event.o.monitorOrder===1){
+                $.ccio.init('monitorOrder',{no:['#monitors_list']})
+            }
+        }
+    });
 })
 document.addEventListener("fullscreenchange", onFullScreenChange, false);
 document.addEventListener("webkitfullscreenchange", onFullScreenChange, false);

@@ -57,9 +57,11 @@ if(!config.ip||config.ip===''||config.ip.indexOf('0.0.0.0')>-1){config.ip='local
 if(!config.cron)config.cron={};
 if(!config.cron.deleteOverMax)config.cron.deleteOverMax=true;
 if(!config.cron.deleteOverMaxOffset)config.cron.deleteOverMaxOffset=0.9;
+if(!config.pluginKeys)config.pluginKeys={};
+
 
 server.listen(config.port,config.bindip);
-s={child_help:false,platform:os.platform(),s:JSON.stringify};
+s={child_help:false,totalmem:os.totalmem(),platform:os.platform(),s:JSON.stringify,isWin:(process.platform==='win32')};
 s.systemLog=function(q,w,e){
     if(!w){w=''}
     if(!e){e=''}
@@ -80,7 +82,7 @@ s.disc=function(){
 }
 s.disc();
 //kill any ffmpeg running
-s.ffmpegKill=function(){exec("ps aux | grep -ie ffmpeg | awk '{print $2}' | xargs kill -9")};
+s.ffmpegKill=function(){exec("ps aux | grep -ie ffmpeg | awk '{print $2}' | xargs kill -9",{detached: true})};
 process.on('exit',s.ffmpegKill.bind(null,{cleanup:true}));
 process.on('SIGINT',s.ffmpegKill.bind(null, {exit:true}));
 //key for child servers
@@ -194,7 +196,7 @@ s.kill=function(x,e,p){
         if(s.group[e.ke].mon[e.id].child_node){
             s.cx({f:'kill',d:s.init('noReference',e)},s.group[e.ke].mon[e.id].child_node_id)
         }else{
-            if(!x||x===1){return};p=x.pid;x.stdin.pause();setTimeout(function(){x.kill('SIGTERM');delete(x);setTimeout(function(){exec('kill -9 '+p)},1000)},1000)
+            if(!x||x===1){return};p=x.pid;x.stdin.pause();setTimeout(function(){x.kill('SIGTERM');delete(x);setTimeout(function(){exec('kill -9 '+p,{detached: true})},1000)},1000)
         }
     }
 }
@@ -206,12 +208,25 @@ s.log=function(e,x){
     s.tx({f:'log',ke:e.ke,mid:e.mid,log:x,time:moment()},'GRP_'+e.ke);
 //    s.systemLog('s.log : ',{f:'log',ke:e.ke,mid:e.mid,log:x,time:moment()},'GRP_'+e.ke)
 }
+//ffmpeg location
+if(!config.ffmpegDir){
+    if(s.isWin===true){
+        config.ffmpegDir=__dirname+'/ffmpeg/ffmpeg.exe'
+    }else{
+        config.ffmpegDir='ffmpeg'
+    }
+}
 //directories
 s.group={};
+if(!config.windowsTempDir&&s.isWin===true){config.windowsTempDir='C:/Windows/Temp'}
 if(!config.defaultMjpeg){config.defaultMjpeg=__dirname+'/web/libs/img/bg.jpg'}
 //default stream folder check
 if(!config.streamDir){
-    config.streamDir='/dev/shm'
+    if(s.isWin===false){
+        config.streamDir='/dev/shm'
+    }else{
+        config.streamDir=config.windowsTempDir
+    }
     if(!fs.existsSync(config.streamDir)){
         config.streamDir=__dirname+'/streams/'
     }else{
@@ -220,7 +235,11 @@ if(!config.streamDir){
 }
 //default buffer folder check
 if(!config.bufferDir){
-    config.bufferDir='/dev/shm'
+    if(s.isWin===false){
+        config.bufferDir='/dev/shm'
+    }else{
+        config.bufferDir=config.windowsTempDir
+    }
     if(!fs.existsSync(config.bufferDir)){
         config.bufferDir=__dirname+'/buffer/'
     }else{
@@ -376,7 +395,7 @@ s.filter=function(x,d){
             })
         break;
         case'execute':
-            exec(d.execute)
+            exec(d.execute,{detached: true})
         break;
     }
 }
@@ -402,12 +421,12 @@ s.video=function(x,e){
                     e.fixFlags='-vcodec libvpx -acodec libvorbis';
                 break;
             }
-            e.spawn=spawn('ffmpeg',('-i '+e.dir+e.filename+' '+e.fixFlags+' '+e.sdir+e.filename).split(' '))
+            e.spawn=spawn(config.ffmpegDir,('-i '+e.dir+e.filename+' '+e.fixFlags+' '+e.sdir+e.filename).split(' '),{detached: true})
             e.spawn.stdout.on('data',function(data){
                 s.tx({f:'video_fix_data',mid:e.mid,ke:e.ke,filename:e.filename},'GRP_'+e.ke)
             });
             e.spawn.on('close',function(data){
-                exec('mv '+e.dir+e.filename+' '+e.sdir+e.filename).on('exit',function(){
+                exec('mv '+e.dir+e.filename+' '+e.sdir+e.filename,{detached: true}).on('exit',function(){
                     s.tx({f:'video_fix_success',mid:e.mid,ke:e.ke,filename:e.filename},'GRP_'+e.ke)
                     delete(s.group[e.ke].mon[e.id].fixingVideos[e.filename]);
                 })
@@ -745,7 +764,7 @@ s.ffmpeg=function(e,x){
         break;
     }
     s.group[e.ke].mon[e.mid].ffmpeg=x.tmp;
-    return spawn('ffmpeg',x.tmp.replace(/\s+/g,' ').trim().split(' '));
+    return spawn(config.ffmpegDir,x.tmp.replace(/\s+/g,' ').trim().split(' '),{detached: true});
 }
 s.file=function(x,e){
     if(!e){e={}};
@@ -755,11 +774,11 @@ s.file=function(x,e){
         break;
         case'delete':
             if(!e){return false;}
-            return exec('rm -rf '+e);
+            return exec('rm -rf '+e,{detached: true});
         break;
         case'delete_files':
             if(!e.age_type){e.age_type='min'};if(!e.age){e.age='1'};
-            exec('find '+e.path+' -type f -c'+e.age_type+' +'+e.age+' -exec rm -rf {} +');
+            exec('find '+e.path+' -type f -c'+e.age_type+' +'+e.age+' -exec rm -rf {} +',{detached: true});
         break;
     }
 }
@@ -796,7 +815,7 @@ s.camera=function(x,e,cn,tx){
                         switch(e.mon.type){
                             case'mjpeg':case'h264':case'local':
                                 if(e.mon.type==='local'){e.url=e.mon.path;}
-                                e.spawn=spawn('ffmpeg',('-loglevel quiet -i '+e.url+' -s 400x400 -r 25 -ss 1.8 -frames:v 1 -f singlejpeg pipe:1').split(' '))
+                                e.spawn=spawn(config.ffmpegDir,('-loglevel quiet -i '+e.url+' -s 400x400 -r 25 -ss 1.8 -frames:v 1 -f singlejpeg pipe:1').split(' '),{detached: true})
                                 e.spawn.stdout.on('data',function(data){
                                    e.snapshot_sent=true; s.tx({f:'monitor_snapshot',snapshot:data.toString('base64'),snapshot_format:'b64',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
                                     e.spawn.kill();
@@ -852,9 +871,6 @@ s.camera=function(x,e,cn,tx){
             if(s.group[e.ke].mon[e.id]&&s.group[e.ke].mon[e.id].watch){
                 delete(s.group[e.ke].mon[e.id].watch[cn.id]),e.ob=Object.keys(s.group[e.ke].mon[e.id].watch).length
                 if(e.ob===0){
-                   if(s.group[e.ke].mon.type==='mjpeg'){
-    //                   s.camera({mode:'frame_emitter',id:e.id,ke:e.ke})
-                   }
                    delete(s.group[e.ke].mon[e.id].watch)
                 }
             }else{
@@ -869,7 +885,7 @@ s.camera=function(x,e,cn,tx){
                 s.camera(e.mode,e)
             },1300)
         break;
-        case'stop'://stop monitor
+        case'idle':case'stop'://stop monitor
             if(!s.group[e.ke]||!s.group[e.ke].mon[e.id]){return}
             if(s.group[e.ke].mon[e.id].fswatch){s.group[e.ke].mon[e.id].fswatch.close();delete(s.group[e.ke].mon[e.id].fswatch)}
             if(s.group[e.ke].mon[e.id].fswatch_buffer){s.group[e.ke].mon[e.id].fswatch_buffer.close();delete(s.group[e.ke].mon[e.id].fswatch_buffer)}
@@ -888,11 +904,18 @@ s.camera=function(x,e,cn,tx){
             clearTimeout(s.group[e.ke].mon[e.id].err_fatal_timeout);
             s.group[e.ke].mon[e.id].started=0;
             if(s.group[e.ke].mon[e.id].record){s.group[e.ke].mon[e.id].record.yes=0}
-            s.log(e,{type:'Monitor Stopped',msg:'Monitor session has been ordered to stop.'});
-            s.tx({f:'monitor_stopping',mid:e.id,ke:e.ke,time:s.moment(),reason:e.reason},'GRP_'+e.ke);
+            s.tx({f:'monitor_stopping',mid:e.id,ke:e.ke,time:s.moment()},'GRP_'+e.ke);
             s.camera('snapshot',{mid:e.id,ke:e.ke,mon:e})
-            if(e.delete===1){
-                s.group[e.ke].mon[e.id].delete=setTimeout(function(){delete(s.group[e.ke].mon[e.id]);},60000*60);
+            if(x==='stop'){
+                s.log(e,{type:'Monitor Stopped',msg:'Monitor session has been ordered to stop.'});
+                clearTimeout(s.group[e.ke].mon[e.id].delete)
+                s.group[e.ke].mon[e.id].delete=setTimeout(function(){
+                    delete(s.group[e.ke].mon[e.id]);
+                    delete(s.group[e.ke].mon_conf[e.id]);
+                },1000*60);
+            }else{
+                s.tx({f:'monitor_idle',mid:e.id,ke:e.ke,time:s.moment()},'GRP_'+e.ke);
+                s.log(e,{type:'Monitor Idling',msg:'Monitor session has been ordered to idle.'});
             }
         break;
         case'start':case'record'://watch or record monitor url
@@ -1297,7 +1320,7 @@ s.camera=function(x,e,cn,tx){
                 clearInterval(s.group[d.ke].mon[d.id].detector_notrigger_timeout)
                 s.group[d.ke].mon[d.id].detector_notrigger_timeout=setInterval(s.group[d.ke].mon[d.id].detector_notrigger_timeout_function,d.mon.detector_notrigger_timeout)
             }
-            if(d.mon.mode==='start'&&d.mon.details.detector_trigger=='1'){
+            if(d.mon.mode!=='record'&&d.mon.mode!=='stop'&&d.mon.details.detector_trigger=='1'){
                 if(!d.mon.details.detector_timeout||d.mon.details.detector_timeout===''){
                     d.mon.details.detector_timeout=10
                 }else{
@@ -1337,7 +1360,7 @@ s.camera=function(x,e,cn,tx){
 ////                                fs.createReadStream(d.bufferPath+v).pipe(s.group[d.ke].mon[d.id].motionBufferJoiner.stdin)
 ////                            }
 //                        }
-//                        s.group[d.ke].mon[d.id].motionBufferJoiner=spawn('ffmpeg',('-f concat -i - -c:v libx264 '+d.bufferPath+s.moment()+'.ts').replace(/\s+/g,' ').trim().split(' '))
+//                        s.group[d.ke].mon[d.id].motionBufferJoiner=spawn(config.ffmpegDir,('-f concat -i - -c:v libx264 '+d.bufferPath+s.moment()+'.ts').replace(/\s+/g,' ').trim().split(' '),{detached: true})
 //                        fs.readFile(s.dir.buffer+'/'+d.ke+'/'+d.id+'/b.m3u8','utf8',function(err,m3u8){
 //                            m3u8.split('\n').forEach(d.checkM3U8)
 //                            s.group[d.ke].mon[d.id].fswatch_buffer=fs.watch(s.dir.buffer+'/'+d.ke+'/'+d.id,{encoding:'utf8'},function(eventType,filename){
@@ -1355,7 +1378,7 @@ s.camera=function(x,e,cn,tx){
 //                            delete(s.group[d.ke].mon[d.id].fswatch_buffer_timeout)
 //                            //compile video segments gathered from HLS stream
 //                            setTimeout(function(){
-//                                exec('kill -9 '+s.group[d.ke].mon[d.id].motionBufferJoiner.pid)
+//                                exec('kill -9 '+s.group[d.ke].mon[d.id].motionBufferJoiner.pid,{detached: true})
 //                                console.log('done video')
 //                            },3000)
 //                            //...
@@ -1435,7 +1458,7 @@ s.camera=function(x,e,cn,tx){
                     d.mon.details.detector_command=d.mon.details.detector_command
                     .replace(/{{CONFIDENCE}}/g,d.details.confidence)
                 }
-                exec(d.mon.details.detector_command)
+                exec(d.mon.details.detector_command,{detached: true})
             }
         break;
     }
@@ -1458,7 +1481,7 @@ var tx;
 //                    if(!s.group[d.ke].vid)s.group[d.ke].vid={};
                     if(!s.group[d.ke].users)s.group[d.ke].users={};
 //                    s.group[d.ke].vid[cn.id]={uid:d.uid};
-                    s.group[d.ke].users[d.auth]={cnid:cn.id,uid:r.uid,mail:r.mail,details:JSON.parse(r.details),logged_in_at:moment(new Date).format()}
+                    s.group[d.ke].users[d.auth]={cnid:cn.id,uid:r.uid,mail:r.mail,details:JSON.parse(r.details),logged_in_at:moment(new Date).format(),login_type:'Dashboard'}
                     try{s.group[d.ke].users[d.auth].details=JSON.parse(r.details)}catch(er){}
                     if(!s.group[d.ke].mon){
                         s.group[d.ke].mon={}
@@ -1479,7 +1502,7 @@ var tx;
                             os:{
                                 platform:s.platform,
                                 cpuCount:os.cpus().length,
-                                totalmem:os.totalmem()
+                                totalmem:s.totalmem
                             }
                         })
                         http.get('http://'+config.ip+':'+config.port+'/'+cn.auth+'/monitor/'+cn.ke, function(res){
@@ -1513,13 +1536,24 @@ var tx;
         if((d.id||d.uid||d.mid)&&cn.ke){
             try{
             switch(d.f){
+                case'monitorOrder':
+                    if(d.monitorOrder&&d.monitorOrder instanceof Array){
+                        sql.query('SELECT details FROM Users WHERE uid=? AND ke=?',[cn.uid,cn.ke],function(err,r){
+                            if(r&&r[0]){
+                                r=JSON.parse(r[0].details);
+                                r.monitorOrder=d.monitorOrder;
+                                sql.query('UPDATE Users SET details=? WHERE uid=? AND ke=?',[JSON.stringify(r),cn.uid,cn.ke])
+                            }
+                        })
+                    }
+                break;
                 case'update':
                     if(!config.updateKey){
                         tx({error:'"updateKey" is missing from "conf.json", cannot do updates this way until you add it.'});
                         return;
                     }
                     if(d.key===config.updateKey){
-                        exec('chmod +x '+__dirname+'/UPDATE.sh&&'+__dirname+'/./UPDATE.sh')
+                        exec('chmod +x '+__dirname+'/UPDATE.sh&&'+__dirname+'/./UPDATE.sh',{detached: true})
                     }else{
                         tx({error:'"updateKey" is incorrect.'});
                     }
@@ -1802,13 +1836,13 @@ var tx;
                     if(s.group[cn.ke].users[cn.auth]){
                         switch(d.ff){
                             case'stop':
-                                exec('kill -9 '+s.group[cn.ke].users[cn.auth].ffprobe.pid)
+                                exec('kill -9 '+s.group[cn.ke].users[cn.auth].ffprobe.pid,{detatched: true})
                             break;
                             default:
                                 if(s.group[cn.ke].users[cn.auth].ffprobe){
-                                    exec('kill -9 '+s.group[cn.ke].users[cn.auth].ffprobe.pid)
+                                    exec('kill -9 '+s.group[cn.ke].users[cn.auth].ffprobe.pid,{detached: true})
                                 }
-                                s.group[cn.ke].users[cn.auth].ffprobe=spawn('ffprobe',d.query.split(' '))
+                                s.group[cn.ke].users[cn.auth].ffprobe=spawn('ffprobe',d.query.split(' '),{detached: true})
                                 tx({f:'ffprobe_start',pid:s.group[cn.ke].users[cn.auth].ffprobe.pid})
                                 s.group[cn.ke].users[cn.auth].ffprobe.on('exit',function(data){
                                     tx({f:'ffprobe_stop',pid:s.group[cn.ke].users[cn.auth].ffprobe.pid})
@@ -1818,7 +1852,7 @@ var tx;
                                 });
                                 //auto kill in 30 seconds
                                 setTimeout(function(){
-                                    exec('kill -9 '+d.pid)
+                                    exec('kill -9 '+d.pid,{detached: true})
                                 },30000)
                             break;
                         }
@@ -1899,44 +1933,68 @@ var tx;
     });
     //functions for receiving detector data
     cn.on('ocv',function(d){
-        switch(d.f){
-            case'init':
+        if(!cn.ocv&&d.f==='init'){
+            if(config.pluginKeys[d.plug]===d.pluginKey){
                 s.ocv={started:moment(),id:cn.id,plug:d.plug};
                 cn.ocv=1;
                 s.tx({f:'detector_plugged',plug:d.plug},'CPU')
                 s.systemLog('Connected to plugin : Detector - '+d.plug)
-            break;
-            case'trigger':
-                s.camera('motion',d)
-            break;
-            case'sql':
-                sql.query(d.query,d.values);
-            break;
+            }else{
+                cn.disconnect()
+            }
+        }else{
+            if(config.pluginKeys[d.plug]===d.pluginKey){
+                switch(d.f){
+                    case'trigger':
+                        s.camera('motion',d)
+                    break;
+                    case's.tx':
+                        s.tx(d.data,d.to)
+                    break;
+                    case'sql':
+                        sql.query(d.query,d.values);
+                    break;
+                    case'log':
+                        s.systemLog('PLUGIN : '+d.plug+' : ',d)
+                    break;
+                }
+            }else{
+                cn.disconnect()
+            }
         }
     })
     //functions for retrieving cron announcements
     cn.on('cron',function(d){
-        switch(d.f){
-            case'filters':
-                s.filter(d.ff,d);
-            break;
-            case'init':
+        if(d.f==='init'){
+            if(config.cron.key){
+                if(config.cron.key===d.cronKey){
+                   s.cron={started:moment(),last_run:moment(),id:cn.id};
+                }else{
+                    cn.disconnect()
+                }
+            }else{
                 s.cron={started:moment(),last_run:moment(),id:cn.id};
-            break;
-            case'msg':
-
-            break;
-            case's.tx':
-                s.tx(d.data,d.to)
-            break;
-            case'start':case'end':
-                d.mid='_cron';s.log(d,{type:'cron',msg:d.msg})
-            break;
-            default:
-                s.systemLog('CRON : ',d)
-            break;
+            }
+        }else{
+            if(s.cron&&cn.id===s.cron.id){
+                switch(d.f){
+                    case'filters':
+                        s.filter(d.ff,d);
+                    break;
+                    case's.tx':
+                        s.tx(d.data,d.to)
+                    break;
+                    case'start':case'end':
+                        d.mid='_cron';s.log(d,{type:'cron',msg:d.msg})
+                    break;
+                    default:
+                        s.systemLog('CRON : ',d)
+                    break;
+                }
+            }else{
+                cn.disconnect()
+            }
         }
-        delete(d);
     })
     // admin page socket functions
     cn.on('super',function(d){
@@ -2076,17 +2134,30 @@ var tx;
     })
     //functions for webcam recorder
     cn.on('r',function(d){
-        if(!s.group[d.ke]||!s.group[d.ke].mon[d.mid]){return}
-        switch(d.f){
-            case'monitor_frame':
-               if(s.group[d.ke].mon[d.mid].started!==1){s.tx({error:'Not Started'},cn.id);return false};if(s.group[d.ke]&&s.group[d.ke].mon[d.mid]&&s.group[d.ke].mon[d.mid].watch&&Object.keys(s.group[d.ke].mon[d.mid].watch).length>0){
-                        s.tx({f:'monitor_frame',ke:d.ke,id:d.mid,time:s.moment(),frame:d.frame.toString('base64')},'MON_STREAM_'+d.mid);
-
-                    }
-                if(s.group[d.ke].mon[d.mid].record.yes===1){
-                    s.group[d.ke].mon[d.mid].spawn.stdin.write(d.frame);
+        if(!cn.ke&&d.f==='init'){
+            sql.query('SELECT ke,uid,auth,mail,details FROM Users WHERE ke=? AND auth=? AND uid=?',[d.ke,d.auth,d.uid],function(err,r) {
+                if(r&&r[0]){
+                    r=r[0]
+                    cn.ke=d.ke,cn.uid=d.uid,cn.auth=d.auth;
+                    if(!s.group[d.ke])s.group[d.ke]={};
+                    if(!s.group[d.ke].users)s.group[d.ke].users={};
+                    s.group[d.ke].users[d.auth]={cnid:cn.id,uid:r.uid,mail:r.mail,details:JSON.parse(r.details),logged_in_at:moment(new Date).format(),login_type:'Streamer'}
                 }
-            break;
+            })
+        }else{
+            switch(d.f){
+                case'monitor_frame':
+                    if(!s.group[d.ke]||!s.group[d.ke].mon[d.mid]){return}
+                    if(s.group[d.ke].mon[d.mid].started!==1){s.tx({error:'Not Started'},cn.id);return false};
+                    if(s.group[d.ke]&&s.group[d.ke].mon[d.mid]&&s.group[d.ke].mon[d.mid].watch&&Object.keys(s.group[d.ke].mon[d.mid].watch).length>0){
+                            s.tx({f:'monitor_frame',ke:d.ke,id:d.mid,time:s.moment(),frame:d.frame.toString('base64')},'MON_STREAM_'+d.mid);
+
+                        }
+                    if(s.group[d.ke].mon[d.mid].record.yes===1){
+                        s.group[d.ke].mon[d.mid].spawn.stdin.write(d.frame);
+                    }
+                break;
+            }
         }
     })
     //functions for dispersing work to child servers;
@@ -2171,7 +2242,9 @@ var tx;
                 }
             }
             if(!cn.embedded){
-                s.tx({f:'user_status_change',ke:cn.ke,uid:cn.uid,status:0})
+                if(s.group[cn.ke].users[cn.auth].login_type==='Dashboard'){
+                   s.tx({f:'user_status_change',ke:cn.ke,uid:cn.uid,status:0})
+                }
                 delete(s.group[cn.ke].users[cn.auth]);
             }
         }
@@ -2285,7 +2358,7 @@ app.get('/:auth/update/:key', function (req,res){
         }
         if(req.params.key===config.updateKey){
             req.ret.ok=true;
-            exec('chmod +x '+__dirname+'/UPDATE.sh&&'+__dirname+'/./UPDATE.sh')
+            exec('chmod +x '+__dirname+'/UPDATE.sh&&'+__dirname+'/./UPDATE.sh',{detached: true})
         }else{
             req.ret.msg='"updateKey" is incorrect.';
         }
@@ -2828,7 +2901,9 @@ app.get('/:auth/videos/:ke/:id/:file', function (req,res){
         }
         req.dir=s.dir.videos+req.params.ke+'/'+req.params.id+'/'+req.params.file;
         if (fs.existsSync(req.dir)){
-            res.setHeader('content-type','video/'+req.params.file.split('.')[1]);
+            req.ext=req.params.file.split('.')[1];
+            res.setHeader('content-type','video/'+req.ext);
+//            res.setHeader('content-disposition','attachment; filename="the_download"');
             res.sendFile(req.dir);
         }else{
             res.send('File Not Found')
@@ -2904,40 +2979,66 @@ app.get(['/:auth/videos/:ke/:id/:file/:mode','/:auth/videos/:ke/:id/:file/:mode/
     },res,req);
 })
 try{
-s.cpuUsage=function(e,f){
+s.cpuUsage=function(e){
+    k={}
     switch(s.platform){
+        case'win32':
+            k.cmd="@for /f \"skip=1\" %p in ('wmic cpu get loadpercentage') do @echo %p%"
+        break;
         case'darwin':
-            f="ps -A -o %cpu | awk '{s+=$1} END {print s}'";
+            k.cmd="ps -A -o %cpu | awk '{s+=$1} END {print s}'";
         break;
         case'linux':
-            f='top -b -n 2 | grep "^'+config.cpuUsageMarker+'" | awk \'{print $2}\' | tail -n1';
+            k.cmd='top -b -n 2 | grep "^'+config.cpuUsageMarker+'" | awk \'{print $2}\' | tail -n1';
         break;
     }
-     exec(f,{encoding:'utf8'},function(err,d){
-         e(d)
-     });
+    if(k.cmd){
+         exec(k.cmd,{encoding:'utf8',detached: true},function(err,d){
+             if(s.isWin===true){
+                 d=d.replace(/(\r\n|\n|\r)/gm,"").replace(/%/g,"")
+             }
+             e(d)
+         });
+    }else{
+        e(0)
+    }
 }
-s.ramUsage=function(cmd){
+s.ramUsage=function(e){
+    k={}
     switch(s.platform){
+        case'win32':
+            k.cmd = "wmic OS get FreePhysicalMemory /Value"
+        break;
         case'darwin':
-            cmd = "vm_stat | awk '/^Pages free: /{f=substr($3,1,length($3)-1)} /^Pages active: /{a=substr($3,1,length($3-1))} /^Pages inactive: /{i=substr($3,1,length($3-1))} /^Pages speculative: /{s=substr($3,1,length($3-1))} /^Pages wired down: /{w=substr($4,1,length($4-1))} /^Pages occupied by compressor: /{c=substr($5,1,length($5-1)); print ((a+w)/(f+a+i+w+s+c))*100;}'"
+            k.cmd = "vm_stat | awk '/^Pages free: /{f=substr($3,1,length($3)-1)} /^Pages active: /{a=substr($3,1,length($3-1))} /^Pages inactive: /{i=substr($3,1,length($3-1))} /^Pages speculative: /{s=substr($3,1,length($3-1))} /^Pages wired down: /{w=substr($4,1,length($4-1))} /^Pages occupied by compressor: /{c=substr($5,1,length($5-1)); print ((a+w)/(f+a+i+w+s+c))*100;}'"
         break;
         default:
-            cmd = "free | grep Mem | awk '{print $4/$2 * 100.0}'";
+            k.cmd = "free | grep Mem | awk '{print $4/$2 * 100.0}'";
         break;
     }
-    return execSync(cmd,{encoding:'utf8'});
+    if(k.cmd){
+         exec(k.cmd,{encoding:'utf8',detached: true},function(err,d){
+             if(s.isWin===true){
+                 d=(parseInt(d.split('=')[1])/(s.totalmem/1000))*100
+             }
+             e(d)
+         });
+    }else{
+        e(0)
+    }
 }
     setInterval(function(){
-        s.cpuUsage(function(d){
-            s.tx({f:'os',cpu:d,ram:s.ramUsage()},'CPU');
+        s.cpuUsage(function(cpu){
+            s.ramUsage(function(ram){
+                s.tx({f:'os',cpu:cpu,ram:ram},'CPU');
+            })
         })
     },10000);
 }catch(err){s.systemLog('CPU indicator will not work. Continuing...')}
 //check disk space every 20 minutes
 if(config.autoDropCache===true){
     setInterval(function(){
-        exec('echo 3 > /proc/sys/vm/drop_caches')
+        exec('echo 3 > /proc/sys/vm/drop_caches',{detached: true})
     },60000*20);
 }
 s.beat=function(){
@@ -3001,6 +3102,12 @@ setTimeout(function(){
                                                 Object.keys(v).forEach(function(b){
                                                     r.ar[b]=v[b];
                                                 })
+                                                if(!s.group[v.ke]){
+                                                    s.group[v.ke]={}
+                                                    s.group[v.ke].mon_conf={}
+                                                }
+                                                v.details=JSON.parse(v.details);
+                                                s.group[v.ke].mon_conf[v.mid]=v;
                                                 s.camera(v.mode,r.ar);
                                             });
                                         }
