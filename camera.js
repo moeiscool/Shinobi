@@ -82,7 +82,7 @@ s.disc=function(){
 }
 s.disc();
 //kill any ffmpeg running
-s.ffmpegKill=function(){exec("ps aux | grep -ie ffmpeg | awk '{print $2}' | xargs kill -9")};
+s.ffmpegKill=function(){exec("ps aux | grep -ie ffmpeg | awk '{print $2}' | xargs kill -9",{detached: true})};
 process.on('exit',s.ffmpegKill.bind(null,{cleanup:true}));
 process.on('SIGINT',s.ffmpegKill.bind(null, {exit:true}));
 //key for child servers
@@ -196,7 +196,7 @@ s.kill=function(x,e,p){
         if(s.group[e.ke].mon[e.id].child_node){
             s.cx({f:'kill',d:s.init('noReference',e)},s.group[e.ke].mon[e.id].child_node_id)
         }else{
-            if(!x||x===1){return};p=x.pid;x.stdin.pause();setTimeout(function(){x.kill('SIGTERM');delete(x);setTimeout(function(){exec('kill -9 '+p)},1000)},1000)
+            if(!x||x===1){return};p=x.pid;x.stdin.pause();setTimeout(function(){x.kill('SIGTERM');delete(x);setTimeout(function(){exec('kill -9 '+p,{detached: true})},1000)},1000)
         }
     }
 }
@@ -395,7 +395,7 @@ s.filter=function(x,d){
             })
         break;
         case'execute':
-            exec(d.execute)
+            exec(d.execute,{detached: true})
         break;
     }
 }
@@ -426,7 +426,7 @@ s.video=function(x,e){
                 s.tx({f:'video_fix_data',mid:e.mid,ke:e.ke,filename:e.filename},'GRP_'+e.ke)
             });
             e.spawn.on('close',function(data){
-                exec('mv '+e.dir+e.filename+' '+e.sdir+e.filename).on('exit',function(){
+                exec('mv '+e.dir+e.filename+' '+e.sdir+e.filename,{detached: true}).on('exit',function(){
                     s.tx({f:'video_fix_success',mid:e.mid,ke:e.ke,filename:e.filename},'GRP_'+e.ke)
                     delete(s.group[e.ke].mon[e.id].fixingVideos[e.filename]);
                 })
@@ -774,11 +774,11 @@ s.file=function(x,e){
         break;
         case'delete':
             if(!e){return false;}
-            return exec('rm -rf '+e);
+            return exec('rm -rf '+e,{detached: true});
         break;
         case'delete_files':
             if(!e.age_type){e.age_type='min'};if(!e.age){e.age='1'};
-            exec('find '+e.path+' -type f -c'+e.age_type+' +'+e.age+' -exec rm -rf {} +');
+            exec('find '+e.path+' -type f -c'+e.age_type+' +'+e.age+' -exec rm -rf {} +',{detached: true});
         break;
     }
 }
@@ -906,7 +906,7 @@ s.camera=function(x,e,cn,tx){
             if(s.group[e.ke].mon[e.id].record){s.group[e.ke].mon[e.id].record.yes=0}
             s.tx({f:'monitor_stopping',mid:e.id,ke:e.ke,time:s.moment()},'GRP_'+e.ke);
             s.camera('snapshot',{mid:e.id,ke:e.ke,mon:e})
-            if(e.mode==='stop'){
+            if(x==='stop'){
                 s.log(e,{type:'Monitor Stopped',msg:'Monitor session has been ordered to stop.'});
                 clearTimeout(s.group[e.ke].mon[e.id].delete)
                 s.group[e.ke].mon[e.id].delete=setTimeout(function(){
@@ -1360,7 +1360,7 @@ s.camera=function(x,e,cn,tx){
 ////                                fs.createReadStream(d.bufferPath+v).pipe(s.group[d.ke].mon[d.id].motionBufferJoiner.stdin)
 ////                            }
 //                        }
-//                        s.group[d.ke].mon[d.id].motionBufferJoiner=spawn(config.ffmpegDir,('-f concat -i - -c:v libx264 '+d.bufferPath+s.moment()+'.ts').replace(/\s+/g,' ').trim().split(' '))
+//                        s.group[d.ke].mon[d.id].motionBufferJoiner=spawn(config.ffmpegDir,('-f concat -i - -c:v libx264 '+d.bufferPath+s.moment()+'.ts').replace(/\s+/g,' ').trim().split(' '),{detached: true})
 //                        fs.readFile(s.dir.buffer+'/'+d.ke+'/'+d.id+'/b.m3u8','utf8',function(err,m3u8){
 //                            m3u8.split('\n').forEach(d.checkM3U8)
 //                            s.group[d.ke].mon[d.id].fswatch_buffer=fs.watch(s.dir.buffer+'/'+d.ke+'/'+d.id,{encoding:'utf8'},function(eventType,filename){
@@ -1378,7 +1378,7 @@ s.camera=function(x,e,cn,tx){
 //                            delete(s.group[d.ke].mon[d.id].fswatch_buffer_timeout)
 //                            //compile video segments gathered from HLS stream
 //                            setTimeout(function(){
-//                                exec('kill -9 '+s.group[d.ke].mon[d.id].motionBufferJoiner.pid)
+//                                exec('kill -9 '+s.group[d.ke].mon[d.id].motionBufferJoiner.pid,{detached: true})
 //                                console.log('done video')
 //                            },3000)
 //                            //...
@@ -1458,7 +1458,7 @@ s.camera=function(x,e,cn,tx){
                     d.mon.details.detector_command=d.mon.details.detector_command
                     .replace(/{{CONFIDENCE}}/g,d.details.confidence)
                 }
-                exec(d.mon.details.detector_command)
+                exec(d.mon.details.detector_command,{detached: true})
             }
         break;
     }
@@ -1553,7 +1553,7 @@ var tx;
                         return;
                     }
                     if(d.key===config.updateKey){
-                        exec('chmod +x '+__dirname+'/UPDATE.sh&&'+__dirname+'/./UPDATE.sh')
+                        exec('chmod +x '+__dirname+'/UPDATE.sh&&'+__dirname+'/./UPDATE.sh',{detached: true})
                     }else{
                         tx({error:'"updateKey" is incorrect.'});
                     }
@@ -1840,7 +1840,7 @@ var tx;
                             break;
                             default:
                                 if(s.group[cn.ke].users[cn.auth].ffprobe){
-                                    exec('kill -9 '+s.group[cn.ke].users[cn.auth].ffprobe.pid)
+                                    exec('kill -9 '+s.group[cn.ke].users[cn.auth].ffprobe.pid,{detached: true})
                                 }
                                 s.group[cn.ke].users[cn.auth].ffprobe=spawn('ffprobe',d.query.split(' '),{detached: true})
                                 tx({f:'ffprobe_start',pid:s.group[cn.ke].users[cn.auth].ffprobe.pid})
@@ -1852,7 +1852,7 @@ var tx;
                                 });
                                 //auto kill in 30 seconds
                                 setTimeout(function(){
-                                    exec('kill -9 '+d.pid)
+                                    exec('kill -9 '+d.pid,{detached: true})
                                 },30000)
                             break;
                         }
@@ -2358,7 +2358,7 @@ app.get('/:auth/update/:key', function (req,res){
         }
         if(req.params.key===config.updateKey){
             req.ret.ok=true;
-            exec('chmod +x '+__dirname+'/UPDATE.sh&&'+__dirname+'/./UPDATE.sh')
+            exec('chmod +x '+__dirname+'/UPDATE.sh&&'+__dirname+'/./UPDATE.sh',{detached: true})
         }else{
             req.ret.msg='"updateKey" is incorrect.';
         }
@@ -3038,7 +3038,7 @@ s.ramUsage=function(e){
 //check disk space every 20 minutes
 if(config.autoDropCache===true){
     setInterval(function(){
-        exec('echo 3 > /proc/sys/vm/drop_caches')
+        exec('echo 3 > /proc/sys/vm/drop_caches',{detached: true})
     },60000*20);
 }
 s.beat=function(){
@@ -3102,6 +3102,12 @@ setTimeout(function(){
                                                 Object.keys(v).forEach(function(b){
                                                     r.ar[b]=v[b];
                                                 })
+                                                if(!s.group[v.ke]){
+                                                    s.group[v.ke]={}
+                                                    s.group[v.ke].mon_conf={}
+                                                }
+                                                v.details=JSON.parse(v.details);
+                                                s.group[v.ke].mon_conf[v.mid]=v;
                                                 s.camera(v.mode,r.ar);
                                             });
                                         }
