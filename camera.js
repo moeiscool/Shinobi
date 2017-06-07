@@ -61,7 +61,7 @@ if(!config.pluginKeys)config.pluginKeys={};
 
 
 server.listen(config.port,config.bindip);
-s={child_help:false,totalmem:os.totalmem(),platform:os.platform(),s:JSON.stringify,isWin:(process.platform.indexOf('win')>-1)};
+s={child_help:false,totalmem:os.totalmem(),platform:os.platform(),s:JSON.stringify,isWin:(process.platform==='win32')};
 s.systemLog=function(q,w,e){
     if(!w){w=''}
     if(!e){e=''}
@@ -218,13 +218,14 @@ if(!config.ffmpegDir){
 }
 //directories
 s.group={};
+if(!config.windowsTempDir&&s.isWin===true){config.windowsTempDir='C:/Windows/Temp'}
 if(!config.defaultMjpeg){config.defaultMjpeg=__dirname+'/web/libs/img/bg.jpg'}
 //default stream folder check
 if(!config.streamDir){
     if(s.isWin===false){
         config.streamDir='/dev/shm'
     }else{
-        config.streamDir='C:/Windows/Temp'
+        config.streamDir=config.windowsTempDir
     }
     if(!fs.existsSync(config.streamDir)){
         config.streamDir=__dirname+'/streams/'
@@ -237,7 +238,7 @@ if(!config.bufferDir){
     if(s.isWin===false){
         config.bufferDir='/dev/shm'
     }else{
-        config.bufferDir='C:/Windows/Temp'
+        config.bufferDir=config.windowsTempDir
     }
     if(!fs.existsSync(config.bufferDir)){
         config.bufferDir=__dirname+'/buffer/'
@@ -1835,7 +1836,7 @@ var tx;
                     if(s.group[cn.ke].users[cn.auth]){
                         switch(d.ff){
                             case'stop':
-                                exec('kill -9 '+s.group[cn.ke].users[cn.auth].ffprobe.pid)
+                                exec('kill -9 '+s.group[cn.ke].users[cn.auth].ffprobe.pid,{detatched: true})
                             break;
                             default:
                                 if(s.group[cn.ke].users[cn.auth].ffprobe){
