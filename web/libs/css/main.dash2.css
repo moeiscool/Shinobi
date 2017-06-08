@@ -823,3 +823,20 @@ ul.msg_list li .message {
         height:70%
     }
 }
+
+/*animations*/
+@keyframes blink {  
+  0% { opacity:1 }
+  50% { opacity:0 }
+  100% { opacity:1 }
+}
+@-webkit-keyframes blink {
+  0% { opacity:1 }
+  50% { opacity:0 }
+  100% { opacity:1 }
+}
+.blink,[mode="Record"] .lamp {
+  -webkit-animation: blink 1s linear infinite;
+  -moz-animation: blink 1s linear infinite;
+  animation: blink 1s linear infinite;
+} 
