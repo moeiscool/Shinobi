@@ -1090,6 +1090,45 @@ $.zO.initRegionList=function(){
 $.zO.rl.change(function(e){
     $.zO.initCanvas();
 })
+$.zO.initLiveStream=function(e){
+    e={}
+    e.re=$('#region_editor_live');
+    e.re.find('iframe,img').attr('src','about:blank').hide()
+    if($('#region_still_image').is(':checked')){
+        e.re=e.re.find('img')
+        e.choice='jpeg'
+    }else{
+        e.re=e.re.find('iframe')
+        e.choice='embed'
+    }
+    e.src='/'+$user.auth_token+'/'+e.choice+'/'+$user.ke+'/'+$.aM.selected
+    if(e.choice=='embed'){
+        e.src+='/fullscreen|jquery'
+    }else{
+         e.src+='/s.jpg'
+    }
+    if(e.re.attr('src')!==e.src){
+        e.re.attr('src',e.src).show()
+    }
+    e.re.attr('width',$.zO.regionViewerDetails.detector_scale_x)
+    e.re.attr('height',$.zO.regionViewerDetails.detector_scale_y)
+}
+$('#region_still_image').change(function(e){
+    e.o=$.ccio.op().switches
+    if(!e.o){e.o={}}
+    if($(this).is(':checked')){
+        e.o.regionStillImage=1
+    }else{
+        e.o.regionStillImage="0"
+    }
+    $.ccio.op('switches',e.o)
+    $.zO.initLiveStream()
+}).ready(function(e){
+    e.switches=$.ccio.op().switches
+    if(e.switches&&e.switches.regionStillImage===1){
+        $('#region_still_image').prop('checked',true)
+    }
+})
 $.zO.initCanvas=function(){
     e={};
     e.ar=[];
@@ -1111,13 +1150,8 @@ $.zO.initCanvas=function(){
         $.zO.e.find('.cord_name').text(e.val)
         $.zO.f.find('[name="indifference"]').val(e.cord.sensitivity)
         $.zO.e.find('.canvas_holder canvas').remove();
-        e.re=$('#region_editor_live').find('iframe');
-        e.src='/'+$user.auth_token+'/embed/'+$user.ke+'/'+$.aM.selected+'/fullscreen|jquery'
-        if(e.re.attr('src')!==e.src){
-           e.re.attr('src',e.src)
-        }
-        e.re.attr('width',$.zO.regionViewerDetails.detector_scale_x)
-        e.re.attr('height',$.zO.regionViewerDetails.detector_scale_y)
+        
+        $.zO.initLiveStream()
         e.e=$.zO.ca.val(e.ar.join(','))
         e.e.canvasAreaDraw({
             imageUrl:placeholder.getData(placeholder.plcimg({
@@ -2404,7 +2438,7 @@ $('body')
             }
         })
     }
-    //set startup preferences
+    //set localStorage input values
     e.o=$.ccio.op();
     if(e.o){
         $.each(e.o,function(n,v){
