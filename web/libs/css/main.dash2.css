@@ -64,7 +64,7 @@ img{max-width:100%}
 .mosaic .monitor_item .mdl-cell--4-col-desktop,.mosaic .monitor_item .mdl-card__supporting-text{display:none}
 .mosaic .monitor_item .mdl-card .mdl-card__supporting-text .monitor_name{display:block}
 .mosaic .monitor_item .mdl-card__supporting-text:not(.meta){display:block;position:absolute;bottom:0;left:0;opacity:0;}
-.mosaic .monitor_item:hover .mdl-card__supporting-text:not(.meta){opacity:1}
+.mosaic .monitor_item:hover .mdl-card__supporting-text:not(.meta){opacity:1;z-index:2}
 .mdl-layout__header-row{padding-left:10!important}
 .mdl-layout__header-row .nav>li>a{border-radius:50%;}
 .mdl-layout__drawer-button i{position:absolute;top:0;right:0;bottom:0;left:0;margin:auto;height:1em;color:#fff}
