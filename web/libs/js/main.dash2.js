@@ -331,7 +331,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 d.mom=moment(d.time),
                 d.hr=parseInt(d.mom.format('HH')),
                 d.per=parseInt(d.hr/24*100);
-                d.href='href="'+d.href+'"';
+                d.href='href="'+d.href+'?downloadName='+d.mid+'-'+d.filename+'"';
                 tmp+='<li class="glM'+d.mid+'" mid="'+d.mid+'" ke="'+d.ke+'" status="'+d.status+'" file="'+d.filename+'"><div title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'" '+d.href+' video="launch" class="progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div><div><span title="'+d.end+'" class="livestamp"></span></div><div><div class="small"><b>Start</b> : '+moment(d.time).format('h:mm:ss , MMMM Do YYYY')+'</div><div class="small"><b>End</b> : '+moment(d.end).format('h:mm:ss , MMMM Do YYYY')+'</div></div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls btn-group"><a class="btn btn-sm btn-primary" video="launch" '+d.href+'><i class="fa fa-play-circle"></i></a> <a download="'+d.dlname+'" '+d.href+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a> <a video="download" host="dropbox" download="'+d.dlname+'" '+d.href+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a> <a title="Delete Video" video="delete" class="btn btn-sm btn-danger permission_video_delete"><i class="fa fa-trash"></i></a></div></div></li>';
             break;
             case 1://monitor icon
@@ -342,6 +342,9 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             case 2://monitor stream
                 try{k.d=JSON.parse(d.details);}catch(er){k.d=d.details;}
                 switch(d.mode){
+                    case'idle':
+                        k.mode='Idle'
+                    break;
                     case'stop':
                         k.mode='Disabled'
                     break;
@@ -352,11 +355,10 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                         k.mode='Watch Only'
                     break;
                 }
-                
-                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" class="monitor_item glM'+d.mid+' mdl-grid col-md-6">';
+                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" mode="'+k.mode+'" class="monitor_item glM'+d.mid+' mdl-grid col-md-6">';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col">';
                 tmp+='<div class="stream-block no-padding mdl-card__media mdl-color-text--grey-50">';
-                tmp+='<div class="stream-hud"><div class="controls"><span title="Currently vieweing" class="label label-default"><span class="viewers"></span> <i class="fa fa-eye"></i></span></div></div>';
+                tmp+='<div class="stream-hud"><div class="lamp" title="'+k.mode+'"></div><div class="controls"><span title="Currently vieweing" class="label label-default"><span class="viewers"></span> <i class="fa fa-eye"></i></span></div></div>';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card__supporting-text text-center">';
                 tmp+='<div class="indifference"><div class="progress"><div class="progress-bar progress-bar-danger" role="progressbar"><span>70%</span></div></div></div>';
@@ -831,6 +833,8 @@ $.ccio.ws.on('f',function (d){
                     break;
                 }
             d.e.find('.monitor_mode').text(d.mode)
+            d.e.attr('mode',d.mode)
+            d.e.find('.lamp').attr('title',d.mode)
             $.gR.drawList();
             new PNotify({title:'Monitor Saved',text:'<b>'+d.mon.name+'</b> <small>'+d.mon.mid+'</small> has been saved.',type:'success'});
         break;
@@ -2034,7 +2038,7 @@ $('body')
                                 e.tmp+='<td>'+v.filename+'</td>';
                                 e.tmp+='<td>'+(parseInt(v.size)/1000000).toFixed(2)+'</td>';
                                 e.tmp+='<td><a class="btn btn-sm btn-primary" video="launch" href="'+v.href+'">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a></td>';
-                                e.tmp+='<td><a class="btn btn-sm btn-success" download="'+v.mid+'-'+v.filename+'" href="'+v.href+'">&nbsp;<i class="fa fa-download"></i>&nbsp;</a></td>';
+                                e.tmp+='<td><a class="btn btn-sm btn-success" download="'+v.mid+'-'+v.filename+'" href="'+v.href+'?downloadName='+v.mid+'-'+v.filename+'">&nbsp;<i class="fa fa-download"></i>&nbsp;</a></td>';
                                 e.tmp+='<td class="permission_video_delete"><a class="btn btn-sm btn-danger" video="delete">&nbsp;<i class="fa fa-trash"></i>&nbsp;</a></td>';
                                 e.tmp+='<td class="permission_video_delete"><a class="btn btn-sm btn-warning" video="fix">&nbsp;<i class="fa fa-wrench"></i>&nbsp;</a></td>';
                                 e.tmp+='</tr>';

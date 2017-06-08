@@ -2903,7 +2903,9 @@ app.get('/:auth/videos/:ke/:id/:file', function (req,res){
         if (fs.existsSync(req.dir)){
             req.ext=req.params.file.split('.')[1];
             res.setHeader('content-type','video/'+req.ext);
-//            res.setHeader('content-disposition','attachment; filename="the_download"');
+            if(req.query.downloadName){
+               res.setHeader('content-disposition','attachment; filename="'+req.query.downloadName+'"');
+            }
             res.sendFile(req.dir);
         }else{
             res.send('File Not Found')
@@ -3077,44 +3079,44 @@ setTimeout(function(){
                     //emit the changes to connected users
                     s.init('diskUsed',v)
                     s.systemLog(v.mail+' : end of size check for videos',countFinished,count)
-                        if(countFinished===count){
-                            s.systemLog('all users checked, wait to close open files and remove files over user limit')
-                            ////close open videos
-                            sql.query('SELECT * FROM Videos WHERE status=?',[0],function(err,r){
-                                if(r&&r[0]){
-                                    r.forEach(function(v){
-                                        s.init(0,v)
-                                        v.filename=s.moment(v.time);
-                                        s.video('close',v);
-                                    })
-                                }
-                                s.systemLog('waiting to give unfinished video check some time. 3 seconds.')
-                                setTimeout(function(){
-                                    s.systemLog('start all monitors set to watch and record')
-                                    //preliminary monitor start
-                                    sql.query('SELECT * FROM Monitors', function(err,r) {
-                                        if(err){s.systemLog(err)}
-                                        if(r&&r[0]){
-                                            r.forEach(function(v){
-                                                s.init(0,v);
-                                                r.ar={};
-                                                r.ar.id=v.mid;
-                                                Object.keys(v).forEach(function(b){
-                                                    r.ar[b]=v[b];
-                                                })
-                                                if(!s.group[v.ke]){
-                                                    s.group[v.ke]={}
-                                                    s.group[v.ke].mon_conf={}
-                                                }
-                                                v.details=JSON.parse(v.details);
-                                                s.group[v.ke].mon_conf[v.mid]=v;
-                                                s.camera(v.mode,r.ar);
-                                            });
-                                        }
-                                    });
-                                },3000)
-                            })
-                        }
+                    if(countFinished===count){
+                        s.systemLog('all users checked, wait to close open files and remove files over user limit')
+                        ////close open videos
+                        sql.query('SELECT * FROM Videos WHERE status=?',[0],function(err,r){
+                            if(r&&r[0]){
+                                r.forEach(function(v){
+                                    s.init(0,v)
+                                    v.filename=s.moment(v.time);
+                                    s.video('close',v);
+                                })
+                            }
+                            s.systemLog('waiting to give unfinished video check some time. 3 seconds.')
+                            setTimeout(function(){
+                                s.systemLog('start all monitors set to watch and record')
+                                //preliminary monitor start
+                                sql.query('SELECT * FROM Monitors', function(err,r) {
+                                    if(err){s.systemLog(err)}
+                                    if(r&&r[0]){
+                                        r.forEach(function(v){
+                                            s.init(0,v);
+                                            r.ar={};
+                                            r.ar.id=v.mid;
+                                            Object.keys(v).forEach(function(b){
+                                                r.ar[b]=v[b];
+                                            })
+                                            if(!s.group[v.ke]){
+                                                s.group[v.ke]={}
+                                                s.group[v.ke].mon_conf={}
+                                            }
+                                            v.details=JSON.parse(v.details);
+                                            s.group[v.ke].mon_conf[v.mid]=v;
+                                            s.camera(v.mode,r.ar);
+                                        });
+                                    }
+                                });
+                            },3000)
+                        })
+                    }
                 })
             })
         }

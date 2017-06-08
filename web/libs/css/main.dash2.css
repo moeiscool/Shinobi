@@ -158,9 +158,14 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 #monitors_list .monitor_block{transition:none}
 .dropdown-menu.scrollable{max-height:300px}
 .upload_file input{display:none}
-.monitor_item .stream-hud{opacity:0;position:absolute;top:0;left:0;width:100%;height:100%}
+.monitor_item .stream-hud{opacity:0;position:absolute;top:0;left:0;width:100%;height:100%;z-index:1}
 .monitor_item .stream-hud .controls{position:absolute;top:10px;left:10px;}
 .monitor_item .stream-hud:hover{opacity:1}
+.monitor_item .stream-hud .lamp{position:absolute;top:5px;right:5px;z-index:1;border-radius:50%;height:15px;width:15px;box-shadow: 0 0 15px #333;}
+.monitor_item[mode="Disabled"] .stream-hud .lamp{background:#5d5d5d}
+.monitor_item[mode="Watch Only"] .stream-hud .lamp{background:#28e636}
+.monitor_item[mode="Idle"] .stream-hud .lamp{background:#fff}
+.monitor_item[mode="Record"] .stream-hud .lamp{background:#d9534f}
 .monitor_item .side-menu{position:absolute;height:100%;width:100%;left:0;top:0;}
 .monitor_item .side-menu.logs{right:auto;left:0;list-style:none;display:none}
 .monitor_item.show_logs .side-menu:not(.logs){display:none}
