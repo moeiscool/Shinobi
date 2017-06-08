@@ -2086,33 +2086,37 @@ $('body')
                     case'calendar':
                        e.t.attr('class','fa fa-calendar')
                        e.ar=[];
-                        $.each(d.videos,function(n,v){
-                            if(v.status!==0){
-                                var n=$.ccio.mon[v.mid];
-                                if(n){v.title=n.name+' - '+(parseInt(v.size)/1000000).toFixed(2)+'mb';}
-                                v.start=v.time;
-                                v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
-                                e.ar.push(v);
-                            }
-                        })
+                        if(d.videos[0]){
+                            $.each(d.videos,function(n,v){
+                                if(v.status!==0){
+                                    var n=$.ccio.mon[v.mid];
+                                    if(n){v.title=n.name+' - '+(parseInt(v.size)/1000000).toFixed(2)+'mb';}
+                                    v.start=v.time;
+                                    v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
+                                    e.ar.push(v);
+                                }
+                            })
                             e.b.html('')
                             try{e.b.fullCalendar('destroy')}catch(er){}
                             e.b.fullCalendar({
-                            header: {
-                                left: 'prev,next today',
-                                center: 'title',
-                                right: 'month,agendaWeek,agendaDay,listWeek,listDay'
-                            },
-                            defaultDate: moment().format('YYYY-MM-DD'),
-                            navLinks: true,
-                            eventLimit: true,
-                            events:e.ar,
-                            eventClick:function(f){
-                                $('#temp').html('<div mid="'+f.mid+'" ke="'+f.ke+'" file="'+f.filename+'"><div video="launch" href="'+f.href+'"></div></div>').find('[video="launch"]').click();
-                                $(this).css('border-color', 'red');
-                            }
-                        });
-                        setTimeout(function(){e.b.fullCalendar('changeView','listDay');},500)
+                                header: {
+                                    left: 'prev,next today',
+                                    center: 'title',
+                                    right: 'month,agendaWeek,agendaDay,listWeek'
+                                },
+                                defaultDate: moment(d.videos[0].time).format('YYYY-MM-DD'),
+                                navLinks: true,
+                                eventLimit: true,
+                                events:e.ar,
+                                eventClick:function(f){
+                                    $('#temp').html('<div mid="'+f.mid+'" ke="'+f.ke+'" file="'+f.filename+'"><div video="launch" href="'+f.href+'"></div></div>').find('[video="launch"]').click();
+                                    $(this).css('border-color', 'red');
+                                }
+                            });
+                        }else{
+                            e.b.html('<div class="text-center">No Videos found in this date range. Try setting the start date further back.</div>')
+                        }
+                        setTimeout(function(){e.b.fullCalendar('changeView','listWeek');},500)
                     break;
                     case'videos_table':
                         e.t.attr('class','fa fa-film')
