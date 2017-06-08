@@ -9,6 +9,42 @@ $.ccio={fr:$('#files_recent'),mon:{}};
     $.ccio.init=function(x,d,z,k){
         if(!k){k={}};k.tmp='';
         switch(x){
+            case'montage':
+                k.dimensions=$.ccio.op().montage
+                k.monitors=$('.monitor_item');
+                $.each([1,2,3,4,5,6,7,8,9,10,11,12],function(n,v){
+                    k.monitors.removeClass('col-md-'+v)
+                })
+                if(!$('#monitors_live').hasClass('montage')){
+                    k.dimensions='2'
+                }else{
+                    if(!k.dimensions){
+                        k.dimensions='3'
+                    }
+                }
+                switch((k.dimensions).toString()){
+                    case'1':
+                        k.class='12'
+                    break;
+                    case'2':
+                        k.class='6'
+                    break;
+                    case'4':
+                        k.class='3'
+                    break;
+                    case'5':
+                        k.class='2'
+                    break;
+                    case'6':
+                        k.class='1'
+                    break;
+                   default://3
+                        k.class='4'
+                    break;
+                }
+                k.class='col-md-'+k.class;
+                k.monitors.addClass(k.class)
+            break;
             case'monitorOrder':
                 k.order = JSON.parse($user.details).monitorOrder;
                 if(!k.order){
@@ -924,6 +960,7 @@ $.ccio.ws.on('f',function (d){
                     $.ccio.pm(0,{videos:f.videos,ke:d.ke,mid:d.id})
                 })
             }
+            $.ccio.init('montage');
         break;
         case'monitor_mjpeg_url':
             $('#monitor_live_'+d.id+' iframe').attr('src',location.protocol+'//'+location.host+d.watch_url);
@@ -1800,11 +1837,49 @@ $('body')
         break;
     }
 })
+.on('change','[localStorage]',function(e){
+    e.e=$(this)
+    e.localStorage=e.e.attr('localStorage')
+    //pre-event
+    switch(e.localStorage){
+        case'montage':
+            if($('#monitors_live').hasClass('montage')){
+                e.montageClick=$('[system="montage"]').first();
+                e.montageClick.click()
+            }
+        break;
+    }
+    e.value=e.e.val()
+    $.ccio.op(e.localStorage,e.value)
+    //finish event
+    switch(e.localStorage){
+        case'montage':
+            if(e.montageClick){
+                $.ccio.init('montage');
+                setTimeout(function(){
+                    e.montageClick.click()
+                },500)
+            }
+        break;
+    }
+})
 .on('click','[system]',function(e){
     e={}; 
     e.e=$(this),
     e.a=e.e.attr('system');//the function
     switch(e.a){
+        case'montage':
+            e.startup=$.ccio.op().startup
+            if(!e.startup){e.startup={}}
+            e.container=$('#monitors_live').toggleClass('montage')
+            if(!e.container.hasClass('montage')){
+                e.startup.montage="0"
+            }else{
+                e.startup.montage=1
+            }
+            $.ccio.init('montage')
+            $.ccio.op('startup',e.startup)
+        break;
         case'switch':
             e.switch=e.e.attr('switch');
             e.o=$.ccio.op().switches
@@ -2314,6 +2389,28 @@ $('body')
     if(e.o){
         $.each(e.o,function(n,v){
             $('[dropdown_toggle="'+n+'"]').val(v).change()
+        })
+    }
+    //set startup preferences
+    e.o=$.ccio.op().startup;
+    if(e.o){
+        $.each(e.o,function(n,v){
+            switch(n){
+                case'montage':
+                    if(v===1){
+                       $.ccio.init('montage')
+                    }
+                break;
+            }
+        })
+    }
+    //set startup preferences
+    e.o=$.ccio.op();
+    if(e.o){
+        $.each(e.o,function(n,v){
+            if(typeof v==='string'){
+                $('[localStorage="'+n+'"]').val(v)
+            }
         })
     }
     $("#monitors_list").sortable({
