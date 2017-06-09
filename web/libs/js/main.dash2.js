@@ -12,7 +12,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             case'montage':
                 k.dimensions=$.ccio.op().montage
                 k.monitors=$('.monitor_item');
-                $.each([1,2,3,4,5,6,7,8,9,10,11,12],function(n,v){
+                $.each([1,2,3,4,5,'5ths',6,7,8,9,10,11,12],function(n,v){
                     k.monitors.removeClass('col-md-'+v)
                 })
                 if(!$('#monitors_live').hasClass('montage')){
@@ -33,10 +33,10 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                         k.class='3'
                     break;
                     case'5':
-                        k.class='2'
+                        k.class='5ths'
                     break;
                     case'6':
-                        k.class='1'
+                        k.class='2'
                     break;
                    default://3
                         k.class='4'
