@@ -2113,10 +2113,10 @@ $('body')
                                     $(this).css('border-color', 'red');
                                 }
                             });
+                            setTimeout(function(){e.b.fullCalendar('changeView','month');e.b.find('.fc-scroller').css('height','auto')},500)
                         }else{
                             e.b.html('<div class="text-center">No Videos found in this date range. Try setting the start date further back.</div>')
                         }
-                        setTimeout(function(){e.b.fullCalendar('changeView','listWeek');},500)
                     break;
                     case'videos_table':
                         e.t.attr('class','fa fa-film')
