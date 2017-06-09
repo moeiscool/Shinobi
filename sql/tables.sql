@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `Monitors` (
   `path` varchar(100) DEFAULT '/',
   `port` int(8) DEFAULT '80',
   `fps` int(8) DEFAULT '1',
-  `mode` enum('stop','start','record','mrecord') DEFAULT 'stop',
+  `mode` varchar(15) DEFAULT NULL,
   `width` int(11) DEFAULT '640',
   `height` int(11) DEFAULT '360'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

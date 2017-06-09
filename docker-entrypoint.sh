@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SHIN_BIN_DIR=/opt/shinobi
-MYSQL_HOST="${MYSQL_HOST:-shinobi-db}"
+MYSQL_HOST="${MYSQL_HOST:-127.0.0.1}"
 MYSQL_DATABASE="${MYSQL_DATABASE:-shinobi}"
 MYSQL_ROOT_USER="${MYSQL_ROOT_USER:-root}"
 MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD:-rootpass}"
@@ -10,6 +10,8 @@ MYSQL_PASSWORD="${MYSQL_PASSWORD:-shinobi}"
 TIMEZONE="${TIMEZONE:-UTC}"
 
 cd "$SHIN_BIN_DIR" || exit 9
+
+service mysql start
 
 check_port() {
     timeout 3 bash -c "</dev/tcp/$1/$2" 2>/dev/null
