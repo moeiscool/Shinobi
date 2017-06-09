@@ -66,7 +66,7 @@ s.systemLog=function(q,w,e){
     if(!w){w=''}
     if(!e){e=''}
     if(config.systemLog===true){
-       return console.log(q,w,e)
+       return console.log(moment().format(),q,w,e)
     }
 }
 try{
@@ -449,7 +449,7 @@ s.video=function(x,e){
                 sql.query('DELETE FROM Videos WHERE `mid`=? AND `ke`=? AND `time`=?',e.save,function(err,r){
                     fs.stat(e.dir+e.filename+'.'+e.ext,function(err,file){
                         if(err){
-                            return console.log(err)
+                            return s.systemLog(err)
                         }
                         s.group[e.ke].init.used_space=s.group[e.ke].init.used_space-(file.size/1000000)
                         s.init('diskUsed',e)
@@ -1356,7 +1356,7 @@ s.camera=function(x,e,cn,tx){
 //                        d.checkM3U8=function(v){
 ////                            if(v.indexOf('#')===-1&&v.indexOf('.ts')>-1&&s.group[d.ke].mon[d.id].buffer_files.indexOf(v)===-1){
 ////                                s.group[d.ke].mon[d.id].buffer_files.push(v)
-////                                    console.log(v)
+////                                    s.systemLog(v)
 ////                                fs.createReadStream(d.bufferPath+v).pipe(s.group[d.ke].mon[d.id].motionBufferJoiner.stdin)
 ////                            }
 //                        }
@@ -1379,7 +1379,7 @@ s.camera=function(x,e,cn,tx){
 //                            //compile video segments gathered from HLS stream
 //                            setTimeout(function(){
 //                                exec('kill -9 '+s.group[d.ke].mon[d.id].motionBufferJoiner.pid,{detached: true})
-//                                console.log('done video')
+//                                s.systemLog('done video')
 //                            },3000)
 //                            //...
 //                        },1000*60*d.mon.details.detector_timeout)
@@ -1702,78 +1702,28 @@ var tx;
                             });
                         break;
                         case'delete':
-                            s.auth({auth:cn.auth,id:cn.uid,ke:cn.ke},function(user){
-                                if(!user.details.sub||user.details.allmonitors==='1'||user.details.monitor_edit.indexOf(d.mid)>-1){
-                                    if(!d.ke){d.ke=cn.ke};
-                                    if(d.mid){
-                                        d.delete=1;s.camera('stop',d);
-                                        s.tx({f:'monitor_delete',uid:cn.uid,mid:d.mid,ke:cn.ke},'GRP_'+d.ke);
-                                        s.log(d,{type:'Monitor Deleted',msg:'by user : '+cn.uid});
-                                        sql.query('DELETE FROM Monitors WHERE ke=? AND mid=?',[d.ke,d.mid])
-                                    }
-                                }else{
-                                    //add error
-                                }
-                            })
+                            http.get('http://'+config.ip+':'+config.port+'/'+cn.auth+'/configureMonitor/'+cn.ke+'/'+d.mid+'/delete', function(res){
+                                var body = '';
+                                res.on('data', function(chunk){
+                                    body += chunk;
+                                });
+                                res.on('end', function(){
+                                    s.systemLog(body)
+                                });
+                            }).on('error', function(e){
+                            });
                         break;
                         case'add':
-                            s.auth({auth:cn.auth,id:cn.uid,ke:cn.ke},function(user){
-                                if(!user.details.sub||user.details.allmonitors==='1'||user.details.monitor_edit.indexOf(d.mon.mid)>-1){
-                            if(d.mon&&d.mon.mid&&d.mon.name){
-                                d.set=[],d.ar=[];
-                                d.mon.mid=d.mon.mid.replace(/[^\w\s]/gi,'').replace(/ /g,'');
-                                if(!d.mon.ke){d.mon.ke=cn.ke}
-                                sql.query('SELECT * FROM Monitors WHERE ke=? AND mid=?',[d.mon.ke,d.mon.mid],function(er,r){
-                                    d.tx={f:'monitor_edit',mid:d.mon.mid,ke:d.mon.ke,mon:d.mon};
-                                    if(r&&r[0]){
-                                        d.tx.new=false;
-                                        Object.keys(d.mon).forEach(function(v){
-                                            if(d.mon[v]&&d.mon[v]!==''){
-                                                d.set.push(v+'=?'),d.ar.push(d.mon[v]);
-                                            }
-                                        })
-                                        d.set=d.set.join(',');
-                                        d.ar.push(d.mon.ke),d.ar.push(d.mon.mid);
-                                        s.log(d,{type:'Monitor Updated',msg:'by user : '+cn.uid});
-                                        sql.query('UPDATE Monitors SET '+d.set+' WHERE ke=? AND mid=?',d.ar)
-                                        d.finish=1;
-                                    }else{
-                                        if(!s.group[d.mon.ke].init.max_camera||s.group[d.mon.ke].init.max_camera==''||Object.keys(s.group[d.mon.ke].mon).length <= parseInt(s.group[d.mon.ke].init.max_camera)){
-                                            d.tx.new=true;
-                                            d.st=[];
-                                            Object.keys(d.mon).forEach(function(v){
-                                                if(d.mon[v]&&d.mon[v]!==''){
-                                                    d.set.push(v),d.st.push('?'),d.ar.push(d.mon[v]);
-                                                }
-                                            })
-    //                                        d.set.push('ke'),d.st.push('?'),d.ar.push(d.mon.ke);
-                                            d.set=d.set.join(','),d.st=d.st.join(',');
-                                            s.log(d,{type:'Monitor Added',msg:'by user : '+cn.uid});
-                                            sql.query('INSERT INTO Monitors ('+d.set+') VALUES ('+d.st+')',d.ar)
-                                            d.finish=1;
-                                        }else{
-                                            d.tx.f='monitor_edit_failed';
-                                            d.tx.ff='max_reached';
-                                        }
-                                    }
-                                    if(d.finish===1){
-                                        s.init(0,{mid:d.mon.mid,ke:d.mon.ke});
-                                        s.group[d.mon.ke].mon_conf[d.mon.mid]=d.mon;
-                                        if(d.mon.mode==='stop'){
-                                            d.mon.delete=1;
-                                            s.camera('stop',d.mon);
-                                        }else{
-                                            s.camera('stop',d.mon);setTimeout(function(){s.camera(d.mon.mode,d.mon);},5000)
-                                        };
-                                        s.tx(d.tx,'STR_'+d.mon.ke);
-                                    };
-                                    s.tx(d.tx,'GRP_'+d.mon.ke);
-                                })
-                            }
-                                }else{
-                                    //add error
-                                }
-                            })
+                            http.get('http://'+config.ip+':'+config.port+'/'+cn.auth+'/configureMonitor/'+cn.ke+'/'+d.mon.mid+'?data='+JSON.stringify(d.mon), function(res){
+                                var body = '';
+                                res.on('data', function(chunk){
+                                    body += chunk;
+                                });
+                                res.on('end', function(){
+                                    s.systemLog(body)
+                                });
+                            }).on('error', function(e){
+                            });
                         break;
                         case'jpeg_off':
                           delete(cn.jpeg_on);
@@ -2800,7 +2750,111 @@ app.get('/:auth/smonitor/:ke', function (req,res){
     }
     s.auth(req.params,req.fn,res,req);
 });
-// Control monitor mode via HTTP
+// Monitor Add,Edit,Delete
+app.get(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f'], function (req,res){
+    req.ret={ok:false};
+    res.setHeader('Content-Type', 'application/json');
+    s.auth(req.params,function(user){
+        if(req.params.f!=='delete'){
+            if(!req.body.data&&!req.query.data){
+                req.ret.msg='No Monitor Data found.'
+                res.end(s.s(req.ret, null, 3))
+                return
+            }
+            try{
+                if(req.query.data){
+                    req.monitor=JSON.parse(req.query.data)
+                }else{
+                    req.monitor=JSON.parse(req.body.data)
+                }
+            }catch(er){
+                req.ret.msg='Invalid Data, Check to see this is a valid import string.';
+                res.end(s.s(req.ret, null, 3))
+                return
+            }
+            if(!user.details.sub||user.details.allmonitors==='1'||user.details.monitor_edit.indexOf(req.monitor.mid)>-1){
+                    if(req.monitor&&req.monitor.mid&&req.monitor.name){
+                        req.set=[],req.ar=[];
+                        req.monitor.mid=req.monitor.mid.replace(/[^\w\s]/gi,'').replace(/ /g,'');
+                        try{JSON.parse(req.monitor.details)}catch(er){
+                            req.ret.msg='Invalid Details String. Check to see it is a JSON string and not a regular object being passed.';
+                            res.end(s.s(req.ret, null, 3))
+                            return
+                        }
+                        req.monitor.ke=req.params.ke
+                        req.logObject={details:JSON.parse(req.monitor.details),ke:req.params.ke,mid:req.params.id}
+                        sql.query('SELECT * FROM Monitors WHERE ke=? AND mid=?',[req.monitor.ke,req.monitor.mid],function(er,r){
+                            req.tx={f:'monitor_edit',mid:req.monitor.mid,ke:req.monitor.ke,mon:req.monitor};
+                            if(r&&r[0]){
+                                req.tx.new=false;
+                                Object.keys(req.monitor).forEach(function(v){
+                                    if(req.monitor[v]&&req.monitor[v]!==''){
+                                        req.set.push(v+'=?'),req.ar.push(req.monitor[v]);
+                                    }
+                                })
+                                req.set=req.set.join(',');
+                                req.ar.push(req.monitor.ke),req.ar.push(req.monitor.mid);
+                                s.log(req.monitor,{type:'Monitor Updated',msg:'by user : '+user.uid});
+                                req.ret.msg='Monitor Updated by user : '+user.uid;
+                                sql.query('UPDATE Monitors SET '+req.set+' WHERE ke=? AND mid=?',req.ar)
+                                req.finish=1;
+                            }else{
+                                if(!s.group[req.monitor.ke].init.max_camera||s.group[req.monitor.ke].init.max_camera==''||Object.keys(s.group[req.monitor.ke].mon).length <= parseInt(s.group[req.monitor.ke].init.max_camera)){
+                                    req.tx.new=true;
+                                    req.st=[];
+                                    Object.keys(req.monitor).forEach(function(v){
+                                        if(req.monitor[v]&&req.monitor[v]!==''){
+                                            req.set.push(v),req.st.push('?'),req.ar.push(req.monitor[v]);
+                                        }
+                                    })
+        //                                        req.set.push('ke'),req.st.push('?'),req.ar.push(req.monitor.ke);
+                                    req.set=req.set.join(','),req.st=req.st.join(',');
+                                    s.log(req.monitor,{type:'Monitor Added',msg:'by user : '+user.uid});
+                                    req.ret.msg='Monitor Added by user : '+user.uid;
+                                    sql.query('INSERT INTO Monitors ('+req.set+') VALUES ('+req.st+')',req.ar)
+                                    req.finish=1;
+                                }else{
+                                    req.tx.f='monitor_edit_failed';
+                                    req.tx.ff='max_reached';
+                                    req.ret.msg='Monitor Edit Failed for Group Key '+user.ke+'. Maximum number of monitors reached.';
+                                }
+                            }
+                            if(req.finish===1){
+                                req.monitor.details=JSON.parse(req.monitor.details)
+                                req.ret.ok=true;
+                                s.init(0,{mid:req.monitor.mid,ke:req.monitor.ke});
+                                s.group[req.monitor.ke].mon_conf[req.monitor.mid]=req.monitor;
+                                if(req.monitor.mode==='stop'){
+                                    s.camera('stop',req.monitor);
+                                }else{
+                                    s.camera('stop',req.monitor);setTimeout(function(){s.camera(req.monitor.mode,req.monitor);},5000)
+                                };
+                                s.tx(req.tx,'STR_'+req.monitor.ke);
+                            };
+                            s.tx(req.tx,'GRP_'+req.monitor.ke);
+                            res.end(s.s(req.ret, null, 3))
+                        })
+                    }else{
+                        req.ret.msg='Invalid Data, Check to see this is a valid import string.';
+                        res.end(s.s(req.ret, null, 3))
+                    }
+            }else{
+                    req.ret.msg='Not Permitted';
+                    res.end(s.s(req.ret, null, 3))
+            }
+        }else{
+            if(!user.details.sub||user.details.allmonitors==='1'||user.details.monitor_edit.indexOf(req.params.id)>-1){
+                s.log(s.group[req.params.ke].mon_conf[req.params.id],{type:'Monitor Deleted',msg:'by user : '+user.uid});
+                s.camera('stop',req.params);
+                s.tx({f:'monitor_delete',uid:user.uid,mid:req.params.id,ke:req.params.ke},'GRP_'+req.params.ke);
+                sql.query('DELETE FROM Monitors WHERE ke=? AND mid=?',[req.params.ke,req.params.id])
+                req.ret.ok=true;
+                req.ret.msg='Monitor Deleted by user : '+user.uid
+                res.end(s.s(req.ret, null, 3))
+            }
+        }
+    })
+})
 app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/monitor/:ke/:id/:f/:ff/:fff'], function (req,res){
     req.ret={ok:false};
     res.setHeader('Content-Type', 'application/json');
