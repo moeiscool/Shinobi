@@ -816,6 +816,10 @@ $.ccio.ws.on('f',function (d){
         break;
         case'monitor_delete':
             $('[mid="'+d.mid+'"][ke="'+d.ke+'"]:not(.modal)').remove();
+            clearTimeout($.ccio.mon[d.id]._signal);
+            clearTimeout($.ccio.mon[d.id].sk)
+            clearTimeout($.ccio.mon[d.mid].jpegInterval);
+            clearInterval($.ccio.mon[d.id].signal);delete($.ccio.mon[d.id].signal);
             delete($.ccio.mon[d.mid]);
         break;
         case'monitor_edit_failed':
