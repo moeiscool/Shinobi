@@ -460,7 +460,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                     try{k.d=JSON.parse(d.details);}catch(er){k.d=d.details}
                     switch(k.d.stream_type){
                         case'hls':
-                            tmp+='<video class="stream-element" controls autoplay></video>';
+                            tmp+='<video class="stream-element" autoplay></video>';
                         break;
                         case'mjpeg':
                             tmp+='<iframe class="stream-element"></iframe>';
@@ -2206,8 +2206,8 @@ $('body')
             $.ccio.cx({f:'monitor',ff:'watch_on',id:e.mid})
         break;
         case'control_toggle':
-            e.e=e.p.find('.pad');
-            if(e.e.length>0){e.e.remove()}else{e.p.append('<div class="pad"><div class="control top" monitor="control" control="up"></div><div class="control left" monitor="control" control="left"></div><div class="control right" monitor="control" control="right"></div><div class="control bottom" monitor="control" control="down"></div><div class="control middle" monitor="control" control="center"></div></div>')}
+            e.e=e.p.find('.PTZ_controls');
+            if(e.e.length>0){e.e.remove()}else{e.p.append('<div class="PTZ_controls"><div class="pad"><div class="control top" monitor="control" control="up"></div><div class="control left" monitor="control" control="left"></div><div class="control right" monitor="control" control="right"></div><div class="control bottom" monitor="control" control="down"></div><div class="control middle" monitor="control" control="center"></div></div><div class="btn-group btn-group-sm btn-group-justified"><a title="Zoom In" class="zoom_in btn btn-default" control="zoom_in"><i class="fa fa-search-plus"></i></a><a title="Zoom Out" class="zoom_out btn btn-default" control="zoom_out"><i class="fa fa-search-minus"></i></a></div><div class="btn-group btn-group-sm btn-group-justified"><a title="Enable Nightvision" class="nv_enable btn btn-default" control="enable_nv"><i class="fa fa-moon-o"></i></a><a title="Disable Nightvision" class="nv_disable btn btn-default" control="disable_nv"><i class="fa fa-sun-o"></i></a></div></div>')}
         break;
         case'watch':
             if($("#monitor_live_"+e.mid).length===0||$.ccio.mon[e.mid].watch!==1){
