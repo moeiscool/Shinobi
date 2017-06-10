@@ -563,17 +563,16 @@ s.ffmpeg=function(e,x){
         break;
     }
     //record - resolution
+    switch(s.ratio(e.width,e.height)){
+        case'16:9':
+            x.ratio='640x360';
+        break;
+        default:
+            x.ratio='640x480';
+        break;
+    }
     if(e.details.stream_scale_x&&e.details.stream_scale_x!==''&&e.details.stream_scale_y&&e.details.stream_scale_y!==''){
         x.ratio=e.details.stream_scale_x+'x'+e.details.stream_scale_y;
-    }else{
-        switch(s.ratio(e.width,e.height)){
-            case'16:9':
-                x.ratio='640x360';
-            break;
-            default:
-                x.ratio='640x480';
-            break;
-        }
     }
     //record - segmenting
     x.segment=' -f segment -segment_atclocktime 1 -reset_timestamps 1 -strftime 1 -segment_list pipe:2 -segment_time '+(60*e.cutoff)+' ';
