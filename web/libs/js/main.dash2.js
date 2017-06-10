@@ -819,7 +819,7 @@ $.ccio.ws.on('f',function (d){
             clearTimeout($.ccio.mon[d.mid]._signal);
             clearTimeout($.ccio.mon[d.mid].sk)
             clearTimeout($.ccio.mon[d.mid].jpegInterval);
-            clearInterval($.ccio.mon[d.mid].signal);delete($.ccio.mon[d.mid].signal);
+            clearInterval($.ccio.mon[d.mid].signal);
             delete($.ccio.mon[d.mid]);
         break;
         case'monitor_edit_failed':

@@ -580,7 +580,7 @@ s.ffmpeg=function(e,x){
         x.ratio=e.details.stream_scale_x+'x'+e.details.stream_scale_y;
     }
     //timestamp options
-    if(e.details.timestamp&&e.details.timestamp=="1"){
+    if(e.details.timestamp&&e.details.timestamp=="1"&&e.details.vcodec!=='copy'){
         //font
         if(e.details.timestamp_font&&e.details.timestamp_font!==''){x.time_font=e.details.timestamp_font}else{x.time_font='/usr/share/fonts/truetype/freefont/FreeSans.ttf'}
         //position x
