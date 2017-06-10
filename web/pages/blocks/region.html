@@ -43,14 +43,19 @@
           </div>
           <div class="col-md-6">
               <div class="canvas_holder">
-                  <div id="region_editor_live"><iframe></iframe></div>
+                  <div id="region_editor_live"><iframe></iframe><img></div>
                   <textarea id="regions_canvas" rows=3 class="hidden canvas-area input-xxlarge" disabled></textarea>
               </div>
           </div>
       </div>
       </div>
       <div class="modal-footer">
-          <div id="region_blocks" class="pull-left"></div>
+          <div class="pull-right">
+            <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="region_still_image" title="Switch on for Still Image">
+              <input type="checkbox" id="region_still_image" value="1" name="remember" class="mdl-switch__input">
+                <span class="monospace mdl-switch__label"></span>
+            </label>
+          </div>
         <button type="button" class="btn btn-default pull-left" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
       </div>
     </form>

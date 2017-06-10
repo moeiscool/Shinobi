@@ -270,7 +270,7 @@
           </div>
 <!--     END of JPEG     -->
 <!--     Start of Record     -->
-          <div class="form-group-group red h_m_input h_m_record">
+          <div class="form-group-group red h_m_input h_m_record h_m_idle">
           <h4>Recording</h4>
               <div class="form-group">
                 <label><span>Record File Type</span>
@@ -298,7 +298,7 @@
                     </select>
                 </label>
               </div>
-              <div class="h_vc_input h_vc_libvpx h_vc_libvpx-vp9 h_vc_libx264 h_vc_libx265">
+              <div class="h_vc_input h_vc_libvpx h_vc_libvpx-vp9 h_vc_libx264 h_vc_libx265 h_vc_default h_vc_none">
                   <div class="form-group">
                     <label><span>Quality <small>1 is High, 23 is Low</small></span>
                     <input class="form-control" detail="crf" placeholder="">
@@ -329,7 +329,7 @@
                     </select>
                 </label>
               </div>
-              <div class="h_vc_input h_vc_libvpx h_vc_libvpx-vp9 h_vc_libx264 h_vc_libx265">
+              <div class="h_vc_input h_vc_libvpx h_vc_libvpx-vp9 h_vc_libx264 h_vc_libx265 h_vc_default h_vc_none">
                    <div class="form-group">
                     <label><span>Video Record Rate <small>(FPS)</small></span>
                     <input class="form-control" name="fps">
@@ -361,7 +361,7 @@
                 <input class="form-control" detail="cutoff" placeholder="15">
                 </label>
               </div>
-              <div class="h_vc_input h_vc_libvpx h_vc_libvpx-vp9 h_vc_libx264 h_vc_libx265">
+              <div class="h_vc_input h_vc_libvpx h_vc_libvpx-vp9 h_vc_libx264 h_vc_libx265 h_vc_default h_vc_none">
                   <div class="form-group">
                     <label><span>Record Video Filter</span>
                     <input class="form-control" detail="vf">
@@ -369,8 +369,8 @@
                   </div>
               </div>
           </div>
-          <div class="h_vc_input h_vc_libvpx h_vc_libvpx-vp9 h_vc_libx264 h_vc_libx265">
-              <div class="form-group-group red h_m_input h_m_record">
+          <div class="h_vc_input h_vc_libvpx h_vc_libvpx-vp9 h_vc_libx264 h_vc_libx265 h_vc_default h_vc_none">
+              <div class="form-group-group red h_m_input h_m_record h_m_idle">
               <h4>Timestamp</h4>
                   <div class="form-group">
                       <label><span>Enabled <small>Does not work with copy encoder</small></span>
@@ -739,53 +739,83 @@
                     </label>
                   </div>
                   <div class="form-group h_cs_input h_cs_1">
-                    <label><span>Control URL Stop Timeout <small>Run stop URL after X milliseconds</small></span>
+                    <label><span>URL Stop Timeout <small>Run stop URL after X milliseconds</small></span>
                     <input class="form-control" detail="control_url_stop_timeout" placeholder="1000">
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Control Center <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_center" placeholder="">
+                    <label><span>Center <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_center" placeholder="/">
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Control Left <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_left" placeholder="">
+                    <label><span>Left <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_left" placeholder="/">
                     </label>
                   </div>
                   <div class="form-group h_cs_input h_cs_1">
-                    <label><span>Control Left Stop <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_left_stop" placeholder="">
+                    <label><span>Left Stop <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_left_stop" placeholder="/">
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Control Right <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_right" placeholder="">
+                    <label><span>Right <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_right" placeholder="/">
                     </label>
                   </div>
                   <div class="form-group h_cs_input h_cs_1">
-                    <label><span>Control Right Stop <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_right_stop" placeholder="">
+                    <label><span>Right Stop <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_right_stop" placeholder="/">
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Control Up <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_up" placeholder="">
+                    <label><span>Up <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_up" placeholder="/">
                     </label>
                   </div>
                   <div class="form-group h_cs_input h_cs_1">
-                    <label><span>Control Up Stop <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_up_stop" placeholder="">
+                    <label><span>Up Stop <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_up_stop" placeholder="/">
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Control Down <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_down" placeholder="">
+                    <label><span>Down <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_down" placeholder="/">
                     </label>
                   </div>
                   <div class="form-group h_cs_input h_cs_1">
-                    <label><span>Control Down Stop <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_down_stop" placeholder="">
+                    <label><span>Down Stop <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_down_stop" placeholder="/">
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Enable Night Vision <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_enable_nv" placeholder="/">
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Disable Night Vision <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_disable_nv" placeholder="/">
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Zoom Out <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_zoom_out" placeholder="/">
+                    </label>
+                  </div>
+                  <div class="form-group h_cs_input h_cs_1">
+                    <label><span>Zoom Out Stop <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_zoom_out_stop" placeholder="/">
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><span>Zoom In <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_zoom_in" placeholder="/">
+                    </label>
+                  </div>
+                  <div class="form-group h_cs_input h_cs_1">
+                    <label><span>Zoom In Stop <small>URL Address</small></span>
+                    <input class="form-control" detail="control_url_zoom_in_stop" placeholder="/">
                     </label>
                   </div>
               </div>
