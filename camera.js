@@ -3172,6 +3172,8 @@ setTimeout(function(){
                                             s.camera(v.mode,r.ar);
                                         });
                                     }
+                                    s.systemLog('Shinobi is ready.')
+                                    process.send('ready')
                                 });
                             },3000)
                         })
