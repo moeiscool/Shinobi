@@ -198,11 +198,11 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .monitor_item .stream-hud{opacity:0;position:absolute;top:0;left:0;width:100%;height:calc(100% - 30px);z-index:1}
 .monitor_item .stream-hud .controls{position:absolute;top:10px;left:10px;}
 .monitor_item .stream-hud:hover{opacity:1}
-.monitor_item .stream-hud .lamp{position:absolute;top:5px;right:5px;z-index:1;border-radius:50%;height:15px;width:15px;box-shadow: 0 0 15px #333;}
-.monitor_item[mode="Disabled"] .stream-hud .lamp{background:#5d5d5d}
-.monitor_item[mode="Watch Only"] .stream-hud .lamp{background:#5cb85c}
-.monitor_item[mode="Idle"] .stream-hud .lamp{background:#fff}
-.monitor_item[mode="Record"] .stream-hud .lamp{background:#d9534f}
+.monitor_item .stream-hud .lamp{position:absolute;top:5px;right:5px;z-index:1;text-shadow: 0 0 15px #333;}
+.monitor_item[mode="Disabled"] .stream-hud .lamp{color:#5d5d5d}
+.monitor_item[mode="Watch Only"] .stream-hud .lamp{color:#5cb85c}
+.monitor_item[mode="Idle"] .stream-hud .lamp{color:#fff}
+.monitor_item[mode="Record"] .stream-hud .lamp{color:#d9534f}
 .monitor_item .side-menu{position:absolute;height:100%;width:100%;left:0;top:0;}
 .monitor_item .side-menu.logs{right:auto;left:0;list-style:none;display:none}
 .monitor_item.show_logs .side-menu:not(.logs){display:none}
