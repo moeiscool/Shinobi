@@ -11,14 +11,20 @@ TIMEZONE="${TIMEZONE:-UTC}"
 
 cd "$SHIN_BIN_DIR" || exit 9
 
-echo -n "Initialising database if it doesn't exist..."
-
-if [ ! -f /var/lib/mysql/ibdata1 ]; then
+if [ $MYSQL_HOST == "127.0.0.1"] && [ ! -f /var/lib/mysql/ibdata1 ]; then
+echo -n "local database doesn't exist if it doesn't exist..."
     mysqld --initialize
-fi
+	
+	/usr/bin/mysqld_safe &
+	sleep 10s
 
-echo -n "Starting mysql server..."
-/usr/bin/mysqld_safe > /dev/null 2>&1 &
+	echo "GRANT ALL ON *.* TO root@'%' IDENTIFIED BY 'rootpass' WITH GRANT OPTION; FLUSH PRIVILEGES" | mysql
+
+	killall mysqld
+	sleep 10s
+	echo -n "Starting mysql server..."
+	/usr/bin/mysqld_safe > /dev/null 2>&1 &
+fi
 
 check_port() {
     timeout 3 bash -c "</dev/tcp/$1/$2" 2>/dev/null
