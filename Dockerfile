@@ -28,6 +28,7 @@ RUN apt update \
 	&& npm install canvas \
     && chmod +x ./docker-entrypoint.sh \
     && cp /opt/shinobi/plugins/motion/conf.sample.json /opt/shinobi/plugins/motion/conf.json
+RUN sed -i -e"s/^user\s*=\s*mysql/user = root/" /etc/mysql/mysql.conf.d/mysqld.cnf
 
 VOLUME ["/opt/shinobi/videos"]
 VOLUME ["/var/lib/mysql"]

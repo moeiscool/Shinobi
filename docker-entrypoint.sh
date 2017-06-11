@@ -11,7 +11,13 @@ TIMEZONE="${TIMEZONE:-UTC}"
 
 cd "$SHIN_BIN_DIR" || exit 9
 
-service mysql start
+echo -n "Initialising database if it doesn't exist..."
+
+if [ ! -f /var/lib/mysql/ibdata1 ]; then
+    mysqld --initialize
+fi
+
+/usr/bin/mysqld_safe
 
 check_port() {
     timeout 3 bash -c "</dev/tcp/$1/$2" 2>/dev/null
@@ -25,7 +31,7 @@ echo "${TIMEZONE}" > /etc/timezone
 rm /etc/localtime
 dpkg-reconfigure -f noninteractive tzdata
 
-echo -n "Waiting for MYSQL server..."
+echo -n "Waiting for MYSQL server port..."
 while ! check_port "$MYSQL_HOST" 3306
 do
     :
