@@ -199,7 +199,7 @@ s.kill=function(x,e,p){
             s.cx({f:'kill',d:s.init('noReference',e)},s.group[e.ke].mon[e.id].child_node_id)
         }else{
             if(!x||x===1){return};
-            if(s.group[e.ke].mon_conf[e.id]===('socket'||'jpeg'||'pipe')){
+            if(s.group[e.ke].mon_conf[e.id].type===('socket'||'jpeg'||'pipe')){
                 x.stdin.pause();p=x.pid;setTimeout(function(){x.kill('SIGTERM');delete(x);setTimeout(function(){exec('kill -9 '+p,{detached: true})},1000)},1000)
             }else{
                 x.stdin.setEncoding('utf8');x.stdin.write('q');
@@ -279,7 +279,6 @@ s.init=function(x,e,k,fn){
             if(!s.group[e.ke].mon[e.mid]){s.group[e.ke].mon[e.mid]={}}
             if(!s.group[e.ke].mon[e.mid].watch){s.group[e.ke].mon[e.mid].watch={}};
             if(!s.group[e.ke].mon[e.mid].fixingVideos){s.group[e.ke].mon[e.mid].fixingVideos={}};
-            if(e.type==='record'){e.record=1}else{e.record=0}
             if(!s.group[e.ke].mon[e.mid].record){s.group[e.ke].mon[e.mid].record={yes:e.record}};
             if(!s.group[e.ke].mon[e.mid].started){s.group[e.ke].mon[e.mid].started=0};
             if(s.group[e.ke].mon[e.mid].delete){clearTimeout(s.group[e.ke].mon[e.mid].delete)}
