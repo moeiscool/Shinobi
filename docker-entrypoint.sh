@@ -17,7 +17,8 @@ if [ ! -f /var/lib/mysql/ibdata1 ]; then
     mysqld --initialize
 fi
 
-/usr/bin/mysqld_safe
+echo -n "Starting mysql server..."
+/usr/bin/mysqld_safe > /dev/null 2>&1 &
 
 check_port() {
     timeout 3 bash -c "</dev/tcp/$1/$2" 2>/dev/null
