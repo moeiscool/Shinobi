@@ -197,7 +197,7 @@ s.kill=function(x,e,p){
         if(s.group[e.ke].mon[e.id].child_node){
             s.cx({f:'kill',d:s.init('noReference',e)},s.group[e.ke].mon[e.id].child_node_id)
         }else{
-            if(!x||x===1){return};p=x.pid;x.stdin.pause();setTimeout(function(){x.kill('SIGTERM');delete(x);setTimeout(function(){exec('kill -9 '+p,{detached: true})},1000)},1000)
+            if(!x||x===1){return};x.stdin.setEncoding('utf8');x.stdin.write('q');
         }
     }
 }
@@ -1064,7 +1064,9 @@ s.camera=function(x,e,cn,tx){
                     e.error_count=0;
                     s.group[e.ke].mon[e.id].error_socket_timeout_count=0;
                     if(!e.details.fatal_max||e.details.fatal_max===''){e.details.fatal_max=10}else{e.details.fatal_max=parseFloat(e.details.fatal_max)}
-                    s.kill(s.group[e.ke].mon[e.id].spawn,e);
+                    if(s.group[e.ke].mon[e.id].spawn !== undefined && s.group[e.ke].mon[e.id].spawn.connected){
+                        s.kill(s.group[e.ke].mon[e.id].spawn,e);
+                    }
                     e.draw=function(err,o){
                         if(o.success===true){
                             e.frames=0;
