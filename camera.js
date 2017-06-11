@@ -52,6 +52,7 @@ if(!config.autoDropCache){config.autoDropCache=true}
 if(!config.doSnapshot){config.doSnapshot=true}
 if(!config.restart){config.restart={}}
 if(!config.systemLog){config.systemLog=true}
+if(!config.deleteCorruptFiles){config.deleteCorruptFiles=true}
 if(!config.restart.onVideoNotExist){config.restart.onVideoNotExist=true}
 if(!config.ip||config.ip===''||config.ip.indexOf('0.0.0.0')>-1){config.ip='localhost'}else{config.bindip=config.ip};
 if(!config.cron)config.cron={};
@@ -476,7 +477,7 @@ s.video=function(x,e){
                         e.filesize=k.stat.size;
                         e.filesizeMB=parseFloat((e.filesize/1000000).toFixed(2));
                         e.end_time=s.moment(k.stat.mtime,'YYYY-MM-DD HH:mm:ss');
-                        if(e.filesizeMB>0.25){
+                        if(config.deleteCorruptFiles===false||e.filesizeMB>0.25){
                             e.save=[e.filesize,1,e.end_time,e.id,e.ke,s.nameToTime(e.filename)];
                             if(!e.status){e.save.push(0)}else{e.save.push(e.status)}
                             sql.query('UPDATE Videos SET `size`=?,`status`=?,`end`=? WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save)
