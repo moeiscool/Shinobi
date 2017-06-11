@@ -477,7 +477,10 @@ s.video=function(x,e){
                         e.filesize=k.stat.size;
                         e.filesizeMB=parseFloat((e.filesize/1000000).toFixed(2));
                         e.end_time=s.moment(k.stat.mtime,'YYYY-MM-DD HH:mm:ss');
-                        if(config.deleteCorruptFiles===false||e.filesizeMB>0.25){
+                        if(config.deleteCorruptFiles===true&&e.filesizeMB<0.25){
+                            s.video('delete',e);
+                            s.log(e,{type:'File Corrupt',msg:{ffmpeg:s.group[e.ke].mon[e.mid].ffmpeg,filesize:e.filesizeMB}})
+                        }else{
                             e.save=[e.filesize,1,e.end_time,e.id,e.ke,s.nameToTime(e.filename)];
                             if(!e.status){e.save.push(0)}else{e.save.push(e.status)}
                             sql.query('UPDATE Videos SET `size`=?,`status`=?,`end`=? WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save)
@@ -529,9 +532,6 @@ s.video=function(x,e){
                                     s.init('diskUsed',e)
                                 }
                             }
-                        }else{
-                            s.video('delete',e);
-                            s.log(e,{type:'File Corrupt',msg:{ffmpeg:s.group[e.ke].mon[e.mid].ffmpeg,filesize:e.filesizeMB}})
                         }
                     }else{
                         s.video('delete',e);
