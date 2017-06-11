@@ -198,7 +198,12 @@ s.kill=function(x,e,p){
         if(s.group[e.ke].mon[e.id].child_node){
             s.cx({f:'kill',d:s.init('noReference',e)},s.group[e.ke].mon[e.id].child_node_id)
         }else{
-            if(!x||x===1){return};x.stdin.setEncoding('utf8');x.stdin.write('q');
+            if(!x||x===1){return};
+            if(s.group[e.ke].mon_conf[e.id]===('socket'||'jpeg'||'pipe')){
+                x.stdin.pause();p=x.pid;setTimeout(function(){x.kill('SIGTERM');delete(x);setTimeout(function(){exec('kill -9 '+p,{detached: true})},1000)},1000)
+            }else{
+                x.stdin.setEncoding('utf8');x.stdin.write('q');
+            }
         }
     }
 }
