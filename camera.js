@@ -44,6 +44,7 @@ var events = require('events');
 var df = require('node-df');
 var Cam = require('onvif').Cam;
 var config = require('./conf.json');
+process.send = process.send || function () {};
 if(config.mail){
     var nodemailer = require('nodemailer').createTransport(config.mail);
 }
