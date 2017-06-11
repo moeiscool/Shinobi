@@ -12,14 +12,16 @@ TIMEZONE="${TIMEZONE:-UTC}"
 cd "$SHIN_BIN_DIR" || exit 9
 
 if [ "$MYSQL_HOST" == "127.0.0.1" ] && [ ! -f /var/lib/mysql/ibdata1 ]; then
-echo -n "Local database doesn't exist, initializing..."
-echo -n "Please wait, this may take a while"
+	echo -n "Local database doesn't exist, initializing..."
+	echo -n "Please wait, this may take a while"
     mysqld --initialize
+	touch /opt/shinobi/mysql-init.txt
+	echo "ALTER USER 'root'@'localhost' IDENTIFIED BY '"$MYSQL_ROOT_PASSWORD"';" >> /opt/shinobi/mysql-init.txt
 	
-	/usr/bin/mysqld_safe &
+	/usr/bin/mysqld_safe --init-file=/opt/shinobi/mysql-init.txt > /dev/null 2>&1 &
 	sleep 10s
 
-	echo "GRANT ALL ON *.* TO root@'%' IDENTIFIED BY 'rootpass' WITH GRANT OPTION; FLUSH PRIVILEGES" | mysql
+	echo "GRANT ALL ON *.* TO root@'%' IDENTIFIED BY 'rootpass' WITH GRANT OPTION; FLUSH PRIVILEGES" | mysql -u root -p"$MYSQL_ROOT_PASSWORD" -h 127.0.0.1
 
 	killall mysqld
 	sleep 5s

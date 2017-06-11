@@ -30,7 +30,8 @@ RUN apt update \
     && cp /opt/shinobi/plugins/motion/conf.sample.json /opt/shinobi/plugins/motion/conf.json \
 	&& mkdir -p /var/run/mysqld \
 	&& chown root:root /var/run/mysqld
-RUN sed -i -e"s/^user\s*=\s*mysql/user = root/" /etc/mysql/mysql.conf.d/mysqld.cnf
+RUN sed -i -e"s/^user\s*=\s*mysql/user = root/" /etc/mysql/mysql.conf.d/mysqld.cnf \
+	&& sed -i -e"s/^bind-address\s*=\s*127.0.0.1/bind-address = 0.0.0.0/" /etc/mysql/mysql.conf.d/mysqld.cnf
 
 VOLUME ["/opt/shinobi/videos"]
 VOLUME ["/var/lib/mysql"]
