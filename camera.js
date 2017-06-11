@@ -911,12 +911,14 @@ s.camera=function(x,e,cn,tx){
             s.tx({f:'monitor_stopping',mid:e.id,ke:e.ke,time:s.moment()},'GRP_'+e.ke);
             s.camera('snapshot',{mid:e.id,ke:e.ke,mon:e})
             if(x==='stop'){
-                s.log(e,{type:'Monitor Stopped',msg:'Monitor session has been ordered to stop.'});
-                clearTimeout(s.group[e.ke].mon[e.id].delete)
-                s.group[e.ke].mon[e.id].delete=setTimeout(function(){
-                    delete(s.group[e.ke].mon[e.id]);
-                    delete(s.group[e.ke].mon_conf[e.id]);
-                },1000*60);
+                    s.log(e,{type:'Monitor Stopped',msg:'Monitor session has been ordered to stop.'});
+                    clearTimeout(s.group[e.ke].mon[e.id].delete)
+                if(e.delete===1){
+                    s.group[e.ke].mon[e.id].delete=setTimeout(function(){
+                        delete(s.group[e.ke].mon[e.id]);
+                        delete(s.group[e.ke].mon_conf[e.id]);
+                    },1000*60);
+                }
             }else{
                 s.tx({f:'monitor_idle',mid:e.id,ke:e.ke,time:s.moment()},'GRP_'+e.ke);
                 s.log(e,{type:'Monitor Idling',msg:'Monitor session has been ordered to idle.'});
@@ -2849,7 +2851,7 @@ app.get(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f']
         }else{
             if(!user.details.sub||user.details.allmonitors==='1'||user.details.monitor_edit.indexOf(req.params.id)>-1){
                 s.log(s.group[req.params.ke].mon_conf[req.params.id],{type:'Monitor Deleted',msg:'by user : '+user.uid});
-                s.camera('stop',req.params);
+                req.params.delete=1;s.camera('stop',req.params);
                 s.tx({f:'monitor_delete',uid:user.uid,mid:req.params.id,ke:req.params.ke},'GRP_'+req.params.ke);
                 sql.query('DELETE FROM Monitors WHERE ke=? AND mid=?',[req.params.ke,req.params.id])
                 req.ret.ok=true;
