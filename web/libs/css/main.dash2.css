@@ -86,7 +86,8 @@ img{max-width:100%}
 #region_editor_live iframe,.canvas_holder canvas{border:0;position:absolute;left:0;top:0}
 .canvas_holder canvas{z-index:11}
 
-.demo-blog .mdl-card__media ~ .mdl-card__supporting-text{position:relative;overflow:hidden}
+.demo-blog .mdl-card__media ~ .mdl-card__supporting-text{position:relative;overflow:hidden;cursor:move}
+.demo-blog .mdl-card__media ~ .mdl-card__supporting-text .btn-group{cursor: default}
 
 .demo-blog .demo-blog__posts.montage{max-width:100%}
 @media screen and (max-width:1500px){
@@ -177,16 +178,18 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 }
 .side-menu .monitor_block:hover .icons{opacity:1}
 .side-menu .monitor_block:hover .title{opacity:1}
-.side-menu .monitor_block .icons,.side-menu .monitor_block .title{opacity:0;width:100%;bottom:0;left:0;background:rgba(0,0,0,0.6);position:absolute;padding:2.5px;z-index:11}
+.side-menu .monitor_block .icons,.side-menu .monitor_block .title{opacity:0;width:100%;bottom:0;left:0;background:rgba(0,0,0,0.6);position:absolute;padding:2.5px;z-index:11;cursor:move}
 .side-menu .monitor_block .title{bottom:auto;top:0;color:#fff}
 .nav-xs.side-menu .monitor_block{width:100%}
 .side-menu .monitor_block .list-data{display:none}
 .output_data:empty{display:none}
 .output_data{max-height:500px;font-family:monospace;padding:10px;border-radius:5px;background:#f3f3f3;overflow:auto}
 .side-menu.list-blocks .monitor_block .icons,.side-menu.list-blocks .monitor_block .title{position:inherit;opacity:1;background:none}
+.side-menu.list-blocks .monitor_block .title{padding:5px;border-radius:5px;background:#222;cursor: n-resize}
 .side-menu.list-blocks .monitor_block:not(:last-child){border-bottom: 1px solid #54502d;}
 .side-menu.list-blocks .monitor_block:first-child{border-top: 1px solid #54502d;}
-.side-menu.list-blocks .monitor_block{float:none;width:100%;padding: 10px;}
+.side-menu.list-blocks .monitor_block{float:none;width:100%;padding: 10px}
+.side-menu.list-blocks .monitor_block.ui-sortable-helper{background:rgba(0,0,0,0.6);border-radius:5px;padding:5px;border:0}
 .side-menu.list-blocks .monitor_block .list-data{display:block}
 .side-menu.list-blocks .monitor_block img{width:60px;height:60px;cursor:pointer;display:inline-block;margin-right:10px;border-radius:50%;vertical-align:top;border:0}
 .nav-xs.side-menu.list-blocks .monitor_block img{width:40px;height:40px;}
