@@ -2962,7 +2962,7 @@ app.get(['/libs/:f/:f2','/libs/:f/:f2/:f3'], function (req,res){
 });
 // Get video file
 app.get('/:auth/videos/:ke/:id/:file', function (req,res){
-    req.fn=function(user){
+    s.auth(req.params,function(user){
         if(user.permissions.watch_videos==="0"||user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
             res.end('Not Permitted')
             return
@@ -2970,16 +2970,33 @@ app.get('/:auth/videos/:ke/:id/:file', function (req,res){
         req.dir=s.dir.videos+req.params.ke+'/'+req.params.id+'/'+req.params.file;
         if (fs.existsSync(req.dir)){
             req.ext=req.params.file.split('.')[1];
-            res.setHeader('content-type','video/'+req.ext);
-            if(req.query.downloadName){
-               res.setHeader('content-disposition','attachment; filename="'+req.query.downloadName+'"');
+            var total = fs.statSync(req.dir).size;
+            if (req.headers['range']) {
+                var range = req.headers.range;
+                var parts = range.replace(/bytes=/, "").split("-");
+                var partialstart = parts[0];
+                var partialend = parts[1];
+
+                var start = parseInt(partialstart, 10);
+                var end = partialend ? parseInt(partialend, 10) : total-1;
+                var chunksize = (end-start)+1;
+                var file = fs.createReadStream(req.dir, {start: start, end: end});
+                req.headerWrite={ 'Content-Range': 'bytes ' + start + '-' + end + '/' + total, 'Accept-Ranges': 'bytes', 'Content-Length': chunksize, 'Content-Type': 'video/'+req.ext }
+                req.writeCode=206
+            } else {
+                req.headerWrite={ 'Content-Length': total, 'Content-Type': 'video/'+req.ext};
+                var file=fs.createReadStream(req.dir)
+                req.writeCode=200
             }
-            res.sendFile(req.dir);
+            if(req.query.downloadName){
+                req.headerWrite['content-disposition']='attachment; filename="'+req.query.downloadName+'"';
+            }
+            res.writeHead(req.writeCode,req.headerWrite);
+            file.pipe(res);
         }else{
-            res.send('File Not Found')
+            res.end('File Not Found')
         }
-    }
-    s.auth(req.params,req.fn,res,req);
+    },res,req);
 });
 //motion trigger
 app.get('/:auth/motion/:ke/:id', function (req,res){
