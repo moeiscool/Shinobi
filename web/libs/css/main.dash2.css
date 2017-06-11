@@ -131,9 +131,15 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 #region_editor .cord_element{position:absolute;background:rgba(221, 221, 221, 0.8);z-index:11;padding:5px;}
 #region_editor .cord_element.selected{z-index:12;}
 #region_editor .cord_element .controls{margin-bottom:5px;}
-.form-group label span{width:35%;padding:5px;font-weight: 400;color: #2d2d2d;display: inline-block;border-bottom: 1px dotted #ddd;font-size: 10pt;}
-.form-group label{display: flex}
+.form-group label span{padding:5px;font-weight: 400;color: #2d2d2d;display:block;border-bottom: 1px dotted #ddd;font-size: 10pt;}
+.form-group label{display:table}
+.form-group label>div{display:table-cell}
+.form-group label>div:nth-child(2n-1){width:30%}
+.form-group label>div:nth-child(2){width:70%;padding:5px;border:1px solid #dedede;border-radius:5px}
 .form-group label span small{margin-left: 2px;display:block;font-weight: 600;}
+.form-group-group blockquote:before,.form-group-group blockquote:after{content:''}
+.form-group-group blockquote{letter-spacing:normal;font-style:normal}
+.form-group-group blockquote P:last-child{margin-bottom:0}
 .form-group-group-group>div,.form-group-group-group .h_us_advanced>div{margin-bottom:15px;}
 .form-group-group{padding:0 10px 10px 10px;overflow:hidden;margin-bottom:15px;border-radius:5px;border:1px solid #ddd;background:#fff}
 .form-group-group table{width:100%}

@@ -1408,12 +1408,11 @@ $.aM.f.find('[selector]').change(function(e){
     e.v=$(this).val();e.a=$(this).attr('selector')
     $.aM.f.find('.'+e.a+'_input').hide()
     $.aM.f.find('.'+e.a+'_'+e.v).show();
+    $.aM.f.find('.'+e.a+'_text').text($(this).find('option:selected').text())
 });
 $.aM.f.find('[name="type"]').change(function(e){
     e.e=$(this);
     e.v=e.e.val();
-    $.aM.f.find('.h_t_input').hide()
-    $.aM.f.find('.h_t_'+e.v).show();
     e.h=$.aM.f.find('[name="path"]');
     e.p=e.e.parents('.form-group');
     switch(e.v){
