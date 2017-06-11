@@ -47,18 +47,18 @@ var config = require('./conf.json');
 if(config.mail){
     var nodemailer = require('nodemailer').createTransport(config.mail);
 }
-if(!config.cpuUsageMarker){config.cpuUsageMarker='%Cpu'}
-if(!config.autoDropCache){config.autoDropCache=true}
-if(!config.doSnapshot){config.doSnapshot=true}
-if(!config.restart){config.restart={}}
-if(!config.systemLog){config.systemLog=true}
-if(!config.deleteCorruptFiles){config.deleteCorruptFiles=true}
-if(!config.restart.onVideoNotExist){config.restart.onVideoNotExist=true}
-if(!config.ip||config.ip===''||config.ip.indexOf('0.0.0.0')>-1){config.ip='localhost'}else{config.bindip=config.ip};
-if(!config.cron)config.cron={};
-if(!config.cron.deleteOverMax)config.cron.deleteOverMax=true;
-if(!config.cron.deleteOverMaxOffset)config.cron.deleteOverMaxOffset=0.9;
-if(!config.pluginKeys)config.pluginKeys={};
+if(config.cpuUsageMarker===undefined){config.cpuUsageMarker='%Cpu'}
+if(config.autoDropCache===undefined){config.autoDropCache=true}
+if(config.doSnapshot===undefined){config.doSnapshot=true}
+if(config.restart===undefined){config.restart={}}
+if(config.systemLog===undefined){config.systemLog=true}
+if(config.deleteCorruptFiles===undefined){config.deleteCorruptFiles=true}
+if(config.restart.onVideoNotExist===undefined){config.restart.onVideoNotExist=true}
+if(config.ip===undefined||config.ip===''||config.ip.indexOf('0.0.0.0')>-1){config.ip='localhost'}else{config.bindip=config.ip};
+if(config.cron===undefined)config.cron={};
+if(config.cron.deleteOverMax===undefined)config.cron.deleteOverMax=true;
+if(config.cron.deleteOverMaxOffset===undefined)config.cron.deleteOverMaxOffset=0.9;
+if(config.pluginKeys===undefined)config.pluginKeys={};
 
 
 server.listen(config.port,config.bindip);
@@ -2506,7 +2506,7 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
             res.write("\r\n");
             res.write(content,'binary');
             res.write("\r\n");
-            if(s.group[req.params.ke]&&s.group[req.params.ke].mon[req.params.id]){
+            if(s.group[req.params.ke]&&s.group[req.params.ke].mon[req.params.id]&&s.group[req.params.ke].mon[req.params.id].emitter){
                 s.group[req.params.ke].mon[req.params.id].emitter.on('data',contentWriter=function(d){
                     content = d;
                     res.write(content,'binary');
