@@ -4,14 +4,12 @@ services:
     container_name: shinobi
     build:
       context: .
-    depends_on:
-      - database
     restart: always
     environment:
-      - MYSQL_HOST=shinobi-db
+      - MYSQL_HOST=127.0.0.1
       - MYSQL_DATABASE=shinobi
       - MYSQL_USER=ccio
-      - MYSQL_PASSWORD=shinobi_pass
+      - MYSQL_PASSWORD=shinobi
       - MYSQL_ROOT_PASSWORD=rootpass
 ## Timezone - eg Europe/London
       - TIMEZONE=UTC
@@ -19,15 +17,4 @@ services:
       - "8080:8080"
     volumes:
       - ./videos:/opt/shinobi/videos
-  database:
-    container_name: shinobi-db
-    image: mariadb
-    restart: always
-    environment:
-      - MYSQL_ROOT_PASSWORD=rootpass
-    volumes:
-      - dbdata:/var/lib/mysql
-volumes:
-## persistent data volume for mysql data
-  dbdata:
-    driver: local
+      - ./dbdata:/var/lib/mysql

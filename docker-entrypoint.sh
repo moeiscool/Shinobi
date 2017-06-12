@@ -21,7 +21,7 @@ if [ "$MYSQL_HOST" == "127.0.0.1" ] && [ ! -f /var/lib/mysql/ibdata1 ]; then
 	/usr/bin/mysqld_safe --init-file=/opt/shinobi/mysql-init.txt > /dev/null 2>&1 &
 	sleep 10s
 
-	echo "GRANT ALL ON *.* TO root@'%' IDENTIFIED BY 'rootpass' WITH GRANT OPTION; FLUSH PRIVILEGES" | mysql -u root -p"$MYSQL_ROOT_PASSWORD" -h 127.0.0.1
+	echo "GRANT ALL ON *.* TO root@'%' IDENTIFIED BY '"$MYSQL_ROOT_PASSWORD"' WITH GRANT OPTION; FLUSH PRIVILEGES" | mysql -u root -p"$MYSQL_ROOT_PASSWORD" -h 127.0.0.1
 
 	killall mysqld
 	sleep 5s
