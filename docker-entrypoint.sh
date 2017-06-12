@@ -26,8 +26,11 @@ if [ "$MYSQL_HOST" == "127.0.0.1" ] && [ ! -f /var/lib/mysql/ibdata1 ]; then
 	killall mysqld
 	sleep 5s
 fi
+
 	echo -n "Starting mysql server..."
-	/usr/bin/mysqld_safe > /dev/null 2>&1 &
+	touch /opt/shinobi/mysql-init.txt
+	echo "ALTER USER 'root'@'localhost' IDENTIFIED BY '"$MYSQL_ROOT_PASSWORD"';" >> /opt/shinobi/mysql-init.txt
+	/usr/bin/mysqld_safe --init-file=/opt/shinobi/mysql-init.txt > /dev/null 2>&1 &
 
 check_port() {
     timeout 3 bash -c "</dev/tcp/$1/$2" 2>/dev/null
