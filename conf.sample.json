@@ -15,5 +15,11 @@
         "user": "your_email@gmail.com",
         "pass": "your_password_or_app_specific_password"
         }
-    }
+  },
+  "cron":{
+      "key":"change_this_to_something_very_random__just_anything_other_than_this"
+  },
+  "pluginKeys":{
+      "Motion":"change_this_to_something_very_random____make_sure_to_match__/plugins/motion/conf.json"
+  }
 }

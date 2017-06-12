@@ -39,6 +39,14 @@ For an updated list of features visit the official website. http://shinobi.video
   - Embedding streams
 - Dashboard Framework made with Google Material Design Lite, jQuery, and Bootstrap
 
+## Asking for help
+
+Before asking questions it would nice if you read the docs :) http://shinobi.video
+
+After doing so please head on over to the Discord community chat for support. https://discordapp.com/invite/mdhmvuH
+
+The Issues section is only for bugs with the software. Comments and feature requests may be closed without comment. http://shinobi.video/docs/contribute
+
 ## Help make Shinobi the best Open Source CCTV Solution.
 Donate - http://shinobi.video/docs/donate
 
@@ -78,13 +86,11 @@ Join the Community Chat
 
 <a title="Find me on Discord, Get an Invite" href="https://discordapp.com/invite/mdhmvuH"><img src="https://cdn-images-1.medium.com/max/115/1*OoXboCzk0gYvTNwNnV4S9A@2x.png"></a>
 
-# License
+# Support the Development
 
-Paid license required only if you choose to bill your users for the use of Shinobi.
-Personal and Educational purposes do not require a license.
-Educational Institutions, such as high schools and universities, do not require the purchase of a license.
+Ordering a certificate or support package greatly boosts development. Please consider contributing :)
 
-http://shinobi.video/#licenses
+http://shinobi.video/support
 
 # Links
 
