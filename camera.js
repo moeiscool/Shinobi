@@ -689,7 +689,7 @@ s.ffmpeg=function(e,x){
         break;
     }
     //detector - plugins, motion
-    if(e.details.detector==='1'){
+    if(e.details.detector==='1'&&e.details.detector_send_frames==='1'){
         if(!e.details.detector_fps||e.details.detector_fps===''){e.details.detector_fps=2}
         if(e.details.detector_scale_x&&e.details.detector_scale_x!==''&&e.details.detector_scale_y&&e.details.detector_scale_y!==''){x.dratio=' -s '+e.details.detector_scale_x+'x'+e.details.detector_scale_y}else{x.dratio=' -s 320x240'}
         if(e.details.cust_detect&&e.details.cust_detect!==''){x.cust_detect+=e.details.cust_detect;}
@@ -1178,7 +1178,7 @@ s.camera=function(x,e,cn,tx){
                             }
                             //frames from motion detect
                             s.group[e.ke].mon[e.id].spawn.stdin.on('data',function(d){
-                                if(s.ocv&&e.details.detector==='1'){
+                                if(s.ocv&&e.details.detector==='1'&&e.details.detector_send_frames==='1'){
                                     s.tx({f:'frame',mon:s.group[e.ke].mon_conf[e.id].details,ke:e.ke,id:e.id,time:s.moment(),frame:d},s.ocv.id);
                                 };
                             })
