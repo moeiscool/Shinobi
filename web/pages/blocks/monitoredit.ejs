@@ -570,6 +570,19 @@
                       </div>
                   </div>
                   <div class="form-group">
+                    <label><div><span>Webhook</span></div>
+                        <div><select class="form-control" detail="detector_webhook" selector="h_det_web">
+                            <option value="0" selected>No</option>
+                            <option value="1">Yes</option>
+                        </select></div>
+                    </label>
+                  </div>
+                  <div class="form-group h_det_web_input h_det_web_1">
+                    <label><div><span>Webhook URL</span></div>
+                    <div><input class="form-control" detail="detector_webhook_url" placeholder="Example : http://111.111.111.111?mid={{MONITOR_ID}}&group={{GROUP_KEY}}&confidence={{CONFIDENCE}}"></div>
+                    </label>
+                  </div>
+                  <div class="form-group">
                     <label><div><span>Detector Command</span></div>
                         <div><select class="form-control" detail="detector_command_enable" selector="h_det_com">
                             <option value="0" selected>No</option>

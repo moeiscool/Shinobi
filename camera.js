@@ -1334,6 +1334,25 @@ s.camera=function(x,e,cn,tx){
                 clearInterval(s.group[d.ke].mon[d.id].detector_notrigger_timeout)
                 s.group[d.ke].mon[d.id].detector_notrigger_timeout=setInterval(s.group[d.ke].mon[d.id].detector_notrigger_timeout_function,d.mon.detector_notrigger_timeout)
             }
+            if(d.mon.details.detector_webhook=='1'){
+                d.mon.details.detector_webhook_url=d.mon.details.detector_webhook_url
+                    .replace(/{{TIME}}/g,moment(new Date).format())
+                    .replace(/{{MONITOR_ID}}/g,d.id)
+                    .replace(/{{GROUP_KEY}}/g,d.ke);
+                http.get(d.mon.details.detector_webhook_url, function(data) {
+                      data.setEncoding('utf8');
+                      var chunks='';
+                      data.on('data', (chunk) => {
+                          chunks+=chunk;
+                      });
+                      data.on('end', () => {
+                          
+                      });
+
+                }).on('error', function(e) {
+
+                }).end();
+            }
             if(d.mon.mode!=='record'&&d.mon.mode!=='stop'&&d.mon.details.detector_trigger=='1'){
                 if(!d.mon.details.detector_timeout||d.mon.details.detector_timeout===''){
                     d.mon.details.detector_timeout=10
@@ -1701,19 +1720,27 @@ var tx;
                             }else{
                                 d.base=d.m.details.control_base_url;
                             }
-                            if(!d.m.details.control_url_stop_timeout||d.m.details.control_url_stop_timeout===''){d.m.details.control_url_stop_timeout=1000} request({url:d.base+d.m.details['control_url_'+d.direction],method:'GET'},function(err,data){
-                                if(err){s.log(d,{type:'Control Error',msg:err});return false}
-                                if(d.m.details.control_stop=='1'&&d.direction!=='center'){
-                                   setTimeout(function(){
-                                       request({url:d.base+d.m.details['control_url_'+d.direction+'_stop'],method:'GET'},function(er,dat){
-                                           if(err){s.log(d,{type:'Control Error',msg:err});return false}
-                                           s.tx({f:'control',ok:data,mid:d.mid,ke:d.ke,direction:d.direction,url_stop:true});
-                                    })
-                                   },d.m.details.control_url_stop_timeout)
-                                }else{
-                                    tx({f:'control',ok:data,mid:d.mid,ke:d.ke,direction:d.direction,url_stop:false});
-                                }
-                            });
+                            if(!d.m.details.control_url_stop_timeout||d.m.details.control_url_stop_timeout===''){d.m.details.control_url_stop_timeout=1000} 
+                            http.get(d.base+d.m.details['control_url_'+d.direction], function(first) {
+                                  first.on('end', function(){
+                                    if(d.m.details.control_stop=='1'&&d.direction!=='center'){
+                                        setTimeout(function(){
+                                            http.get(d.base+d.m.details['control_url_'+d.direction+'_stop'], function(data) {
+                                                  data.on('end', function(){
+                                                       if(err){s.log(d,{type:'Control Error',msg:err});return false}
+                                                       s.tx({f:'control',mid:d.mid,ke:d.ke,direction:d.direction,url_stop:true});
+                                                  });
+                                            }).on('error', function(err) {
+                                               s.log(d,{type:'Control Error',msg:err});
+                                            }).end();
+                                        },d.m.details.control_url_stop_timeout)
+                                    }else{
+                                        tx({f:'control',mid:d.mid,ke:d.ke,direction:d.direction,url_stop:false});
+                                    }
+                                  });
+                            }).on('error', function(err) {
+                                s.log(d,{type:'Control Error',msg:err});
+                            }).end();
                         break;
                         case'delete':
                             http.get('http://'+config.ip+':'+config.port+'/'+cn.auth+'/configureMonitor/'+cn.ke+'/'+d.mid+'/delete', function(res){
