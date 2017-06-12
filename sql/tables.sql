@@ -12,7 +12,6 @@
 
 
 -- Dumping structure for table ccio.API
--- Dumping structure for table ccio.API
 CREATE TABLE IF NOT EXISTS `API` (
   `ke` varchar(50) DEFAULT NULL,
   `uid` varchar(50) DEFAULT NULL,
