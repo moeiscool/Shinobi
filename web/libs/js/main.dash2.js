@@ -1008,11 +1008,12 @@ $.oB.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
     $.oB.o.empty();
     $.ccio.cx({f:'onvif',ip:e.s.ip,port:e.s.port,user:e.s.user,pass:e.s.pass})
-    setTimeout(function(){
+    clearTimeout($.oB.checkTimeout)
+    $.oB.checkTimeout=setTimeout(function(){
         if($.oB.o.find('tr').length===0){
             $.oB.o.append('<td class="text-center">Sorry, nothing was found.</td>')
         }
-    },5000)
+    },30000)
     return false;
 });
 $.oB.e.on('click','.copy',function(e){

@@ -1850,71 +1850,97 @@ var tx;
                     }
                 break;
                 case'onvif':
-                //check ip
-                d.ip=d.ip.replace(/ /g,'');
-                if(d.ip.indexOf('-')>-1){
-                    d.ip=d.ip.split('-');
-                    d.IP_RANGE_START = d.ip[0],
-                    d.IP_RANGE_END = d.ip[1];
-                }else{
-                    d.IP_RANGE_START = d.ip;
-                    d.IP_RANGE_END = d.ip;
-                }
-                d.IP_LIST = s.ipRange(d.IP_RANGE_START,d.IP_RANGE_END);
-                //check port
-                d.port=d.port.replace(/ /g,'');
-                if(d.port.indexOf('-')>-1){
-                    d.port=d.port.split('-');
-                    d.PORT_RANGE_START = d.port[0];
-                    d.PORT_RANGE_END = d.port[1];
-                    d.PORT_LIST = s.portRange(d.PORT_RANGE_START,d.PORT_RANGE_END);
-                }else{
-                    d.PORT_LIST=d.port.split(',')
-                }
-                //check user name and pass
-                d.USERNAME='';
-                if(d.user){
-                    d.USERNAME = d.user
-                }
-                d.PASSWORD='';
-                if(d.pass){
-                    d.PASSWORD = d.pass
-                }
-
-
-                d.cams={}
-                // try each IP address and each Port
-                d.IP_LIST.forEach(function(ip_entry,n) {
-                    d.PORT_LIST.forEach(function(port_entry,nn) {
-                       return new Cam({
-                            hostname: ip_entry,
-                            username: d.USERNAME,
-                            password: d.PASSWORD,
-                            port: port_entry,
-                            timeout : 5000
-                        }, function CamFunc(err) {
-                            if (err) return;
-                            err={f:'onvif',ip:ip_entry,port:port_entry}
-                            var cam_obj = this;
-                            cam_obj.getSystemDateAndTime(function(er, date, xml) {
-                                if (!er) err.date = date;
-                               cam_obj.getDeviceInformation(function(er, info, xml) {
-                                    if (!er) err.info = info;
-                                    try {
-                                        cam_obj.getStreamUri({
-                                            protocol: 'RTSP'
-                                        },function(er, stream, xml) {
-                                            if (!er) err.url = stream;
-                                            tx(err)
-                                        });
-                                    }catch(err){
-                                        tx(err);
-                                    }
-                               });
+                    d.ip=d.ip.replace(/ /g,'');
+                    d.port=d.port.replace(/ /g,'');
+                    if(d.ip===''){
+                        var interfaces = os.networkInterfaces();
+                        var addresses = [];
+                        for (var k in interfaces) {
+                            for (var k2 in interfaces[k]) {
+                                var address = interfaces[k][k2];
+                                if (address.family === 'IPv4' && !address.internal) {
+                                    addresses.push(address.address);
+                                }
+                            }
+                        }
+                        d.arr=[]
+                        addresses.forEach(function(v){
+                            if(v.indexOf('0.0.0')>-1){return false}
+                            v=v.split('.');
+                            delete(v[3]);
+                            v=v.join('.');
+                            d.arr.push(v+'1-'+v+'254')
+                        })
+                        d.ip=d.arr.join(',')
+                    }
+                    if(d.port===''){
+                        d.port='80,8080,554'
+                    }
+                    d.ip.split(',').forEach(function(v){
+                        if(v.indexOf('-')>-1){
+                            v=v.split('-');
+                            d.IP_RANGE_START = v[0],
+                            d.IP_RANGE_END = v[1];
+                        }else{
+                            d.IP_RANGE_START = v;
+                            d.IP_RANGE_END = v;
+                        }
+                        if(!d.IP_LIST){
+                            d.IP_LIST = s.ipRange(d.IP_RANGE_START,d.IP_RANGE_END);
+                        }else{
+                            d.IP_LIST=d.IP_LIST.concat(s.ipRange(d.IP_RANGE_START,d.IP_RANGE_END))
+                        }
+                        //check port
+                        if(d.port.indexOf('-')>-1){
+                            d.port=d.port.split('-');
+                            d.PORT_RANGE_START = d.port[0];
+                            d.PORT_RANGE_END = d.port[1];
+                            d.PORT_LIST = s.portRange(d.PORT_RANGE_START,d.PORT_RANGE_END);
+                        }else{
+                            d.PORT_LIST=d.port.split(',')
+                        }
+                        //check user name and pass
+                        d.USERNAME='';
+                        if(d.user){
+                            d.USERNAME = d.user
+                        }
+                        d.PASSWORD='';
+                        if(d.pass){
+                            d.PASSWORD = d.pass
+                        }
+                    })
+                    d.cams=[]
+                    d.IP_LIST.forEach(function(ip_entry,n) {
+                        d.PORT_LIST.forEach(function(port_entry,nn) {
+                           return new Cam({
+                                hostname: ip_entry,
+                                username: d.USERNAME,
+                                password: d.PASSWORD,
+                                port: port_entry,
+                                timeout : 5000
+                            }, function CamFunc(err,data) {
+                                if (err) return;
+                                data={f:'onvif',ip:ip_entry,port:port_entry}
+                                var cam_obj = this;
+                                cam_obj.getSystemDateAndTime(function(er, date, xml) {
+                                    if (!er) data.date = date;
+                                   cam_obj.getDeviceInformation(function(er, info, xml) {
+                                        if (!er) data.info = info;
+                                        try {
+                                            cam_obj.getStreamUri({
+                                                protocol: 'RTSP'
+                                            },function(er, stream, xml) {
+                                                if (!er) data.url = stream;
+                                                tx(data)
+                                            });
+                                        }catch(err){
+                                            tx(data);
+                                        }
+                                   });
+                                });
                             });
-                        });
+                        }); // foreach
                     }); // foreach
-                }); // foreach
                 break;
             }
         }catch(er){s.systemLog(er)}
