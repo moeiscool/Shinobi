@@ -1831,16 +1831,15 @@ var tx;
                             break;
                             default:
                                 if(s.group[cn.ke].users[cn.auth].ffprobe){
-                                    exec('kill -9 '+s.group[cn.ke].users[cn.auth].ffprobe.pid,{detached: true})
+                                    return
                                 }
-                                s.group[cn.ke].users[cn.auth].ffprobe=spawn('ffprobe',d.query.split(' '),{detached: true})
-                                tx({f:'ffprobe_start',pid:s.group[cn.ke].users[cn.auth].ffprobe.pid})
-                                s.group[cn.ke].users[cn.auth].ffprobe.on('exit',function(data){
-                                    tx({f:'ffprobe_stop',pid:s.group[cn.ke].users[cn.auth].ffprobe.pid})
-                                });
-                                s.group[cn.ke].users[cn.auth].ffprobe.stderr.on('data',function(data){
-                                    tx({f:'ffprobe_data',data:data.toString('utf8'),pid:s.group[cn.ke].users[cn.auth].ffprobe.pid})
-                                });
+                                s.group[cn.ke].users[cn.auth].ffprobe=1;
+                                tx({f:'ffprobe_start'})
+                                exec('ffprobe '+('-v quiet -print_format json -show_format -show_streams '+d.query),function(err,data){
+                                    tx({f:'ffprobe_data',data:data.toString('utf8')})
+                                    delete(s.group[cn.ke].users[cn.auth].ffprobe)
+                                    tx({f:'ffprobe_stop'})
+                                })
                                 //auto kill in 30 seconds
                                 setTimeout(function(){
                                     exec('kill -9 '+d.pid,{detached: true})

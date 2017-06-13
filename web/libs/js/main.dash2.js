@@ -667,17 +667,20 @@ $.ccio.ws.on('f',function (d){
             }
         break;
         case'ffprobe_stop':
+            $.pB.e.find('._loading').hide()
             $.pB.o.append('<div><b>END</b></div>');
             $.pB.e.find('.stop').hide();
             $.pB.e.find('[type="submit"]').show();
         break;
         case'ffprobe_start':
+            $.pB.e.find('._loading').show()
             $.pB.o.empty();
             $.pB.e.find('.stop').show();
             $.pB.e.find('[type="submit"]').hide();
         break;
         case'ffprobe_data':
-            $.pB.o.append(d.data+'<br>')
+            $.pB.results=JSON.parse(d.data)
+            $.pB.o.append($.ccio.init('jsontoblock',$.pB.results))
         break;
         case'detector_record_timeout_start':
             d.note={type:'Detector',msg:'Record Timeout Start',class:'detector_record_timeout_start'}
@@ -984,8 +987,16 @@ $.ccio.ws.on('f',function (d){
             $.ccio.init('signal',d);
         break;
         case'onvif':
-            if(d.url){d.url=$.ccio.init('jsontoblock',d.url)}else{d.url='URL not Found'}
-            $('#onvif_probe .output_data').append('<tr><td class="ip">'+d.ip+'</td><td class="port">'+d.port+'</td><td>'+$.ccio.init('jsontoblock',d.info)+'</td><td class="url">'+d.url+'</td><td class="date">'+d.date+'</td><td><a class="btn btn-sm btn-primary copy">&nbsp;<i class="fa fa-copy"></i>&nbsp;</a></td></tr>')
+            $.oB.e.find('._loading').hide()
+            $.oB.e.find('[type="submit"]').prop('disabled',false)
+            d.info=$.ccio.init('jsontoblock',d.info)
+            if(d.url){
+                d.stream=d.url.uri
+                d.info+=$.ccio.init('jsontoblock',d.url)
+            }else{
+                d.stream='URL not Found'
+            }
+            $('#onvif_probe .output_data').append('<tr><td class="ip">'+d.ip+'</td><td class="port">'+d.port+'</td><td>'+$.ccio.init('jsontoblock',d.info)+'</td><td class="url">'+d.stream+'</td><td class="date">'+d.date+'</td><td><a class="btn btn-sm btn-primary copy">&nbsp;<i class="fa fa-copy"></i>&nbsp;</a></td></tr>')
         break;
     }
     delete(d);
@@ -1003,13 +1014,17 @@ $.ccio.form.details=function(e){
     e.f.find('[name="details"]').val(JSON.stringify(e.ar));
 };
 //onvif probe
-$.oB={e:$('#onvif_probe')};$.oB.f=$.oB.e.find('form');$.oB.o=$.oB.e.find('.output_data');
+$.oB={e:$('#onvif_probe'),v:$('#onvif_video')};$.oB.f=$.oB.e.find('form');$.oB.o=$.oB.e.find('.output_data');
 $.oB.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
     $.oB.o.empty();
+    $.oB.e.find('._loading').show()
+    $.oB.e.find('[type="submit"]').prop('disabled',true)
     $.ccio.cx({f:'onvif',ip:e.s.ip,port:e.s.port,user:e.s.user,pass:e.s.pass})
     clearTimeout($.oB.checkTimeout)
     $.oB.checkTimeout=setTimeout(function(){
+        $.oB.e.find('._loading').hide()
+        $.oB.e.find('[type="submit"]').prop('disabled',false)
         if($.oB.o.find('tr').length===0){
             $.oB.o.append('<td class="text-center">Sorry, nothing was found.</td>')
         }
@@ -1020,13 +1035,18 @@ $.oB.e.on('click','.copy',function(e){
     e.e=$(this).parents('tr');
     $('.hidden-xs [monitor="edit"]').click();
     e.host=e.e.find('.ip').text();
+    e.url=$.ccio.init('getLocation',e.e.find('.url').text().replace('rtsp','http'));
     if($.oB.e.find('[name="user"]').val()!==''){
         e.host=$.oB.e.find('[name="user"]').val()+':'+$.oB.e.find('[name="pass"]').val()+'@'+e.host
     }
     $.aM.e.find('[name="host"]').val(e.host)
-    $.aM.e.find('[name="port"]').val(e.e.find('.port').text())
+    $.aM.e.find('[detail="port_force"]').val('1')
+    $.aM.e.find('[detail="rtsp_transport"]').val('tcp')
+    $.aM.e.find('[detail="aduration"]').val('100000')
+    $.aM.e.find('[name="port"]').val(e.url.port)
     $.aM.e.find('[name="type"] [value="h264"]').prop('selected',true).parent().change()
-    $.aM.e.find('[name="path"]').val($.ccio.init('getLocation',e.e.find('.url b:contains("uri")').next().text().trim().replace('rtsp','http')).pathname)
+    $.aM.e.find('[name="path"]').val(e.url.pathname)
+    $.oB.e.modal('hide')
 })
 $.oB.e.find('[name="ip"]').change(function(e){
     $.ccio.op('onvif_probe_ip',$(this).val());
@@ -1046,6 +1066,9 @@ $.oB.e.find('[name="user"]').change(function(e){
 if($.ccio.op().onvif_probe_user){
     $.oB.e.find('[name="user"]').val($.ccio.op().onvif_probe_user)
 }
+$.oB.e.on('shown.bs.modal',function(){
+    $.oB.f.submit()
+})
 //Group Selector
 $.gR={e:$('#group_list'),b:$('#group_list_button')};
 $.gR.drawList=function(){
@@ -1272,6 +1295,9 @@ $.pB.f.submit(function(e){
     $.ccio.cx({f:'ffprobe',query:e.s.url})
     return false;
 });
+$.pB.e.on('hidden.bs.modal',function(){
+    $.pB.o.empty()
+})
 $.pB.e.find('.stop').click(function(e){
     e.e=$(this);
     $.ccio.cx({f:'ffprobe',ff:'stop'})

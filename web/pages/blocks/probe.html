@@ -6,7 +6,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-        <h4 class="modal-title" id="probeLabel"><i class="fa fa-search"></i> &nbsp; FFprobe</h4>
+        <h4 class="modal-title" id="probeLabel"><i class="fa fa-search"></i> &nbsp; FFprobe <small><span class="_loading"> &nbsp; <i class="fa fa-pulse fa-spinner"></i></span></small></h4>
       </div>
       <div class="modal-body">
           <div class="text-center msg"></div>
@@ -22,7 +22,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default pull-left" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
-        <a class="btn btn-danger stop" style="display:none">Stop</a> 
+        <a class="btn btn-danger stop" style="display:none">Stop<span> &nbsp; <i class="fa fa-pulse fa-spinner"></i></span></a> 
         <button type="submit" class="btn btn-success">Check</button>
       </div>
     </form>
@@ -36,41 +36,50 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-        <h4 class="modal-title" id="onvif_probeLabel"><i class="fa fa-rss"></i> &nbsp; ONVIF Scanner</h4>
+        <h4 class="modal-title" id="onvif_probeLabel"><i class="fa fa-rss"></i> &nbsp; ONVIF Scanner<span class="_loading"> &nbsp; <i class="fa fa-pulse fa-spinner"></i></span></h4>
       </div>
       <div class="modal-body">
-          <div class="container" style="margin-top:20px">
-          <p class="text-center">Discover ONVIF devices on networks outside your own or leave it blank to scan your current network. <br>Username and Password can be left blank.</p>
-              <div class="row">
-                  <div class="form-group col-md-12">
+        <div class="row">
+          <div class="col-md-6">
+              <div class="form-group-group navy">
+                  <h4>Scan Settings</h4>
+                  <p class="text-center">Discover ONVIF devices on networks outside your own or leave it blank to scan your current network. <br>Username and Password can be left blank.</p>
+                  <div class="form-group">
                     <label><div><span>IP <small>Range or Single</small></span></div>
                         <div><input class="form-control" name="ip" placeholder="Example : 10.1.100.1-10.1.100.254"></div>
                     </label>
                   </div>
-                  <div class="form-group col-md-12">
+                  <div class="form-group">
                     <label><div><span>Port <small>Separate by Commas or a Range</small></span></div>
                         <div><input class="form-control" name="port" placeholder="Example : 80,7575,8000,8080,8081"></div>
                     </label>
                   </div>
-              </div>
-              <div class="row">
-                  <div class="form-group col-md-12">
+                  <div class="form-group">
                     <label><div><span>Camera Username</span></div>
                         <div><input class="form-control" name="user" placeholder="Can be left blank."></div>
                     </label>
                   </div>
-                  <div class="form-group col-md-12">
+                  <div class="form-group">
                     <label><div><span>Camera Password</span></div>
                         <div><input class="form-control" name="pass"></div>
                     </label>
                   </div>
+                  <div class="form-group text-right">
+                      <button type="submit" class="btn btn-success">Search<span class="_loading"> &nbsp; <i class="fa fa-pulse fa-spinner"></i></span></button>
+                  </div>
               </div>
           </div>
-        <table class="output_data table table-striped"></table>
+          <div class="col-md-6">
+              <div class="form-group-group blue">
+                  <h4>Found Devices</h4>
+<!--                  <div id="onvif_video"></div>-->
+                  <table class="output_data table table-striped" style="margin:0"></table>
+              </div>
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default pull-left" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
-        <button type="submit" class="btn btn-success">Search</button>
       </div>
     </form>
   </div>
