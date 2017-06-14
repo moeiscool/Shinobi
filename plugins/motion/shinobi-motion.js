@@ -1,5 +1,5 @@
 //
-// Shinobi - OpenCV Plugin
+// Shinobi - Motion Plugin
 // Copyright (C) 2016-2025 Moe Alam, moeiscool
 //
 // This program is free software; you can redistribute it and/or
@@ -15,7 +15,7 @@
 // # Donate
 //
 // If you like what I am doing here and want me to continue please consider donating :)
-// PayPal : paypal@m03.a
+// PayPal : paypal@m03.ca
 //
 process.on('uncaughtException', function (err) {
     console.error('uncaughtException',err);
@@ -176,6 +176,7 @@ io.on('f',function(d){
             }
             if(d.frame[d.frame.length-2] === 0xFF && d.frame[d.frame.length-1] === 0xD9){
                 s.buffer[d.id]=Buffer.concat(s.buffer[d.id]);
+                try{d.mon.cords=JSON.parse(d.mon.cords)}catch(err){}
                 s.globalCoords[d.id]=Object.values(d.mon.cords);
                 d.mon.cords=d.mon.cords;
                 d.image = new Canvas.Image;
