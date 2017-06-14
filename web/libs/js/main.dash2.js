@@ -1023,9 +1023,9 @@ $.oB.f.submit(function(e){
     $.ccio.cx({f:'onvif',ip:e.s.ip,port:e.s.port,user:e.s.user,pass:e.s.pass})
     clearTimeout($.oB.checkTimeout)
     $.oB.checkTimeout=setTimeout(function(){
-        $.oB.e.find('._loading').hide()
-        $.oB.e.find('[type="submit"]').prop('disabled',false)
         if($.oB.o.find('tr').length===0){
+            $.oB.e.find('._loading').hide()
+            $.oB.e.find('[type="submit"]').prop('disabled',false)
             $.oB.o.append('<td class="text-center">Sorry, nothing was found.</td>')
         }
     },30000)
@@ -1044,6 +1044,7 @@ $.oB.e.on('click','.copy',function(e){
     $.aM.e.find('[detail="rtsp_transport"]').val('tcp')
     $.aM.e.find('[detail="aduration"]').val('100000')
     $.aM.e.find('[name="port"]').val(e.url.port)
+    $.aM.e.find('[name="mode"]').val('start')
     $.aM.e.find('[name="type"] [value="h264"]').prop('selected',true).parent().change()
     $.aM.e.find('[name="path"]').val(e.url.pathname)
     $.oB.e.modal('hide')
@@ -1339,10 +1340,12 @@ $.aM.f.submit(function(e){
         new PNotify({title:'Configuration Invalid',text:e.er.join('<br>'),type:'error'});
         return;
     }
-        $.ccio.cx({f:'monitor',ff:'add',mon:e.s})
-        if(!$.ccio.mon[e.s.mid]){$.ccio.mon[e.s.mid]={}}
-        $.each(e.s,function(n,v){$.ccio.mon[e.s.mid][n]=v;})
-        $.aM.e.modal('hide')
+    $.post('/'+$user.auth_token+'/configureMonitor/'+$user.ke+'/'+e.s.mid,{data:JSON.stringify(e.s)},function(d){
+        console.log(d)
+    })
+    if(!$.ccio.mon[e.s.mid]){$.ccio.mon[e.s.mid]={}}
+    $.each(e.s,function(n,v){$.ccio.mon[e.s.mid][n]=v;})
+    $.aM.e.modal('hide')
     return false;
 });
 $.aM.e.on('change','[group]',function(){
@@ -2262,7 +2265,9 @@ $('body')
             e.html+='</tr></table>';
             $.confirm.body.html(e.html)
             $.confirm.click({title:'Delete Monitor',class:'btn-danger'},function(){
-                $.ccio.cx({f:'monitor',ff:'delete',mid:e.mid,ke:e.ke});
+                $.get('/'+$user.auth_token+'/configureMonitor/'+$user.ke+'/'+e.mon.mid+'/delete',function(d){
+                    console.log(d)
+                })
             });
         break;
         case'edit':

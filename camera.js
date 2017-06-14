@@ -1742,30 +1742,6 @@ var tx;
                                 s.log(d,{type:'Control Error',msg:err});
                             }).end();
                         break;
-                        case'delete':
-                            http.get('http://'+config.ip+':'+config.port+'/'+cn.auth+'/configureMonitor/'+cn.ke+'/'+d.mid+'/delete', function(res){
-                                var body = '';
-                                res.on('data', function(chunk){
-                                    body += chunk;
-                                });
-                                res.on('end', function(){
-                                    s.systemLog(body)
-                                });
-                            }).on('error', function(e){
-                            });
-                        break;
-                        case'add':
-                            http.get('http://'+config.ip+':'+config.port+'/'+cn.auth+'/configureMonitor/'+cn.ke+'/'+d.mon.mid+'?data='+JSON.stringify(d.mon), function(res){
-                                var body = '';
-                                res.on('data', function(chunk){
-                                    body += chunk;
-                                });
-                                res.on('end', function(){
-                                    s.systemLog(body)
-                                });
-                            }).on('error', function(e){
-                            });
-                        break;
                         case'jpeg_off':
                           delete(cn.jpeg_on);
                             if(cn.monitor_watching){
@@ -2817,7 +2793,7 @@ app.get('/:auth/smonitor/:ke', function (req,res){
     s.auth(req.params,req.fn,res,req);
 });
 // Monitor Add,Edit,Delete
-app.get(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f'], function (req,res){
+app.all(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f'], function (req,res){
     req.ret={ok:false};
     res.setHeader('Content-Type', 'application/json');
     s.auth(req.params,function(user){
