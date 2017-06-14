@@ -1775,46 +1775,106 @@ $.pwrvid.drawTimeline=function(mid){
     $.getJSON(e.eventURL,function(events){
         $.getJSON(e.videoURL,function(videos){
             if($.pwrvid.t&&$.pwrvid.t.destroy){$.pwrvid.t.destroy()}
-            var items=[];
-            if($('#pvideo_show_events').is(':checked')){
-                $.each(events,function(n,v){
-                    v.mon=$.ccio.mon[v.mid];
-                    items.push({src:v,x:v.time,yy:v.details.confidence})
-                });
-            }
+            var data={};
             $.each(videos.videos,function(n,v){
                 v.mon=$.ccio.mon[v.mid];
                 v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
                 if(v.status>0){
-                    items.push({src:v,x:v.time,y:moment(v.time).diff(moment(v.end),'minutes')/-1})
-
-//                    var ts = new Date(v.time);
-//                    ts.setSeconds(ts.getSeconds() + 10)
-//                    var te = new Date(v.end);
-//                    te.setSeconds(te.getSeconds() - 10)
-//                    items.push({id:n,content:'<div mid="'+v.mid+'" ke="'+v.ke+'" status="'+v.status+'" file="'+v.filename+'"><a preview="video" href="'+v.href+'" class="btn btn-xs btn-primary">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a> '+v.mon.name+' - '+v.filename,start:ts,end:te})
+//                    data.push({src:v,x:v.time,y:moment(v.time).diff(moment(v.end),'minutes')/-1})
+                    data[v.time]={time:moment(v.time).format('MM/DD/YYYY HH:mm'),endTime:v.end,close:moment(v.time).diff(moment(v.end),'minutes')/-1,motion:[],row:v}
                 }
+            });
+            $.each(events,function(n,v){
+//                v.mon=$.ccio.mon[v.mid];
+//                    data.push({src:v,x:v.time,yy:v.details.confidence})
+                $.each(data,function(m,b){
+                    if (moment(v.time).isBetween(moment(b.time),moment(b.endTime))) {
+                        data[m].motion.push(v)
+                    }
+                })
             });
             e.n=$.pwrvid.e.find('.nodata').hide()
             if($.pwrvid.chart){
-               $.pwrvid.chart.setData(items)
+                $.pwrvid.d.empty()
+                delete($.pwrvid.chart)
             }
-            if(items.length>0){
-                if(!$.pwrvid.chart){
-                    $.pwrvid.chart=Morris.Line({
-                      element: 'vis_pwrvideo',
-                      resize: true,
-                      data: items,
-                      xkey: 'x',
-                      ykeys: ['y','yy'],
-                      labels: ['Minutes','Motion']
-                    })
-                    $.pwrvid.chart.on('click', function(i,r){
-                        if(!r||r.yy){return}
-                        $.pwrvid.e.find('.temp').html('<li class="glM'+r.src.mid+'" mid="'+r.src.mid+'" ke="'+r.src.ke+'" status="'+r.src.status+'" file="'+r.src.filename+'"><a class="btn btn-sm btn-primary" preview="video" href="'+r.src.href+'"><i class="fa fa-play-circle"></i></a></li>').find('a').click()
-                    });
-                }
-                $.pwrvid.d.resize()
+            $.pwrvid.currentVideos=Object.values(data).reverse();
+            if($.pwrvid.currentVideos.length>0){
+                var labels=[]
+                var Dataset1=[]
+                var Dataset2=[]
+                $.each(data,function(n,v){
+                    labels.push(v.time)
+                    Dataset1.push(v.close)
+                    Dataset2.push(v.motion.length)
+                    console.log(v.motion.length)
+                })
+                $.pwrvid.d.html("<canvas></canvas>")
+		var timeFormat = 'MM/DD/YYYY HH:mm';
+        window.chartColors = {
+            red: 'rgb(255, 99, 132)',
+            orange: 'rgb(255, 159, 64)',
+            yellow: 'rgb(255, 205, 86)',
+            green: 'rgb(75, 192, 192)',
+            blue: 'rgb(54, 162, 235)',
+            purple: 'rgb(153, 102, 255)',
+            grey: 'rgb(201, 203, 207)'
+        };
+		var color = Chart.helpers.color;
+        Chart.defaults.global.defaultFontColor = '#fff';
+		var config = {
+			type: 'bar',
+			data: {
+				labels: labels,
+				datasets: [{
+					type: 'line',
+					label: 'Video and Length',
+					backgroundColor: color(window.chartColors.blue).alpha(0.2).rgbString(),
+					borderColor: window.chartColors.blue,
+					data: Dataset1,
+				}, {
+					type: 'bar',
+                    showTooltip: false,
+					label: 'Counts of Motion',
+					backgroundColor: color(window.chartColors.grey).alpha(0.5).rgbString(),
+					borderColor: window.chartColors.grey,
+					data:Dataset2,
+				}, ]
+			},
+			options: {
+                 maintainAspectRatio: false,
+                title: {
+                    fontColor: "white",
+                    text:"Video Length (minutes) and Motion Count per video"
+                },
+                tooltips: {
+                    callbacks: {
+
+                    },
+                },
+				scales: {
+					xAxes: [{
+						type: "time",
+						display: true,
+						time: {
+							format: timeFormat,
+							// round: 'day'
+						}
+					}],
+				},
+			}
+		};
+
+			var ctx = $.pwrvid.d.find('canvas')[0].getContext("2d");
+			$.pwrvid.chart = new Chart(ctx, config);
+            $.pwrvid.d.find('canvas').click(function(e) {
+                var target = $.pwrvid.chart.getElementsAtEvent(e)[0];
+                if(!target){return false}
+                target = $.pwrvid.currentVideos[target._index];
+                $.pwrvid.e.find('.temp').html('<li class="glM'+target.row.mid+'" mid="'+target.row.mid+'" ke="'+target.row.ke+'" status="'+target.row.status+'" file="'+target.row.filename+'"><a class="btn btn-sm btn-primary" preview="video" href="'+target.row.href+'"><i class="fa fa-play-circle"></i></a></li>').find('a').click()
+            });
+		var colorNames = Object.keys(window.chartColors);
+
             }else{
                 e.n.show()
             }

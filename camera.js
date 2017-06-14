@@ -1470,8 +1470,6 @@ s.camera=function(x,e,cn,tx){
             //save this detection result in SQL, only coords. not image.
             if(d.mon.details.detector_save==='1'){
                 sql.query('INSERT INTO Events (ke,mid,details) VALUES (?,?,?)',[d.ke,d.id,JSON.stringify(d.details)])
-                d.cx.f='detector_save_event';
-                s.tx(d.cx,'GRP_'+d.ke);
             }
             if(d.mon.details.detector_command_enable==='1'){
                 if(!d.mon.details.detector_command_timeout||d.mon.details.detector_command_timeout===''){
@@ -1970,12 +1968,16 @@ var tx;
             }
         }else{
             if(s.cron&&cn.id===s.cron.id){
+                delete(d.cronKey)
                 switch(d.f){
                     case'filters':
                         s.filter(d.ff,d);
                     break;
                     case's.tx':
                         s.tx(d.data,d.to)
+                    break;
+                    case's.video':
+                        s.video(d.data,d.file)
                     break;
                     case'start':case'end':
                         d.mid='_cron';s.log(d,{type:'cron',msg:d.msg})
