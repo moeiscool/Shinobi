@@ -179,7 +179,7 @@ s.fromLong=function(ipl) {
       (ipl & 255) );
 };
 s.kill=function(x,e,p){
-    if(s.group[e.ke]&&s.group[e.ke].mon[e.id]&&s.group[e.ke].mon[e.id].spawn !== undefined && s.group[e.ke].mon[e.id].spawn.connected){
+    if(s.group[e.ke]&&s.group[e.ke].mon[e.id]&&s.group[e.ke].mon[e.id].spawn !== undefined){
         if(s.group[e.ke].mon[e.id].spawn){
             try{
             s.group[e.ke].mon[e.id].spawn.removeListener('end',s.group[e.ke].mon[e.id].spawn_exit);
@@ -200,10 +200,13 @@ s.kill=function(x,e,p){
         }else{
             if(!x||x===1){return};
             if(s.group[e.ke].mon_conf[e.id].type===('socket'||'jpeg'||'pipe')){
-                x.stdin.pause();p=x.pid;setTimeout(function(){x.kill('SIGTERM');delete(x);setTimeout(function(){exec('kill -9 '+p,{detached: true})},1000)},1000)
+                x.stdin.pause();p=x.pid;setTimeout(function(){x.kill('SIGTERM');delete(x);},500)
             }else{
-                x.stdin.setEncoding('utf8');x.stdin.write('q');
+                try{
+                    x.stdin.setEncoding('utf8');x.stdin.write('q');
+                }catch(er){}
             }
+            setTimeout(function(){exec('kill -9 '+p,{detached: true})},1000)
         }
     }
 }
@@ -2863,7 +2866,7 @@ app.all(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f']
                                 req.monitor.details=JSON.parse(req.monitor.details)
                                 req.ret.ok=true;
                                 s.init(0,{mid:req.monitor.mid,ke:req.monitor.ke});
-                                s.group[req.monitor.ke].mon_conf[req.monitor.mid]=req.monitor;
+                                s.group[req.monitor.ke].mon_conf[req.monitor.mid]=s.init('noReference',req.monitor);
                                 if(req.monitor.mode==='stop'){
                                     s.camera('stop',req.monitor);
                                 }else{
