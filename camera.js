@@ -1324,7 +1324,19 @@ s.camera=function(x,e,cn,tx){
         case'motion':
             var d=e;
             d.mon=s.group[d.ke].mon_conf[d.id];
-            if(s.group[d.ke].mon[d.id].motion_lock){return}
+            if(s.group[d.ke].mon[d.id].motion_lock){
+                return
+            }else{
+                if(!d.mon.details.detector_lock_timeout||d.mon.details.detector_lock_timeout===''||d.mon.details.detector_lock_timeout==0){
+                    d.mon.details.detector_lock_timeout=2000
+                }else{
+                    d.mon.details.detector_lock_timeout=parseFloat(d.mon.details.detector_lock_timeout)
+                }
+                s.group[e.ke].mon[e.id].motion_lock=setTimeout(function(){
+                    clearTimeout(s.group[e.ke].mon[e.id].motion_lock);
+                    delete(s.group[e.ke].mon[e.id].motion_lock);
+                },d.mon.details.detector_lock_timeout)
+            }
             d.cx={f:'detector_trigger',id:d.id,ke:d.ke,details:d.details};
             s.tx(d.cx,'GRP_'+d.ke);
             if(d.mon.details.detector_notrigger=='1'){
@@ -1354,7 +1366,7 @@ s.camera=function(x,e,cn,tx){
 
                 }).end();
             }
-            if(d.mon.mode!=='record'&&d.mon.mode!=='stop'&&d.mon.details.detector_trigger=='1'){
+            if(d.mon.mode!=='stop'&&d.mon.details.detector_trigger=='1'){
                 if(!d.mon.details.detector_timeout||d.mon.details.detector_timeout===''){
                     d.mon.details.detector_timeout=10
                 }else{
@@ -2711,8 +2723,8 @@ app.get(['/:auth/events/:ke','/:auth/events/:ke/:id','/:auth/events/:ke/:id/:lim
                 req.ar.push(decodeURIComponent(req.params.start))
             }
         }
-//        if(!req.params.limit||req.params.limit==''){req.params.limit=100}
-//        req.sql+=' ORDER BY `time` DESC LIMIT '+req.params.limit+'';
+        if(!req.params.limit||req.params.limit==''){req.params.limit=100}
+        req.sql+=' ORDER BY `time` DESC LIMIT '+req.params.limit+'';
         sql.query(req.sql,req.ar,function(err,r){
             if(err){err.sql=req.sql;return res.send(s.s(err, null, 3));}
             if(!r){r=[]}

@@ -1,5 +1,4 @@
 $.ccio={fr:$('#files_recent'),mon:{}};
-    
     $.ccio.gid=function(x){
         if(!x){x=10};var t = "";var p = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         for( var i=0; i < x; i++ )
@@ -399,7 +398,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 tmp+='<div class="mdl-card__supporting-text text-center">';
                 tmp+='<div class="indifference"><div class="progress"><div class="progress-bar progress-bar-danger" role="progressbar"><span>70%</span></div></div></div>';
                 tmp+='<div class="monitor_name">'+d.name+'</div>';
-                tmp+='<div class="btn-group btn-group-lg"><a title="Snapshot" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="Show Logs" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="Timline" class="btn btn-default" monitor="powerview"><i class="fa fa-map-marker"></i></a> <a title="Control" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="Status Indicator, Click to Recconnect" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-plug"></i></a> <a title="Calendar" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="Videos List" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a class="btn btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Enlarge" monitor="bigify" class="hidden btn btn-default"><i class="fa fa-expand"></i></a> <a title="Fullscreen" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
+                tmp+='<div class="btn-group btn-group-lg"><a title="Snapshot" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="Show Logs" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="Control" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="Status Indicator, Click to Recconnect" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-plug"></i></a> <a title="Calendar" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="Timeline" class="btn btn-default" monitor="powerview"><i class="fa fa-map-marker"></i></a> <a title="Videos List" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a title="Monitor Settings" class="btn btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Enlarge" monitor="bigify" class="hidden btn btn-default"><i class="fa fa-expand"></i></a> <a title="Fullscreen" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
                 tmp+='</div>';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col mdl-cell--4-col-desktop">';
@@ -1765,23 +1764,26 @@ $.pwrvid.drawTimeline=function(mid){
     e.live_header=$.pwrvid.lv.find('h3 span');
     e.live=$.pwrvid.lv.find('iframe');
     e.dateRange=$.pwrvid.dr.data('daterangepicker');
+    e.eventLimit=$('#pvideo_event_limit').val();
+    if(e.eventLimit===''){e.eventLimit=500}
     e.dateRange={startDate:e.dateRange.startDate,endDate:e.dateRange.endDate}
     e.videoURL='/'+$user.auth_token+'/videos/'+$user.ke+'/'+mid;
     e.eventURL='/'+$user.auth_token+'/events/'+$user.ke+'/'+mid;
     e.videoURL+='?limit=100&start='+$.ccio.init('th',e.dateRange.startDate)+'&end='+$.ccio.init('th',e.dateRange.endDate);
-    e.eventURL+='/500/'+$.ccio.init('th',e.dateRange.startDate)+'/'+$.ccio.init('th',e.dateRange.endDate);
+    e.eventURL+='/'+e.eventLimit+'/'+$.ccio.init('th',e.dateRange.startDate)+'/'+$.ccio.init('th',e.dateRange.endDate);
     e.live_header.text($.ccio.mon[mid].name)
     e.live.attr('src','/'+$user.auth_token+'/embed/'+$user.ke+'/'+mid+'/fullscreen|jquery')
     $.getJSON(e.eventURL,function(events){
         $.getJSON(e.videoURL,function(videos){
             if($.pwrvid.t&&$.pwrvid.t.destroy){$.pwrvid.t.destroy()}
-            var data={};
+            data={};
             $.each(videos.videos,function(n,v){
                 v.mon=$.ccio.mon[v.mid];
                 v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
                 if(v.status>0){
 //                    data.push({src:v,x:v.time,y:moment(v.time).diff(moment(v.end),'minutes')/-1})
-                    data[v.time]={time:moment(v.time).format('MM/DD/YYYY HH:mm'),endTime:v.end,close:moment(v.time).diff(moment(v.end),'minutes')/-1,motion:[],row:v}
+                    v.timeFormatted=moment(v.time).format('MM/DD/YYYY HH:mm');
+                    data[v.time]={time:v.timeFormatted,endTime:v.end,close:moment(v.time).diff(moment(v.end),'minutes')/-1,motion:[],row:v}
                 }
             });
             $.each(events,function(n,v){
@@ -1828,16 +1830,16 @@ $.pwrvid.drawTimeline=function(mid){
 				labels: labels,
 				datasets: [{
 					type: 'line',
-					label: 'Video and Length',
+					label: 'Video and Time Span (Minutes)',
 					backgroundColor: color(window.chartColors.blue).alpha(0.2).rgbString(),
 					borderColor: window.chartColors.blue,
 					data: Dataset1,
 				}, {
-					type: 'bar',
+					type: 'line',
                     showTooltip: false,
 					label: 'Counts of Motion',
-					backgroundColor: color(window.chartColors.grey).alpha(0.5).rgbString(),
-					borderColor: window.chartColors.grey,
+					backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
+					borderColor: window.chartColors.red,
 					data:Dataset2,
 				}, ]
 			},
