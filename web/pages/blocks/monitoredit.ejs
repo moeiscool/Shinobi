@@ -12,43 +12,53 @@
         <div class="form-group-group grey">
           <h4>Identity</h4>
             <div class="form-group">
-            <label><span>Mode</span>
-                <select class="form-control" name="mode" selector="h_m">
+            <label>
+                <div><span>Mode</span></div>
+                <div><select class="form-control" name="mode" selector="h_m">
                     <option value="stop">Disabled</option>  
                     <option value="idle">Idle</option>  
                     <option value="start">Watch Only</option>  
                     <option value="record">Record</option>  
-                </select>
+                </select></div>
             </label>
             </div>
               <div class="form-group">
-                <label><span>Monitor ID <small>No spaces or special characters.</small></span>
-                    <input class="form-control" name="mid">
+                <label><div><span>Monitor ID <small>No spaces or special characters.</small></span></div>
+                    <div><input class="form-control" name="mid"></div>
                 </label>
               </div>
               <div class="form-group">
-                <label><span>Name</span>
-                    <input class="form-control" name="name">
+                <label><div><span>Name</span></div>
+                    <div><input class="form-control" name="name"></div>
                 </label>
               </div>
               <div class="form-group">
-                <label><span>Retry Connection <small>Number of times allowed to fail</small></span>
-                    <input class="form-control" detail="fatal_max" placeholder="10">
+                <label><div><span>Retry Connection <small>Number of times allowed to fail</small></span></div>
+                    <div><input class="form-control" detail="fatal_max" placeholder="10"></div>
                 </label>
               </div>
               <div class="form-group">
-                <label><span>Notes</span>
-                    <textarea class="form-control" detail="notes" placeholder="Comments you want to leave for this cameras settings."></textarea>
+                <label><div><span>Notes</span></div>
+                    <div><textarea class="form-control" detail="notes" placeholder="Comments you want to leave for this cameras settings."></textarea></div>
                 </label>
               </div>
           </div>
 <!--     START of Input     -->
           <div class="form-group-group forestgreen">
           <h4>Input</h4>
+              <blockquote class="global_tip">
+                  <p>For optimal performance try accesing your camera's internal settings. Find the following options and set them as shown. To find your camera you can use the <b>built in ONVIF Scanner</b> of Shinobi. Some ONVIF cameras require the use of a management tool to modify their internal settings. If you can't find your cameras you can try <a href="https://s3.amazonaws.com/cloudcamio/odm-v2.2.250.msi">ONVIF Device Manager for Windows</a>.</p>
+                  <ul>
+                      <li><b>I-frame interval :</b> 80</li>
+                      <li><b>Bit Rate Control :</b> CBR</li>
+                      <li><b>Bit Rate :</b> between 256kbps - 500kbps</li>
+                  </ul>
+                  <p>If you need help figuring out what input type your camera is you can take a look in the <a href="http://shinobi.video/docs/cameras" target="_blank">Camera URLs List</a> on the Shinobi website.</p>                  
+              </blockquote>
               <div class="row">
                   <div class="form-group col-md-12">
-                    <label><span>Input Type</span>
-                        <select class="form-control" name="type">
+                    <label><div><span>Input Type</span></div>
+                        <div><select class="form-control" name="type" selector="h_t">
                             <option value="jpeg">JPEG</option>
                             <option value="mjpeg">MJPEG</option>
                             <option value="h264">H.264 / H.265 / H.265+</option>
@@ -56,76 +66,76 @@
                             <option value="mp4">MPEG-4 (.mp4 / .ts)</option>
                             <option value="socket">Shinobi Streamer</option>
                             <option value="local">Local</option>
-                        </select>
+                        </select></div>
                     </label>
                   </div>
                   <div class="form-group col-md-12 h_t_input h_t_h264 h_t_hls h_t_mp4 h_t_jpeg h_t_mjpeg">
-                    <label><span>Connection Type</span>
-                        <select class="form-control" name="protocol" selector="h_p">
+                    <label><div><span>Connection Type</span></div>
+                        <div><select class="form-control" name="protocol" selector="h_p">
                             <option value="http" selected>HTTP</option>
                             <option value="https">HTTPS</option>
                             <option value="rtsp">RTSP</option>
                             <option value="udp">UDP</option>
-                        </select>
+                        </select></div>
                     </label>
                   </div>
               </div>
               <div class="form-group h_p_input h_p_rtsp">
-                <label><span>RTSP Transport</span>
-                    <select class="form-control" detail="rtsp_transport">
+                <label><div><span>RTSP Transport</span></div>
+                    <div><select class="form-control" detail="rtsp_transport">
                         <option value="no" selected>Auto</option>  
                         <option value="tcp">TCP</option>  
                         <option value="udp">UDP</option>  
                         <option value="http">HTTP</option>  
-                    </select>
+                    </select></div>
                 </label>
               </div>
               <div class="row h_t_input h_t_h264 h_t_hls h_t_mp4 h_t_jpeg h_t_mjpeg">
                   <div class="form-group col-md-12">
-                    <label><span>Username</span>
-                    <input class="form-control" detail="muser" placeholder="">
+                    <label><div><span>Username</span></div>
+                    <div><input class="form-control" detail="muser" placeholder=""></div>
                     </label>
                   </div>
                   <div class="form-group col-md-12">
-                    <label><span>Password</span>
-                    <input class="form-control" type="password" detail="mpass" placeholder="">
+                    <label><div><span>Password</span></div>
+                    <div><input class="form-control" type="password" detail="mpass" placeholder=""></div>
                     </label>
                   </div>
               </div>
               <div class="h_t_input h_t_h264 h_t_hls h_t_mp4 h_t_jpeg h_t_mjpeg">
                   <div class="form-group">
-                    <label><span>Host</span>
-                    <input class="form-control" name="host" placeholder="">
+                    <label><div><span>Host</span></div>
+                    <div><input class="form-control" name="host" placeholder=""></div>
                     </label>
                   </div>
                   <div class="form-group">
                     <label>
-                        <span>Port</span>
-                        <input class="form-control" name="port" placeholder="80">
+                        <div><span>Port</span></div>
+                        <div><input class="form-control" name="port" placeholder="80"></div>
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Force Port</span>
-                        <select class="form-control" detail="port_force">
+                    <label><div><span>Force Port</span></div>
+                        <div><select class="form-control" detail="port_force">
                             <option value="0" selected>No</option>
                             <option value="1">Yes</option>
-                        </select>
+                        </select></div>
                     </label>
                   </div>
               </div>
               <div class="form-group h_t_input h_t_h264 h_t_hls h_t_mp4 h_t_jpeg h_t_mjpeg h_t_local">
-                <label><span>Path</span>
-                <input class="form-control" name="path" placeholder="/videostream.cgi?1">
+                <label><div><span>Path</span></div>
+                <div><input class="form-control" name="path" placeholder="/videostream.cgi?1"></div>
                 </label>
               </div>
               <div class="form-group h_t_input h_t_socket h_t_jpeg h_t_mjpeg">
-                <label><span>Monitor Capture Rate <small>(FPS)</small></span>
-                <input class="form-control" detail="sfps">
+                <label><div><span>Monitor Capture Rate <small>(FPS)</small></span></div>
+                <div><input class="form-control" detail="sfps"></div>
                 </label>
               </div>
               <div class="form-group">
-                <label><span>Analyzation Duration</span>
-                <input class="form-control" detail="aduration">
+                <label><div><span>Analyzation Duration</span></div>
+                <div><input class="form-control" detail="aduration"></div>
                 </label>
               </div>
           </div>
@@ -134,104 +144,104 @@
           <div class="form-group-group navy">
           <h4>Stream</h4>
               <div class="form-group">
-                <label><span>Stream Type</span>
-                    <select class="form-control" detail="stream_type" selector="h_st">
+                <label><div><span>Stream Type</span></div>
+                    <div><select class="form-control" detail="stream_type" selector="h_st">
                         <option value="b64" selected>Base64 over Websocket</option>
                         <option value="jpeg">JPEG (Auto Enables JPEG API)</option>
                         <option value="mjpeg">MJPEG</option>
                         <option value="hls">HLS (includes Audio)</option>
-                    </select>
+                    </select></div>
                 </label>
               </div>
               <div class="form-group h_st_input h_st_mjpeg">
-                <label><span># of Allow MJPEG Clients <small>0 for infinite</small></span>
-                    <input class="form-control" detail="stream_mjpeg_clients" placeholder="20">
+                <label><div><span># of Allow MJPEG Clients <small>0 for infinite</small></span></div>
+                    <div><input class="form-control" detail="stream_mjpeg_clients" placeholder="20"></div>
                 </label>
               </div>
               <div class="h_st_input h_st_hls">
                   <div class="row">
                       <div class="form-group col-md-12">
-                        <label><span>HLS Video Encoder</span>
-                            <select class="form-control" detail="stream_vcodec">
+                        <label><div><span>HLS Video Encoder</span></div>
+                            <div><select class="form-control" detail="stream_vcodec">
                                 <option value="no" selected>Auto</option>
                                 <option value="libx264" selected>libx264</option>
                                 <option value="libx265">libx265</option>
                                 <option value="copy">copy</option>
-                            </select>
+                            </select></div>
                         </label>
                       </div>
                       <div class="form-group col-md-12">
-                        <label><span>HLS Audio Encoder</span>
-                            <select class="form-control" detail="stream_acodec">
+                        <label><div><span>HLS Audio Encoder</span></div>
+                            <div><select class="form-control" detail="stream_acodec">
                                 <option value="no" selected>No Audio</option>
                                 <option value="" selected>Auto</option>
                                 <option value="aac">aac</option>
                                 <option value="ac3">ac3</option>
                                 <option value="libmp3lame">libmp3lame</option>
                                 <option value="copy">copy</option>
-                            </select>
+                            </select></div>
                         </label>
                       </div>
                   </div>
                   <div class="form-group">
-                    <label><span>HLS Segment Length <small>in Seconds</small></span>
-                        <input class="form-control" detail="hls_time" placeholder="2">
+                    <label><div><span>HLS Segment Length <small>in Seconds</small></span></div>
+                        <div><input class="form-control" detail="hls_time" placeholder="2"></div>
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>HLS Preset</span>
-                        <input class="form-control" detail="preset_stream" placeholder="ultrafast">
+                    <label><div><span>HLS Preset</span></div>
+                        <div><input class="form-control" detail="preset_stream" placeholder="ultrafast"></div>
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>HLS List Size</span>
-                        <input class="form-control" detail="hls_list_size" placeholder="2">
+                    <label><div><span>HLS List Size</span></div>
+                        <div><input class="form-control" detail="hls_list_size" placeholder="2"></div>
                     </label>
                   </div>
               </div>
               <div class="row">
                   <div class="form-group col-md-12">
-                    <label><span>Check Signal Interval <small>in Minutes</small></span>
-                        <input class="form-control" detail="signal_check" placeholder="Set to 0 to Disable">
+                    <label><div><span>Check Signal Interval <small>in Minutes</small></span></div>
+                        <div><input class="form-control" detail="signal_check" placeholder="Set to 0 to Disable"></div>
                     </label>
                   </div>
                   <div class="form-group col-md-12">
-                    <label><span>Log Signal Event <small>Client side only</small></span>
-                            <select class="form-control" detail="signal_check_log">
+                    <label><div><span>Log Signal Event <small>Client side only</small></span></div>
+                            <div><select class="form-control" detail="signal_check_log">
                                 <option value="0" selected>No</option>
                                 <option value="1">Yes</option>
-                            </select>
+                            </select></div>
                       </label>
                   </div>
               </div>
               <div class=" h_st_input h_st_mjpeg h_st_b64 h_st_hls">
                   <div class="row">
                       <div class="form-group col-md-12">
-                        <label><span>Quality <small>1 is High, 23 is Low</small></span>
-                        <input class="form-control" placeholder="23" detail="stream_quality">
+                        <label><div><span>Quality <small>1 is High, 23 is Low</small></span></div>
+                        <div><input class="form-control" placeholder="23" detail="stream_quality"></div>
                         </label>
                       </div>
                       <div class="form-group col-md-12">
-                        <label><span>Rate <small>(FPS)</small></span>
-                        <input class="form-control" detail="stream_fps" placeholder="1">
+                        <label><div><span>Rate <small>(FPS)</small></span></div>
+                        <div><input class="form-control" detail="stream_fps" placeholder="1"></div>
                         </label>
                       </div>
                   </div>
                   <div class="row">
                       <div class="form-group col-md-12">
-                        <label><span>Width</span>
-                        <input class="form-control" type="number" min="1" detail="stream_scale_x" placeholder="640">
+                        <label><div><span>Width</span></div>
+                        <div><input class="form-control" type="number" min="1" detail="stream_scale_x" placeholder="640"></div>
                         </label>
                       </div>
                       <div class="form-group col-md-12">
-                        <label><span>Height</span>
-                        <input class="form-control" type="number" min="1" detail="stream_scale_y" placeholder="480">
+                        <label><div><span>Height</span></div>
+                        <div><input class="form-control" type="number" min="1" detail="stream_scale_y" placeholder="480"></div>
                         </label>
                       </div>
                   </div>
                   <div class="form-group">
-                    <label><span>Video Filter</span>
-                    <input class="form-control" detail="svf">
+                    <label><div><span>Video Filter</span></div>
+                    <div><input class="form-control" detail="svf"></div>
                     </label>
                   </div>
               </div>
@@ -241,28 +251,28 @@
           <div class="form-group-group forestgreen">
           <h4>JPEG API <small>Snapshot (cgi-bin)</small></h4>
               <div class="form-group">
-                <label><span>Enabled</span>
-                    <select class="form-control" detail="snap" selector="h_sn">
+                <label><div><span>Enabled</span></div>
+                    <div><select class="form-control" detail="snap" selector="h_sn">
                         <option value="0" selected>No</option>
                         <option value="1">Yes</option>
-                    </select>
+                    </select></div>
                 </label>
               </div>
               <div class="h_sn_input h_sn_1" style="display:none">
                   <div class="form-group">
-                    <label><span>Frame Rate <small>(FPS)</small></span>
-                    <input class="form-control" detail="snap_fps" placeholder="1">
+                    <label><div><span>Frame Rate <small>(FPS)</small></span></div>
+                    <div><input class="form-control" detail="snap_fps" placeholder="1"></div>
                     </label>
                   </div>
                   <div class="row">
                       <div class="form-group col-md-12">
-                        <label><span>Image Width</span>
-                        <input class="form-control" detail="snap_scale_x" placeholder="">
+                        <label><div><span>Image Width</span></div>
+                        <div><input class="form-control" detail="snap_scale_x" placeholder=""></div>
                         </label>
                       </div>
                       <div class="form-group col-md-12">
-                        <label><span>Image Height</span>
-                        <input class="form-control" detail="snap_scale_y" placeholder="">
+                        <label><div><span>Image Height</span></div>
+                        <div><input class="form-control" detail="snap_scale_y" placeholder=""></div>
                         </label>
                       </div>
                   </div>
@@ -272,18 +282,19 @@
 <!--     Start of Record     -->
           <div class="form-group-group red h_m_input h_m_record h_m_idle">
           <h4>Recording</h4>
+              <blockquote class="global_tip">It is recommended that you set <b>Record File Type</b> to <b class="h_t_input h_t_jpeg h_t_socket">WebM</b><b class="h_t_input h_t_mjpeg h_t_h264 h_t_hls h_t_mp4 h_t_local">MP4</b> and <b>Video Codec</b> to <b class="h_t_input h_t_jpeg h_t_socket">libvpx</b><b class="h_t_input h_t_h264 h_t_hls h_t_mp4">copy or </b><b class="h_t_input h_t_mjpeg h_t_h264 h_t_hls h_t_mp4 h_t_local">libx264</b> because your <b>Input Type</b> is set to <b class="h_t_text"></b>.</blockquote>
               <div class="form-group">
-                <label><span>Record File Type</span>
-                    <select class="form-control" name="ext" selector="h_f">
+                <label><div><span>Record File Type</span></div>
+                    <div><select class="form-control" name="ext" selector="h_f">
                         <option value="webm">WebM (libvpx)</option>  
                         <option value="mp4">MP4 (copy, libx264, libx265)</option>  
     <!--                    <option value="mkv">MKV</option>  -->
-                    </select>
+                    </select></div>
                 </label>
               </div>
               <div class="form-group">
-                <label><span>Video Codec</span>
-                    <select class="form-control" detail="vcodec" selector="h_vc">
+                <label><div><span>Video Codec</span></div>
+                    <div><select class="form-control" detail="vcodec" selector="h_vc">
                         <option value="default" selected>Default</option>
                         <option value="none">Auto</option>
                         <optgroup label="WebM">
@@ -295,24 +306,24 @@
                             <option value="libx264">libx264 (Default)</option>
                             <option value="copy">copy</option>
                         </optgroup>
-                    </select>
+                    </select></div>
                 </label>
               </div>
               <div class="h_vc_input h_vc_libvpx h_vc_libvpx-vp9 h_vc_libx264 h_vc_libx265 h_vc_default h_vc_none">
                   <div class="form-group">
-                    <label><span>Quality <small>1 is High, 23 is Low</small></span>
-                    <input class="form-control" detail="crf" placeholder="">
+                    <label><div><span>Quality <small>1 is High, 23 is Low</small></span></div>
+                    <div><input class="form-control" detail="crf" placeholder=""></div>
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Preset</span>
-                        <input class="form-control" detail="preset_record" placeholder="">
+                    <label><div><span>Preset</span></div>
+                        <div><input class="form-control" detail="preset_record" placeholder=""></div>
                     </label>
                   </div>
               </div>
               <div class="form-group">
-                <label><span>Audio Codec</span>
-                    <select class="form-control" detail="acodec">
+                <label><div><span>Audio Codec</span></div>
+                    <div><select class="form-control" detail="acodec">
                         <option value="default" selected>Default</option>
                         <option value="none">Auto</option>
                         <option value="no">No Audio</option>
@@ -326,45 +337,45 @@
                             <option value="ac3">ac3</option>
                             <option value="copy">copy</option>
                         </optgroup>
-                    </select>
+                    </select></div>
                 </label>
               </div>
               <div class="h_vc_input h_vc_libvpx h_vc_libvpx-vp9 h_vc_libx264 h_vc_libx265 h_vc_default h_vc_none">
                    <div class="form-group">
-                    <label><span>Video Record Rate <small>(FPS)</small></span>
-                    <input class="form-control" name="fps">
+                    <label><div><span>Video Record Rate <small>(FPS)</small></span></div>
+                    <div><input class="form-control" name="fps"></div>
                     </label>
                   </div>
                   <div class="row">
                       <div class="form-group col-md-12">
-                        <label><span>Record Width</span>
-                        <input class="form-control" type="number" min="1" name="width">
+                        <label><div><span>Record Width</span></div>
+                        <div><input class="form-control" type="number" min="1" name="width"></div>
                         </label>
                       </div>
                       <div class="form-group col-md-12">
-                        <label><span>Record Height</span>
-                        <input class="form-control" type="number" min="1" name="height">
+                        <label><div><span>Record Height</span></div>
+                        <div><input class="form-control" type="number" min="1" name="height"></div>
                         </label>
                       </div>
                   </div>
               </div>
               <div class="form-group">
-                  <label><span>Double Quote Directory <small>Some directories have spaces. Using this may crash some cameras.</small></span>
-                    <select class="form-control" detail="dqf">
+                  <label><div><span>Double Quote Directory <small>Some directories have spaces. Using this may crash some cameras.</small></span></div>
+                    <div><select class="form-control" detail="dqf">
                         <option value="0" selected>No</option>
                         <option value="1">Yes</option>
-                    </select>
+                    </select></div>
                   </label>
               </div>
               <div class="form-group">
-                <label><span>Recording Segment Interval <small>in minutes</small></span>
-                <input class="form-control" detail="cutoff" placeholder="15">
+                <label><div><span>Recording Segment Interval <small>in minutes</small></span></div>
+                <div><input class="form-control" detail="cutoff" placeholder="15"></div>
                 </label>
               </div>
               <div class="h_vc_input h_vc_libvpx h_vc_libvpx-vp9 h_vc_libx264 h_vc_libx265 h_vc_default h_vc_none">
                   <div class="form-group">
-                    <label><span>Record Video Filter</span>
-                    <input class="form-control" detail="vf">
+                    <label><div><span>Record Video Filter</span></div>
+                    <div><input class="form-control" detail="vf"></div>
                     </label>
                   </div>
               </div>
@@ -373,47 +384,47 @@
               <div class="form-group-group red h_m_input h_m_record h_m_idle">
               <h4>Timestamp</h4>
                   <div class="form-group">
-                      <label><span>Enabled <small>Does not work with copy encoder</small></span>
-                        <select class="form-control" detail="timestamp" selector="h_tm">
+                      <label><div><span>Enabled <small>Does not work with copy encoder</small></span></div>
+                        <div><select class="form-control" detail="timestamp" selector="h_tm">
                             <option value="1">Yes</option>  
                             <option value="0" selected>No</option>  
-                        </select>
+                        </select></div>
                       </label>
                   </div>
                   <div class="h_tm_input h_tm_1">
                       <div class="row">
                           <div class="form-group col-md-12">
-                            <label><span>Font Path</span>
-                            <input class="form-control" detail="timestamp_font" placeholder="/usr/share/fonts/truetype/freefont/FreeSans.ttf">
+                            <label><div><span>Font Path</span></div>
+                            <div><input class="form-control" detail="timestamp_font" placeholder="/usr/share/fonts/truetype/freefont/FreeSans.ttf"></div>
                             </label>
                           </div>
                           <div class="form-group col-md-12">
-                            <label><span>Font Size</span>
-                            <input class="form-control" detail="timestamp_font_size" placeholder="10">
-                            </label>
-                          </div>
-                      </div>
-                      <div class="row">
-                          <div class="form-group col-md-12">
-                            <label><span>Text Color</span>
-                            <input class="form-control" detail="timestamp_color" placeholder="white">
-                            </label>
-                          </div>
-                          <div class="form-group col-md-12">
-                            <label><span>Text Box Color</span>
-                            <input class="form-control" detail="timestamp_box_color" placeholder="0x00000000@1">
+                            <label><div><span>Font Size</span></div>
+                            <div><input class="form-control" detail="timestamp_font_size" placeholder="10"></div>
                             </label>
                           </div>
                       </div>
                       <div class="row">
                           <div class="form-group col-md-12">
-                            <label><span>Position X</span>
-                            <input class="form-control" detail="timestamp_x" placeholder="(w-tw)/2">
+                            <label><div><span>Text Color</span></div>
+                            <div><input class="form-control" detail="timestamp_color" placeholder="white"></div>
                             </label>
                           </div>
                           <div class="form-group col-md-12">
-                            <label><span>Position Y</span>
-                            <input class="form-control" detail="timestamp_y" placeholder="0">
+                            <label><div><span>Text Box Color</span></div>
+                            <div><input class="form-control" detail="timestamp_box_color" placeholder="0x00000000@1"></div>
+                            </label>
+                          </div>
+                      </div>
+                      <div class="row">
+                          <div class="form-group col-md-12">
+                            <label><div><span>Position X</span></div>
+                            <div><input class="form-control" detail="timestamp_x" placeholder="(w-tw)/2"></div>
+                            </label>
+                          </div>
+                          <div class="form-group col-md-12">
+                            <label><div><span>Position Y</span></div>
+                            <div><input class="form-control" detail="timestamp_y" placeholder="0"></div>
                             </label>
                           </div>
                       </div>
@@ -427,38 +438,38 @@
           <div class="form-group-group navy">
           <h4>Custom</h4>
               <div class="form-group">
-                <label><span>Input Flags</span>
-                <input class="form-control" detail="cust_input" placeholder="">
+                <label><div><span>Input Flags</span></div>
+                <div><input class="form-control" detail="cust_input" placeholder=""></div>
                 </label>
               </div>
               <div class="form-group h_sn_input h_sn_1" style="display:none">
-                <label><span>Snapshot Flags</span>
-                <input class="form-control" detail="cust_snap">
+                <label><div><span>Snapshot Flags</span></div>
+                <div><input class="form-control" detail="cust_snap"></div>
                 </label>
               </div>
               <div class="form-group shinobi-detector" style="display:none">
-                <label><span>Detector Flags</span>
-                <input class="form-control" detail="cust_detect">
+                <label><div><span>Detector Flags</span></div>
+                <div><input class="form-control" detail="cust_detect"></div>
                 </label>
               </div>
               <div class="form-group shinobi-detector" style="display:none">
-                <label><span>Detector Buffer Flags</span>
-                <input class="form-control" detail="cust_detector_buffer">
+                <label><div><span>Detector Buffer Flags</span></div>
+                <div><input class="form-control" detail="cust_detector_buffer"></div>
                 </label>
               </div>
               <div class="form-group">
-                <label><span>Stream Flags</span>
-                <input class="form-control" detail="cust_stream">
+                <label><div><span>Stream Flags</span></div>
+                <div><input class="form-control" detail="cust_stream"></div>
                 </label>
               </div>
               <div class="form-group h_m_input h_m_record">
-                <label><span>Recording Flags</span>
-                <input class="form-control" detail="cust_record" placeholder="">
+                <label><div><span>Recording Flags</span></div>
+                <div><input class="form-control" detail="cust_record" placeholder=""></div>
                 </label>
               </div>
               <div class="form-group">
-                <label><span>Output Method</span>
-                    <input class="form-control" detail="custom_output" placeholder="-f flv rtmp://..">
+                <label><div><span>Output Method</span></div>
+                    <div><input class="form-control" detail="custom_output" placeholder="-f flv rtmp://.."></div>
                 </label>
               </div>
           </div>
@@ -467,117 +478,145 @@
           <div class="form-group-group orange">
           <h4>Detector : <span><b class="shinobi-detector_name"></b> <b class="shinobi-detector-invert">Not </b>Connected</span></h4>
               <div class="form-group">
-                <label><span>Enabled <small>Only do this if you have a Detector plugin running.</small></span>
-                    <select class="form-control" detail="detector" selector="h_det">
+                <label><div><span>Enabled <small>Only do this if you have a Detector plugin running.</small></span></div>
+                    <div><select class="form-control" detail="detector" selector="h_det">
                         <option value="0" selected>No</option>
                         <option value="1">Yes</option>
-                    </select>
+                    </select></div>
                 </label>
               </div>
               <div class="h_det_input h_det_1" style="display:none">
+                  <div class="form-group">
+                    <label><div><span>Webhook</span></div>
+                        <div><select class="form-control" detail="detector_webhook" selector="h_det_web">
+                            <option value="0" selected>No</option>
+                            <option value="1">Yes</option>
+                        </select></div>
+                    </label>
+                  </div>
+                  <div class="form-group h_det_web_input h_det_web_1">
+                    <label><div><span>Webhook URL</span></div>
+                    <div><input class="form-control" detail="detector_webhook_url" placeholder="Example : http://111.111.111.111?mid={{MONITOR_ID}}&group={{GROUP_KEY}}&confidence={{CONFIDENCE}}"></div>
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><div><span>Detector Command</span></div>
+                        <div><select class="form-control" detail="detector_command_enable" selector="h_det_com">
+                            <option value="0" selected>No</option>
+                            <option value="1">Yes</option>
+                        </select></div>
+                    </label>
+                  </div>
+                  <div class="form-group h_det_com_input h_det_com_1">
+                    <label><div><span>Command</span></div>
+                    <div><input class="form-control" detail="detector_command" placeholder="Example : /home/script.sh {{MONITOR_ID}} {{GROUP_KEY}} {{CONFIDENCE}}"></div>
+                    </label>
+                  </div>
+                  <div class="form-group h_det_com_input h_det_com_1">
+                    <label><div><span>Allow Next Command <small>in Minutes</small></span></div>
+                    <div><input class="form-control" detail="detector_command_timeout" placeholder="10"></div>
+                    </label>
+                  </div>
+                  <div class="form-group important">
+                    <label><div><span>Allow Next Trigger <small>in Milliseconds</small></span></div>
+                    <div><input class="form-control" detail="detector_lock_timeout" placeholder="2000"></div>
+                    </label>
+                  </div>
               <div class="shinobi-detector" style="display:none">
                   <div class="row">
                       <div class="form-group col-md-12">
-                        <label><span>Trigger Record</span>
-                            <select class="form-control" detail="detector_trigger">
+                        <label><div><span>Trigger Record</span></div>
+                            <div><select class="form-control" detail="detector_trigger">
                                 <option value="0" selected>No</option>
                                 <option value="1">Yes</option>
-                            </select>
+                            </select></div>
                         </label>
                       </div>
                       <div class="form-group col-md-12">
-                        <label><span>Recording Timeout <small>in Minutes</small></span>
-                        <input class="form-control" detail="detector_timeout" placeholder="10">
+                        <label><div><span>Recording Timeout <small>in Minutes</small></span></div>
+                        <div><input class="form-control" detail="detector_timeout" placeholder="10"></div>
                         </label>
                       </div>
                   </div>
                   <div class="row">
                       <div class="form-group col-md-12">
-                        <label><span>Timeout Reset on Next Motion</span>
-                            <select class="form-control" detail="watchdog_reset">
+                        <label><div><span>Timeout Reset on Next Motion</span></div>
+                            <div><select class="form-control" detail="watchdog_reset">
                                 <option value="0">No</option>
                                 <option value="1" selected>Yes</option>
-                            </select>
+                            </select></div>
                         </label>
                       </div>
                       <div class="form-group col-md-12">
-                        <label><span>Save Events to SQL</span>
-                            <select class="form-control" detail="detector_save">
+                        <label><div><span>Save Events to SQL</span></div>
+                            <div><select class="form-control" detail="detector_save">
                                 <option value="0" selected>No</option>
                                 <option value="1">Yes</option>
-                            </select>
+                            </select></div>
                         </label>
                       </div>
                   </div>
                   <div class="row">
                       <div class="form-group col-md-12">
-                        <label><span>Email on Trigger <small>Emails go to the main account holder's login address.</small></span>
-                            <select class="form-control" detail="detector_mail">
+                        <label><div><span>Email on Trigger <small>Emails go to the main account holder's login address.</small></span></div>
+                            <div><select class="form-control" detail="detector_mail">
                                 <option value="0" selected>No</option>
                                 <option value="1">Yes</option>
-                            </select>
+                            </select></div>
                         </label>
                       </div>
                       <div class="form-group col-md-12">
-                        <label><span>Allow Next Email <small>in Minutes</small></span>
-                        <input class="form-control" detail="detector_mail_timeout" placeholder="10">
+                        <label><div><span>Allow Next Email <small>in Minutes</small></span></div>
+                        <div><input class="form-control" detail="detector_mail_timeout" placeholder="10"></div>
                         </label>
                       </div>
                   </div>
+                  <div class="form-group important">
+                    <label><div><span>Send Frames</span></div>
+                        <div><select class="form-control" detail="detector_send_frames" selector="h_det_fra">
+                            <option value="0" selected>No</option>
+                            <option value="1">Yes</option>
+                        </select></div>
+                    </label>
+                  </div>
+                  <div class="h_det_web_input h_det_fra_1">
                   <div class="form-group">
-                    <label><span>Detector Rate <small>(FPS)</small></span>
-                    <input class="form-control" detail="detector_fps" placeholder="2">
+                    <label><div><span>Detector Rate <small>(FPS)</small></span></div>
+                    <div><input class="form-control" detail="detector_fps" placeholder="2"></div>
                     </label>
                   </div>
                   <div class="row">
                       <div class="form-group col-md-12">
-                        <label><span>Feed-in Image Width</span>
-                        <input class="form-control" detail="detector_scale_x" placeholder="320">
+                        <label><div><span>Feed-in Image Width</span></div>
+                        <div><input class="form-control" detail="detector_scale_x" placeholder="320"></div>
                         </label>
                       </div>
                       <div class="form-group col-md-12">
-                        <label><span>Feed-in Image Height</span>
-                        <input class="form-control" detail="detector_scale_y" placeholder="240">
+                        <label><div><span>Feed-in Image Height</span></div>
+                        <div><input class="form-control" detail="detector_scale_y" placeholder="240"></div>
                         </label>
                       </div>
+                  </div>
                   </div>
               </div>
               <div class="shinobi-detector-stemkoski shinobi-detector-motion shinobi-detector_plug" style="display:none">
                   <div class="row">
                       <div class="form-group col-md-12">
-                        <label><span>Full Frame Detection</span>
-                            <select class="form-control" detail="detector_frame">
+                        <label><div><span>Full Frame Detection</span></div>
+                            <div><select class="form-control" detail="detector_frame">
                                 <option value="0">No</option>
                                 <option value="1" selected>Yes</option>
-                            </select>
+                            </select></div>
                         </label>
                       </div>
                       <div class="form-group col-md-12">
-                        <label><span title="Opposite of Sensitivity">Indifference</span>
-                        <input class="form-control" detail="detector_sensitivity" placeholder="0.5">
+                        <label><div><span title="Opposite of Sensitivity">Indifference</span></div>
+                        <div><input class="form-control" detail="detector_sensitivity" placeholder="0.5"></div>
                         </label>
                       </div>
                   </div>
-                  <div class="form-group">
-                    <label><span>Detector Command</span>
-                        <select class="form-control" detail="detector_command_enable" selector="h_det_com">
-                            <option value="0" selected>No</option>
-                            <option value="1">Yes</option>
-                        </select>
-                    </label>
-                  </div>
-                  <div class="form-group h_det_com_input h_det_com_1">
-                    <label><span>Command</span>
-                    <input class="form-control" detail="detector_command" placeholder="Example : /home/script.sh {{MONITOR_ID}} {{GROUP_KEY}} {{CONFIDENCE}}">
-                    </label>
-                  </div>
-                  <div class="form-group h_det_com_input h_det_com_1">
-                    <label><span>Allow Next Command <small>in Minutes</small></span>
-                    <input class="form-control" detail="detector_command_timeout" placeholder="10">
-                    </label>
-                  </div>
                   <div class="hidden">
-                    <input detail="cords" placeholder="">
+                      <div><input detail="cords" placeholder=""></div>
                   </div>
                   <div class="form-group">
                     <a class="btn btn-danger btn-block" monitor="region"><i class="fa fa-grav"></i> &nbsp; Region Editor</a>
@@ -585,27 +624,27 @@
               </div>
               <div class="shinobi-detector-opencv shinobi-detector_plug" style="display:none">
                   <div class="form-group">
-                    <label><span>Face Detection</span>
-                        <select class="form-control" detail="detector_face">
+                    <label><div><span>Face Detection</span></div>
+                        <div><select class="form-control" detail="detector_face">
                             <option value="0" selected>No</option>
                             <option value="1">Yes</option>
-                        </select>
+                        </select></div>
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Full Body Detection</span>
-                        <select class="form-control" detail="detector_fullbody">
+                    <label><div><span>Full Body Detection</span></div>
+                        <div><select class="form-control" detail="detector_fullbody">
                             <option value="0" selected>No</option>
                             <option value="1">Yes</option>
-                        </select>
+                        </select></div>
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Car Side Detection</span>
-                        <select class="form-control" detail="detector_car">
+                    <label><div><span>Car Side Detection</span></div>
+                        <div><select class="form-control" detail="detector_car">
                             <option value="0" selected>No</option>
                             <option value="1">Yes</option>
-                        </select>
+                        </select></div>
                     </label>
                   </div>
               </div>
@@ -616,70 +655,70 @@
               <div class="form-group-group orange shinobi-detector" style="display:none">
               <h4>Motion Buffer <small>Background HLS Recording</small></h4>
                   <div class="form-group">
-                    <label><span>Enabled</span>
-                        <select class="form-control" detail="detector_buffer" selector="h_dbf">
+                    <label><div><span>Enabled</span></div>
+                        <div><select class="form-control" detail="detector_buffer" selector="h_dbf">
                             <option value="0" selected>No</option>
                             <option value="1">Yes</option>
-                        </select>
+                        </select></div>
                     </label>
                   </div>
                   <div class="h_dbf_input h_dbf_1" style="display:none">
                       <div class="form-group">
-                        <label><span>Video Encoder</span>
-                            <select class="form-control" detail="detector_buffer_vcodec" selector="h_dbv">
+                        <label><div><span>Video Encoder</span></div>
+                            <div><select class="form-control" detail="detector_buffer_vcodec" selector="h_dbv">
                                 <option value="no" selected>Auto</option>
                                 <option value="libx264" selected>libx264</option>
                                 <option value="libx265">libx265</option>
                                 <option value="copy">copy</option>
-                            </select>
+                            </select></div>
                         </label>
                       </div>
                       <div class="form-group">
-                        <label><span>Audio Encoder</span>
-                            <select class="form-control" detail="detector_buffer_acodec">
+                        <label><div><span>Audio Encoder</span></div>
+                            <div><select class="form-control" detail="detector_buffer_acodec">
                                 <option value="no" selected>No Audio</option>
                                 <option value="" selected>Auto</option>
                                 <option value="aac">aac</option>
                                 <option value="ac3">ac3</option>
                                 <option value="libmp3lame">libmp3lame</option>
                                 <option value="copy">copy</option>
-                            </select>
+                            </select></div>
                         </label>
                       </div>
                       <div class="form-group">
-                        <label><span>Segment Length <small>in Seconds</small></span>
-                            <input class="form-control" detail="detector_buffer_time" placeholder="2">
+                        <label><div><span>Segment Length <small>in Seconds</small></span></div>
+                            <div><input class="form-control" detail="detector_buffer_time" placeholder="2">
                         </label>
                       </div>
                       <div class="form-group">
-                        <label><span>Preset</span>
-                            <input class="form-control" detail="preset_detector_buffer" placeholder="ultrafast">
+                        <label><div><span>Preset</span></div>
+                            <div><input class="form-control" detail="preset_detector_buffer" placeholder="ultrafast">
                         </label>
                       </div>
                       <div class="form-group">
-                        <label><span>List Size</span>
-                            <input class="form-control" detail="detector_buffer_list_size" placeholder="2">
+                        <label><div><span>List Size</span></div>
+                            <div><input class="form-control" detail="detector_buffer_list_size" placeholder="2">
                         </label>
                       </div>
                       <div class="h_dbv_input h_dbv_no h_dbv_libx264 h_dbv_libx265">
                           <div class="form-group">
-                            <label><span>FPS</span>
-                                <input class="form-control" detail="detector_buffer_fps" placeholder="Example : 5">
+                            <label><div><span>FPS</span></div>
+                                <div><input class="form-control" detail="detector_buffer_fps" placeholder="Example : 5">
                             </label>
                           </div>
                           <div class="form-group">
-                            <label><span>Quality</span>
-                                <input class="form-control" detail="detector_buffer_quality" placeholder="Example : 1 - 23">
+                            <label><div><span>Quality</span></div>
+                                <div><input class="form-control" detail="detector_buffer_quality" placeholder="Example : 1 - 23">
                             </label>
                           </div>
                           <div class="form-group">
-                            <label><span>Clip Width</span>
-                            <input class="form-control" detail="detector_buffer_scale_x" placeholder="320">
+                            <label><div><span>Clip Width</span></div>
+                            <div><input class="form-control" detail="detector_buffer_scale_x" placeholder="320">
                             </label>
                           </div>
                           <div class="form-group">
-                            <label><span>Clip Height</span>
-                            <input class="form-control" detail="detector_buffer_scale_y" placeholder="240">
+                            <label><div><span>Clip Height</span></div>
+                            <div><input class="form-control" detail="detector_buffer_scale_y" placeholder="240">
                             </label>
                           </div>
                       </div>
@@ -691,24 +730,24 @@
               <div class="form-group-group orange shinobi-detector" style="display:none">
               <h4>"No Motion" Detector</h4>
                   <div class="form-group">
-                    <label><span>Enabled</span>
-                        <select class="form-control" detail="detector_notrigger">
+                    <label><div><span>Enabled</span></div>
+                        <div><select class="form-control" detail="detector_notrigger">
                             <option value="0" selected>No</option>
                             <option value="1">Yes</option>
-                        </select>
+                        </select></div>
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Email on "No Motion"</span>
-                        <select class="form-control" detail="detector_notrigger_mail">
+                    <label><div><span>Email on "No Motion"</span></div>
+                        <div><select class="form-control" detail="detector_notrigger_mail">
                             <option value="0" selected>No</option>
                             <option value="1">Yes</option>
-                        </select>
+                        </select></div>
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Timeout</span>
-                        <input class="form-control" detail="detector_notrigger_timeout" placeholder="10">
+                    <label><div><span>Timeout</span></div>
+                        <div><input class="form-control" detail="detector_notrigger_timeout" placeholder="10"></div>
                     </label>
                   </div>
               </div>
@@ -717,105 +756,105 @@
           <div class="form-group-group blue">
           <h4>Control</h4>
               <div class="form-group">
-                <label><span>Controllable</span>
-                    <select class="form-control" detail="control" selector="h_c">
+                <label><div><span>Controllable</span></div>
+                    <div><select class="form-control" detail="control" selector="h_c">
                         <option value="0">No</option>  
                         <option value="1">Yes</option>  
-                    </select>
+                    </select></div>
                 </label>
               </div>
               <div class="h_c_input h_c_1">
                   <div class="form-group">
-                    <label><span>Custom Base URL <small>Leave blank to use Host URL</small></span>
-                    <input class="form-control" detail="control_base_url" placeholder="Example : http://111.111.111.111:8080">
+                    <label><div><span>Custom Base URL <small>Leave blank to use Host URL</small></span></div>
+                    <div><input class="form-control" detail="control_base_url" placeholder="Example : http://111.111.111.111:8080"></div>
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Stop URL</span>
-                        <select class="form-control" detail="control_stop" selector="h_cs">
+                    <label><div><span>Stop URL</span></div>
+                        <div><select class="form-control" detail="control_stop" selector="h_cs">
                             <option value="0">No</option>  
                             <option value="1">Yes</option>
-                        </select>
+                        </select></div>
                     </label>
                   </div>
                   <div class="form-group h_cs_input h_cs_1">
-                    <label><span>URL Stop Timeout <small>Run stop URL after X milliseconds</small></span>
-                    <input class="form-control" detail="control_url_stop_timeout" placeholder="1000">
+                    <label><div><span>URL Stop Timeout <small>Run stop URL after X milliseconds</small></span></div>
+                    <div><input class="form-control" detail="control_url_stop_timeout" placeholder="1000"></div>
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Center <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_center" placeholder="/">
+                    <label><div><span>Center <small>URL Address</small></span></div>
+                    <div><input class="form-control" detail="control_url_center" placeholder="/"></div>
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Left <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_left" placeholder="/">
+                    <label><div><span>Left <small>URL Address</small></span></div>
+                    <div><input class="form-control" detail="control_url_left" placeholder="/"></div>
                     </label>
                   </div>
                   <div class="form-group h_cs_input h_cs_1">
-                    <label><span>Left Stop <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_left_stop" placeholder="/">
+                    <label><div><span>Left Stop <small>URL Address</small></span></div>
+                    <div><input class="form-control" detail="control_url_left_stop" placeholder="/"></div>
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Right <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_right" placeholder="/">
+                    <label><div><span>Right <small>URL Address</small></span></div>
+                    <div><input class="form-control" detail="control_url_right" placeholder="/"></div>
                     </label>
                   </div>
                   <div class="form-group h_cs_input h_cs_1">
-                    <label><span>Right Stop <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_right_stop" placeholder="/">
+                    <label><div><span>Right Stop <small>URL Address</small></span></div>
+                    <div><input class="form-control" detail="control_url_right_stop" placeholder="/"></div>
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Up <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_up" placeholder="/">
+                    <label><div><span>Up <small>URL Address</small></span></div>
+                    <div><input class="form-control" detail="control_url_up" placeholder="/"></div>
                     </label>
                   </div>
                   <div class="form-group h_cs_input h_cs_1">
-                    <label><span>Up Stop <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_up_stop" placeholder="/">
+                    <label><div><span>Up Stop <small>URL Address</small></span></div>
+                    <div><input class="form-control" detail="control_url_up_stop" placeholder="/"></div>
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Down <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_down" placeholder="/">
+                    <label><div><span>Down <small>URL Address</small></span></div>
+                    <div><input class="form-control" detail="control_url_down" placeholder="/"></div>
                     </label>
                   </div>
                   <div class="form-group h_cs_input h_cs_1">
-                    <label><span>Down Stop <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_down_stop" placeholder="/">
+                    <label><div><span>Down Stop <small>URL Address</small></span></div>
+                    <div><input class="form-control" detail="control_url_down_stop" placeholder="/"></div>
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Enable Night Vision <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_enable_nv" placeholder="/">
+                    <label><div><span>Enable Night Vision <small>URL Address</small></span></div>
+                    <div><input class="form-control" detail="control_url_enable_nv" placeholder="/"></div>
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Disable Night Vision <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_disable_nv" placeholder="/">
+                    <label><div><span>Disable Night Vision <small>URL Address</small></span></div>
+                    <div><input class="form-control" detail="control_url_disable_nv" placeholder="/"></div>
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Zoom Out <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_zoom_out" placeholder="/">
+                    <label><div><span>Zoom Out <small>URL Address</small></span></div>
+                    <div><input class="form-control" detail="control_url_zoom_out" placeholder="/"></div>
                     </label>
                   </div>
                   <div class="form-group h_cs_input h_cs_1">
-                    <label><span>Zoom Out Stop <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_zoom_out_stop" placeholder="/">
+                    <label><div><span>Zoom Out Stop <small>URL Address</small></span></div>
+                    <div><input class="form-control" detail="control_url_zoom_out_stop" placeholder="/"></div>
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><span>Zoom In <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_zoom_in" placeholder="/">
+                    <label><div><span>Zoom In <small>URL Address</small></span></div>
+                    <div><input class="form-control" detail="control_url_zoom_in" placeholder="/"></div>
                     </label>
                   </div>
                   <div class="form-group h_cs_input h_cs_1">
-                    <label><span>Zoom In Stop <small>URL Address</small></span>
-                    <input class="form-control" detail="control_url_zoom_in_stop" placeholder="/">
+                    <label><div><span>Zoom In Stop <small>URL Address</small></span></div>
+                    <div><input class="form-control" detail="control_url_zoom_in_stop" placeholder="/"></div>
                     </label>
                   </div>
               </div>
@@ -831,22 +870,22 @@
           <h4>Logging</h4>
               <div class="row">
                   <div class="form-group col-md-12">
-                      <label><span>Log Level</span>
-                        <select class="form-control" detail="loglevel">
+                      <label><div><span>Log Level</span></div>
+                        <div><select class="form-control" detail="loglevel">
                             <option value="quiet">Silent</option>
                             <option value="fatal">Fatal</option>
                             <option value="error" selected>on Error</option>
                             <option value="warning">All Warnings</option>
                             <option value="debug">Debug</option>
-                        </select>
+                        </select></div>
                       </label>
                   </div>
                   <div class="form-group col-md-12">
-                      <label><span>Save Log in SQL <small>This can fill up quickly.</small></span>
-                        <select class="form-control" detail="sqllog">
+                      <label><div><span>Save Log in SQL <small>This can fill up quickly.</small></span></div>
+                        <div><select class="form-control" detail="sqllog">
                             <option value="0" selected>No</option>  
                             <option value="1">Yes</option>  
-                        </select>
+                        </select></div>
                       </label>
                   </div>
               </div>
@@ -868,10 +907,10 @@
             <span class="h_det_input h_det_1"><button type="button" style="display:none" class="btn btn-warning shinobi-detector-stemkoski shinobi-detector-motion shinobi-detector_plug" monitor="region"><i class="fa fa-grav"></i> Region Editor</button></span>
           </div>
           <div style="display:inline-block;margin-right:5px">
-            <select class="form-control" dropdown_toggle="monedit_user_type" selector="h_us">
+            <div><select class="form-control" dropdown_toggle="monedit_user_type" selector="h_us">
                 <option value="simple" selected>Simple</option>  
                 <option value="advanced">Advanced</option>  
-            </select>
+            </select></div>
           </div>
           <button type="submit" class="btn btn-success"><i class="fa fa-check"></i> Save</button>
       </div>

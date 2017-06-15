@@ -11,11 +11,11 @@
       <div class="modal-body" style="max-height:600px;overflow:auto">
           <div class="text-center msg"></div>
         <div class="form-group">
-            <label><span>All Monitors and Privileges</span>
-                <select class="form-control" detail="allmonitors">
+            <label><div><span>All Monitors and Privileges</span></div>
+                <div><div><select class="form-control" detail="allmonitors">
                     <option value="0" selected>No</option>  
                     <option value="1">Yes</option>  
-                </select>
+                </select></div>
             </label>
         </div>
           <div class="form-group-group blue" id="monitors_section">
@@ -28,11 +28,11 @@
               </h4>
               <% $mons.forEach(function(v,n){ %>
                 <div class="form-group">
-                    <label><span><%- v.name %></span>
-                        <select class="form-control" monitor="monitors" mid="<%- v.mid %>">
+                    <label><div><span><%- v.name %></span></div>
+                        <div><select class="form-control" monitor="monitors" mid="<%- v.mid %>">
                             <option value="0" selected>No</option>  
                             <option value="1">Yes</option>  
-                        </select>
+                        </select></div>
                     </label>
                 </div>
               <% }) %>
@@ -47,11 +47,11 @@
               </h4>
               <% $mons.forEach(function(v,n){ %>
                 <div class="form-group">
-                    <label><span><%- v.name %></span>
-                        <select class="form-control" monitor="monitor_edit" mid="<%- v.mid %>">
+                    <label><div><span><%- v.name %></span></div>
+                        <div><select class="form-control" monitor="monitor_edit" mid="<%- v.mid %>">
                             <option value="0" selected>No</option>  
                             <option value="1">Yes</option>  
-                        </select>
+                        </select></div>
                     </label>
                 </div>
               <% }) %>
@@ -66,11 +66,11 @@
               </h4>
               <% $mons.forEach(function(v,n){ %>
                 <div class="form-group">
-                    <label><span><%- v.name %></span>
-                        <select class="form-control" monitor="video_view" mid="<%- v.mid %>">
+                    <label><div><span><%- v.name %></span></div>
+                        <div><select class="form-control" monitor="video_view" mid="<%- v.mid %>">
                             <option value="0" selected>No</option>  
                             <option value="1">Yes</option>  
-                        </select>
+                        </select></div>
                     </label>
                 </div>
               <% }) %>
@@ -85,11 +85,11 @@
               </h4>
               <% $mons.forEach(function(v,n){ %>
                 <div class="form-group">
-                    <label><span><%- v.name %></span>
-                        <select class="form-control" monitor="video_delete" mid="<%- v.mid %>">
+                    <label><div><span><%- v.name %></span></div>
+                        <div><select class="form-control" monitor="video_delete" mid="<%- v.mid %>">
                             <option value="0" selected>No</option>  
                             <option value="1">Yes</option>  
-                        </select>
+                        </select></div>
                     </label>
                 </div>
               <% }) %>

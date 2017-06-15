@@ -1,5 +1,4 @@
 $.ccio={fr:$('#files_recent'),mon:{}};
-    
     $.ccio.gid=function(x){
         if(!x){x=10};var t = "";var p = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         for( var i=0; i < x; i++ )
@@ -167,6 +166,9 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             case'tf'://time to filename
                 if(!d){d=new Date();}
                 return moment(d).format('YYYY-MM-DDTHH-mm-ss')
+            break;
+            case'fn'://row to filename
+                return $.ccio.init('tf',d.time)+'.'+d.ext
             break;
             case'filters':
                 k.tmp='<option value="" selected>Add New</option>';
@@ -399,7 +401,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 tmp+='<div class="mdl-card__supporting-text text-center">';
                 tmp+='<div class="indifference"><div class="progress"><div class="progress-bar progress-bar-danger" role="progressbar"><span>70%</span></div></div></div>';
                 tmp+='<div class="monitor_name">'+d.name+'</div>';
-                tmp+='<div class="btn-group btn-group-lg"><a title="Snapshot" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="Show Logs" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="Timline" class="btn btn-default" monitor="powerview"><i class="fa fa-map-marker"></i></a> <a title="Enlarge" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="Status Indicator, Click to Recconnect" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-circle"></i></a> <a title="Calendar" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="Videos List" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a class="btn btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Enlarge" monitor="bigify" class="hidden btn btn-default"><i class="fa fa-expand"></i></a> <a title="Fullscreen" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
+                tmp+='<div class="btn-group btn-group-lg"><a title="Snapshot" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="Show Logs" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="Control" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="Status Indicator, Click to Recconnect" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-plug"></i></a> <a title="Calendar" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="Timeline" class="btn btn-default" monitor="powerview"><i class="fa fa-map-marker"></i></a> <a title="Videos List" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a title="Monitor Settings" class="btn btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Enlarge" monitor="bigify" class="hidden btn btn-default"><i class="fa fa-expand"></i></a> <a title="Fullscreen" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
                 tmp+='</div>';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col mdl-cell--4-col-desktop">';
@@ -667,17 +669,20 @@ $.ccio.ws.on('f',function (d){
             }
         break;
         case'ffprobe_stop':
+            $.pB.e.find('._loading').hide()
             $.pB.o.append('<div><b>END</b></div>');
             $.pB.e.find('.stop').hide();
             $.pB.e.find('[type="submit"]').show();
         break;
         case'ffprobe_start':
+            $.pB.e.find('._loading').show()
             $.pB.o.empty();
             $.pB.e.find('.stop').show();
             $.pB.e.find('[type="submit"]').hide();
         break;
         case'ffprobe_data':
-            $.pB.o.append(d.data+'<br>')
+            $.pB.results=JSON.parse(d.data)
+            $.pB.o.append($.ccio.init('jsontoblock',$.pB.results))
         break;
         case'detector_record_timeout_start':
             d.note={type:'Detector',msg:'Record Timeout Start',class:'detector_record_timeout_start'}
@@ -984,8 +989,16 @@ $.ccio.ws.on('f',function (d){
             $.ccio.init('signal',d);
         break;
         case'onvif':
-            if(d.url){d.url=$.ccio.init('jsontoblock',d.url)}else{d.url='URL not Found'}
-            $('#onvif_probe .output_data').append('<tr><td class="ip">'+d.ip+'</td><td class="port">'+d.port+'</td><td>'+$.ccio.init('jsontoblock',d.info)+'</td><td class="url">'+d.url+'</td><td class="date">'+d.date+'</td><td><a class="btn btn-sm btn-primary copy">&nbsp;<i class="fa fa-copy"></i>&nbsp;</a></td></tr>')
+            $.oB.e.find('._loading').hide()
+            $.oB.e.find('[type="submit"]').prop('disabled',false)
+            d.info=$.ccio.init('jsontoblock',d.info)
+            if(d.url){
+                d.stream=d.url.uri
+                d.info+=$.ccio.init('jsontoblock',d.url)
+            }else{
+                d.stream='URL not Found'
+            }
+            $('#onvif_probe .output_data').append('<tr><td class="ip">'+d.ip+'</td><td class="port">'+d.port+'</td><td>'+$.ccio.init('jsontoblock',d.info)+'</td><td class="url">'+d.stream+'</td><td class="date">'+d.date+'</td><td><a class="btn btn-sm btn-primary copy">&nbsp;<i class="fa fa-copy"></i>&nbsp;</a></td></tr>')
         break;
     }
     delete(d);
@@ -1003,29 +1016,40 @@ $.ccio.form.details=function(e){
     e.f.find('[name="details"]').val(JSON.stringify(e.ar));
 };
 //onvif probe
-$.oB={e:$('#onvif_probe')};$.oB.f=$.oB.e.find('form');$.oB.o=$.oB.e.find('.output_data');
+$.oB={e:$('#onvif_probe'),v:$('#onvif_video')};$.oB.f=$.oB.e.find('form');$.oB.o=$.oB.e.find('.output_data');
 $.oB.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
     $.oB.o.empty();
+    $.oB.e.find('._loading').show()
+    $.oB.e.find('[type="submit"]').prop('disabled',true)
     $.ccio.cx({f:'onvif',ip:e.s.ip,port:e.s.port,user:e.s.user,pass:e.s.pass})
-    setTimeout(function(){
+    clearTimeout($.oB.checkTimeout)
+    $.oB.checkTimeout=setTimeout(function(){
         if($.oB.o.find('tr').length===0){
+            $.oB.e.find('._loading').hide()
+            $.oB.e.find('[type="submit"]').prop('disabled',false)
             $.oB.o.append('<td class="text-center">Sorry, nothing was found.</td>')
         }
-    },5000)
+    },30000)
     return false;
 });
 $.oB.e.on('click','.copy',function(e){
     e.e=$(this).parents('tr');
     $('.hidden-xs [monitor="edit"]').click();
     e.host=e.e.find('.ip').text();
+    e.url=$.ccio.init('getLocation',e.e.find('.url').text().replace('rtsp','http'));
     if($.oB.e.find('[name="user"]').val()!==''){
         e.host=$.oB.e.find('[name="user"]').val()+':'+$.oB.e.find('[name="pass"]').val()+'@'+e.host
     }
     $.aM.e.find('[name="host"]').val(e.host)
-    $.aM.e.find('[name="port"]').val(e.e.find('.port').text())
+    $.aM.e.find('[detail="port_force"]').val('1')
+    $.aM.e.find('[detail="rtsp_transport"]').val('tcp')
+    $.aM.e.find('[detail="aduration"]').val('100000')
+    $.aM.e.find('[name="port"]').val(e.url.port)
+    $.aM.e.find('[name="mode"]').val('start')
     $.aM.e.find('[name="type"] [value="h264"]').prop('selected',true).parent().change()
-    $.aM.e.find('[name="path"]').val($.ccio.init('getLocation',e.e.find('.url b:contains("uri")').next().text().trim().replace('rtsp','http')).pathname)
+    $.aM.e.find('[name="path"]').val(e.url.pathname)
+    $.oB.e.modal('hide')
 })
 $.oB.e.find('[name="ip"]').change(function(e){
     $.ccio.op('onvif_probe_ip',$(this).val());
@@ -1045,6 +1069,9 @@ $.oB.e.find('[name="user"]').change(function(e){
 if($.ccio.op().onvif_probe_user){
     $.oB.e.find('[name="user"]').val($.ccio.op().onvif_probe_user)
 }
+$.oB.e.on('shown.bs.modal',function(){
+    $.oB.f.submit()
+})
 //Group Selector
 $.gR={e:$('#group_list'),b:$('#group_list_button')};
 $.gR.drawList=function(){
@@ -1271,6 +1298,9 @@ $.pB.f.submit(function(e){
     $.ccio.cx({f:'ffprobe',query:e.s.url})
     return false;
 });
+$.pB.e.on('hidden.bs.modal',function(){
+    $.pB.o.empty()
+})
 $.pB.e.find('.stop').click(function(e){
     e.e=$(this);
     $.ccio.cx({f:'ffprobe',ff:'stop'})
@@ -1312,10 +1342,12 @@ $.aM.f.submit(function(e){
         new PNotify({title:'Configuration Invalid',text:e.er.join('<br>'),type:'error'});
         return;
     }
-        $.ccio.cx({f:'monitor',ff:'add',mon:e.s})
-        if(!$.ccio.mon[e.s.mid]){$.ccio.mon[e.s.mid]={}}
-        $.each(e.s,function(n,v){$.ccio.mon[e.s.mid][n]=v;})
-        $.aM.e.modal('hide')
+    $.post('/'+$user.auth_token+'/configureMonitor/'+$user.ke+'/'+e.s.mid,{data:JSON.stringify(e.s)},function(d){
+        console.log(d)
+    })
+    if(!$.ccio.mon[e.s.mid]){$.ccio.mon[e.s.mid]={}}
+    $.each(e.s,function(n,v){$.ccio.mon[e.s.mid][n]=v;})
+    $.aM.e.modal('hide')
     return false;
 });
 $.aM.e.on('change','[group]',function(){
@@ -1408,12 +1440,11 @@ $.aM.f.find('[selector]').change(function(e){
     e.v=$(this).val();e.a=$(this).attr('selector')
     $.aM.f.find('.'+e.a+'_input').hide()
     $.aM.f.find('.'+e.a+'_'+e.v).show();
+    $.aM.f.find('.'+e.a+'_text').text($(this).find('option:selected').text())
 });
 $.aM.f.find('[name="type"]').change(function(e){
     e.e=$(this);
     e.v=e.e.val();
-    $.aM.f.find('.h_t_input').hide()
-    $.aM.f.find('.h_t_'+e.v).show();
     e.h=$.aM.f.find('[name="path"]');
     e.p=e.e.parents('.form-group');
     switch(e.v){
@@ -1637,7 +1668,9 @@ $.vidview.pages.on('click','[page]',function(e){
 })
 //POWER videos window
 $.pwrvid={e:$('#pvideo_viewer')};
+$.pwrvid.f=$.pwrvid.e.find('form'),
 $.pwrvid.d=$('#vis_pwrvideo'),
+$.pwrvid.mL=$('#motion_list'),
 $.pwrvid.m=$('#vis_monitors'),
 $.pwrvid.lv=$('#live_view'),
 $.pwrvid.dr=$('#pvideo_daterange'),
@@ -1651,10 +1684,10 @@ $.pwrvid.dr.daterangepicker({
         format: 'MM/DD/YYYY h:mm A'
     }
 },function(start, end, label){
-    $.pwrvid.drawTimeline($.pwrvid.m.find('.active').attr('timeline'))
+    $.pwrvid.drawTimeline()
 });
 $('#pvideo_show_events').change(function(){
-    $.pwrvid.drawTimeline($.pwrvid.m.find('.active').attr('timeline'))
+    $.pwrvid.drawTimeline()
 })
 $.pwrvid.e.on('click','[preview]',function(e){
     e.e=$(this);
@@ -1674,13 +1707,7 @@ $.pwrvid.e.on('click','[preview]',function(e){
         break;
         case'play':
             e.video.playbackRate = 1;
-            e.e.find('i').toggleClass('fa-play fa-pause')
-            
-            if(e.e.find('i').hasClass('fa-play')){
-                e.video.play()
-            }else{
-                e.video.pause()
-            }
+            $.pwrvid.vpOnPlayPause(1)
         break;
         case'stepFrontFront':
             e.video.playbackRate = 5;
@@ -1727,80 +1754,183 @@ $.pwrvid.e.on('click','[preview]',function(e){
                 $.get(e.href+'/status/2',function(d){
                 })
             }
+            $.pwrvid.mL.empty()
+            console.log(e.filename,$.pwrvid.currentVideosObject[e.filename])
+            if($.pwrvid.currentVideosObject[e.filename].motion.length>0){
+                $.each($.pwrvid.currentVideosObject[e.filename].motion,function(n,v){
+                    var tmp='<li class="list-group-item">'
+                    tmp+='<small><b>Time</b> : <span class="time">'+v.time+'</span></small>'
+                    tmp+='<div class="row">'
+                    tmp+='<div class="col-md-6"><b>Confidence</b> : <span class="confidence">'+v.details.confidence+'</span></div>'
+                    tmp+='<div class="col-md-6"><b>Reason</b> : <span class="reason">'+v.details.reason+'</span></div>'
+                    tmp+='</div>'
+                    tmp+='<div class="row">'
+                    tmp+='<div class="col-md-6"><b>Region Name</b> : <span class="region_name">'+v.details.name+'</span></div>'
+                    tmp+='<div class="col-md-6"><b>Plugin</b> : <span class="plug">'+v.details.plug+'</span></div>'
+                    tmp+='</div>'
+                    tmp+='</li>'
+                    $.pwrvid.mL.append(tmp)
+                })
+            }else{
+                $.pwrvid.mL.append('<div class="super-center text-center" style="width:auto">No Events found for this video</div>')
+            }
             $.pwrvid.video={filename:e.filename,href:e.href,mid:e.mon.mid,ke:e.mon.ke}
+            $.pwrvid.vpOnPlayPause=function(x,e){
+                e={}
+                e.video=$.pwrvid.vp.find('video')[0]
+                e.i=$.pwrvid.vp.find('[preview="play"]').find('i')
+                if(e.video.paused===true){
+                    e.i.removeClass('fa-pause').addClass('fa-play')
+                    if(x==1)e.video.play();
+                }else{
+                    e.i.removeClass('fa-play').addClass('fa-pause')
+                    if(x==1)e.video.pause();
+                }
+            }
+            $.pwrvid.vp.find('video').on("pause",$.pwrvid.vpOnPlayPause).on("play",$.pwrvid.vpOnPlayPause);
         break;
     }
 })
-$.pwrvid.drawTimeline=function(mid){
+$.pwrvid.drawTimeline=function(){
     e={};
+    var mid=$.pwrvid.m.val();
     e.live_header=$.pwrvid.lv.find('h3 span');
     e.live=$.pwrvid.lv.find('iframe');
     e.dateRange=$.pwrvid.dr.data('daterangepicker');
+    e.eventLimit=$('#pvideo_event_limit').val();
+    if(e.eventLimit===''){e.eventLimit=500}
     e.dateRange={startDate:e.dateRange.startDate,endDate:e.dateRange.endDate}
     e.videoURL='/'+$user.auth_token+'/videos/'+$user.ke+'/'+mid;
     e.eventURL='/'+$user.auth_token+'/events/'+$user.ke+'/'+mid;
     e.videoURL+='?limit=100&start='+$.ccio.init('th',e.dateRange.startDate)+'&end='+$.ccio.init('th',e.dateRange.endDate);
-    e.eventURL+='/500/'+$.ccio.init('th',e.dateRange.startDate)+'/'+$.ccio.init('th',e.dateRange.endDate);
+    e.eventURL+='/'+e.eventLimit+'/'+$.ccio.init('th',e.dateRange.startDate)+'/'+$.ccio.init('th',e.dateRange.endDate);
     e.live_header.text($.ccio.mon[mid].name)
     e.live.attr('src','/'+$user.auth_token+'/embed/'+$user.ke+'/'+mid+'/fullscreen|jquery')
     $.getJSON(e.eventURL,function(events){
         $.getJSON(e.videoURL,function(videos){
             if($.pwrvid.t&&$.pwrvid.t.destroy){$.pwrvid.t.destroy()}
-            var items=[];
-            if($('#pvideo_show_events').is(':checked')){
-                $.each(events,function(n,v){
-                    v.mon=$.ccio.mon[v.mid];
-                    items.push({src:v,x:v.time,yy:v.details.confidence})
-                });
-            }
+            data={};
             $.each(videos.videos,function(n,v){
                 v.mon=$.ccio.mon[v.mid];
                 v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
                 if(v.status>0){
-                    items.push({src:v,x:v.time,y:moment(v.time).diff(moment(v.end),'minutes')/-1})
-
-//                    var ts = new Date(v.time);
-//                    ts.setSeconds(ts.getSeconds() + 10)
-//                    var te = new Date(v.end);
-//                    te.setSeconds(te.getSeconds() - 10)
-//                    items.push({id:n,content:'<div mid="'+v.mid+'" ke="'+v.ke+'" status="'+v.status+'" file="'+v.filename+'"><a preview="video" href="'+v.href+'" class="btn btn-xs btn-primary">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a> '+v.mon.name+' - '+v.filename,start:ts,end:te})
+//                    data.push({src:v,x:v.time,y:moment(v.time).diff(moment(v.end),'minutes')/-1})
+                    v.timeFormatted=moment(v.time).format('MM/DD/YYYY HH:mm');
+                    data[v.filename]={filename:v.filename,time:v.timeFormatted,endTime:v.end,close:moment(v.time).diff(moment(v.end),'minutes')/-1,motion:[],row:v}
                 }
             });
+            $.each(events,function(n,v){
+//                v.mon=$.ccio.mon[v.mid];
+//                    data.push({src:v,x:v.time,yy:v.details.confidence})
+                $.each(data,function(m,b){
+                    if (moment(v.time).isBetween(moment(b.time).format(),moment(b.endTime).format())) {
+                        data[m].motion.push(v)
+                    }
+                })
+            });
+            $.pwrvid.currentVideosObject=data;
             e.n=$.pwrvid.e.find('.nodata').hide()
             if($.pwrvid.chart){
-               $.pwrvid.chart.setData(items)
+                $.pwrvid.d.empty()
+                delete($.pwrvid.chart)
             }
-            if(items.length>0){
-                if(!$.pwrvid.chart){
-                    $.pwrvid.chart=Morris.Line({
-                      element: 'vis_pwrvideo',
-                      resize: true,
-                      data: items,
-                      xkey: 'x',
-                      ykeys: ['y','yy'],
-                      labels: ['Minutes','Motion']
-                    })
-                    $.pwrvid.chart.on('click', function(i,r){
-                        if(!r||r.yy){return}
-                        $.pwrvid.e.find('.temp').html('<li class="glM'+r.src.mid+'" mid="'+r.src.mid+'" ke="'+r.src.ke+'" status="'+r.src.status+'" file="'+r.src.filename+'"><a class="btn btn-sm btn-primary" preview="video" href="'+r.src.href+'"><i class="fa fa-play-circle"></i></a></li>').find('a').click()
-                    });
-                }
-                $.pwrvid.d.resize()
+            $.pwrvid.currentVideos=Object.values(data);
+            if($.pwrvid.currentVideos.length>0){
+                var labels=[]
+                var Dataset1=[]
+                var Dataset2=[]
+                $.each(data,function(n,v){
+                    labels.push(v.time)
+                    Dataset1.push(v.close)
+                    Dataset2.push(v.motion.length)
+                })
+                $.pwrvid.d.html("<canvas></canvas>")
+		var timeFormat = 'MM/DD/YYYY HH:mm';
+        window.chartColors = {
+            red: 'rgb(255, 99, 132)',
+            orange: 'rgb(255, 159, 64)',
+            yellow: 'rgb(255, 205, 86)',
+            green: 'rgb(75, 192, 192)',
+            blue: 'rgb(54, 162, 235)',
+            purple: 'rgb(153, 102, 255)',
+            grey: 'rgb(201, 203, 207)'
+        };
+		var color = Chart.helpers.color;
+        Chart.defaults.global.defaultFontColor = '#fff';
+		var config = {
+			type: 'bar',
+			data: {
+				labels: labels,
+				datasets: [{
+					type: 'line',
+					label: 'Video and Time Span (Minutes)',
+					backgroundColor: color(window.chartColors.blue).alpha(0.2).rgbString(),
+					borderColor: window.chartColors.blue,
+					data: Dataset1,
+				}, {
+					type: 'bar',
+                    showTooltip: false,
+					label: 'Counts of Motion',
+					backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
+					borderColor: window.chartColors.red,
+					data:Dataset2,
+				}, ]
+			},
+			options: {
+                 maintainAspectRatio: false,
+                title: {
+                    fontColor: "white",
+                    text:"Video Length (minutes) and Motion Count per video"
+                },
+                tooltips: {
+                    callbacks: {
+
+                    },
+                },
+				scales: {
+					xAxes: [{
+						type: "time",
+						display: true,
+						time: {
+							format: timeFormat,
+							// round: 'day'
+						}
+					}],
+				},
+			}
+		};
+
+			var ctx = $.pwrvid.d.find('canvas')[0].getContext("2d");
+			$.pwrvid.chart = new Chart(ctx, config);
+            $.pwrvid.d.find('canvas').click(function(e) {
+                var target = $.pwrvid.chart.getElementsAtEvent(e)[0];
+                if(!target){return false}
+                target = $.pwrvid.currentVideos[target._index];
+                $.pwrvid.e.find('.temp').html('<li class="glM'+target.row.mid+'" mid="'+target.row.mid+'" ke="'+target.row.ke+'" status="'+target.row.status+'" file="'+target.row.filename+'"><a class="btn btn-sm btn-primary" preview="video" href="'+target.row.href+'"><i class="fa fa-play-circle"></i></a></li>').find('a').click()
+            });
+		var colorNames = Object.keys(window.chartColors);
+
             }else{
                 e.n.show()
             }
         })
     })
 }
-$.pwrvid.e.on('click','[timeline]',function(){
-    e={e:$(this)};
-    $.pwrvid.e.find('[timeline]').removeClass('active');
-    e.e.addClass('active');
-    $.pwrvid.drawTimeline(e.e.attr('timeline'))
+$('#vis_monitors,#pvideo_event_limit').change(function(){
+    $.pwrvid.f.submit()
+})
+$.pwrvid.f.submit(function(e){
+    e.preventDefault();
+    $.pwrvid.drawTimeline()
+    return false;
 })
 $.pwrvid.e.on('hidden.bs.modal',function(e){
-    $(this).find('iframe').attr('src','')
+    $(this).find('iframe').attr('src','about:blank')
     $.pwrvid.vp.find('.holder').empty()
+    delete($.pwrvid.currentVideosObject)
+    delete($.pwrvid.currentVideos)
+    $.pwrvid.mL.empty()
+    $.pwrvid.d.empty()
 })
 //dynamic bindings
 $('body')
@@ -1995,17 +2125,16 @@ $('body')
     switch(e.a){
         case'powerview':
             $.pwrvid.e.modal('show')
-            e.e=$.pwrvid.m.find('ul').empty()
-            e.fn=function(x){return e.e.append('<a timeline="'+x.mid+'" class="btn btn-primary">'+x.name+'</a>')}
-                $.each($.ccio.mon,function(n,v){
-                    e.fn(v);
-                })
-            if(e.mid===''){
-                e.e=$.pwrvid.e.find('[timeline]')
-            }else{
-                e.e=$.pwrvid.e.find('[timeline="'+e.mid+'"]')
+            $.pwrvid.m.find('.monitor').remove()
+            $.each($.ccio.mon,function(n,v){
+                $.pwrvid.m.append('<option class="monitor" value="'+v.mid+'">'+v.name+'</option>')
+            })
+            e.e=$.pwrvid.m.find('.monitor').prop('selected',false)
+            if(e.mid!==''){
+                e.e=$.pwrvid.m.find('.monitor[value="'+e.mid+'"]')
             }
-            e.e.first().click()
+            e.e.first().prop('selected',true)
+            $.pwrvid.f.submit()
         break;
         case'region':
             if(!e.mon){
@@ -2211,7 +2340,7 @@ $('body')
         break;
         case'control_toggle':
             e.e=e.p.find('.PTZ_controls');
-            if(e.e.length>0){e.e.remove()}else{e.p.append('<div class="PTZ_controls"><div class="pad"><div class="control top" monitor="control" control="up"></div><div class="control left" monitor="control" control="left"></div><div class="control right" monitor="control" control="right"></div><div class="control bottom" monitor="control" control="down"></div><div class="control middle" monitor="control" control="center"></div></div><div class="btn-group btn-group-sm btn-group-justified"><a title="Zoom In" class="zoom_in btn btn-default" control="zoom_in"><i class="fa fa-search-plus"></i></a><a title="Zoom Out" class="zoom_out btn btn-default" control="zoom_out"><i class="fa fa-search-minus"></i></a></div><div class="btn-group btn-group-sm btn-group-justified"><a title="Enable Nightvision" class="nv_enable btn btn-default" control="enable_nv"><i class="fa fa-moon-o"></i></a><a title="Disable Nightvision" class="nv_disable btn btn-default" control="disable_nv"><i class="fa fa-sun-o"></i></a></div></div>')}
+            if(e.e.length>0){e.e.remove()}else{e.p.append('<div class="PTZ_controls"><div class="pad"><div class="control top" monitor="control" control="up"></div><div class="control left" monitor="control" control="left"></div><div class="control right" monitor="control" control="right"></div><div class="control bottom" monitor="control" control="down"></div><div class="control middle" monitor="control" control="center"></div></div><div class="btn-group btn-group-sm btn-group-justified"><a title="Zoom In" class="zoom_in btn btn-default" monitor="control" control="zoom_in"><i class="fa fa-search-plus"></i></a><a title="Zoom Out" class="zoom_out btn btn-default" monitor="control" control="zoom_out"><i class="fa fa-search-minus"></i></a></div><div class="btn-group btn-group-sm btn-group-justified"><a title="Enable Nightvision" class="nv_enable btn btn-default" monitor="control" control="enable_nv"><i class="fa fa-moon-o"></i></a><a title="Disable Nightvision" class="nv_disable btn btn-default" monitor="control" control="disable_nv"><i class="fa fa-sun-o"></i></a></div></div>')}
         break;
         case'watch':
             if($("#monitor_live_"+e.mid).length===0||$.ccio.mon[e.mid].watch!==1){
@@ -2236,7 +2365,9 @@ $('body')
             e.html+='</tr></table>';
             $.confirm.body.html(e.html)
             $.confirm.click({title:'Delete Monitor',class:'btn-danger'},function(){
-                $.ccio.cx({f:'monitor',ff:'delete',mid:e.mid,ke:e.ke});
+                $.get('/'+$user.auth_token+'/configureMonitor/'+$user.ke+'/'+e.mon.mid+'/delete',function(d){
+                    console.log(d)
+                })
             });
         break;
         case'edit':

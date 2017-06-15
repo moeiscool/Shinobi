@@ -82,11 +82,12 @@ img{max-width:100%}
 .hide_indifference [class_toggle="hide_indifference"]{color:#d9534f!important}
 .monitor_item .mdl-card:not(.mdl-cell--4-col-desktop) .mdl-card__supporting-text .monitor_name{display:none;font-size:90%;margin-bottom:10px}
 
-#vis_pwrvideo{height:300px}
+#vis_pwrvideo{height:250px}
 #region_editor_live iframe,.canvas_holder canvas{border:0;position:absolute;left:0;top:0}
 .canvas_holder canvas{z-index:11}
 
-.demo-blog .mdl-card__media ~ .mdl-card__supporting-text{position:relative;overflow:hidden}
+.demo-blog .mdl-card__media ~ .mdl-card__supporting-text{position:relative;overflow:hidden;cursor:move}
+.demo-blog .mdl-card__media ~ .mdl-card__supporting-text .btn-group{cursor: default}
 
 .demo-blog .demo-blog__posts.montage{max-width:100%}
 @media screen and (max-width:1500px){
@@ -130,9 +131,18 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 #region_editor .cord_element{position:absolute;background:rgba(221, 221, 221, 0.8);z-index:11;padding:5px;}
 #region_editor .cord_element.selected{z-index:12;}
 #region_editor .cord_element .controls{margin-bottom:5px;}
-.form-group label span{width:35%;padding:5px;font-weight: 400;color: #2d2d2d;display: inline-block;border-bottom: 1px dotted #ddd;font-size: 10pt;}
-.form-group label{display: flex}
+.form-group label span{padding:5px;font-weight: 400;color: #2d2d2d;display:block;border-bottom: 1px dotted #ddd;font-size: 10pt;}
+.form-group label{display:table}
+.form-group label>div{display:table-cell}
+.form-group label>div:nth-child(2n-1){width:30%}
+.form-group label>div:nth-child(2){width:70%;padding:5px;border:1px solid #dedede;border-radius:5px}
+.dark .form-group label>div,.dark .form-group label>div>span{border-color:#454545;color:#fff}
+.important.form-group label>div:nth-child(2){border-color:red}
 .form-group label span small{margin-left: 2px;display:block;font-weight: 600;}
+.form-group-group blockquote:before,.form-group-group blockquote:after{display:none!important}
+.form-group-group blockquote{letter-spacing:normal;font-style:normal}
+.form-group-group blockquote p{font-size:inherit}
+.form-group-group blockquote p:last-child{margin-bottom:0}
 .form-group-group-group>div,.form-group-group-group .h_us_advanced>div{margin-bottom:15px;}
 .form-group-group{padding:0 10px 10px 10px;overflow:hidden;margin-bottom:15px;border-radius:5px;border:1px solid #ddd;background:#fff}
 .form-group-group table{width:100%}
@@ -177,16 +187,19 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 }
 .side-menu .monitor_block:hover .icons{opacity:1}
 .side-menu .monitor_block:hover .title{opacity:1}
-.side-menu .monitor_block .icons,.side-menu .monitor_block .title{opacity:0;width:100%;bottom:0;left:0;background:rgba(0,0,0,0.6);position:absolute;padding:2.5px;z-index:11}
+.side-menu .monitor_block .icons,.side-menu .monitor_block .title{opacity:0;width:100%;bottom:0;left:0;background:rgba(0,0,0,0.6);position:absolute;padding:2.5px;z-index:11;cursor:move}
 .side-menu .monitor_block .title{bottom:auto;top:0;color:#fff}
 .nav-xs.side-menu .monitor_block{width:100%}
 .side-menu .monitor_block .list-data{display:none}
 .output_data:empty{display:none}
 .output_data{max-height:500px;font-family:monospace;padding:10px;border-radius:5px;background:#f3f3f3;overflow:auto}
+#probe .output_data div>div{margin-left:10px}
 .side-menu.list-blocks .monitor_block .icons,.side-menu.list-blocks .monitor_block .title{position:inherit;opacity:1;background:none}
+.side-menu.list-blocks .monitor_block .title{padding:5px;border-radius:5px;background:#222;cursor: n-resize}
 .side-menu.list-blocks .monitor_block:not(:last-child){border-bottom: 1px solid #54502d;}
 .side-menu.list-blocks .monitor_block:first-child{border-top: 1px solid #54502d;}
-.side-menu.list-blocks .monitor_block{float:none;width:100%;padding: 10px;}
+.side-menu.list-blocks .monitor_block{float:none;width:100%;padding: 10px}
+.side-menu.list-blocks .monitor_block.ui-sortable-helper{background:rgba(0,0,0,0.6);border-radius:5px;padding:5px;border:0}
 .side-menu.list-blocks .monitor_block .list-data{display:block}
 .side-menu.list-blocks .monitor_block img{width:60px;height:60px;cursor:pointer;display:inline-block;margin-right:10px;border-radius:50%;vertical-align:top;border:0}
 .nav-xs.side-menu.list-blocks .monitor_block img{width:40px;height:40px;}
@@ -217,16 +230,20 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 
 .form-group label{width:100%}
 
-#pvideo_viewer iframe{border:0;width:100%;height:400px;margin-bottom:10px;overflow:hidden}
-#pvideo_viewer video{max-height:350px;max-width:100%;margin-bottom:10px;}
+#pvideo_viewer iframe{border:0;width:100%;height:350px;margin-bottom:10px;overflow:hidden}
+#pvideo_viewer video{max-height:300px;max-width:100%;}
+#pvideo_viewer .holder{height:300px;}
 #pvideo_viewer h3{margin-top:0}
 #pvideo_viewer .progressBar{position:relative;}
 #pvideo_viewer .bufferBar{position:absolute;left:0;top:0;opacity:0.4}
 #pvideo_viewer .timeBar{position:relative;z-index: 222;background:transparent}
+#pvideo_viewer h3{font-family:monospace}
 
 #vis_monitors{overflow:auto;max-height:400px}
 #vis_monitors .btn-group-vertical{width:100%}
 
+#motion_list{height:195px;overflow:auto;border-radius:5px;border:1px solid #444;position:relative;background: #222;}
+.dark .list-group-item{border-color: #444;background:#222}
 .novideos{text-transform: uppercase;text-align: center;border-bottom:0!important;padding-top: 55%!important;letter-spacing:2px}
 
 .dark.modal .modal-header,.dark.modal .modal-footer{background:#333;border-color:#444;}
@@ -438,6 +455,30 @@ ul.msg_list li .message {
   border-radius: 100%;
   box-shadow: inset 0 0 2px rgba(120, 120, 120, 0.6), inset 0 2px 8px rgba(0, 0, 0, 0.1), 0 2px 2px rgba(240, 240, 240, 0.2);
 }
+
+
+.dark.form-control {
+    display: block;
+    width: 100%;
+    height: 35px;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #eee;
+    background-color: #36333d;
+    background-image: none;
+    border: 1px solid #444;
+    border-radius: 4px;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+}
+
+.dark.form-control:focus {
+    color: #ddd;
+    background-color: #333;
+    box-shadow: none;
+}
+
 
 /*** custom checkboxes ***/
 
