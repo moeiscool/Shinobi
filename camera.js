@@ -566,9 +566,14 @@ s.ffmpeg=function(e,x){
     //input - analyze duration
     if(e.details.aduration&&e.details.aduration!==''){x.cust_input+=' -analyzeduration '+e.details.aduration};
     //input - check protocol
-    switch(e.protocol){
-        case'rtsp':
-            if(e.details.rtsp_transport&&e.details.rtsp_transport!==''&&e.details.rtsp_transport!=='no'){x.cust_input+=' -rtsp_transport '+e.details.rtsp_transport;}
+    //input
+    switch(e.type){
+        case'h264':
+            switch(e.protocol){
+                case'rtsp':
+                    if(e.details.rtsp_transport&&e.details.rtsp_transport!==''&&e.details.rtsp_transport!=='no'){x.cust_input+=' -rtsp_transport '+e.details.rtsp_transport;}
+                break;
+            }
         break;
     }
     //record - resolution
