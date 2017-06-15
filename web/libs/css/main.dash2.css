@@ -136,6 +136,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .form-group label>div{display:table-cell}
 .form-group label>div:nth-child(2n-1){width:30%}
 .form-group label>div:nth-child(2){width:70%;padding:5px;border:1px solid #dedede;border-radius:5px}
+.dark .form-group label>div,.dark .form-group label>div>span{border-color:#454545;color:#fff}
 .important.form-group label>div:nth-child(2){border-color:red}
 .form-group label span small{margin-left: 2px;display:block;font-weight: 600;}
 .form-group-group blockquote:before,.form-group-group blockquote:after{display:none!important}
@@ -241,6 +242,8 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 #vis_monitors{overflow:auto;max-height:400px}
 #vis_monitors .btn-group-vertical{width:100%}
 
+#motion_list{height:195px;overflow:auto;border-radius:5px;border:1px solid #444}
+.dark .list-group-item{border-color: #444;background:#222}
 .novideos{text-transform: uppercase;text-align: center;border-bottom:0!important;padding-top: 55%!important;letter-spacing:2px}
 
 .dark.modal .modal-header,.dark.modal .modal-footer{background:#333;border-color:#444;}

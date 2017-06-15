@@ -167,6 +167,9 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 if(!d){d=new Date();}
                 return moment(d).format('YYYY-MM-DDTHH-mm-ss')
             break;
+            case'fn'://row to filename
+                return $.ccio.init('tf',d.time)+'.'+d.ext
+            break;
             case'filters':
                 k.tmp='<option value="" selected>Add New</option>';
                 $.each($user.filters,function(n,v){
@@ -1665,7 +1668,9 @@ $.vidview.pages.on('click','[page]',function(e){
 })
 //POWER videos window
 $.pwrvid={e:$('#pvideo_viewer')};
+$.pwrvid.f=$.pwrvid.e.find('form'),
 $.pwrvid.d=$('#vis_pwrvideo'),
+$.pwrvid.mL=$('#motion_list'),
 $.pwrvid.m=$('#vis_monitors'),
 $.pwrvid.lv=$('#live_view'),
 $.pwrvid.dr=$('#pvideo_daterange'),
@@ -1679,10 +1684,10 @@ $.pwrvid.dr.daterangepicker({
         format: 'MM/DD/YYYY h:mm A'
     }
 },function(start, end, label){
-    $.pwrvid.drawTimeline($.pwrvid.m.find('.active').attr('timeline'))
+    $.pwrvid.drawTimeline()
 });
 $('#pvideo_show_events').change(function(){
-    $.pwrvid.drawTimeline($.pwrvid.m.find('.active').attr('timeline'))
+    $.pwrvid.drawTimeline()
 })
 $.pwrvid.e.on('click','[preview]',function(e){
     e.e=$(this);
@@ -1702,13 +1707,7 @@ $.pwrvid.e.on('click','[preview]',function(e){
         break;
         case'play':
             e.video.playbackRate = 1;
-            e.e.find('i').toggleClass('fa-play fa-pause')
-            
-            if(e.e.find('i').hasClass('fa-play')){
-                e.video.play()
-            }else{
-                e.video.pause()
-            }
+            $.pwrvid.vpOnPlayPause(1)
         break;
         case'stepFrontFront':
             e.video.playbackRate = 5;
@@ -1755,12 +1754,42 @@ $.pwrvid.e.on('click','[preview]',function(e){
                 $.get(e.href+'/status/2',function(d){
                 })
             }
+            $.pwrvid.mL.empty()
+            console.log(e.filename,$.pwrvid.currentVideosObject[e.filename])
+            $.each($.pwrvid.currentVideosObject[e.filename].motion,function(n,v){
+                var tmp='<li class="list-group-item">'
+                tmp+='<small><b>Time</b> : <span class="time">'+v.time+'</span></small>'
+                tmp+='<div class="row">'
+                tmp+='<div class="col-md-6"><b>Confidence</b> : <span class="confidence">'+v.details.confidence+'</span></div>'
+                tmp+='<div class="col-md-6"><b>Reason</b> : <span class="reason">'+v.details.reason+'</span></div>'
+                tmp+='</div>'
+                tmp+='<div class="row">'
+                tmp+='<div class="col-md-6"><b>Region Name</b> : <span class="region_name">'+v.details.name+'</span></div>'
+                tmp+='<div class="col-md-6"><b>Plugin</b> : <span class="plug">'+v.details.plug+'</span></div>'
+                tmp+='</div>'
+                tmp+='</li>'
+                $.pwrvid.mL.append(tmp)
+            })
             $.pwrvid.video={filename:e.filename,href:e.href,mid:e.mon.mid,ke:e.mon.ke}
+            $.pwrvid.vpOnPlayPause=function(x,e){
+                e={}
+                e.video=$.pwrvid.vp.find('video')[0]
+                e.i=$.pwrvid.vp.find('[preview="play"]').find('i')
+                if(e.video.paused===true){
+                    e.i.removeClass('fa-pause').addClass('fa-play')
+                    if(x==1)e.video.play();
+                }else{
+                    e.i.removeClass('fa-play').addClass('fa-pause')
+                    if(x==1)e.video.pause();
+                }
+            }
+            $.pwrvid.vp.find('video').on("pause",$.pwrvid.vpOnPlayPause).on("play",$.pwrvid.vpOnPlayPause);
         break;
     }
 })
-$.pwrvid.drawTimeline=function(mid){
+$.pwrvid.drawTimeline=function(){
     e={};
+    var mid=$.pwrvid.m.val();
     e.live_header=$.pwrvid.lv.find('h3 span');
     e.live=$.pwrvid.lv.find('iframe');
     e.dateRange=$.pwrvid.dr.data('daterangepicker');
@@ -1783,24 +1812,25 @@ $.pwrvid.drawTimeline=function(mid){
                 if(v.status>0){
 //                    data.push({src:v,x:v.time,y:moment(v.time).diff(moment(v.end),'minutes')/-1})
                     v.timeFormatted=moment(v.time).format('MM/DD/YYYY HH:mm');
-                    data[v.time]={time:v.timeFormatted,endTime:v.end,close:moment(v.time).diff(moment(v.end),'minutes')/-1,motion:[],row:v}
+                    data[v.filename]={filename:v.filename,time:v.timeFormatted,endTime:v.end,close:moment(v.time).diff(moment(v.end),'minutes')/-1,motion:[],row:v}
                 }
             });
             $.each(events,function(n,v){
 //                v.mon=$.ccio.mon[v.mid];
 //                    data.push({src:v,x:v.time,yy:v.details.confidence})
                 $.each(data,function(m,b){
-                    if (moment(v.time).isBetween(moment(b.time),moment(b.endTime))) {
+                    if (moment(v.time).isBetween(moment(b.time).format(),moment(b.endTime).format())) {
                         data[m].motion.push(v)
                     }
                 })
             });
+            $.pwrvid.currentVideosObject=data;
             e.n=$.pwrvid.e.find('.nodata').hide()
             if($.pwrvid.chart){
                 $.pwrvid.d.empty()
                 delete($.pwrvid.chart)
             }
-            $.pwrvid.currentVideos=Object.values(data).reverse();
+            $.pwrvid.currentVideos=Object.values(data);
             if($.pwrvid.currentVideos.length>0){
                 var labels=[]
                 var Dataset1=[]
@@ -1809,7 +1839,6 @@ $.pwrvid.drawTimeline=function(mid){
                     labels.push(v.time)
                     Dataset1.push(v.close)
                     Dataset2.push(v.motion.length)
-                    console.log(v.motion.length)
                 })
                 $.pwrvid.d.html("<canvas></canvas>")
 		var timeFormat = 'MM/DD/YYYY HH:mm';
@@ -1835,7 +1864,7 @@ $.pwrvid.drawTimeline=function(mid){
 					borderColor: window.chartColors.blue,
 					data: Dataset1,
 				}, {
-					type: 'line',
+					type: 'bar',
                     showTooltip: false,
 					label: 'Counts of Motion',
 					backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
@@ -1883,11 +1912,13 @@ $.pwrvid.drawTimeline=function(mid){
         })
     })
 }
-$.pwrvid.e.on('click','[timeline]',function(){
-    e={e:$(this)};
-    $.pwrvid.e.find('[timeline]').removeClass('active');
-    e.e.addClass('active');
-    $.pwrvid.drawTimeline(e.e.attr('timeline'))
+$('#vis_monitors,#pvideo_event_limit').change(function(){
+    $.pwrvid.f.submit()
+})
+$.pwrvid.f.submit(function(e){
+    e.preventDefault();
+    $.pwrvid.drawTimeline()
+    return false;
 })
 $.pwrvid.e.on('hidden.bs.modal',function(e){
     $(this).find('iframe').attr('src','')
@@ -2086,17 +2117,16 @@ $('body')
     switch(e.a){
         case'powerview':
             $.pwrvid.e.modal('show')
-            e.e=$.pwrvid.m.find('ul').empty()
-            e.fn=function(x){return e.e.append('<a timeline="'+x.mid+'" class="btn btn-primary">'+x.name+'</a>')}
-                $.each($.ccio.mon,function(n,v){
-                    e.fn(v);
-                })
-            if(e.mid===''){
-                e.e=$.pwrvid.e.find('[timeline]')
-            }else{
-                e.e=$.pwrvid.e.find('[timeline="'+e.mid+'"]')
+            $.pwrvid.m.find('.monitor').remove()
+            $.each($.ccio.mon,function(n,v){
+                $.pwrvid.m.append('<option class="monitor" value="'+v.mid+'">'+v.name+'</option>')
+            })
+            e.e=$.pwrvid.m.find('.monitor').prop('selected',false)
+            if(e.mid!==''){
+                e.e=$.pwrvid.m.find('.monitor[value="'+e.mid+'"]')
             }
-            e.e.first().click()
+            e.e.first().prop('selected',true)
+            $.pwrvid.f.submit()
         break;
         case'region':
             if(!e.mon){
