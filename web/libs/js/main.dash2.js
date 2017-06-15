@@ -1756,20 +1756,24 @@ $.pwrvid.e.on('click','[preview]',function(e){
             }
             $.pwrvid.mL.empty()
             console.log(e.filename,$.pwrvid.currentVideosObject[e.filename])
-            $.each($.pwrvid.currentVideosObject[e.filename].motion,function(n,v){
-                var tmp='<li class="list-group-item">'
-                tmp+='<small><b>Time</b> : <span class="time">'+v.time+'</span></small>'
-                tmp+='<div class="row">'
-                tmp+='<div class="col-md-6"><b>Confidence</b> : <span class="confidence">'+v.details.confidence+'</span></div>'
-                tmp+='<div class="col-md-6"><b>Reason</b> : <span class="reason">'+v.details.reason+'</span></div>'
-                tmp+='</div>'
-                tmp+='<div class="row">'
-                tmp+='<div class="col-md-6"><b>Region Name</b> : <span class="region_name">'+v.details.name+'</span></div>'
-                tmp+='<div class="col-md-6"><b>Plugin</b> : <span class="plug">'+v.details.plug+'</span></div>'
-                tmp+='</div>'
-                tmp+='</li>'
-                $.pwrvid.mL.append(tmp)
-            })
+            if($.pwrvid.currentVideosObject[e.filename].motion.length>0){
+                $.each($.pwrvid.currentVideosObject[e.filename].motion,function(n,v){
+                    var tmp='<li class="list-group-item">'
+                    tmp+='<small><b>Time</b> : <span class="time">'+v.time+'</span></small>'
+                    tmp+='<div class="row">'
+                    tmp+='<div class="col-md-6"><b>Confidence</b> : <span class="confidence">'+v.details.confidence+'</span></div>'
+                    tmp+='<div class="col-md-6"><b>Reason</b> : <span class="reason">'+v.details.reason+'</span></div>'
+                    tmp+='</div>'
+                    tmp+='<div class="row">'
+                    tmp+='<div class="col-md-6"><b>Region Name</b> : <span class="region_name">'+v.details.name+'</span></div>'
+                    tmp+='<div class="col-md-6"><b>Plugin</b> : <span class="plug">'+v.details.plug+'</span></div>'
+                    tmp+='</div>'
+                    tmp+='</li>'
+                    $.pwrvid.mL.append(tmp)
+                })
+            }else{
+                $.pwrvid.mL.append('<div class="super-center text-center" style="width:auto">No Events found for this video</div>')
+            }
             $.pwrvid.video={filename:e.filename,href:e.href,mid:e.mon.mid,ke:e.mon.ke}
             $.pwrvid.vpOnPlayPause=function(x,e){
                 e={}
@@ -1921,8 +1925,12 @@ $.pwrvid.f.submit(function(e){
     return false;
 })
 $.pwrvid.e.on('hidden.bs.modal',function(e){
-    $(this).find('iframe').attr('src','')
+    $(this).find('iframe').attr('src','about:blank')
     $.pwrvid.vp.find('.holder').empty()
+    delete($.pwrvid.currentVideosObject)
+    delete($.pwrvid.currentVideos)
+    $.pwrvid.mL.empty()
+    $.pwrvid.d.empty()
 })
 //dynamic bindings
 $('body')

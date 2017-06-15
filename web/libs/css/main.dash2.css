@@ -82,7 +82,7 @@ img{max-width:100%}
 .hide_indifference [class_toggle="hide_indifference"]{color:#d9534f!important}
 .monitor_item .mdl-card:not(.mdl-cell--4-col-desktop) .mdl-card__supporting-text .monitor_name{display:none;font-size:90%;margin-bottom:10px}
 
-#vis_pwrvideo{height:300px}
+#vis_pwrvideo{height:250px}
 #region_editor_live iframe,.canvas_holder canvas{border:0;position:absolute;left:0;top:0}
 .canvas_holder canvas{z-index:11}
 
@@ -242,7 +242,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 #vis_monitors{overflow:auto;max-height:400px}
 #vis_monitors .btn-group-vertical{width:100%}
 
-#motion_list{height:195px;overflow:auto;border-radius:5px;border:1px solid #444}
+#motion_list{height:195px;overflow:auto;border-radius:5px;border:1px solid #444;position:relative;background: #222;}
 .dark .list-group-item{border-color: #444;background:#222}
 .novideos{text-transform: uppercase;text-align: center;border-bottom:0!important;padding-top: 55%!important;letter-spacing:2px}
 
