@@ -130,6 +130,12 @@ s.gid=function(x){
         t += p.charAt(Math.floor(Math.random() * p.length));
     return t;
 };
+s.nid=function(x){
+    if(!x){x=6};var t = "";var p = "0123456789";
+    for( var i=0; i < x; i++ )
+        t += p.charAt(Math.floor(Math.random() * p.length));
+    return t;
+};
 s.moment_withOffset=function(e,x){
     if(!e){e=new Date};if(!x){x='YYYY-MM-DDTHH-mm-ss'};
     e=moment(e);if(config.utcOffset){e=e.utcOffset(config.utcOffset)}
@@ -2476,28 +2482,35 @@ app.post('/',function (req,res){
                     
                     req.factorAuth=function(cb){
                         if(r.details.factorAuth==="1"){
-                            if(!s.factorAuth[r.ke]){s.factorAuth[r.ke]={}}
-                            if(!s.factorAuth[r.ke][r.uid]){
-                                s.factorAuth[r.ke][r.uid]={key:s.gid()}
-                                r.mailOptions = {
-                                    from: '"ShinobiCCTV" <no-reply@shinobi.video>',
-                                    to: r.mail,
-                                    subject: '2-Factor Authentication',
-                                    html: 'Enter this code to proceed <b>'+s.factorAuth[r.ke][r.uid].key+'</b>. The code will only be active for 15 minutes. If you login again the timer will be reset to 15 minutes with the same code.',
-                                };
-                                nodemailer.sendMail(r.mailOptions, (error, info) => {
-                                    if (error) {
-                                        console.log(error)
-                                        return ;
-                                    }
-                                });
+                            if(!r.details.acceptedMachines||!(r.details.acceptedMachines instanceof Object)){
+                                r.details.acceptedMachines={}
                             }
-                            s.factorAuth[r.ke][r.uid].info=req.resp;
-                            clearTimeout(s.factorAuth[r.ke][r.uid].expireAuth)
-                            s.factorAuth[r.ke][r.uid].expireAuth=setTimeout(function(){
-                                s.deleteFactorAuth(r)
-                            },1000*60*15)
-                            res.render("factor",{$user:req.resp})
+                            if(!r.details.acceptedMachines[req.body.machineID]){
+                                if(!s.factorAuth[r.ke]){s.factorAuth[r.ke]={}}
+                                if(!s.factorAuth[r.ke][r.uid]){
+                                    s.factorAuth[r.ke][r.uid]={key:s.nid()}
+                                    r.mailOptions = {
+                                        from: '"ShinobiCCTV" <no-reply@shinobi.video>',
+                                        to: r.mail,
+                                        subject: '2-Factor Authentication',
+                                        html: 'Enter this code to proceed <b>'+s.factorAuth[r.ke][r.uid].key+'</b>. The code will only be active for 15 minutes. If you login again the timer will be reset to 15 minutes with the same code.',
+                                    };
+                                    nodemailer.sendMail(r.mailOptions, (error, info) => {
+                                        if (error) {
+                                            console.log(error)
+                                            return ;
+                                        }
+                                    });
+                                }
+                                s.factorAuth[r.ke][r.uid].info=req.resp;
+                                clearTimeout(s.factorAuth[r.ke][r.uid].expireAuth)
+                                s.factorAuth[r.ke][r.uid].expireAuth=setTimeout(function(){
+                                    s.deleteFactorAuth(r)
+                                },1000*60*15)
+                                res.render("factor",{$user:req.resp})
+                            }else{
+                               req.fn()
+                            }
                         }else{
                            req.fn()
                         }
@@ -2520,23 +2533,28 @@ app.post('/',function (req,res){
         }
     }else{
         if(req.body.machineID&&req.body.factorAuthKey){
-            console.log('Login Type : 2 Factor Auth')
             if(s.factorAuth[req.body.ke]&&s.factorAuth[req.body.ke][req.body.id]&&s.factorAuth[req.body.ke][req.body.id].key===req.body.factorAuthKey){
                 if(s.factorAuth[req.body.ke][req.body.id].key===req.body.factorAuthKey){
-                    console.log('Success')
+                    if(req.body.remember==="1"){
+                        req.details=JSON.parse(s.factorAuth[req.body.ke][req.body.id].info.details)
+                        if(!req.details.acceptedMachines||!(req.details.acceptedMachines instanceof Object)){
+                            req.details.acceptedMachines={}
+                        }
+                        if(!req.details.acceptedMachines[req.body.machineID]){
+                            req.details.acceptedMachines[req.body.machineID]={}
+                            sql.query("UPDATE Users SET details=? WHERE ke=? AND uid=?",[s.s(req.details),req.body.ke,req.body.id])
+                        }
+                    }
                     req.resp=s.factorAuth[req.body.ke][req.body.id].info
                     req.fn()
                 }else{
-                    console.log('Incorrect, Try again')
                     res.render("factor",{$user:s.factorAuth[req.body.ke][req.body.id].info});
                     res.end();
                 }
             }else{
-                console.log('Key expired or incorrect')
                 req.failed()
             }
         }else{
-            console.log('No known login type')
             req.failed()
         }
     }
