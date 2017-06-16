@@ -64,19 +64,19 @@
     <% var failedLogin;if(failedLogin===true){ %>
         localStorage.removeItem('ShinobiLogin_'+location.host)
     <% } %>
-    $.ccio={f:$('#login-form'),ls:localStorage.getItem('ShinobiLogin_'+location.host),ls:localStorage.getItem('ShinobiAuth_'+location.host)}
+    $.ccio={f:$('#login-form'),ls:localStorage.getItem('ShinobiLogin_'+location.host),auth:localStorage.getItem('ShinobiAuth_'+location.host)}
     $.ccio.gid=function(x){
         if(!x){x=10};var t = "";var p = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         for( var i=0; i < x; i++ )
             t += p.charAt(Math.floor(Math.random() * p.length));
         return t;
     };
-    if(!$.ccio.ls||$.ccio.ls===''){
-        $.ccio.ls=$.ccio.gid(20)
-        localStorage.setItem('ShinobiAuth_'+location.host,$.ccio.ls)
+    if(!$.ccio.auth||$.ccio.auth===''){
+        $.ccio.auth=$.ccio.gid(20)
+        localStorage.setItem('ShinobiAuth_'+location.host,$.ccio.auth)
     }
     $(document).ready(function(){
-        $('#machineID').val($.ccio.ls)
+        $('#machineID').val($.ccio.auth)
     })
     $.ccio.f.submit(function(e){
         $('input').css('border-color','')

@@ -2486,6 +2486,14 @@ app.post('/',function (req,res){
                                 r.details.acceptedMachines={}
                             }
                             if(!r.details.acceptedMachines[req.body.machineID]){
+                                req.complete=function(){
+                                    s.factorAuth[r.ke][r.uid].info=req.resp;
+                                    clearTimeout(s.factorAuth[r.ke][r.uid].expireAuth)
+                                    s.factorAuth[r.ke][r.uid].expireAuth=setTimeout(function(){
+                                        s.deleteFactorAuth(r)
+                                    },1000*60*15)
+                                    res.render("factor",{$user:req.resp})
+                                }
                                 if(!s.factorAuth[r.ke]){s.factorAuth[r.ke]={}}
                                 if(!s.factorAuth[r.ke][r.uid]){
                                     s.factorAuth[r.ke][r.uid]={key:s.nid()}
@@ -2497,17 +2505,15 @@ app.post('/',function (req,res){
                                     };
                                     nodemailer.sendMail(r.mailOptions, (error, info) => {
                                         if (error) {
-                                            console.log(error)
-                                            return ;
+                                            s.systemLog('MAIL ERROR : You must set up conf.json with the mail object or this feature will not work. skipping 2-Factor Authentication this time.',error)
+                                            req.fn()
+                                            return
                                         }
+                                        req.complete()
                                     });
+                                }else{
+                                    req.complete()
                                 }
-                                s.factorAuth[r.ke][r.uid].info=req.resp;
-                                clearTimeout(s.factorAuth[r.ke][r.uid].expireAuth)
-                                s.factorAuth[r.ke][r.uid].expireAuth=setTimeout(function(){
-                                    s.deleteFactorAuth(r)
-                                },1000*60*15)
-                                res.render("factor",{$user:req.resp})
                             }else{
                                req.fn()
                             }
