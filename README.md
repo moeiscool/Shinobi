@@ -8,6 +8,7 @@ Shinobi is the Open Source CCTV Solution written in Node.JS. Designed with multi
 
 For an updated list of features visit the official website. http://shinobi.video/features
 
+- 2-Factor Authentication
 - Defeats stream limit imposed by browsers
   - With Base64 (Stream Type) and JPEG Mode (Option)
 - Records IP Cameras and Local Cameras
@@ -46,6 +47,16 @@ Before asking questions it would nice if you read the docs :) http://shinobi.vid
 After doing so please head on over to the Discord community chat for support. https://discordapp.com/invite/mdhmvuH
 
 The Issues section is only for bugs with the software. Comments and feature requests may be closed without comment. http://shinobi.video/docs/contribute
+
+Please be considerate of developer efforts. If you have simple questions, like "what does this button do?", please be sure to have read the docs entirely before asking. If you would like to skip reading the docs and ask away you can order a support package :) http://shinobi.video/support
+
+## Making Suggestions or Feature Requests
+
+You can post suggestions in the Discord #suggestions channel. Please do not treat this channel like a "demands" window. Developer efforts are limited. Much more than many alternatives.
+
+when you have a suggestion please try and make the changes yourself then post a pull request to the `dev` branch. Then we can decide if it's a good change for Shinobi. If you don't know how to go about it or would like to skip that and have me do the changes you can order a support package.
+
+http://shinobi.video/support
 
 ## Help make Shinobi the best Open Source CCTV Solution.
 Donate - http://shinobi.video/docs/donate
