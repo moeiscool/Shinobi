@@ -34,6 +34,14 @@
                         <div><input class="form-control" type="password" name="password_again"></div>
                     </label>
                 </div>
+                <div class="form-group">
+                    <label><div><span>2-Factor Authentication (Email)</span></div>
+                            <div><select class="form-control" detail="factorAuth">
+                                <option value="0" selected>No</option>
+                                <option value="1">Yes</option>  
+                            </select></div>
+                    </label>
+                </div>
               <% if(!details.sub){ %>
                 <% if(details.edit_size!=='0'){ %>
                 <div class="form-group">

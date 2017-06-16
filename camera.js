@@ -63,7 +63,7 @@ if(config.pluginKeys===undefined)config.pluginKeys={};
 
 
 server.listen(config.port,config.bindip);
-s={child_help:false,totalmem:os.totalmem(),platform:os.platform(),s:JSON.stringify,isWin:(process.platform==='win32')};
+s={factorAuth:{},child_help:false,totalmem:os.totalmem(),platform:os.platform(),s:JSON.stringify,isWin:(process.platform==='win32')};
 s.systemLog=function(q,w,e){
     if(!w){w=''}
     if(!e){e=''}
@@ -126,6 +126,12 @@ s.nameToTime=function(x){x=x.split('.')[0].split('T'),x[1]=x[1].replace(/-/g,':'
 s.ratio=function(width,height,ratio){ratio = width / height;return ( Math.abs( ratio - 4 / 3 ) < Math.abs( ratio - 16 / 9 ) ) ? '4:3' : '16:9';}
 s.gid=function(x){
     if(!x){x=10};var t = "";var p = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for( var i=0; i < x; i++ )
+        t += p.charAt(Math.floor(Math.random() * p.length));
+    return t;
+};
+s.nid=function(x){
+    if(!x){x=6};var t = "";var p = "0123456789";
     for( var i=0; i < x; i++ )
         t += p.charAt(Math.floor(Math.random() * p.length));
     return t;
@@ -566,9 +572,14 @@ s.ffmpeg=function(e,x){
     //input - analyze duration
     if(e.details.aduration&&e.details.aduration!==''){x.cust_input+=' -analyzeduration '+e.details.aduration};
     //input - check protocol
-    switch(e.protocol){
-        case'rtsp':
-            if(e.details.rtsp_transport&&e.details.rtsp_transport!==''&&e.details.rtsp_transport!=='no'){x.cust_input+=' -rtsp_transport '+e.details.rtsp_transport;}
+    //input
+    switch(e.type){
+        case'h264':
+            switch(e.protocol){
+                case'rtsp':
+                    if(e.details.rtsp_transport&&e.details.rtsp_transport!==''&&e.details.rtsp_transport!=='no'){x.cust_input+=' -rtsp_transport '+e.details.rtsp_transport;}
+                break;
+            }
         break;
     }
     //record - resolution
@@ -2410,10 +2421,42 @@ app.post('/:auth/register/:ke/:uid',function (req,res){
     },res,req);
 })
 //login function
+s.deleteFactorAuth=function(r){
+    delete(s.factorAuth[r.ke][r.uid])
+    if(Object.keys(s.factorAuth[r.ke]).length===0){
+        delete(s.factorAuth[r.ke])
+    }
+}
 app.post('/',function (req,res){
     req.failed=function(){
         res.render("index",{failedLogin:true});
         res.end();
+    }
+    req.fn=function(){
+        switch(req.body.function){
+            case'streamer':
+                sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
+                    req.resp.mons=rr;
+                    res.render("streamer",{$user:req.resp});
+                })
+            break;
+            case'admin':
+                if(!r.details.sub){
+                    sql.query('SELECT uid,mail,details FROM Users WHERE ke=? AND details LIKE \'%"sub"%\'',[r.ke],function(err,rr) {
+                        sql.query('SELECT * FROM Monitors WHERE ke=?',[r.ke],function(err,rrr) {
+                            res.render("admin",{$user:req.resp,$subs:rr,$mons:rrr});
+                        })
+                    })
+                }else{
+                    //not admin user
+                    res.render("home",{$user:req.resp,config:config});
+                }
+            break;
+            default:
+                res.render("home",{$user:req.resp,config:config});
+            break;
+        }
+    //    res.end();
     }
     if(req.body.mail&&req.body.pass){
         if(req.body.function==='super'){
@@ -2436,30 +2479,40 @@ app.post('/',function (req,res){
                     sql.query("UPDATE Users SET auth=? WHERE ke=? AND uid=?",[r.auth,r.ke,r.uid])
                     req.resp={ok:true,auth_token:r.auth,ke:r.ke,uid:r.uid,mail:r.mail,details:r.details};
                     r.details=JSON.parse(r.details);
-
-                    req.fn=function(){
-                        switch(req.body.function){
-                            case'streamer':
-                                sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
-                                    req.resp.mons=rr;
-                                    res.render("streamer",{$user:req.resp});
-                                })
-                            break;
-                            case'admin':
-                                if(!r.details.sub){
-                                    sql.query('SELECT uid,mail,details FROM Users WHERE ke=? AND details LIKE \'%"sub"%\'',[r.ke],function(err,rr) {
-                                        sql.query('SELECT * FROM Monitors WHERE ke=?',[r.ke],function(err,rrr) {
-                                            res.render("admin",{$user:req.resp,$subs:rr,$mons:rrr});
-                                        })
-                                    })
-                                }else{
-                                    //not admin user
-                                    res.render("home",{$user:req.resp,config:config});
+                    
+                    req.factorAuth=function(cb){
+                        if(r.details.factorAuth==="1"){
+                            if(!r.details.acceptedMachines||!(r.details.acceptedMachines instanceof Object)){
+                                r.details.acceptedMachines={}
+                            }
+                            if(!r.details.acceptedMachines[req.body.machineID]){
+                                if(!s.factorAuth[r.ke]){s.factorAuth[r.ke]={}}
+                                if(!s.factorAuth[r.ke][r.uid]){
+                                    s.factorAuth[r.ke][r.uid]={key:s.nid()}
+                                    r.mailOptions = {
+                                        from: '"ShinobiCCTV" <no-reply@shinobi.video>',
+                                        to: r.mail,
+                                        subject: '2-Factor Authentication',
+                                        html: 'Enter this code to proceed <b>'+s.factorAuth[r.ke][r.uid].key+'</b>. The code will only be active for 15 minutes. If you login again the timer will be reset to 15 minutes with the same code.',
+                                    };
+                                    nodemailer.sendMail(r.mailOptions, (error, info) => {
+                                        if (error) {
+                                            console.log(error)
+                                            return ;
+                                        }
+                                    });
                                 }
-                            break;
-                            default:
-                                res.render("home",{$user:req.resp,config:config});
-                            break;
+                                s.factorAuth[r.ke][r.uid].info=req.resp;
+                                clearTimeout(s.factorAuth[r.ke][r.uid].expireAuth)
+                                s.factorAuth[r.ke][r.uid].expireAuth=setTimeout(function(){
+                                    s.deleteFactorAuth(r)
+                                },1000*60*15)
+                                res.render("factor",{$user:req.resp})
+                            }else{
+                               req.fn()
+                            }
+                        }else{
+                           req.fn()
                         }
                     }
                     if(r.details.sub){
@@ -2468,22 +2521,42 @@ app.post('/',function (req,res){
                             rr.details=JSON.parse(rr.details);
                             r.details.mon_groups=rr.details.mon_groups;
                             req.resp.details=JSON.stringify(r.details);
-                            req.fn();
+                            req.factorAuth()
                         })
                     }else{
-                        req.fn()
+                        req.factorAuth()
                     }
-
-
-
-
                 }else{
                     req.failed()
                 }
             })
         }
     }else{
-        req.failed()
+        if(req.body.machineID&&req.body.factorAuthKey){
+            if(s.factorAuth[req.body.ke]&&s.factorAuth[req.body.ke][req.body.id]&&s.factorAuth[req.body.ke][req.body.id].key===req.body.factorAuthKey){
+                if(s.factorAuth[req.body.ke][req.body.id].key===req.body.factorAuthKey){
+                    if(req.body.remember==="1"){
+                        req.details=JSON.parse(s.factorAuth[req.body.ke][req.body.id].info.details)
+                        if(!req.details.acceptedMachines||!(req.details.acceptedMachines instanceof Object)){
+                            req.details.acceptedMachines={}
+                        }
+                        if(!req.details.acceptedMachines[req.body.machineID]){
+                            req.details.acceptedMachines[req.body.machineID]={}
+                            sql.query("UPDATE Users SET details=? WHERE ke=? AND uid=?",[s.s(req.details),req.body.ke,req.body.id])
+                        }
+                    }
+                    req.resp=s.factorAuth[req.body.ke][req.body.id].info
+                    req.fn()
+                }else{
+                    res.render("factor",{$user:s.factorAuth[req.body.ke][req.body.id].info});
+                    res.end();
+                }
+            }else{
+                req.failed()
+            }
+        }else{
+            req.failed()
+        }
     }
 });
 // Get Motion Buffer stream (m3u8)
