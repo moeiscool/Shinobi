@@ -81,6 +81,10 @@ img{max-width:100%}
 .hide_indifference .indifference{display:none!important}
 .hide_indifference [class_toggle="hide_indifference"]{color:#d9534f!important}
 .monitor_item .mdl-card:not(.mdl-cell--4-col-desktop) .mdl-card__supporting-text .monitor_name{display:none;font-size:90%;margin-bottom:10px}
+.monitor_item[mode="Record"] [mode="record"]{display:none}
+.monitor_item[mode="Watch Only"] [mode="start"]{display:none}
+.monitor_item .stream-hud .controls .btn{opacity:0.7}
+
 
 #vis_pwrvideo{height:250px}
 #region_editor_live iframe,.canvas_holder canvas{border:0;position:absolute;left:0;top:0}
@@ -261,7 +265,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .os_bars .display-table .display-table-cell{padding:5px;vertical-align:center;width:33%}
 .progress{height:5px;margin:0;}
 .os_bars label,.os_bars .percent{padding:2.5px 0;margin:0;font-size:7.5pt}
-
+.ui-pnotify-hide .ui-pnotify{display:none!important}
 /*cool dropdown thing*/
 ul.msg_list li {
     background: #f7f7f7;color:#333;

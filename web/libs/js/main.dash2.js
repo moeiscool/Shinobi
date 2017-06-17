@@ -8,6 +8,12 @@ $.ccio={fr:$('#files_recent'),mon:{}};
     $.ccio.init=function(x,d,z,k){
         if(!k){k={}};k.tmp='';
         switch(x){
+            case'note':
+                k.o=$.ccio.op().switches
+                if(k.o&&k.o.notifyHide!==1){
+                    new PNotify(d)
+                }
+            break;
             case'montage':
                 k.dimensions=$.ccio.op().montage
                 k.monitors=$('.monitor_item');
@@ -396,7 +402,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" mode="'+k.mode+'" class="monitor_item glM'+d.mid+' mdl-grid col-md-6">';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col">';
                 tmp+='<div class="stream-block no-padding mdl-card__media mdl-color-text--grey-50">';
-                tmp+='<div class="stream-hud"><div class="lamp" title="'+k.mode+'"><i class="fa fa-eercast"></i></div><div class="controls"><span title="Currently vieweing" class="label label-default"><span class="viewers"></span> <i class="fa fa-eye"></i></span></div></div>';
+                tmp+='<div class="stream-hud"><div class="lamp" title="'+k.mode+'"><i class="fa fa-eercast"></i></div><div class="controls"><span title="Currently vieweing" class="label label-default"><span class="viewers"></span></span> <a class="btn-xs btn-danger btn" monitor="mode" mode="record"><i class="fa fa-circle"></i> Start Recording</a> <a class="btn-xs btn-default btn" monitor="mode" mode="start"><i class="fa fa-eye"></i> Set to Watch Only</a></div></div>';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card__supporting-text text-center">';
                 tmp+='<div class="indifference"><div class="progress"><div class="progress-bar progress-bar-danger" role="progressbar"><span>70%</span></div></div></div>';
@@ -641,20 +647,20 @@ $.ccio.ws.on('f',function (d){
     }
     switch(d.f){
         case'api_key_deleted':
-            new PNotify({title:'API Key Deleted',text:'Key has been deleted. It will no longer work.',type:'notice'});
+            $.ccio.init('note',{title:'API Key Deleted',text:'Key has been deleted. It will no longer work.',type:'notice'});
             $('[api_key="'+d.form.code+'"]').remove();
         break;
         case'api_key_added':
-            new PNotify({title:'API Key Added',text:'You may use this key now.',type:'success'});
+            $.ccio.init('note',{title:'API Key Added',text:'You may use this key now.',type:'success'});
             $.ccio.tm(3,d.form,'#api_list')
         break;
         case'filters_change':
-            new PNotify({title:'Filters Updated',text:'Your changes have been saved and applied.',type:'success'});
+            $.ccio.init('note',{title:'Filters Updated',text:'Your changes have been saved and applied.',type:'success'});
             $user.filters=d.filters;
             $.ccio.init('filters');
         break;
         case'user_settings_change':
-            new PNotify({title:'Settings Changed',text:'Your settings have been saved and applied.',type:'success'});
+            $.ccio.init('note',{title:'Settings Changed',text:'Your settings have been saved and applied.',type:'success'});
             $.ccio.init('id',d.form);
             $('#custom_css').append(d.form.details.css)
         break;
@@ -796,11 +802,11 @@ $.ccio.ws.on('f',function (d){
             $.ccio.tm(0,d,d.e)
         break;
 //        case'monitor_stopping':
-//            new PNotify({title:'Monitor Stopping',text:'Monitor <b>'+d.mid+'</b> is now off.',type:'notice'});
+//            $.ccio.init('note',{title:'Monitor Stopping',text:'Monitor <b>'+d.mid+'</b> is now off.',type:'notice'});
 //        break;
         case'monitor_starting':
 //            switch(d.mode){case'start':d.mode='Watch';break;case'record':d.mode='Record';break;}
-//            new PNotify({title:'Monitor Starting',text:'Monitor <b>'+d.mid+'</b> is now running in mode <b>'+d.mode+'</b>',type:'success'});
+//            $.ccio.init('note',{title:'Monitor Starting',text:'Monitor <b>'+d.mid+'</b> is now running in mode <b>'+d.mode+'</b>',type:'success'});
             d.e=$('#monitor_live_'+d.mid)
             if(d.e.length>0){$.ccio.cx({f:'monitor',ff:'watch_on',id:d.mid})}
         break;
@@ -834,7 +840,7 @@ $.ccio.ws.on('f',function (d){
                     d.pnote.text+=' Your account has reached the maximum number of cameras that can be created. Speak to an administrator if you would like this changed.'
                 break;
             }
-            new PNotify(d.pnote);
+            $.ccio.init('note',d.pnote);
         break;
         case'monitor_edit':
             d.e=$('[mid="'+d.mon.mid+'"][ke="'+d.mon.ke+'"]');
@@ -881,7 +887,7 @@ $.ccio.ws.on('f',function (d){
             d.e.attr('mode',d.mode)
             d.e.find('.lamp').attr('title',d.mode)
             $.gR.drawList();
-            new PNotify({title:'Monitor Saved',text:'<b>'+d.mon.name+'</b> <small>'+d.mon.mid+'</small> has been saved.',type:'success'});
+            $.ccio.init('note',{title:'Monitor Saved',text:'<b>'+d.mon.name+'</b> <small>'+d.mon.mid+'</small> has been saved.',type:'success'});
         break;
         case'mode_jpeg_off':
             $.ccio.op('jpeg_on',"0");
@@ -1339,7 +1345,7 @@ $.aM.f.submit(function(e){
 //    if(e.s.protocol=='rtsp'){e.s.ext='mp4',e.s.type='rtsp'}
     if(e.er.length>0){
         $.sM.e.find('.msg').html(e.er.join('<br>'));
-        new PNotify({title:'Configuration Invalid',text:e.er.join('<br>'),type:'error'});
+        $.ccio.init('note',{title:'Configuration Invalid',text:e.er.join('<br>'),type:'error'});
         return;
     }
     $.post('/'+$user.auth_token+'/configureMonitor/'+$user.ke+'/'+e.s.mid,{data:JSON.stringify(e.s)},function(d){
@@ -1410,7 +1416,7 @@ $.aM.e.find('.import_config').click(function(e){
             $.aM.e.modal('show')
         }catch(err){
             console.log(err)
-            new PNotify({title:'Invalid JSON',text:'Please ensure this is a valid JSON string for Shinobi monitor configuration.',type:'error'})
+            $.ccio.init('note',{title:'Invalid JSON',text:'Please ensure this is a valid JSON string for Shinobi monitor configuration.',type:'error'})
         }
     });
 });
@@ -2123,6 +2129,14 @@ $('body')
         e.mid=e.p.attr('mid'),//monitor id
         e.mon=$.ccio.mon[e.mid];//monitor configuration
     switch(e.a){
+        case'mode':
+            e.mode=e.e.attr('mode')
+            if(e.mode){
+                $.getJSON('/'+$user.auth_token+'/monitor/'+e.ke+'/'+e.mid+'/'+e.mode,function(d){
+                    console.log(d)
+                })
+            }
+        break;
         case'powerview':
             $.pwrvid.e.modal('show')
             $.pwrvid.m.find('.monitor').remove()
@@ -2138,7 +2152,7 @@ $('body')
         break;
         case'region':
             if(!e.mon){
-                new PNotify({title:'Unable to Launch',text:'Please save new monitor first. Then attempt to launch the region editor.',type:'error'});
+                $.ccio.init('note',{title:'Unable to Launch',text:'Please save new monitor first. Then attempt to launch the region editor.',type:'error'});
                 return;
             }
             e.d=JSON.parse(e.mon.details);
