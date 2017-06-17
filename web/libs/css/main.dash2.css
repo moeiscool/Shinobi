@@ -217,7 +217,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .monitor_item .stream-hud:hover{opacity:1}
 .monitor_item .stream-hud .lamp{position:absolute;top:5px;right:5px;z-index:1;text-shadow: 0 0 15px #333;}
 .monitor_item[mode="Disabled"] .stream-hud .lamp{color:#5d5d5d}
-.monitor_item[mode="Watch Only"] .stream-hud .lamp{color:#5cb85c}
+.monitor_item[mode="Watch Only"] .stream-hud .lamp{color:#5da8e8}
 .monitor_item[mode="Idle"] .stream-hud .lamp{color:#fff}
 .monitor_item[mode="Record"] .stream-hud .lamp{color:#d9534f}
 .monitor_item .side-menu{position:absolute;height:100%;width:100%;left:0;top:0;}

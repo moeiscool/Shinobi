@@ -402,7 +402,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" mode="'+k.mode+'" class="monitor_item glM'+d.mid+' mdl-grid col-md-6">';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col">';
                 tmp+='<div class="stream-block no-padding mdl-card__media mdl-color-text--grey-50">';
-                tmp+='<div class="stream-hud"><div class="lamp" title="'+k.mode+'"><i class="fa fa-eercast"></i></div><div class="controls"><span title="Currently vieweing" class="label label-default"><span class="viewers"></span></span> <a class="btn-xs btn-danger btn" monitor="mode" mode="record"><i class="fa fa-circle"></i> Start Recording</a> <a class="btn-xs btn-default btn" monitor="mode" mode="start"><i class="fa fa-eye"></i> Set to Watch Only</a></div></div>';
+                tmp+='<div class="stream-hud"><div class="lamp" title="'+k.mode+'"><i class="fa fa-eercast"></i></div><div class="controls"><span title="Currently vieweing" class="label label-default"><span class="viewers"></span></span> <a class="btn-xs btn-danger btn" monitor="mode" mode="record"><i class="fa fa-circle"></i> Start Recording</a> <a class="btn-xs btn-primary btn" monitor="mode" mode="start"><i class="fa fa-eye"></i> Set to Watch Only</a></div></div>';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card__supporting-text text-center">';
                 tmp+='<div class="indifference"><div class="progress"><div class="progress-bar progress-bar-danger" role="progressbar"><span>70%</span></div></div></div>';
