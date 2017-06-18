@@ -461,16 +461,16 @@ s.video=function(x,e){
             if(!e.filename&&e.time){e.filename=s.moment(e.time)}
             if(!e.status){e.status=0}
             e.save=[e.id,e.ke,s.nameToTime(e.filename)];
-                sql.query('DELETE FROM Videos WHERE `mid`=? AND `ke`=? AND `time`=?',e.save,function(err,r){
-                    fs.stat(e.dir+e.filename+'.'+e.ext,function(err,file){
-                        if(err){
-                            return s.systemLog(err)
-                        }
-                        s.group[e.ke].init.used_space=s.group[e.ke].init.used_space-(file.size/1000000)
-                        s.init('diskUsed',e)
-                    })
-                    s.tx({f:'video_delete',filename:e.filename+'.'+e.ext,mid:e.mid,ke:e.ke,time:s.nameToTime(e.filename),end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
-                    s.file('delete',e.dir+e.filename+'.'+e.ext)
+            sql.query('DELETE FROM Videos WHERE `mid`=? AND `ke`=? AND `time`=?',e.save,function(err,r){
+                fs.stat(e.dir+e.filename+'.'+e.ext,function(err,file){
+                    if(err){
+                        return s.systemLog(err)
+                    }
+                    s.group[e.ke].init.used_space=s.group[e.ke].init.used_space-(file.size/1000000)
+                    s.init('diskUsed',e)
+                })
+                s.tx({f:'video_delete',filename:e.filename+'.'+e.ext,mid:e.mid,ke:e.ke,time:s.nameToTime(e.filename),end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
+                s.file('delete',e.dir+e.filename+'.'+e.ext)
             })
         break;
         case'open':
@@ -1045,15 +1045,17 @@ s.camera=function(x,e,cn,tx){
                                 if(exists){
                                     if(s.group[e.ke].mon[e.id].open){
                                         s.video('close',e);
-                                        if(s.ocv&&e.started===1&&e.details&&e.details.detector_record_method==='del'&&e.details.detector_delete_motionless_videos==='1'&&s.group[e.ke].mon[e.id].detector_motion_count&&s.group[e.ke].mon[e.id].detector_motion_count===0){
-                                            s.video('delete',e)
+                                        if(e.details.detector==='1'&&s.ocv&&s.group[e.ke].mon[e.id].started===1&&e.details&&e.details.detector_record_method==='del'&&e.details.detector_delete_motionless_videos==='1'&&s.group[e.ke].mon[e.id].detector_motion_count===0){
+                                            s.video('delete',s.init('noReference',e))
                                         }
                                     }
-                                    e.filename=filename.split('.')[0];
-                                    s.video('open',e);
-                                    s.group[e.ke].mon[e.id].open=e.filename;
-                                    s.group[e.ke].mon[e.id].open_ext=e.ext;
-                                    s.group[e.ke].mon[e.id].detector_motion_count=0;
+                                    setTimeout(function(){
+                                        e.filename=filename.split('.')[0];
+                                        s.video('open',e);
+                                        s.group[e.ke].mon[e.id].open=e.filename;
+                                        s.group[e.ke].mon[e.id].open_ext=e.ext;
+                                        s.group[e.ke].mon[e.id].detector_motion_count=0;
+                                    },2000)
                                 }
                             });
                         break;
