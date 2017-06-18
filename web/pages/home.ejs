@@ -205,14 +205,16 @@
 <% include blocks/settings.ejs %>
 <% include blocks/filters.ejs %>
 <% include blocks/powervideo.ejs %>
-<% include blocks/videoview.html %>
+<% include blocks/videoview.ejs %>
 <% include blocks/monitoredit.ejs %>
 <% include blocks/probe.html %>
 <% include blocks/region.html %>
 <% include blocks/confirm.html %>
+<% if(config.DropboxAppKey){ %>
 <!--Dropbox Library, Change data-app-key to your app key. -->
 <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="<%= config.DropboxAppKey %>"></script>
 <!--Dropbox End-->
+<% } %>
 <script src="/libs/js/material.min.js"></script>
 <script src="/libs/js/pnotify.custom.min.js"></script>
 <script src="/libs/js/moment.js"></script>
@@ -228,5 +230,5 @@
 <script src="/libs/js/Chart.js"></script>
 <script src="/libs/js/daterangepicker.js"></script>
 <script src="/libs/js/jquery.canvasAreaDraw.js"></script>
-<script src="/libs/js/main.dash2.js"></script>
+<script><% include ../libs/js/main.dash2.js %></script>
 <% include blocks/help.ejs %>

@@ -15,7 +15,9 @@
                 <div style="margin-top:10px">
                     <div class="btn-group"><a preview="stepBackBack" class="active btn btn-sm btn-primary"><i class="fa fa-fast-backward"></i></a> <a preview="stepBack" class="btn btn-sm btn-primary"><i class="fa fa-backward"></i></a> <a preview="play" class="btn btn-sm btn-default"><i class="fa fa-play"></i></a> <a preview="mute" class="btn btn-sm btn-default"><i class="fa fa-volume-up"></i></a> <a preview="stepFront" class="btn btn-sm btn-primary"><i class="fa fa-fast-forward"></i></a> <a preview="stepFrontFront" class="active btn btn-sm btn-primary"><i class="fa fa-forward"></i></a>
                     </div>
-                    <div class="btn-group"><a download="" href="" class="btn btn-sm btn-default"><i class="fa fa-download"></i></a> <a video="download" host="dropbox" download="" href="" class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a></div>
+                    <div class="btn-group"><a download="" href="" class="btn btn-sm btn-default"><i class="fa fa-download"></i></a>
+                        <% if(config.DropboxAppKey){ %><a video="download" host="dropbox" download="" href="" class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a><% } %>
+                    </div>
 <!--                <a class="btn btn-sm btn-primary" video="launch" href=""><i class="fa fa-play-circle"></i> <span>No Video Selected</span></a>-->
                 </div>
               </div>
