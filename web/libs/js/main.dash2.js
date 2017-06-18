@@ -1077,9 +1077,6 @@ $.oB.e.find('[name="user"]').change(function(e){
 if($.ccio.op().onvif_probe_user){
     $.oB.e.find('[name="user"]').val($.ccio.op().onvif_probe_user)
 }
-$.oB.e.on('shown.bs.modal',function(){
-    $.oB.f.submit()
-})
 //Group Selector
 $.gR={e:$('#group_list'),b:$('#group_list_button')};
 $.gR.drawList=function(){

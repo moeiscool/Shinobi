@@ -141,7 +141,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .form-group label>div:nth-child(2n-1){width:30%}
 .form-group label>div:nth-child(2){width:70%;padding:5px;border:1px solid #dedede;border-radius:5px}
 .dark .form-group label>div,.dark .form-group label>div>span{border-color:#454545;color:#fff}
-.important.form-group label>div:nth-child(2){border-color:red}
+.important.form-group label>div:nth-child(2),.important.form-group label>div>span{border-color:red}
 .form-group label span small{margin-left: 2px;display:block;font-weight: 600;}
 .form-group-group blockquote:before,.form-group-group blockquote:after{display:none!important}
 .form-group-group blockquote{letter-spacing:normal;font-style:normal}
@@ -265,7 +265,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .dark.modal .close{color:#fff;}
 .dark.modal{color:#fff;}
 .dark .table-striped>tbody>tr:nth-of-type(even){background:#616161}
-.dark .table-striped>tbody>tr>td{border-color:#222}
+.dark .table-striped>tbody>tr>td{border-color:#222;color:#fff}
 .dark .table-striped>tbody>tr:nth-of-type(odd){background-color: #4c4747;}
 .os_bars{width:500px;display:inline-block;padding:5px 0 0 10px}
 @media screen and (max-width: 600px){
