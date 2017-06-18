@@ -1340,9 +1340,10 @@ s.camera=function(x,e,cn,tx){
         case'motion':
             var d=e;
             d.mon=s.group[d.ke].mon_conf[d.id];
-            if(s.group[d.ke]&&s.group[d.ke].mon[d.id]&&s.group[d.ke].mon[d.id].detector_motion_count){
-                ++s.group[d.ke].mon[d.id].detector_motion_count
+            if(!s.group[d.ke].mon[d.id].detector_motion_count){
+                s.group[d.ke].mon[d.id].detector_motion_count=0
             }
+            s.group[d.ke].mon[d.id].detector_motion_count+=1
             if(s.group[d.ke].mon[d.id].motion_lock){
                 return
             }else{
