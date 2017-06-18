@@ -955,7 +955,6 @@ s.camera=function(x,e,cn,tx){
                     delete(s.group[e.ke].mon[e.id].motion_lock);
                 },30000)
             }
-            //every 15 minutes start a new file.
             s.group[e.ke].mon[e.id].started=1;
             if(x==='record'){
                 s.group[e.ke].mon[e.id].record.yes=1;
@@ -1046,11 +1045,15 @@ s.camera=function(x,e,cn,tx){
                                 if(exists){
                                     if(s.group[e.ke].mon[e.id].open){
                                         s.video('close',e);
+                                        if(s.ocv&&s.group[e.ke].mon[e.id].started===1&&s.group[e.ke].mon[e.id].details&&s.group[e.ke].mon[e.id].details.detector_record_method==='del'&&s.group[e.ke].mon[e.id].details.detector_delete_motionless_videos==='1'&&s.group[e.ke].mon[e.id].detector_motion_count&&s.group[e.ke].mon[e.id].detector_motion_count===0){
+                                            s.video('delete',e)
+                                        }
                                     }
                                     e.filename=filename.split('.')[0];
                                     s.video('open',e);
                                     s.group[e.ke].mon[e.id].open=e.filename;
                                     s.group[e.ke].mon[e.id].open_ext=e.ext;
+                                    s.group[e.ke].mon[e.id].detector_motion_count=0;
                                 }
                             });
                         break;
@@ -1335,6 +1338,9 @@ s.camera=function(x,e,cn,tx){
         case'motion':
             var d=e;
             d.mon=s.group[d.ke].mon_conf[d.id];
+            if(s.group[d.ke]&&s.group[d.ke].mon[d.id]&&s.group[d.ke].mon[d.id].detector_motion_count){
+                ++s.group[d.ke].mon[d.id].detector_motion_count
+            }
             if(s.group[d.ke].mon[d.id].motion_lock){
                 return
             }else{
@@ -1343,9 +1349,9 @@ s.camera=function(x,e,cn,tx){
                 }else{
                     d.mon.details.detector_lock_timeout=parseFloat(d.mon.details.detector_lock_timeout)
                 }
-                s.group[e.ke].mon[e.id].motion_lock=setTimeout(function(){
-                    clearTimeout(s.group[e.ke].mon[e.id].motion_lock);
-                    delete(s.group[e.ke].mon[e.id].motion_lock);
+                s.group[d.ke].mon[d.id].motion_lock=setTimeout(function(){
+                    clearTimeout(s.group[d.ke].mon[d.id].motion_lock);
+                    delete(s.group[d.ke].mon[d.id].motion_lock);
                 },d.mon.details.detector_lock_timeout)
             }
             d.cx={f:'detector_trigger',id:d.id,ke:d.ke,details:d.details};
@@ -1377,7 +1383,7 @@ s.camera=function(x,e,cn,tx){
 
                 }).end();
             }
-            if(d.mon.mode!=='stop'&&d.mon.details.detector_trigger=='1'){
+            if(d.mon.mode!=='stop'&&d.mon.details.detector_trigger=='1'&&d.mon.details.detector_record_method==='hot'){
                 if(!d.mon.details.detector_timeout||d.mon.details.detector_timeout===''){
                     d.mon.details.detector_timeout=10
                 }else{
@@ -1482,10 +1488,9 @@ s.camera=function(x,e,cn,tx){
                         })
                         nodemailer.sendMail(d.mailOptions, (error, info) => {
                             if (error) {
-                                s.tx({f:'error',ff:'detector_trigger_mail',id:d.id,ke:d.ke,error:error},'GRP_'+d.ke);
+                                s.systemLog('MAIL ERROR : Could not send email, Check conf.json',error)
                                 return ;
                             }
-                            s.tx({f:'detector_trigger_mail',id:d.id,ke:d.ke,info:info},'GRP_'+d.ke);
                         });
                     })
                 });
