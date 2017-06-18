@@ -1191,7 +1191,7 @@ s.camera=function(x,e,cn,tx){
                                 s.log(e,{type:'Spawn Error',msg:er});e.error_fatal()
                             });
                             if(s.ocv&&e.details.detector==='1'){
-                                s.tx({f:'init_monitor',mon:e.details,id:e.id},s.ocv.id)
+                                s.tx({f:'init_monitor',id:e.id,ke:e.ke},s.ocv.id)
                             }
                             //frames from motion detect
                             s.group[e.ke].mon[e.id].spawn.stdin.on('data',function(d){
@@ -1346,16 +1346,6 @@ s.camera=function(x,e,cn,tx){
             s.group[d.ke].mon[d.id].detector_motion_count+=1
             if(s.group[d.ke].mon[d.id].motion_lock){
                 return
-            }else{
-                if(!d.mon.details.detector_lock_timeout||d.mon.details.detector_lock_timeout===''||d.mon.details.detector_lock_timeout==0){
-                    d.mon.details.detector_lock_timeout=2000
-                }else{
-                    d.mon.details.detector_lock_timeout=parseFloat(d.mon.details.detector_lock_timeout)
-                }
-                s.group[d.ke].mon[d.id].motion_lock=setTimeout(function(){
-                    clearTimeout(s.group[d.ke].mon[d.id].motion_lock);
-                    delete(s.group[d.ke].mon[d.id].motion_lock);
-                },d.mon.details.detector_lock_timeout)
             }
             d.cx={f:'detector_trigger',id:d.id,ke:d.ke,details:d.details};
             s.tx(d.cx,'GRP_'+d.ke);
