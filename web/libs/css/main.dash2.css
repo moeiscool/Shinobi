@@ -173,6 +173,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .form-group-group.orange h4{background:#f0ad4e;color:#fff}
 .form-group-group.grey{border-color:#777}
 .form-group-group.grey h4{background:#777;color:#fff}
+.dark .form-group-group{background:#222}
 .videos_list .title{font-size:12pt;padding:0 10px}
 [status="1"] .btn[video="launch"],[data-status="1"] .btn[video="launch"]{background:#337ab7;border-color:#337ab7}
 [status="2"] .btn[launch="video"],[status="2"] .btn[video="launch"],[data-status="2"] .btn[video="launch"]{background:#a59100;border-color:#a59100}
@@ -197,6 +198,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .side-menu .monitor_block .list-data{display:none}
 .output_data:empty{display:none}
 .output_data{max-height:500px;font-family:monospace;padding:10px;border-radius:5px;background:#f3f3f3;overflow:auto}
+.dark .output_data{background:#222;}
 #probe .output_data div>div{margin-left:10px}
 .side-menu.list-blocks .monitor_block .icons,.side-menu.list-blocks .monitor_block .title{position:inherit;opacity:1;background:none}
 .side-menu.list-blocks .monitor_block .title{padding:5px;border-radius:5px;background:#222;cursor: n-resize}
@@ -461,7 +463,7 @@ ul.msg_list li .message {
 }
 
 
-.dark.form-control {
+.dark.form-control,.dark .form-control {
     display: block;
     width: 100%;
     height: 35px;
@@ -477,7 +479,7 @@ ul.msg_list li .message {
     transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
 }
 
-.dark.form-control:focus {
+.dark.form-control:focus,.dark .form-control:focus {
     color: #ddd;
     background-color: #333;
     box-shadow: none;
