@@ -211,7 +211,9 @@
 <% include blocks/region.html %>
 <% include blocks/confirm.html %>
 <!--Dropbox Library, Change data-app-key to your app key. -->
+<% if(config.DropboxAppKey) { %>
 <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="<%= config.DropboxAppKey %>"></script>
+<% } %>
 <!--Dropbox End-->
 <script src="/libs/js/material.min.js"></script>
 <script src="/libs/js/pnotify.custom.min.js"></script>
