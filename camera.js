@@ -1045,7 +1045,7 @@ s.camera=function(x,e,cn,tx){
                                 if(exists){
                                     if(s.group[e.ke].mon[e.id].open){
                                         s.video('close',e);
-                                        if(s.ocv&&s.group[e.ke].mon[e.id].started===1&&s.group[e.ke].mon[e.id].details&&s.group[e.ke].mon[e.id].details.detector_record_method==='del'&&s.group[e.ke].mon[e.id].details.detector_delete_motionless_videos==='1'&&s.group[e.ke].mon[e.id].detector_motion_count&&s.group[e.ke].mon[e.id].detector_motion_count===0){
+                                        if(s.ocv&&e.started===1&&e.details&&e.details.detector_record_method==='del'&&e.details.detector_delete_motionless_videos==='1'&&s.group[e.ke].mon[e.id].detector_motion_count&&s.group[e.ke].mon[e.id].detector_motion_count===0){
                                             s.video('delete',e)
                                         }
                                     }
@@ -2437,7 +2437,7 @@ app.post('/',function (req,res){
         res.render("index",{failedLogin:true});
         res.end();
     }
-    req.fn=function(){
+    req.fn=function(r){
         switch(req.body.function){
             case'streamer':
                 sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
@@ -2501,7 +2501,7 @@ app.post('/',function (req,res){
                                 }
                                 if(!s.factorAuth[r.ke]){s.factorAuth[r.ke]={}}
                                 if(!s.factorAuth[r.ke][r.uid]){
-                                    s.factorAuth[r.ke][r.uid]={key:s.nid()}
+                                    s.factorAuth[r.ke][r.uid]={key:s.nid(),user:r}
                                     r.mailOptions = {
                                         from: '"ShinobiCCTV" <no-reply@shinobi.video>',
                                         to: r.mail,
@@ -2511,7 +2511,7 @@ app.post('/',function (req,res){
                                     nodemailer.sendMail(r.mailOptions, (error, info) => {
                                         if (error) {
                                             s.systemLog('MAIL ERROR : You must set up conf.json with the mail object or this feature will not work. skipping 2-Factor Authentication this time.',error)
-                                            req.fn()
+                                            req.fn(r)
                                             return
                                         }
                                         req.complete()
@@ -2520,10 +2520,10 @@ app.post('/',function (req,res){
                                     req.complete()
                                 }
                             }else{
-                               req.fn()
+                               req.fn(r)
                             }
                         }else{
-                           req.fn()
+                           req.fn(r)
                         }
                     }
                     if(r.details.sub){
@@ -2557,7 +2557,7 @@ app.post('/',function (req,res){
                         }
                     }
                     req.resp=s.factorAuth[req.body.ke][req.body.id].info
-                    req.fn()
+                    req.fn(s.factorAuth[req.body.ke][req.body.id].user)
                 }else{
                     res.render("factor",{$user:s.factorAuth[req.body.ke][req.body.id].info});
                     res.end();
