@@ -1,5 +1,5 @@
 <!--Add Monitor Window-->
-<div class="modal medium fade" id="add_monitor" tabindex="-1" role="dialog" aria-labelledby="add_monitorLabel" aria-hidden="true">
+<div class="modal dark medium fade" id="add_monitor" tabindex="-1" role="dialog" aria-labelledby="add_monitorLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <form class="modal-content">
       <div class="modal-header">
@@ -452,11 +452,13 @@
                 <div><input class="form-control" detail="cust_detect"></div>
                 </label>
               </div>
+<!--
               <div class="form-group shinobi-detector" style="display:none">
                 <label><div><span>Detector Buffer Flags</span></div>
                 <div><input class="form-control" detail="cust_detector_buffer"></div>
                 </label>
               </div>
+-->
               <div class="form-group">
                 <label><div><span>Stream Flags</span></div>
                 <div><input class="form-control" detail="cust_stream"></div>
@@ -500,7 +502,7 @@
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><div><span>Detector Command</span></div>
+                    <label><div><span>Command on Trigger</span></div>
                         <div><select class="form-control" detail="detector_command_enable" selector="h_det_com">
                             <option value="0" selected>No</option>
                             <option value="1">Yes</option>
@@ -522,32 +524,49 @@
                     <div><input class="form-control" detail="detector_lock_timeout" placeholder="2000"></div>
                     </label>
                   </div>
-              <div class="shinobi-detector" style="display:none">
-                  <div class="row">
-                      <div class="form-group col-md-12">
-                        <label><div><span>Trigger Record</span></div>
-                            <div><select class="form-control" detail="detector_trigger">
-                                <option value="0" selected>No</option>
-                                <option value="1">Yes</option>
+                  <div class="shinobi-detector" style="display:none">
+                      <div class="form-group important">
+                        <label><div><span>How to Record</span></div>
+                            <div><select class="form-control" detail="detector_record_method" selector="h_rec_mtd">
+                                <option value="hot" selected>Hotswap Modes (Watch-Only)</option>
+                                <option value="del">Delete Motionless Videos (Record)</option>
                             </select></div>
                         </label>
                       </div>
-                      <div class="form-group col-md-12">
-                        <label><div><span>Recording Timeout <small>in Minutes</small></span></div>
-                        <div><input class="form-control" detail="detector_timeout" placeholder="10"></div>
-                        </label>
+                      <div class="h_rec_mtd_input h_rec_mtd_hot">
+                          <div class="form-group">
+                            <label><div><span>Trigger Record</span></div>
+                                <div><select class="form-control" detail="detector_trigger">
+                                    <option value="0" selected>No</option>
+                                    <option value="1">Yes</option>
+                                </select></div>
+                            </label>
+                          </div>
+                          <div class="form-group">
+                            <label><div><span>Recording Timeout <small>in Minutes</small></span></div>
+                            <div><input class="form-control" detail="detector_timeout" placeholder="10"></div>
+                            </label>
+                          </div>
+                          <div class="form-group">
+                            <label><div><span>Timeout Reset on Next Motion</span></div>
+                                <div><select class="form-control" detail="watchdog_reset">
+                                    <option value="0">No</option>
+                                    <option value="1" selected>Yes</option>
+                                </select></div>
+                            </label>
+                          </div>
                       </div>
-                  </div>
-                  <div class="row">
-                      <div class="form-group col-md-12">
-                        <label><div><span>Timeout Reset on Next Motion</span></div>
-                            <div><select class="form-control" detail="watchdog_reset">
-                                <option value="0">No</option>
-                                <option value="1" selected>Yes</option>
-                            </select></div>
-                        </label>
+                      <div class="h_rec_mtd_input h_rec_mtd_del">
+                          <div class="form-group">
+                            <label><div><span>Delete Motionless Video</span></div>
+                                <div><select class="form-control" detail="detector_delete_motionless_videos">
+                                    <option value="0" selected>No</option>
+                                    <option value="1">Yes</option>
+                                </select></div>
+                            </label>
+                          </div>
                       </div>
-                      <div class="form-group col-md-12">
+                      <div class="form-group">
                         <label><div><span>Save Events to SQL</span></div>
                             <div><select class="form-control" detail="detector_save">
                                 <option value="0" selected>No</option>
@@ -555,99 +574,98 @@
                             </select></div>
                         </label>
                       </div>
-                  </div>
-                  <div class="row">
-                      <div class="form-group col-md-12">
-                        <label><div><span>Email on Trigger <small>Emails go to the main account holder's login address.</small></span></div>
-                            <div><select class="form-control" detail="detector_mail">
+                      <div class="row">
+                          <div class="form-group col-md-12">
+                            <label><div><span>Email on Trigger <small>Emails go to the main account holder's login address.</small></span></div>
+                                <div><select class="form-control" detail="detector_mail">
+                                    <option value="0" selected>No</option>
+                                    <option value="1">Yes</option>
+                                </select></div>
+                            </label>
+                          </div>
+                          <div class="form-group col-md-12">
+                            <label><div><span>Allow Next Email <small>in Minutes</small></span></div>
+                            <div><input class="form-control" detail="detector_mail_timeout" placeholder="10"></div>
+                            </label>
+                          </div>
+                      </div>
+                      <div class="form-group important">
+                        <label><div><span>Send Frames</span></div>
+                            <div><select class="form-control" detail="detector_send_frames" selector="h_det_fra">
                                 <option value="0" selected>No</option>
                                 <option value="1">Yes</option>
                             </select></div>
                         </label>
                       </div>
-                      <div class="form-group col-md-12">
-                        <label><div><span>Allow Next Email <small>in Minutes</small></span></div>
-                        <div><input class="form-control" detail="detector_mail_timeout" placeholder="10"></div>
+                      <div class="h_det_web_input h_det_fra_1">
+                      <div class="form-group">
+                        <label><div><span>Detector Rate <small>(FPS)</small></span></div>
+                        <div><input class="form-control" detail="detector_fps" placeholder="2"></div>
                         </label>
                       </div>
-                  </div>
-                  <div class="form-group important">
-                    <label><div><span>Send Frames</span></div>
-                        <div><select class="form-control" detail="detector_send_frames" selector="h_det_fra">
-                            <option value="0" selected>No</option>
-                            <option value="1">Yes</option>
-                        </select></div>
-                    </label>
-                  </div>
-                  <div class="h_det_web_input h_det_fra_1">
-                  <div class="form-group">
-                    <label><div><span>Detector Rate <small>(FPS)</small></span></div>
-                    <div><input class="form-control" detail="detector_fps" placeholder="2"></div>
-                    </label>
-                  </div>
-                  <div class="row">
-                      <div class="form-group col-md-12">
-                        <label><div><span>Feed-in Image Width</span></div>
-                        <div><input class="form-control" detail="detector_scale_x" placeholder="320"></div>
-                        </label>
+                      <div class="row">
+                          <div class="form-group col-md-12">
+                            <label><div><span>Feed-in Image Width</span></div>
+                            <div><input class="form-control" detail="detector_scale_x" placeholder="320"></div>
+                            </label>
+                          </div>
+                          <div class="form-group col-md-12">
+                            <label><div><span>Feed-in Image Height</span></div>
+                            <div><input class="form-control" detail="detector_scale_y" placeholder="240"></div>
+                            </label>
+                          </div>
                       </div>
-                      <div class="form-group col-md-12">
-                        <label><div><span>Feed-in Image Height</span></div>
-                        <div><input class="form-control" detail="detector_scale_y" placeholder="240"></div>
-                        </label>
                       </div>
                   </div>
+                  <div class="shinobi-detector-stemkoski shinobi-detector-motion shinobi-detector_plug" style="display:none">
+                      <div class="row">
+                          <div class="form-group col-md-12">
+                            <label><div><span>Full Frame Detection</span></div>
+                                <div><select class="form-control" detail="detector_frame">
+                                    <option value="0">No</option>
+                                    <option value="1" selected>Yes</option>
+                                </select></div>
+                            </label>
+                          </div>
+                          <div class="form-group col-md-12">
+                            <label><div><span title="Opposite of Sensitivity">Indifference</span></div>
+                            <div><input class="form-control" detail="detector_sensitivity" placeholder="0.5"></div>
+                            </label>
+                          </div>
+                      </div>
+                      <div class="hidden">
+                          <div><input detail="cords" placeholder=""></div>
+                      </div>
+                      <div class="form-group">
+                        <a class="btn btn-danger btn-block" monitor="region"><i class="fa fa-grav"></i> &nbsp; Region Editor</a>
+                      </div>
                   </div>
-              </div>
-              <div class="shinobi-detector-stemkoski shinobi-detector-motion shinobi-detector_plug" style="display:none">
-                  <div class="row">
-                      <div class="form-group col-md-12">
-                        <label><div><span>Full Frame Detection</span></div>
-                            <div><select class="form-control" detail="detector_frame">
-                                <option value="0">No</option>
-                                <option value="1" selected>Yes</option>
+                  <div class="shinobi-detector-opencv shinobi-detector_plug" style="display:none">
+                      <div class="form-group">
+                        <label><div><span>Face Detection</span></div>
+                            <div><select class="form-control" detail="detector_face">
+                                <option value="0" selected>No</option>
+                                <option value="1">Yes</option>
                             </select></div>
                         </label>
                       </div>
-                      <div class="form-group col-md-12">
-                        <label><div><span title="Opposite of Sensitivity">Indifference</span></div>
-                        <div><input class="form-control" detail="detector_sensitivity" placeholder="0.5"></div>
+                      <div class="form-group">
+                        <label><div><span>Full Body Detection</span></div>
+                            <div><select class="form-control" detail="detector_fullbody">
+                                <option value="0" selected>No</option>
+                                <option value="1">Yes</option>
+                            </select></div>
+                        </label>
+                      </div>
+                      <div class="form-group">
+                        <label><div><span>Car Side Detection</span></div>
+                            <div><select class="form-control" detail="detector_car">
+                                <option value="0" selected>No</option>
+                                <option value="1">Yes</option>
+                            </select></div>
                         </label>
                       </div>
                   </div>
-                  <div class="hidden">
-                      <div><input detail="cords" placeholder=""></div>
-                  </div>
-                  <div class="form-group">
-                    <a class="btn btn-danger btn-block" monitor="region"><i class="fa fa-grav"></i> &nbsp; Region Editor</a>
-                  </div>
-              </div>
-              <div class="shinobi-detector-opencv shinobi-detector_plug" style="display:none">
-                  <div class="form-group">
-                    <label><div><span>Face Detection</span></div>
-                        <div><select class="form-control" detail="detector_face">
-                            <option value="0" selected>No</option>
-                            <option value="1">Yes</option>
-                        </select></div>
-                    </label>
-                  </div>
-                  <div class="form-group">
-                    <label><div><span>Full Body Detection</span></div>
-                        <div><select class="form-control" detail="detector_fullbody">
-                            <option value="0" selected>No</option>
-                            <option value="1">Yes</option>
-                        </select></div>
-                    </label>
-                  </div>
-                  <div class="form-group">
-                    <label><div><span>Car Side Detection</span></div>
-                        <div><select class="form-control" detail="detector_car">
-                            <option value="0" selected>No</option>
-                            <option value="1">Yes</option>
-                        </select></div>
-                    </label>
-                  </div>
-              </div>
               </div>
           </div>
 <!--
@@ -907,7 +925,7 @@
             <span class="h_det_input h_det_1"><button type="button" style="display:none" class="btn btn-warning shinobi-detector-stemkoski shinobi-detector-motion shinobi-detector_plug" monitor="region"><i class="fa fa-grav"></i> Region Editor</button></span>
           </div>
           <div style="display:inline-block;margin-right:5px">
-            <div><select class="form-control" dropdown_toggle="monedit_user_type" selector="h_us">
+            <div><select class="form-control btn-default" dropdown_toggle="monedit_user_type" selector="h_us">
                 <option value="simple" selected>Simple</option>  
                 <option value="advanced">Advanced</option>  
             </select></div>

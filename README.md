@@ -54,7 +54,7 @@ Please be considerate of developer efforts. If you have simple questions, like "
 
 You can post suggestions in the Discord #suggestions channel. Please do not treat this channel like a "demands" window. Developer efforts are limited. Much more than many alternatives.
 
-when you have a suggestion please try and make the changes yourself then post a pull request to the `dev` branch. Then we can decide if it's a good change for Shinobi. If you don't know how to go about it or would like to skip that and have me do the changes you can order a support package.
+when you have a suggestion please try and make the changes yourself then post a pull request to the `dev` branch. Then we can decide if it's a good change for Shinobi. If you don't know how to go about it and want to have me put it higher on my priority list you can order a support package :) Pretty Ferengi of me... but until we live in a world without money please support Shinobi :) Cheers!
 
 http://shinobi.video/support
 

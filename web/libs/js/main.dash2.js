@@ -1,3 +1,12 @@
+window.chartColors = {
+    red: 'rgb(255, 99, 132)',
+    orange: 'rgb(255, 159, 64)',
+    yellow: 'rgb(255, 205, 86)',
+    green: 'rgb(75, 192, 192)',
+    blue: 'rgb(54, 162, 235)',
+    purple: 'rgb(153, 102, 255)',
+    grey: 'rgb(201, 203, 207)'
+};
 $.ccio={fr:$('#files_recent'),mon:{}};
     $.ccio.gid=function(x){
         if(!x){x=10};var t = "";var p = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -8,6 +17,12 @@ $.ccio={fr:$('#files_recent'),mon:{}};
     $.ccio.init=function(x,d,z,k){
         if(!k){k={}};k.tmp='';
         switch(x){
+            case'note':
+                k.o=$.ccio.op().switches
+                if(k.o&&k.o.notifyHide!==1){
+                    new PNotify(d)
+                }
+            break;
             case'montage':
                 k.dimensions=$.ccio.op().montage
                 k.monitors=$('.monitor_item');
@@ -370,7 +385,9 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 d.hr=parseInt(d.mom.format('HH')),
                 d.per=parseInt(d.hr/24*100);
                 d.href='href="'+d.href+'?downloadName='+d.mid+'-'+d.filename+'"';
-                tmp+='<li class="glM'+d.mid+'" mid="'+d.mid+'" ke="'+d.ke+'" status="'+d.status+'" file="'+d.filename+'"><div title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'" '+d.href+' video="launch" class="progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div><div><span title="'+d.end+'" class="livestamp"></span></div><div><div class="small"><b>Start</b> : '+moment(d.time).format('h:mm:ss , MMMM Do YYYY')+'</div><div class="small"><b>End</b> : '+moment(d.end).format('h:mm:ss , MMMM Do YYYY')+'</div></div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls btn-group"><a class="btn btn-sm btn-primary" video="launch" '+d.href+'><i class="fa fa-play-circle"></i></a> <a download="'+d.dlname+'" '+d.href+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a> <a video="download" host="dropbox" download="'+d.dlname+'" '+d.href+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a> <a title="Delete Video" video="delete" class="btn btn-sm btn-danger permission_video_delete"><i class="fa fa-trash"></i></a></div></div></li>';
+                tmp+='<li class="glM'+d.mid+'" mid="'+d.mid+'" ke="'+d.ke+'" status="'+d.status+'" file="'+d.filename+'"><div title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'" '+d.href+' video="launch" class="progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div><div><span title="'+d.end+'" class="livestamp"></span></div><div><div class="small"><b>Start</b> : '+moment(d.time).format('h:mm:ss , MMMM Do YYYY')+'</div><div class="small"><b>End</b> : '+moment(d.end).format('h:mm:ss , MMMM Do YYYY')+'</div></div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls btn-group"><a class="btn btn-sm btn-primary" video="launch" '+d.href+'><i class="fa fa-play-circle"></i></a> <a download="'+d.dlname+'" '+d.href+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a>'
+                <% if(config.DropboxAppKey){ %> tmp+='<a video="download" host="dropbox" download="'+d.dlname+'" '+d.href+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a>' <% } %>
+                tmp+='<a title="Delete Video" video="delete" class="btn btn-sm btn-danger permission_video_delete"><i class="fa fa-trash"></i></a></div></div></li>';
             break;
             case 1://monitor icon
                 d.src=placeholder.getData(placeholder.plcimg({bgcolor:'#b57d00',text:'...'}));
@@ -396,7 +413,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" mode="'+k.mode+'" class="monitor_item glM'+d.mid+' mdl-grid col-md-6">';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col">';
                 tmp+='<div class="stream-block no-padding mdl-card__media mdl-color-text--grey-50">';
-                tmp+='<div class="stream-hud"><div class="lamp" title="'+k.mode+'"><i class="fa fa-eercast"></i></div><div class="controls"><span title="Currently vieweing" class="label label-default"><span class="viewers"></span> <i class="fa fa-eye"></i></span></div></div>';
+                tmp+='<div class="stream-hud"><div class="lamp" title="'+k.mode+'"><i class="fa fa-eercast"></i></div><div class="controls"><span title="Currently vieweing" class="label label-default"><span class="viewers"></span></span> <a class="btn-xs btn-danger btn" monitor="mode" mode="record"><i class="fa fa-circle"></i> Start Recording</a> <a class="btn-xs btn-primary btn" monitor="mode" mode="start"><i class="fa fa-eye"></i> Set to Watch Only</a></div></div>';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card__supporting-text text-center">';
                 tmp+='<div class="indifference"><div class="progress"><div class="progress-bar progress-bar-danger" role="progressbar"><span>70%</span></div></div></div>';
@@ -641,20 +658,20 @@ $.ccio.ws.on('f',function (d){
     }
     switch(d.f){
         case'api_key_deleted':
-            new PNotify({title:'API Key Deleted',text:'Key has been deleted. It will no longer work.',type:'notice'});
+            $.ccio.init('note',{title:'API Key Deleted',text:'Key has been deleted. It will no longer work.',type:'notice'});
             $('[api_key="'+d.form.code+'"]').remove();
         break;
         case'api_key_added':
-            new PNotify({title:'API Key Added',text:'You may use this key now.',type:'success'});
+            $.ccio.init('note',{title:'API Key Added',text:'You may use this key now.',type:'success'});
             $.ccio.tm(3,d.form,'#api_list')
         break;
         case'filters_change':
-            new PNotify({title:'Filters Updated',text:'Your changes have been saved and applied.',type:'success'});
+            $.ccio.init('note',{title:'Filters Updated',text:'Your changes have been saved and applied.',type:'success'});
             $user.filters=d.filters;
             $.ccio.init('filters');
         break;
         case'user_settings_change':
-            new PNotify({title:'Settings Changed',text:'Your settings have been saved and applied.',type:'success'});
+            $.ccio.init('note',{title:'Settings Changed',text:'Your settings have been saved and applied.',type:'success'});
             $.ccio.init('id',d.form);
             $('#custom_css').append(d.form.details.css)
         break;
@@ -796,11 +813,11 @@ $.ccio.ws.on('f',function (d){
             $.ccio.tm(0,d,d.e)
         break;
 //        case'monitor_stopping':
-//            new PNotify({title:'Monitor Stopping',text:'Monitor <b>'+d.mid+'</b> is now off.',type:'notice'});
+//            $.ccio.init('note',{title:'Monitor Stopping',text:'Monitor <b>'+d.mid+'</b> is now off.',type:'notice'});
 //        break;
         case'monitor_starting':
 //            switch(d.mode){case'start':d.mode='Watch';break;case'record':d.mode='Record';break;}
-//            new PNotify({title:'Monitor Starting',text:'Monitor <b>'+d.mid+'</b> is now running in mode <b>'+d.mode+'</b>',type:'success'});
+//            $.ccio.init('note',{title:'Monitor Starting',text:'Monitor <b>'+d.mid+'</b> is now running in mode <b>'+d.mode+'</b>',type:'success'});
             d.e=$('#monitor_live_'+d.mid)
             if(d.e.length>0){$.ccio.cx({f:'monitor',ff:'watch_on',id:d.mid})}
         break;
@@ -834,7 +851,7 @@ $.ccio.ws.on('f',function (d){
                     d.pnote.text+=' Your account has reached the maximum number of cameras that can be created. Speak to an administrator if you would like this changed.'
                 break;
             }
-            new PNotify(d.pnote);
+            $.ccio.init('note',d.pnote);
         break;
         case'monitor_edit':
             d.e=$('[mid="'+d.mon.mid+'"][ke="'+d.mon.ke+'"]');
@@ -881,7 +898,7 @@ $.ccio.ws.on('f',function (d){
             d.e.attr('mode',d.mode)
             d.e.find('.lamp').attr('title',d.mode)
             $.gR.drawList();
-            new PNotify({title:'Monitor Saved',text:'<b>'+d.mon.name+'</b> <small>'+d.mon.mid+'</small> has been saved.',type:'success'});
+            $.ccio.init('note',{title:'Monitor Saved',text:'<b>'+d.mon.name+'</b> <small>'+d.mon.mid+'</small> has been saved.',type:'success'});
         break;
         case'mode_jpeg_off':
             $.ccio.op('jpeg_on',"0");
@@ -1069,9 +1086,6 @@ $.oB.e.find('[name="user"]').change(function(e){
 if($.ccio.op().onvif_probe_user){
     $.oB.e.find('[name="user"]').val($.ccio.op().onvif_probe_user)
 }
-$.oB.e.on('shown.bs.modal',function(){
-    $.oB.f.submit()
-})
 //Group Selector
 $.gR={e:$('#group_list'),b:$('#group_list_button')};
 $.gR.drawList=function(){
@@ -1339,7 +1353,7 @@ $.aM.f.submit(function(e){
 //    if(e.s.protocol=='rtsp'){e.s.ext='mp4',e.s.type='rtsp'}
     if(e.er.length>0){
         $.sM.e.find('.msg').html(e.er.join('<br>'));
-        new PNotify({title:'Configuration Invalid',text:e.er.join('<br>'),type:'error'});
+        $.ccio.init('note',{title:'Configuration Invalid',text:e.er.join('<br>'),type:'error'});
         return;
     }
     $.post('/'+$user.auth_token+'/configureMonitor/'+$user.ke+'/'+e.s.mid,{data:JSON.stringify(e.s)},function(d){
@@ -1410,7 +1424,7 @@ $.aM.e.find('.import_config').click(function(e){
             $.aM.e.modal('show')
         }catch(err){
             console.log(err)
-            new PNotify({title:'Invalid JSON',text:'Please ensure this is a valid JSON string for Shinobi monitor configuration.',type:'error'})
+            $.ccio.init('note',{title:'Invalid JSON',text:'Please ensure this is a valid JSON string for Shinobi monitor configuration.',type:'error'})
         }
     });
 });
@@ -1754,25 +1768,62 @@ $.pwrvid.e.on('click','[preview]',function(e){
                 $.get(e.href+'/status/2',function(d){
                 })
             }
-            $.pwrvid.mL.empty()
-            console.log(e.filename,$.pwrvid.currentVideosObject[e.filename])
             if($.pwrvid.currentVideosObject[e.filename].motion.length>0){
+                var labels=[]
+                var Dataset1=[]
                 $.each($.pwrvid.currentVideosObject[e.filename].motion,function(n,v){
-                    var tmp='<li class="list-group-item">'
-                    tmp+='<small><b>Time</b> : <span class="time">'+v.time+'</span></small>'
-                    tmp+='<div class="row">'
-                    tmp+='<div class="col-md-6"><b>Confidence</b> : <span class="confidence">'+v.details.confidence+'</span></div>'
-                    tmp+='<div class="col-md-6"><b>Reason</b> : <span class="reason">'+v.details.reason+'</span></div>'
-                    tmp+='</div>'
-                    tmp+='<div class="row">'
-                    tmp+='<div class="col-md-6"><b>Region Name</b> : <span class="region_name">'+v.details.name+'</span></div>'
-                    tmp+='<div class="col-md-6"><b>Plugin</b> : <span class="plug">'+v.details.plug+'</span></div>'
-                    tmp+='</div>'
-                    tmp+='</li>'
-                    $.pwrvid.mL.append(tmp)
+                    labels.push(moment(v.time).format('MM/DD/YYYY HH:mm'))
+                    Dataset1.push(v.details.confidence)
                 })
+                $.pwrvid.mL.html("<canvas></canvas>")
+                var timeFormat = 'MM/DD/YYYY HH:mm';
+                var color = Chart.helpers.color;
+                Chart.defaults.global.defaultFontColor = '#fff';
+                var config = {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            type: 'line',
+                            label: 'Motion Confidence',
+                            backgroundColor: color(window.chartColors.red).alpha(0.2).rgbString(),
+                            borderColor: window.chartColors.red,
+                            data: Dataset1,
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        title: {
+                            fontColor: "white",
+                            text:"Events in this video"
+                        },
+                        scales: {
+                            xAxes: [{
+                                type: "time",
+                                display: true,
+                                time: {
+                                    format: timeFormat,
+                                    // round: 'day'
+                                }
+                            }],
+                        },
+                    }
+                };
+                var ctx = $.pwrvid.mL.find('canvas')[0].getContext("2d");
+                $.pwrvid.miniChart = new Chart(ctx, config);
+                $.pwrvid.mL.find('canvas').click(function(f) {
+                    var target = $.pwrvid.miniChart.getElementsAtEvent(f)[0];
+                    if(!target){return false}
+                    var video = $.pwrvid.currentVideosObject[e.filename];
+                    var event = video.motion[target._index];
+                    var video1 = $('#video_preview video')[0];
+                    video1.currentTime=moment(event.time).diff(moment(video.row.time),'seconds')
+                    video1.play()
+                });
+                var colorNames = Object.keys(window.chartColors);
+
             }else{
-                $.pwrvid.mL.append('<div class="super-center text-center" style="width:auto">No Events found for this video</div>')
+                $.pwrvid.mL.html('<div class="super-center text-center" style="width:auto">No Events found for this video</div>')
             }
             $.pwrvid.video={filename:e.filename,href:e.href,mid:e.mon.mid,ke:e.mon.ke}
             $.pwrvid.vpOnPlayPause=function(x,e){
@@ -1815,8 +1866,7 @@ $.pwrvid.drawTimeline=function(){
                 v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
                 if(v.status>0){
 //                    data.push({src:v,x:v.time,y:moment(v.time).diff(moment(v.end),'minutes')/-1})
-                    v.timeFormatted=moment(v.time).format('MM/DD/YYYY HH:mm');
-                    data[v.filename]={filename:v.filename,time:v.timeFormatted,endTime:v.end,close:moment(v.time).diff(moment(v.end),'minutes')/-1,motion:[],row:v}
+                    data[v.filename]={filename:v.filename,time:v.time,timeFormatted:moment(v.time).format('MM/DD/YYYY HH:mm'),endTime:v.end,close:moment(v.time).diff(moment(v.end),'minutes')/-1,motion:[],row:v}
                 }
             });
             $.each(events,function(n,v){
@@ -1840,21 +1890,12 @@ $.pwrvid.drawTimeline=function(){
                 var Dataset1=[]
                 var Dataset2=[]
                 $.each(data,function(n,v){
-                    labels.push(v.time)
+                    labels.push(v.timeFormatted)
                     Dataset1.push(v.close)
                     Dataset2.push(v.motion.length)
                 })
                 $.pwrvid.d.html("<canvas></canvas>")
 		var timeFormat = 'MM/DD/YYYY HH:mm';
-        window.chartColors = {
-            red: 'rgb(255, 99, 132)',
-            orange: 'rgb(255, 159, 64)',
-            yellow: 'rgb(255, 205, 86)',
-            green: 'rgb(75, 192, 192)',
-            blue: 'rgb(54, 162, 235)',
-            purple: 'rgb(153, 102, 255)',
-            grey: 'rgb(201, 203, 207)'
-        };
 		var color = Chart.helpers.color;
         Chart.defaults.global.defaultFontColor = '#fff';
 		var config = {
@@ -1996,11 +2037,13 @@ $('body')
         case'download':
             e.preventDefault();
             switch(e.e.attr('host')){
+                    <% if(config.DropboxAppKey){ %>
                 case'dropbox':
                     Dropbox.save(e.e.attr('href'),e.e.attr('download'),{progress: function (progress) {console.log(progress)},success: function () {
                         console.log("Success! Files saved to your Dropbox.");
                     }});
                 break;
+                    <% } %>
             }
         break;
     }
@@ -2123,6 +2166,14 @@ $('body')
         e.mid=e.p.attr('mid'),//monitor id
         e.mon=$.ccio.mon[e.mid];//monitor configuration
     switch(e.a){
+        case'mode':
+            e.mode=e.e.attr('mode')
+            if(e.mode){
+                $.getJSON('/'+$user.auth_token+'/monitor/'+e.ke+'/'+e.mid+'/'+e.mode,function(d){
+                    console.log(d)
+                })
+            }
+        break;
         case'powerview':
             $.pwrvid.e.modal('show')
             $.pwrvid.m.find('.monitor').remove()
@@ -2138,7 +2189,7 @@ $('body')
         break;
         case'region':
             if(!e.mon){
-                new PNotify({title:'Unable to Launch',text:'Please save new monitor first. Then attempt to launch the region editor.',type:'error'});
+                $.ccio.init('note',{title:'Unable to Launch',text:'Please save new monitor first. Then attempt to launch the region editor.',type:'error'});
                 return;
             }
             e.d=JSON.parse(e.mon.details);

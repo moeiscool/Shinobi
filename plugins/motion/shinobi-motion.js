@@ -24,8 +24,7 @@ var fs = require('fs');
 var Canvas = require('canvas');
 var config=require('./conf.json');
 s={
-    lock:{},
-    buffer:{},
+    group:{},
     canvas:{},
     canvasContext:{},
     img:{},
@@ -132,17 +131,17 @@ s.differenceAccuracy=function(target, data1, data2) {
 }
 
 s.checkAreas=function(d){
-    if(!s.globalCoords[d.id]){
+    if(!s.group[d.ke][d.id].cords){
         if(!d.mon.cords){d.mon.cords={}}
-        s.globalCoords[d.id]=Object.values(d.mon.cords);
+        s.group[d.ke][d.id].cords=Object.values(d.mon.cords);
     }
     if(d.mon.detector_frame==='1'&&!d.mon.cords.frame){
         d.mon.cords.frame={name:'frame',s:d.mon.detector_sensitivity,points:[[0,0],[0,d.image.height],[d.image.width,d.image.height],[d.image.width,0]]};
-        s.globalCoords[d.id].push(d.mon.cords.frame);
+        s.group[d.ke][d.id].cords.push(d.mon.cords.frame);
     }
-    for (var b = 0; b < s.globalCoords[d.id].length; b++){
-        if(!s.globalCoords[d.id][b]){return}
-        s.blenderRegion(d,s.globalCoords[d.id][b])
+    for (var b = 0; b < s.group[d.ke][d.id].cords.length; b++){
+        if(!s.group[d.ke][d.id].cords[b]){return}
+        s.blenderRegion(d,s.group[d.ke][d.id].cords[b])
     }
     delete(d.image)
 }
@@ -158,40 +157,70 @@ io.on('disconnect',function(d){
 io.on('f',function(d){
     switch(d.f){
         case'init_monitor':
-            if(s.globalCoords[d.id]){
-               s.globalCoords[d.id].forEach(function(v,n){
+            if(s.group[d.ke]&&s.group[d.ke][d.id].cords){
+               s.group[d.ke][d.id].cords.forEach(function(v,n){
                     delete(s.canvas[d.id+'_'+v.name])
                     delete(s.canvasContext[d.id+'_'+v.name])
                     delete(s.blendRegion[d.id+'_'+v.name])
                     delete(s.blendRegionContext[d.id+'_'+v.name])
                 })
-                delete(s.globalCoords[d.id])
+                delete(s.group[d.ke][d.id].cords)
             }
         break;
         case'frame':
-            if(!s.buffer[d.id]){
-              s.buffer[d.id]=[d.frame];
-            }else{
-              s.buffer[d.id].push(d.frame)
-            }
-            if(d.frame[d.frame.length-2] === 0xFF && d.frame[d.frame.length-1] === 0xD9){
-                s.buffer[d.id]=Buffer.concat(s.buffer[d.id]);
-                try{d.mon.cords=JSON.parse(d.mon.cords)}catch(err){}
-                s.globalCoords[d.id]=Object.values(d.mon.cords);
-                d.mon.cords=d.mon.cords;
-                d.image = new Canvas.Image;
-                if(d.mon.detector_scale_x===''||d.mon.detector_scale_y===''){
-                    console.log('Must set detector image size')
-                    return
+            try{
+                if(!s.group[d.ke]){
+                    s.group[d.ke]={}
+                }
+                if(!s.group[d.ke][d.id]){
+                    s.group[d.ke][d.id]={}
+                }
+                if(!s.group[d.ke][d.id].buffer){
+                  s.group[d.ke][d.id].buffer=[d.frame];
                 }else{
-                    d.image.width=d.mon.detector_scale_x;
-                    d.image.height=d.mon.detector_scale_y;
+                  s.group[d.ke][d.id].buffer.push(d.frame)
                 }
-                d.image.onload = function() { 
-                    s.checkAreas(d);
+                if(d.frame[d.frame.length-2] === 0xFF && d.frame[d.frame.length-1] === 0xD9){
+                    if(s.group[d.ke][d.id].motion_lock){
+                        return
+                    }else{
+                        if(!d.mon.detector_lock_timeout||d.mon.detector_lock_timeout===''||d.mon.detector_lock_timeout==0){
+                            d.mon.detector_lock_timeout=2000
+                        }else{
+                            d.mon.detector_lock_timeout=parseFloat(d.mon.detector_lock_timeout)
+                        }
+                        s.group[d.ke][d.id].motion_lock=setTimeout(function(){
+                            clearTimeout(s.group[d.ke][d.id].motion_lock);
+                            delete(s.group[d.ke][d.id].motion_lock);
+                        },d.mon.detector_lock_timeout)
+                    }
+                    s.group[d.ke][d.id].buffer=Buffer.concat(s.group[d.ke][d.id].buffer);
+                    try{
+                        d.mon.cords=JSON.parse(d.mon.cords)
+                    }catch(err){
+                        
+                    }
+                    s.group[d.ke][d.id].cords=Object.values(d.mon.cords);
+                    d.mon.cords=d.mon.cords;
+                    d.image = new Canvas.Image;
+                    if(d.mon.detector_scale_x===''||d.mon.detector_scale_y===''){
+                        console.log('Must set detector image size')
+                        return
+                    }else{
+                        d.image.width=d.mon.detector_scale_x;
+                        d.image.height=d.mon.detector_scale_y;
+                    }
+                    d.image.onload = function() { 
+                        s.checkAreas(d);
+                    }
+                    d.image.src = s.group[d.ke][d.id].buffer;
+                    s.group[d.ke][d.id].buffer=null;
                 }
-                d.image.src = s.buffer[d.id];
-                s.buffer[d.id]=null;
+            }catch(err){
+                if(err){
+                    console.log(err)
+                    delete(s.group[d.ke][d.id].buffer)
+                }
             }
         break;
     }

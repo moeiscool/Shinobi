@@ -48,7 +48,7 @@
         <a class="btn btn-danger pull-left" video="delete" data-dismiss="modal">Delete</a>
           <div class="btn-group">
               <a class="btn btn-primary download_link"><i class="fa fa-download"></i> &nbsp; Save</a>
-              <a class="btn btn-primary" monitor="download" host="dropbox"><i class="fa fa-dropbox"></i> &nbsp; Dropbox</a>
+              <% if(config.DropboxAppKey){ %><a class="btn btn-primary" monitor="download" host="dropbox"><i class="fa fa-dropbox"></i> &nbsp; Dropbox</a><% } %>
               <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
           </div>
       </div>

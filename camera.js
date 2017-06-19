@@ -461,16 +461,16 @@ s.video=function(x,e){
             if(!e.filename&&e.time){e.filename=s.moment(e.time)}
             if(!e.status){e.status=0}
             e.save=[e.id,e.ke,s.nameToTime(e.filename)];
-                sql.query('DELETE FROM Videos WHERE `mid`=? AND `ke`=? AND `time`=?',e.save,function(err,r){
-                    fs.stat(e.dir+e.filename+'.'+e.ext,function(err,file){
-                        if(err){
-                            return s.systemLog(err)
-                        }
-                        s.group[e.ke].init.used_space=s.group[e.ke].init.used_space-(file.size/1000000)
-                        s.init('diskUsed',e)
-                    })
-                    s.tx({f:'video_delete',filename:e.filename+'.'+e.ext,mid:e.mid,ke:e.ke,time:s.nameToTime(e.filename),end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
-                    s.file('delete',e.dir+e.filename+'.'+e.ext)
+            sql.query('DELETE FROM Videos WHERE `mid`=? AND `ke`=? AND `time`=?',e.save,function(err,r){
+                fs.stat(e.dir+e.filename+'.'+e.ext,function(err,file){
+                    if(err){
+                        return s.systemLog(err)
+                    }
+                    s.group[e.ke].init.used_space=s.group[e.ke].init.used_space-(file.size/1000000)
+                    s.init('diskUsed',e)
+                })
+                s.tx({f:'video_delete',filename:e.filename+'.'+e.ext,mid:e.mid,ke:e.ke,time:s.nameToTime(e.filename),end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
+                s.file('delete',e.dir+e.filename+'.'+e.ext)
             })
         break;
         case'open':
@@ -955,7 +955,6 @@ s.camera=function(x,e,cn,tx){
                     delete(s.group[e.ke].mon[e.id].motion_lock);
                 },30000)
             }
-            //every 15 minutes start a new file.
             s.group[e.ke].mon[e.id].started=1;
             if(x==='record'){
                 s.group[e.ke].mon[e.id].record.yes=1;
@@ -1046,11 +1045,17 @@ s.camera=function(x,e,cn,tx){
                                 if(exists){
                                     if(s.group[e.ke].mon[e.id].open){
                                         s.video('close',e);
+                                        if(e.details.detector==='1'&&s.ocv&&s.group[e.ke].mon[e.id].started===1&&e.details&&e.details.detector_record_method==='del'&&e.details.detector_delete_motionless_videos==='1'&&s.group[e.ke].mon[e.id].detector_motion_count===0){
+                                            s.video('delete',s.init('noReference',e))
+                                        }
                                     }
-                                    e.filename=filename.split('.')[0];
-                                    s.video('open',e);
-                                    s.group[e.ke].mon[e.id].open=e.filename;
-                                    s.group[e.ke].mon[e.id].open_ext=e.ext;
+                                    setTimeout(function(){
+                                        e.filename=filename.split('.')[0];
+                                        s.video('open',e);
+                                        s.group[e.ke].mon[e.id].open=e.filename;
+                                        s.group[e.ke].mon[e.id].open_ext=e.ext;
+                                        s.group[e.ke].mon[e.id].detector_motion_count=0;
+                                    },2000)
                                 }
                             });
                         break;
@@ -1186,7 +1191,7 @@ s.camera=function(x,e,cn,tx){
                                 s.log(e,{type:'Spawn Error',msg:er});e.error_fatal()
                             });
                             if(s.ocv&&e.details.detector==='1'){
-                                s.tx({f:'init_monitor',mon:e.details,id:e.id},s.ocv.id)
+                                s.tx({f:'init_monitor',id:e.id,ke:e.ke},s.ocv.id)
                             }
                             //frames from motion detect
                             s.group[e.ke].mon[e.id].spawn.stdin.on('data',function(d){
@@ -1335,18 +1340,12 @@ s.camera=function(x,e,cn,tx){
         case'motion':
             var d=e;
             d.mon=s.group[d.ke].mon_conf[d.id];
+            if(!s.group[d.ke].mon[d.id].detector_motion_count){
+                s.group[d.ke].mon[d.id].detector_motion_count=0
+            }
+            s.group[d.ke].mon[d.id].detector_motion_count+=1
             if(s.group[d.ke].mon[d.id].motion_lock){
                 return
-            }else{
-                if(!d.mon.details.detector_lock_timeout||d.mon.details.detector_lock_timeout===''||d.mon.details.detector_lock_timeout==0){
-                    d.mon.details.detector_lock_timeout=2000
-                }else{
-                    d.mon.details.detector_lock_timeout=parseFloat(d.mon.details.detector_lock_timeout)
-                }
-                s.group[e.ke].mon[e.id].motion_lock=setTimeout(function(){
-                    clearTimeout(s.group[e.ke].mon[e.id].motion_lock);
-                    delete(s.group[e.ke].mon[e.id].motion_lock);
-                },d.mon.details.detector_lock_timeout)
             }
             d.cx={f:'detector_trigger',id:d.id,ke:d.ke,details:d.details};
             s.tx(d.cx,'GRP_'+d.ke);
@@ -1377,7 +1376,7 @@ s.camera=function(x,e,cn,tx){
 
                 }).end();
             }
-            if(d.mon.mode!=='stop'&&d.mon.details.detector_trigger=='1'){
+            if(d.mon.mode!=='stop'&&d.mon.details.detector_trigger=='1'&&d.mon.details.detector_record_method==='hot'){
                 if(!d.mon.details.detector_timeout||d.mon.details.detector_timeout===''){
                     d.mon.details.detector_timeout=10
                 }else{
@@ -1482,10 +1481,9 @@ s.camera=function(x,e,cn,tx){
                         })
                         nodemailer.sendMail(d.mailOptions, (error, info) => {
                             if (error) {
-                                s.tx({f:'error',ff:'detector_trigger_mail',id:d.id,ke:d.ke,error:error},'GRP_'+d.ke);
+                                s.systemLog('MAIL ERROR : Could not send email, Check conf.json',error)
                                 return ;
                             }
-                            s.tx({f:'detector_trigger_mail',id:d.id,ke:d.ke,info:info},'GRP_'+d.ke);
                         });
                     })
                 });
@@ -2432,7 +2430,7 @@ app.post('/',function (req,res){
         res.render("index",{failedLogin:true});
         res.end();
     }
-    req.fn=function(){
+    req.fn=function(r){
         switch(req.body.function){
             case'streamer':
                 sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
@@ -2496,7 +2494,7 @@ app.post('/',function (req,res){
                                 }
                                 if(!s.factorAuth[r.ke]){s.factorAuth[r.ke]={}}
                                 if(!s.factorAuth[r.ke][r.uid]){
-                                    s.factorAuth[r.ke][r.uid]={key:s.nid()}
+                                    s.factorAuth[r.ke][r.uid]={key:s.nid(),user:r}
                                     r.mailOptions = {
                                         from: '"ShinobiCCTV" <no-reply@shinobi.video>',
                                         to: r.mail,
@@ -2506,7 +2504,7 @@ app.post('/',function (req,res){
                                     nodemailer.sendMail(r.mailOptions, (error, info) => {
                                         if (error) {
                                             s.systemLog('MAIL ERROR : You must set up conf.json with the mail object or this feature will not work. skipping 2-Factor Authentication this time.',error)
-                                            req.fn()
+                                            req.fn(r)
                                             return
                                         }
                                         req.complete()
@@ -2515,10 +2513,10 @@ app.post('/',function (req,res){
                                     req.complete()
                                 }
                             }else{
-                               req.fn()
+                               req.fn(r)
                             }
                         }else{
-                           req.fn()
+                           req.fn(r)
                         }
                     }
                     if(r.details.sub){
@@ -2552,7 +2550,7 @@ app.post('/',function (req,res){
                         }
                     }
                     req.resp=s.factorAuth[req.body.ke][req.body.id].info
-                    req.fn()
+                    req.fn(s.factorAuth[req.body.ke][req.body.id].user)
                 }else{
                     res.render("factor",{$user:s.factorAuth[req.body.ke][req.body.id].info});
                     res.end();

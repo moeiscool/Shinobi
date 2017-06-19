@@ -130,6 +130,7 @@
                 <li class="mdl-menu__item shinobi-detector-stemkoski shinobi-detector_plug" class_toggle="hide_indifference" data-target="body" style="display:none"><i class="fa fa-bolt"></i> &nbsp; Motion GUI</li>
                 <li class="mdl-menu__item" system="jpegToggle"><i class="fa fa-file-image-o"></i> &nbsp; JPEG Mode</li>
                 <li class="mdl-menu__item" system="switch" switch="monitorOrder" type="text"><i class="fa fa-sort"></i> &nbsp; Order Streams</li>
+                <li class="mdl-menu__item" system="switch" switch="notifyHide" type="text"><i class="fa fa-exclamation-circle"></i> &nbsp; Hide Notes</li>
                 <li class="mdl-menu__item" data-toggle="modal" data-target="#help_window"><i class="fa fa-question-circle"></i> &nbsp; Help</li>
                 <li class="mdl-menu__item logout"><i class="fa fa-sign-out"></i>&nbsp; Log Out</li>
             </ul>
@@ -204,14 +205,16 @@
 <% include blocks/settings.ejs %>
 <% include blocks/filters.ejs %>
 <% include blocks/powervideo.ejs %>
-<% include blocks/videoview.html %>
+<% include blocks/videoview.ejs %>
 <% include blocks/monitoredit.ejs %>
 <% include blocks/probe.html %>
 <% include blocks/region.html %>
 <% include blocks/confirm.html %>
+<% if(config.DropboxAppKey){ %>
 <!--Dropbox Library, Change data-app-key to your app key. -->
 <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="<%= config.DropboxAppKey %>"></script>
 <!--Dropbox End-->
+<% } %>
 <script src="/libs/js/material.min.js"></script>
 <script src="/libs/js/pnotify.custom.min.js"></script>
 <script src="/libs/js/moment.js"></script>
@@ -227,5 +230,5 @@
 <script src="/libs/js/Chart.js"></script>
 <script src="/libs/js/daterangepicker.js"></script>
 <script src="/libs/js/jquery.canvasAreaDraw.js"></script>
-<script src="/libs/js/main.dash2.js"></script>
+<script><% include ../libs/js/main.dash2.js %></script>
 <% include blocks/help.ejs %>
