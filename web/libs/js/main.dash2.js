@@ -1,3 +1,12 @@
+window.chartColors = {
+    red: 'rgb(255, 99, 132)',
+    orange: 'rgb(255, 159, 64)',
+    yellow: 'rgb(255, 205, 86)',
+    green: 'rgb(75, 192, 192)',
+    blue: 'rgb(54, 162, 235)',
+    purple: 'rgb(153, 102, 255)',
+    grey: 'rgb(201, 203, 207)'
+};
 $.ccio={fr:$('#files_recent'),mon:{}};
     $.ccio.gid=function(x){
         if(!x){x=10};var t = "";var p = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -1759,25 +1768,63 @@ $.pwrvid.e.on('click','[preview]',function(e){
                 $.get(e.href+'/status/2',function(d){
                 })
             }
-            $.pwrvid.mL.empty()
-            console.log(e.filename,$.pwrvid.currentVideosObject[e.filename])
             if($.pwrvid.currentVideosObject[e.filename].motion.length>0){
+                var labels=[]
+                var Dataset1=[]
                 $.each($.pwrvid.currentVideosObject[e.filename].motion,function(n,v){
-                    var tmp='<li class="list-group-item">'
-                    tmp+='<small><b>Time</b> : <span class="time">'+v.time+'</span></small>'
-                    tmp+='<div class="row">'
-                    tmp+='<div class="col-md-6"><b>Confidence</b> : <span class="confidence">'+v.details.confidence+'</span></div>'
-                    tmp+='<div class="col-md-6"><b>Reason</b> : <span class="reason">'+v.details.reason+'</span></div>'
-                    tmp+='</div>'
-                    tmp+='<div class="row">'
-                    tmp+='<div class="col-md-6"><b>Region Name</b> : <span class="region_name">'+v.details.name+'</span></div>'
-                    tmp+='<div class="col-md-6"><b>Plugin</b> : <span class="plug">'+v.details.plug+'</span></div>'
-                    tmp+='</div>'
-                    tmp+='</li>'
-                    $.pwrvid.mL.append(tmp)
+                    console.log(v)
+                    labels.push(moment(v.time).format('MM/DD/YYYY HH:mm'))
+                    Dataset1.push(v.details.confidence)
                 })
+                $.pwrvid.mL.html("<canvas></canvas>")
+                var timeFormat = 'MM/DD/YYYY HH:mm';
+                var color = Chart.helpers.color;
+                Chart.defaults.global.defaultFontColor = '#fff';
+                var config = {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            type: 'line',
+                            label: 'Motion Confidence',
+                            backgroundColor: color(window.chartColors.red).alpha(0.2).rgbString(),
+                            borderColor: window.chartColors.red,
+                            data: Dataset1,
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        title: {
+                            fontColor: "white",
+                            text:"Events in this video"
+                        },
+                        scales: {
+                            xAxes: [{
+                                type: "time",
+                                display: true,
+                                time: {
+                                    format: timeFormat,
+                                    // round: 'day'
+                                }
+                            }],
+                        },
+                    }
+                };
+                var ctx = $.pwrvid.mL.find('canvas')[0].getContext("2d");
+                $.pwrvid.miniChart = new Chart(ctx, config);
+                $.pwrvid.mL.find('canvas').click(function(f) {
+                    var target = $.pwrvid.miniChart.getElementsAtEvent(f)[0];
+                    if(!target){return false}
+                    var video = $.pwrvid.currentVideosObject[e.filename];
+                    var event = video.motion[target._index];
+                    var video1 = $('#video_preview video')[0];
+                    video1.currentTime=moment(event.time).diff(moment(video.row.time),'seconds')
+                    video1.play()
+                });
+                var colorNames = Object.keys(window.chartColors);
+
             }else{
-                $.pwrvid.mL.append('<div class="super-center text-center" style="width:auto">No Events found for this video</div>')
+                $.pwrvid.mL.html('<div class="super-center text-center" style="width:auto">No Events found for this video</div>')
             }
             $.pwrvid.video={filename:e.filename,href:e.href,mid:e.mon.mid,ke:e.mon.ke}
             $.pwrvid.vpOnPlayPause=function(x,e){
@@ -1820,8 +1867,7 @@ $.pwrvid.drawTimeline=function(){
                 v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
                 if(v.status>0){
 //                    data.push({src:v,x:v.time,y:moment(v.time).diff(moment(v.end),'minutes')/-1})
-                    v.timeFormatted=moment(v.time).format('MM/DD/YYYY HH:mm');
-                    data[v.filename]={filename:v.filename,time:v.timeFormatted,endTime:v.end,close:moment(v.time).diff(moment(v.end),'minutes')/-1,motion:[],row:v}
+                    data[v.filename]={filename:v.filename,time:v.time,timeFormatted:moment(v.time).format('MM/DD/YYYY HH:mm'),endTime:v.end,close:moment(v.time).diff(moment(v.end),'minutes')/-1,motion:[],row:v}
                 }
             });
             $.each(events,function(n,v){
@@ -1845,21 +1891,12 @@ $.pwrvid.drawTimeline=function(){
                 var Dataset1=[]
                 var Dataset2=[]
                 $.each(data,function(n,v){
-                    labels.push(v.time)
+                    labels.push(v.timeFormatted)
                     Dataset1.push(v.close)
                     Dataset2.push(v.motion.length)
                 })
                 $.pwrvid.d.html("<canvas></canvas>")
 		var timeFormat = 'MM/DD/YYYY HH:mm';
-        window.chartColors = {
-            red: 'rgb(255, 99, 132)',
-            orange: 'rgb(255, 159, 64)',
-            yellow: 'rgb(255, 205, 86)',
-            green: 'rgb(75, 192, 192)',
-            blue: 'rgb(54, 162, 235)',
-            purple: 'rgb(153, 102, 255)',
-            grey: 'rgb(201, 203, 207)'
-        };
 		var color = Chart.helpers.color;
         Chart.defaults.global.defaultFontColor = '#fff';
 		var config = {
