@@ -1772,7 +1772,6 @@ $.pwrvid.e.on('click','[preview]',function(e){
                 var labels=[]
                 var Dataset1=[]
                 $.each($.pwrvid.currentVideosObject[e.filename].motion,function(n,v){
-                    console.log(v)
                     labels.push(moment(v.time).format('MM/DD/YYYY HH:mm'))
                     Dataset1.push(v.details.confidence)
                 })
