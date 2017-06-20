@@ -25,62 +25,52 @@ var Canvas = require('canvas');
 var config=require('./conf.json');
 s={
     group:{},
-    canvas:{},
-    canvasContext:{},
-    img:{},
-    lastImageData:{},
-    lastRegionImageData:{},
-    blendRegion:{},
-    blendRegionContext:{},
-    lastFrames:{},
-    globalCoords:{},
-    globalCoordsObject:{}
 }
 s.blenderRegion=function(d,cord){
     d.width  = d.image.width;
     d.height = d.image.height;
-    if(!s.canvas[d.id+'_'+cord.name]){
+    if(!s.group[d.ke][d.id].canvas[cord.name]){
         if(!cord.sensitivity||isNaN(cord.sensitivity)){
             cord.sensitivity=d.mon.detector_sensitivity;
         }
-        s.canvas[d.id+'_'+cord.name] = new Canvas(d.width,d.height);
-        s.canvasContext[d.id+'_'+cord.name] = s.canvas[d.id+'_'+cord.name].getContext('2d');
-        s.canvasContext[d.id+'_'+cord.name].fillStyle = '#005337';
-        s.canvasContext[d.id+'_'+cord.name].fillRect( 0, 0,d.width,d.height);
+        s.group[d.ke][d.id].canvas[cord.name] = new Canvas(d.width,d.height);
+        s.group[d.ke][d.id].canvasContext[cord.name] = s.group[d.ke][d.id].canvas[cord.name].getContext('2d');
+        s.group[d.ke][d.id].canvasContext[cord.name].fillStyle = '#005337';
+        s.group[d.ke][d.id].canvasContext[cord.name].fillRect( 0, 0,d.width,d.height);
         if(cord.points&&cord.points.length>0){
-            s.canvasContext[d.id+'_'+cord.name].beginPath();
+            s.group[d.ke][d.id].canvasContext[cord.name].beginPath();
             for (var b = 0; b < cord.points.length; b++){
                 cord.points[b][0]=parseFloat(cord.points[b][0]);
                 cord.points[b][1]=parseFloat(cord.points[b][1]);
                 if(b===0){
-                    s.canvasContext[d.id+'_'+cord.name].moveTo(cord.points[b][0],cord.points[b][1]);
+                    s.group[d.ke][d.id].canvasContext[cord.name].moveTo(cord.points[b][0],cord.points[b][1]);
                 }else{
-                    s.canvasContext[d.id+'_'+cord.name].lineTo(cord.points[b][0],cord.points[b][1]);
+                    s.group[d.ke][d.id].canvasContext[cord.name].lineTo(cord.points[b][0],cord.points[b][1]);
                 }
             }
-            s.canvasContext[d.id+'_'+cord.name].clip();
+            s.group[d.ke][d.id].canvasContext[cord.name].clip();
         }
     }
-    if(!s.canvasContext[d.id+'_'+cord.name]){
+    if(!s.group[d.ke][d.id].canvasContext[cord.name]){
        return
     }
-    s.canvasContext[d.id+'_'+cord.name].drawImage(d.image, 0, 0, d.width, d.height);
-    if(!s.blendRegion[d.id+'_'+cord.name]){
-        s.blendRegion[d.id+'_'+cord.name] = new Canvas(d.width, d.height);
-        s.blendRegionContext[d.id+'_'+cord.name] = s.blendRegion[d.id+'_'+cord.name].getContext('2d');
+    s.group[d.ke][d.id].canvasContext[cord.name].drawImage(d.image, 0, 0, d.width, d.height);
+    if(!s.group[d.ke][d.id].blendRegion[cord.name]){
+        s.group[d.ke][d.id].blendRegion[cord.name] = new Canvas(d.width, d.height);
+        s.group[d.ke][d.id].blendRegionContext[cord.name] = s.group[d.ke][d.id].blendRegion[cord.name].getContext('2d');
     }
-    var sourceData = s.canvasContext[d.id+'_'+cord.name].getImageData(0, 0, d.width, d.height);
+    var sourceData = s.group[d.ke][d.id].canvasContext[cord.name].getImageData(0, 0, d.width, d.height);
     // create an image if the previous image doesn�t exist
-    if (!s.lastRegionImageData[d.id+'_'+cord.name]) s.lastRegionImageData[d.id+'_'+cord.name] = s.canvasContext[d.id+'_'+cord.name].getImageData(0, 0, d.width, d.height);
+    if (!s.group[d.ke][d.id].lastRegionImageData[cord.name]) s.group[d.ke][d.id].lastRegionImageData[cord.name] = s.group[d.ke][d.id].canvasContext[cord.name].getImageData(0, 0, d.width, d.height);
     // create a ImageData instance to receive the blended result
-    var blendedData = s.canvasContext[d.id+'_'+cord.name].createImageData(d.width, d.height);
+    var blendedData = s.group[d.ke][d.id].canvasContext[cord.name].createImageData(d.width, d.height);
     // blend the 2 images
-    s.differenceAccuracy(blendedData.data,sourceData.data,s.lastRegionImageData[d.id+'_'+cord.name].data);
+    s.differenceAccuracy(blendedData.data,sourceData.data,s.group[d.ke][d.id].lastRegionImageData[cord.name].data);
     // draw the result in a canvas
-    s.blendRegionContext[d.id+'_'+cord.name].putImageData(blendedData, 0, 0);
+    s.group[d.ke][d.id].blendRegionContext[cord.name].putImageData(blendedData, 0, 0);
     // store the current webcam image
-    s.lastRegionImageData[d.id+'_'+cord.name] = sourceData;
-    blendedData = s.blendRegionContext[d.id+'_'+cord.name].getImageData(0, 0, d.width, d.height);
+    s.group[d.ke][d.id].lastRegionImageData[cord.name] = sourceData;
+    blendedData = s.group[d.ke][d.id].blendRegionContext[cord.name].getImageData(0, 0, d.width, d.height);
     var i = 0;
     var average = 0;
     while (i < (blendedData.data.length * 0.25)) {
@@ -92,8 +82,8 @@ s.blenderRegion=function(d,cord){
         s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:cord.name,reason:'motion',confidence:average}})
 
     }
-    s.canvasContext[d.id+'_'+cord.name].clearRect(0, 0, d.width, d.height);
-    s.blendRegionContext[d.id+'_'+cord.name].clearRect(0, 0, d.width, d.height);
+    s.group[d.ke][d.id].canvasContext[cord.name].clearRect(0, 0, d.width, d.height);
+    s.group[d.ke][d.id].blendRegionContext[cord.name].clearRect(0, 0, d.width, d.height);
 }
 function fastAbs(value) {
     return (value ^ (value >> 31)) - (value >> 31);
@@ -173,7 +163,13 @@ io.on('f',function(d){
                     s.group[d.ke]={}
                 }
                 if(!s.group[d.ke][d.id]){
-                    s.group[d.ke][d.id]={}
+                    s.group[d.ke][d.id]={
+                        canvas:{},
+                        canvasContext:{},
+                        lastRegionImageData:{},
+                        blendRegion:{},
+                        blendRegionContext:{},
+                    }
                 }
                 if(!s.group[d.ke][d.id].buffer){
                   s.group[d.ke][d.id].buffer=[d.frame];
