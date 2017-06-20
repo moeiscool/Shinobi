@@ -717,22 +717,22 @@ s.ffmpeg=function(e,x){
         if(e.details.cust_snap&&e.details.cust_snap!==''){x.cust_snap=' '+e.details.cust_snap;}else{x.cust_snap=''}
         x.pipe+=' -update 1 -r '+e.details.snap_fps+x.cust_snap+x.sratio+x.snap_vf+' '+e.sdir+'s.jpg -y';
     }
-    //Stream to YouTube (Stream out to server)
-    if(e.details.stream_server==='1'){
-        if(!e.details.stream_server_vbr||e.details.stream_server_vbr===''){e.details.stream_server_vbr='256k'}
-        x.stream_server_vbr=' -b:v '+e.details.stream_server_vbr;
-        if(e.details.stream_server_fps&&e.details.stream_server_fps!==''){
-            x.stream_server_fps=' -r '+e.details.stream_server_fps
-            e.details.stream_server_fps=parseFloat(e.details.stream_server_fps)
-            x.stream_server_fps+=' -g '+e.details.stream_server_fps
-        }else{x.stream_server_fps=''}
-        if(e.details.stream_server_crf&&e.details.stream_server_crf!==''){x.stream_server_crf=' -crf '+e.details.stream_server_crf}else{x.stream_server_crf=''}
-        if(e.details.stream_server_vf&&e.details.stream_server_vf!==''){x.stream_server_vf=' -vf '+e.details.stream_server_vf}else{x.stream_server_vf=''}
-        if(e.details.stream_server_preset&&e.details.stream_server_preset!==''){x.stream_server_preset=' -preset '+e.details.stream_server_preset}else{x.stream_server_preset=''}
-        if(e.details.stream_server_scale_x&&e.details.stream_server_scale_x!==''&&e.details.stream_server_scale_y&&e.details.stream_server_scale_y!==''){x.stream_server_ratio=' -s '+e.details.stream_server_scale_x+'x'+e.details.stream_server_scale_y}else{x.stream_server_ratio=''}
-        if(e.details.cust_stream_server&&e.details.cust_stream_server!==''){x.cust_stream_server=' '+e.details.cust_stream_server;}else{x.cust_stream_server=''}
-        x.pipe+=' -vcodec libx264 -pix_fmt yuv420p'+x.stream_server_preset+x.stream_server_crf+x.stream_server_fps+x.stream_server_vbr+x.stream_server_ratio+x.stream_server_vf+' -acodec aac -strict 2 -ar 44100 -q:a 3 -b:a 712000'+x.cust_stream_server+' -f flv '+e.details.stream_server_url;
-    }
+//    //Stream to YouTube (Stream out to server)
+//    if(e.details.stream_server==='1'){
+//        if(!e.details.stream_server_vbr||e.details.stream_server_vbr===''){e.details.stream_server_vbr='256k'}
+//        x.stream_server_vbr=' -b:v '+e.details.stream_server_vbr;
+//        if(e.details.stream_server_fps&&e.details.stream_server_fps!==''){
+//            x.stream_server_fps=' -r '+e.details.stream_server_fps
+//            e.details.stream_server_fps=parseFloat(e.details.stream_server_fps)
+//            x.stream_server_fps+=' -g '+e.details.stream_server_fps
+//        }else{x.stream_server_fps=''}
+//        if(e.details.stream_server_crf&&e.details.stream_server_crf!==''){x.stream_server_crf=' -crf '+e.details.stream_server_crf}else{x.stream_server_crf=''}
+//        if(e.details.stream_server_vf&&e.details.stream_server_vf!==''){x.stream_server_vf=' -vf '+e.details.stream_server_vf}else{x.stream_server_vf=''}
+//        if(e.details.stream_server_preset&&e.details.stream_server_preset!==''){x.stream_server_preset=' -preset '+e.details.stream_server_preset}else{x.stream_server_preset=''}
+//        if(e.details.stream_server_scale_x&&e.details.stream_server_scale_x!==''&&e.details.stream_server_scale_y&&e.details.stream_server_scale_y!==''){x.stream_server_ratio=' -s '+e.details.stream_server_scale_x+'x'+e.details.stream_server_scale_y}else{x.stream_server_ratio=''}
+//        if(e.details.cust_stream_server&&e.details.cust_stream_server!==''){x.cust_stream_server=' '+e.details.cust_stream_server;}else{x.cust_stream_server=''}
+//        x.pipe+=' -vcodec libx264 -pix_fmt yuv420p'+x.stream_server_preset+x.stream_server_crf+x.stream_server_fps+x.stream_server_vbr+x.stream_server_ratio+x.stream_server_vf+' -acodec aac -strict 2 -ar 44100 -q:a 3 -b:a 712000'+x.cust_stream_server+' -f flv '+e.details.stream_server_url;
+//    }
     //custom - output
     if(e.details.custom_output&&e.details.custom_output!==''){x.pipe+=' '+e.details.custom_output;}
     //custom - input flags
