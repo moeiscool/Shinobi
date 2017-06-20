@@ -23,8 +23,16 @@ process.on('uncaughtException', function (err) {
 var fs = require('fs');
 var Canvas = require('canvas');
 var config=require('./conf.json');
+if(config.systemLog===undefined){config.systemLog=true}
 s={
     group:{},
+}
+s.systemLog=function(q,w,e){
+    if(!w){w=''}
+    if(!e){e=''}
+    if(config.systemLog===true){
+       return console.log(moment().format(),q,w,e)
+    }
 }
 s.blenderRegion=function(d,cord){
     d.width  = d.image.width;
@@ -199,7 +207,7 @@ io.on('f',function(d){
                     d.mon.cords=d.mon.cords;
                     d.image = new Canvas.Image;
                     if(d.mon.detector_scale_x===''||d.mon.detector_scale_y===''){
-                        console.log('Must set detector image size')
+                        s.systemLog('Must set detector image size')
                         return
                     }else{
                         d.image.width=d.mon.detector_scale_x;
@@ -213,7 +221,7 @@ io.on('f',function(d){
                 }
             }catch(err){
                 if(err){
-                    console.log(err)
+                    s.systemLog(err)
                     delete(s.group[d.ke][d.id].buffer)
                 }
             }
