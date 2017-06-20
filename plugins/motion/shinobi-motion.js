@@ -148,12 +148,11 @@ io.on('f',function(d){
     switch(d.f){
         case'init_monitor':
             if(s.group[d.ke]&&s.group[d.ke][d.id].cords){
-               s.group[d.ke][d.id].cords.forEach(function(v,n){
-                    delete(s.canvas[d.id+'_'+v.name])
-                    delete(s.canvasContext[d.id+'_'+v.name])
-                    delete(s.blendRegion[d.id+'_'+v.name])
-                    delete(s.blendRegionContext[d.id+'_'+v.name])
-                })
+                s.group[d.ke][d.id].canvas={}
+                s.group[d.ke][d.id].canvasContext={}
+                s.group[d.ke][d.id].blendRegion={}
+                s.group[d.ke][d.id].blendRegionContext={}
+                s.group[d.ke][d.id].lastRegionImageData={}
                 delete(s.group[d.ke][d.id].cords)
             }
         break;
