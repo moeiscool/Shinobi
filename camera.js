@@ -707,47 +707,32 @@ s.ffmpeg=function(e,x){
         if(!e.details.detector_fps||e.details.detector_fps===''){e.details.detector_fps=2}
         if(e.details.detector_scale_x&&e.details.detector_scale_x!==''&&e.details.detector_scale_y&&e.details.detector_scale_y!==''){x.dratio=' -s '+e.details.detector_scale_x+'x'+e.details.detector_scale_y}else{x.dratio=' -s 320x240'}
         if(e.details.cust_detect&&e.details.cust_detect!==''){x.cust_detect+=e.details.cust_detect;}
-//        x.pipe+=' -f singlejpeg -pix_fmt gray -vf fps='+e.details.detector_fps+x.cust_detect+' -s 320x240 pipe:0';
         x.pipe+=' -f singlejpeg -vf fps='+e.details.detector_fps+x.cust_detect+x.dratio+' pipe:0';
     }
-//    //record - motion buffer
-//    if(e.details.detector_buffer==='1'){
-//        //buffer vcodec
-//        if(e.details.detector_buffer_vcodec&&e.details.detector_buffer_vcodec!=='no'){
-//            if(e.details.detector_buffer_vcodec!==''){x.detector_buffer_vcodec=' -c:v '+e.details.detector_buffer_vcodec}else{x.detector_buffer_vcodec='libx264'}
-//        }else{
-//            x.detector_buffer_vcodec='';
-//        }
-//        //buffer acodec
-//        if(e.details.detector_buffer_acodec!=='no'){
-//        if(e.details.detector_buffer_acodec&&e.details.detector_buffer_acodec!==''){x.detector_buffer_acodec=' -c:a '+e.details.detector_buffer_acodec}else{x.detector_buffer_acodec=''}
-//        }else{
-//            x.detector_buffer_acodec=' -an';
-//        }
-//        //buffe scale
-//        if(e.details.detector_buffer_scale_x&&e.details.detector_buffer_scale_x!==''&&e.details.detector_buffer_scale_y&&e.details.detector_buffer_scale_y!==''){x.dbfratio=' -s '+e.details.detector_buffer_scale_x+'x'+e.details.detector_buffer_scale_y}else{x.dbfratio=' -s 320x240'}
-//        //buffer segment time
-//        if(e.details.detector_buffer_time&&e.details.detector_buffer_time!==''){x.detector_buffer_time=e.details.detector_buffer_time}else{x.detector_buffer_time=2}
-//        //buffer list size
-//        if(e.details.detector_buffer_list_size&&e.details.detector_buffer_list_size!==''){x.detector_buffer_list_size=e.details.detector_buffer_list_size}else{x.detector_buffer_list_size=2}
-//        //buffer preset
-//        if(e.details.preset_detector_buffer&&e.details.preset_detector_buffer!==''){x.preset_detector_buffer=' -preset '+e.details.preset_detector_buffer;}else{x.preset_detector_buffer=''}
-//        //quality
-//        if(e.details.detector_buffer_quality&&e.details.detector_buffer_quality!==''){x.detector_buffer_quality=e.details.detector_buffer_quality}else{x.detector_buffer_quality=''}
-//        //fps
-//        if(e.details.detector_buffer_fps&&e.details.detector_buffer_fps!==''){x.detector_buffer_fps=' -r '+e.details.detector_buffer_fps}else{x.detector_buffer_fps=''}
-//        //custom flags
-//        if(e.details.cust_detector_buffer&&e.details.cust_detector_buffer!==''){x.cust_detector_buffer=' '+e.details.cust_detector_buffer}else{x.cust_detector_buffer=''}
-//        //command
-//        x.pipe+=' '+x.preset_detector_buffer+x.detector_buffer_quality+x.detector_buffer_acodec+x.detector_buffer_vcodec+x.detector_buffer_fps+' -f hls'+x.dbfratio+x.cust_detector_buffer+' -hls_time '+x.detector_buffer_time+' -hls_list_size '+x.detector_buffer_list_size+' -start_number 0 -hls_allow_cache 0 -hls_flags +delete_segments+omit_endlist '+e.bdir+'b.m3u8';
-//    }
     //api - snapshot bin/ cgi.bin (JPEG Mode)
     if(e.details.snap==='1'||e.details.stream_type==='jpeg'){
         if(!e.details.snap_fps||e.details.snap_fps===''){e.details.snap_fps=1}
+        if(e.details.snap_vf&&e.details.snap_vf!==''){x.snap_vf=' -vf '+e.details.snap_vf}else{x.snap_vf=''}
         if(e.details.snap_scale_x&&e.details.snap_scale_x!==''&&e.details.snap_scale_y&&e.details.snap_scale_y!==''){x.sratio=' -s '+e.details.snap_scale_x+'x'+e.details.snap_scale_y}else{x.sratio=''}
         if(e.details.cust_snap&&e.details.cust_snap!==''){x.cust_snap=' '+e.details.cust_snap;}else{x.cust_snap=''}
-        x.pipe+=' -update 1 -r '+e.details.snap_fps+x.cust_snap+x.sratio+' '+e.sdir+'s.jpg -y';
+        x.pipe+=' -update 1 -r '+e.details.snap_fps+x.cust_snap+x.sratio+x.snap_vf+' '+e.sdir+'s.jpg -y';
     }
+//    //Stream to YouTube (Stream out to server)
+//    if(e.details.stream_server==='1'){
+//        if(!e.details.stream_server_vbr||e.details.stream_server_vbr===''){e.details.stream_server_vbr='256k'}
+//        x.stream_server_vbr=' -b:v '+e.details.stream_server_vbr;
+//        if(e.details.stream_server_fps&&e.details.stream_server_fps!==''){
+//            x.stream_server_fps=' -r '+e.details.stream_server_fps
+//            e.details.stream_server_fps=parseFloat(e.details.stream_server_fps)
+//            x.stream_server_fps+=' -g '+e.details.stream_server_fps
+//        }else{x.stream_server_fps=''}
+//        if(e.details.stream_server_crf&&e.details.stream_server_crf!==''){x.stream_server_crf=' -crf '+e.details.stream_server_crf}else{x.stream_server_crf=''}
+//        if(e.details.stream_server_vf&&e.details.stream_server_vf!==''){x.stream_server_vf=' -vf '+e.details.stream_server_vf}else{x.stream_server_vf=''}
+//        if(e.details.stream_server_preset&&e.details.stream_server_preset!==''){x.stream_server_preset=' -preset '+e.details.stream_server_preset}else{x.stream_server_preset=''}
+//        if(e.details.stream_server_scale_x&&e.details.stream_server_scale_x!==''&&e.details.stream_server_scale_y&&e.details.stream_server_scale_y!==''){x.stream_server_ratio=' -s '+e.details.stream_server_scale_x+'x'+e.details.stream_server_scale_y}else{x.stream_server_ratio=''}
+//        if(e.details.cust_stream_server&&e.details.cust_stream_server!==''){x.cust_stream_server=' '+e.details.cust_stream_server;}else{x.cust_stream_server=''}
+//        x.pipe+=' -vcodec libx264 -pix_fmt yuv420p'+x.stream_server_preset+x.stream_server_crf+x.stream_server_fps+x.stream_server_vbr+x.stream_server_ratio+x.stream_server_vf+' -acodec aac -strict 2 -ar 44100 -q:a 3 -b:a 712000'+x.cust_stream_server+' -f flv '+e.details.stream_server_url;
+//    }
     //custom - output
     if(e.details.custom_output&&e.details.custom_output!==''){x.pipe+=' '+e.details.custom_output;}
     //custom - input flags
@@ -1382,65 +1367,28 @@ s.camera=function(x,e,cn,tx){
                 }else{
                     d.mon.details.detector_timeout=parseFloat(d.mon.details.detector_timeout)
                 }
-//                if(d.mon.details.detector_buffer!=='1'){
-                    d.auth=s.gid();
-                    s.group[d.ke].users[d.auth]={system:1,details:{}}
-                    d.url='http://'+config.ip+':'+config.port+'/'+d.auth+'/monitor/'+d.ke+'/'+d.id+'/record/'+d.mon.details.detector_timeout+'/min';
-                    if(d.mon.details.watchdog_reset!=='0'){
-                        d.url+='?reset=1'
-                    }
-                    http.get(d.url, function(data) {
-                          data.setEncoding('utf8');
-                          var chunks='';
-                          data.on('data', (chunk) => {
-                              chunks+=chunk;
-                          });
-                          data.on('end', () => {
-                              delete(s.group[d.ke].users[d.auth])
-                              d.cx.f='detector_record_engaged';
-                              d.cx.msg=JSON.parse(chunks);
-                              s.tx(d.cx,'GRP_'+d.ke);
-                          });
+                d.auth=s.gid();
+                s.group[d.ke].users[d.auth]={system:1,details:{}}
+                d.url='http://'+config.ip+':'+config.port+'/'+d.auth+'/monitor/'+d.ke+'/'+d.id+'/record/'+d.mon.details.detector_timeout+'/min';
+                if(d.mon.details.watchdog_reset!=='0'){
+                    d.url+='?reset=1'
+                }
+                http.get(d.url, function(data) {
+                      data.setEncoding('utf8');
+                      var chunks='';
+                      data.on('data', (chunk) => {
+                          chunks+=chunk;
+                      });
+                      data.on('end', () => {
+                          delete(s.group[d.ke].users[d.auth])
+                          d.cx.f='detector_record_engaged';
+                          d.cx.msg=JSON.parse(chunks);
+                          s.tx(d.cx,'GRP_'+d.ke);
+                      });
 
-                    }).on('error', function(e) {
+                }).on('error', function(e) {
 
-                    }).end();
-//                }else{
-//                    if(!s.group[d.ke].mon[d.id].fswatch_buffer){
-//                        s.group[d.ke].mon[d.id].buffer_files=[]
-//                        d.bufferPath=s.dir.buffer+d.ke+'/'+d.id+'/'
-//                        d.checkM3U8=function(v){
-////                            if(v.indexOf('#')===-1&&v.indexOf('.ts')>-1&&s.group[d.ke].mon[d.id].buffer_files.indexOf(v)===-1){
-////                                s.group[d.ke].mon[d.id].buffer_files.push(v)
-////                                    s.systemLog(v)
-////                                fs.createReadStream(d.bufferPath+v).pipe(s.group[d.ke].mon[d.id].motionBufferJoiner.stdin)
-////                            }
-//                        }
-//                        s.group[d.ke].mon[d.id].motionBufferJoiner=spawn(config.ffmpegDir,('-f concat -i - -c:v libx264 '+d.bufferPath+s.moment()+'.ts').replace(/\s+/g,' ').trim().split(' '),{detached: true})
-//                        fs.readFile(s.dir.buffer+'/'+d.ke+'/'+d.id+'/b.m3u8','utf8',function(err,m3u8){
-//                            m3u8.split('\n').forEach(d.checkM3U8)
-//                            s.group[d.ke].mon[d.id].fswatch_buffer=fs.watch(s.dir.buffer+'/'+d.ke+'/'+d.id,{encoding:'utf8'},function(eventType,filename){
-//                                if(filename.indexOf('.m3u8')===-1&&filename.indexOf('.m3u8.tmp')>-1){return}
-//                                switch(eventType){
-//                                    case'rename':
-//                                        fs.readFile(d.bufferPath+'b.m3u8','utf8',function(err,m3u8){
-//                                            m3u8.split('\n').forEach(d.checkM3U8)
-//                                        })
-//                                    break;
-//                                }
-//                            })
-//                        })
-//                        s.group[d.ke].mon[d.id].fswatch_buffer_timeout=setTimeout(function(){
-//                            delete(s.group[d.ke].mon[d.id].fswatch_buffer_timeout)
-//                            //compile video segments gathered from HLS stream
-//                            setTimeout(function(){
-//                                exec('kill -9 '+s.group[d.ke].mon[d.id].motionBufferJoiner.pid,{detached: true})
-//                                s.systemLog('done video')
-//                            },3000)
-//                            //...
-//                        },1000*60*d.mon.details.detector_timeout)
-//                    }
-//                }
+                }).end();
             }
             //mailer
             if(config.mail&&!s.group[d.ke].mon[d.id].detector_mail&&d.mon.details.detector_mail==='1'){
@@ -2351,6 +2299,7 @@ s.superAuth=function(x,callback){
 ////Pages
 app.enable('trust proxy');
 app.use(express.static(s.dir.videos));
+app.use('/libs',express.static(__dirname + '/web/libs'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.set('views', __dirname + '/web/pages');
@@ -2657,7 +2606,7 @@ app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,re
         }
         if(s.group[req.params.ke]&&s.group[req.params.ke].mon[req.params.id]){
             if(s.group[req.params.ke].mon[req.params.id].started===1){
-                res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,port:config.port,mon:CircularJSON.parse(CircularJSON.stringify(s.group[req.params.ke].mon_conf[req.params.id]))});
+                res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,config:config,mon:CircularJSON.parse(CircularJSON.stringify(s.group[req.params.ke].mon_conf[req.params.id]))});
             }else{
                 res.end('Cannot watch a monitor that isn\'t running.')
             }
@@ -3070,16 +3019,7 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
     }
     s.auth(req.params,req.fn,res,req);
 })
-// Get lib files
-app.get(['/libs/:f/:f2','/libs/:f/:f2/:f3'], function (req,res){
-    req.dir=__dirname+'/web/libs/'+req.params.f+'/'+req.params.f2;
-    if(req.params.f3){req.dir=req.dir+'/'+req.params.f3}
-    if (fs.existsSync(req.dir)){
-        fs.createReadStream(req.dir).pipe(res);
-    }else{
-        res.send('File Not Found')
-    }
-});
+
 // Get video file
 app.get('/:auth/videos/:ke/:id/:file', function (req,res){
     s.auth(req.params,function(user){
