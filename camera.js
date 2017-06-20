@@ -707,40 +707,8 @@ s.ffmpeg=function(e,x){
         if(!e.details.detector_fps||e.details.detector_fps===''){e.details.detector_fps=2}
         if(e.details.detector_scale_x&&e.details.detector_scale_x!==''&&e.details.detector_scale_y&&e.details.detector_scale_y!==''){x.dratio=' -s '+e.details.detector_scale_x+'x'+e.details.detector_scale_y}else{x.dratio=' -s 320x240'}
         if(e.details.cust_detect&&e.details.cust_detect!==''){x.cust_detect+=e.details.cust_detect;}
-//        x.pipe+=' -f singlejpeg -pix_fmt gray -vf fps='+e.details.detector_fps+x.cust_detect+' -s 320x240 pipe:0';
         x.pipe+=' -f singlejpeg -vf fps='+e.details.detector_fps+x.cust_detect+x.dratio+' pipe:0';
     }
-//    //record - motion buffer
-//    if(e.details.detector_buffer==='1'){
-//        //buffer vcodec
-//        if(e.details.detector_buffer_vcodec&&e.details.detector_buffer_vcodec!=='no'){
-//            if(e.details.detector_buffer_vcodec!==''){x.detector_buffer_vcodec=' -c:v '+e.details.detector_buffer_vcodec}else{x.detector_buffer_vcodec='libx264'}
-//        }else{
-//            x.detector_buffer_vcodec='';
-//        }
-//        //buffer acodec
-//        if(e.details.detector_buffer_acodec!=='no'){
-//        if(e.details.detector_buffer_acodec&&e.details.detector_buffer_acodec!==''){x.detector_buffer_acodec=' -c:a '+e.details.detector_buffer_acodec}else{x.detector_buffer_acodec=''}
-//        }else{
-//            x.detector_buffer_acodec=' -an';
-//        }
-//        //buffe scale
-//        if(e.details.detector_buffer_scale_x&&e.details.detector_buffer_scale_x!==''&&e.details.detector_buffer_scale_y&&e.details.detector_buffer_scale_y!==''){x.dbfratio=' -s '+e.details.detector_buffer_scale_x+'x'+e.details.detector_buffer_scale_y}else{x.dbfratio=' -s 320x240'}
-//        //buffer segment time
-//        if(e.details.detector_buffer_time&&e.details.detector_buffer_time!==''){x.detector_buffer_time=e.details.detector_buffer_time}else{x.detector_buffer_time=2}
-//        //buffer list size
-//        if(e.details.detector_buffer_list_size&&e.details.detector_buffer_list_size!==''){x.detector_buffer_list_size=e.details.detector_buffer_list_size}else{x.detector_buffer_list_size=2}
-//        //buffer preset
-//        if(e.details.preset_detector_buffer&&e.details.preset_detector_buffer!==''){x.preset_detector_buffer=' -preset '+e.details.preset_detector_buffer;}else{x.preset_detector_buffer=''}
-//        //quality
-//        if(e.details.detector_buffer_quality&&e.details.detector_buffer_quality!==''){x.detector_buffer_quality=e.details.detector_buffer_quality}else{x.detector_buffer_quality=''}
-//        //fps
-//        if(e.details.detector_buffer_fps&&e.details.detector_buffer_fps!==''){x.detector_buffer_fps=' -r '+e.details.detector_buffer_fps}else{x.detector_buffer_fps=''}
-//        //custom flags
-//        if(e.details.cust_detector_buffer&&e.details.cust_detector_buffer!==''){x.cust_detector_buffer=' '+e.details.cust_detector_buffer}else{x.cust_detector_buffer=''}
-//        //command
-//        x.pipe+=' '+x.preset_detector_buffer+x.detector_buffer_quality+x.detector_buffer_acodec+x.detector_buffer_vcodec+x.detector_buffer_fps+' -f hls'+x.dbfratio+x.cust_detector_buffer+' -hls_time '+x.detector_buffer_time+' -hls_list_size '+x.detector_buffer_list_size+' -start_number 0 -hls_allow_cache 0 -hls_flags +delete_segments+omit_endlist '+e.bdir+'b.m3u8';
-//    }
     //api - snapshot bin/ cgi.bin (JPEG Mode)
     if(e.details.snap==='1'||e.details.stream_type==='jpeg'){
         if(!e.details.snap_fps||e.details.snap_fps===''){e.details.snap_fps=1}
@@ -1399,65 +1367,28 @@ s.camera=function(x,e,cn,tx){
                 }else{
                     d.mon.details.detector_timeout=parseFloat(d.mon.details.detector_timeout)
                 }
-//                if(d.mon.details.detector_buffer!=='1'){
-                    d.auth=s.gid();
-                    s.group[d.ke].users[d.auth]={system:1,details:{}}
-                    d.url='http://'+config.ip+':'+config.port+'/'+d.auth+'/monitor/'+d.ke+'/'+d.id+'/record/'+d.mon.details.detector_timeout+'/min';
-                    if(d.mon.details.watchdog_reset!=='0'){
-                        d.url+='?reset=1'
-                    }
-                    http.get(d.url, function(data) {
-                          data.setEncoding('utf8');
-                          var chunks='';
-                          data.on('data', (chunk) => {
-                              chunks+=chunk;
-                          });
-                          data.on('end', () => {
-                              delete(s.group[d.ke].users[d.auth])
-                              d.cx.f='detector_record_engaged';
-                              d.cx.msg=JSON.parse(chunks);
-                              s.tx(d.cx,'GRP_'+d.ke);
-                          });
+                d.auth=s.gid();
+                s.group[d.ke].users[d.auth]={system:1,details:{}}
+                d.url='http://'+config.ip+':'+config.port+'/'+d.auth+'/monitor/'+d.ke+'/'+d.id+'/record/'+d.mon.details.detector_timeout+'/min';
+                if(d.mon.details.watchdog_reset!=='0'){
+                    d.url+='?reset=1'
+                }
+                http.get(d.url, function(data) {
+                      data.setEncoding('utf8');
+                      var chunks='';
+                      data.on('data', (chunk) => {
+                          chunks+=chunk;
+                      });
+                      data.on('end', () => {
+                          delete(s.group[d.ke].users[d.auth])
+                          d.cx.f='detector_record_engaged';
+                          d.cx.msg=JSON.parse(chunks);
+                          s.tx(d.cx,'GRP_'+d.ke);
+                      });
 
-                    }).on('error', function(e) {
+                }).on('error', function(e) {
 
-                    }).end();
-//                }else{
-//                    if(!s.group[d.ke].mon[d.id].fswatch_buffer){
-//                        s.group[d.ke].mon[d.id].buffer_files=[]
-//                        d.bufferPath=s.dir.buffer+d.ke+'/'+d.id+'/'
-//                        d.checkM3U8=function(v){
-////                            if(v.indexOf('#')===-1&&v.indexOf('.ts')>-1&&s.group[d.ke].mon[d.id].buffer_files.indexOf(v)===-1){
-////                                s.group[d.ke].mon[d.id].buffer_files.push(v)
-////                                    s.systemLog(v)
-////                                fs.createReadStream(d.bufferPath+v).pipe(s.group[d.ke].mon[d.id].motionBufferJoiner.stdin)
-////                            }
-//                        }
-//                        s.group[d.ke].mon[d.id].motionBufferJoiner=spawn(config.ffmpegDir,('-f concat -i - -c:v libx264 '+d.bufferPath+s.moment()+'.ts').replace(/\s+/g,' ').trim().split(' '),{detached: true})
-//                        fs.readFile(s.dir.buffer+'/'+d.ke+'/'+d.id+'/b.m3u8','utf8',function(err,m3u8){
-//                            m3u8.split('\n').forEach(d.checkM3U8)
-//                            s.group[d.ke].mon[d.id].fswatch_buffer=fs.watch(s.dir.buffer+'/'+d.ke+'/'+d.id,{encoding:'utf8'},function(eventType,filename){
-//                                if(filename.indexOf('.m3u8')===-1&&filename.indexOf('.m3u8.tmp')>-1){return}
-//                                switch(eventType){
-//                                    case'rename':
-//                                        fs.readFile(d.bufferPath+'b.m3u8','utf8',function(err,m3u8){
-//                                            m3u8.split('\n').forEach(d.checkM3U8)
-//                                        })
-//                                    break;
-//                                }
-//                            })
-//                        })
-//                        s.group[d.ke].mon[d.id].fswatch_buffer_timeout=setTimeout(function(){
-//                            delete(s.group[d.ke].mon[d.id].fswatch_buffer_timeout)
-//                            //compile video segments gathered from HLS stream
-//                            setTimeout(function(){
-//                                exec('kill -9 '+s.group[d.ke].mon[d.id].motionBufferJoiner.pid,{detached: true})
-//                                s.systemLog('done video')
-//                            },3000)
-//                            //...
-//                        },1000*60*d.mon.details.detector_timeout)
-//                    }
-//                }
+                }).end();
             }
             //mailer
             if(config.mail&&!s.group[d.ke].mon[d.id].detector_mail&&d.mon.details.detector_mail==='1'){
