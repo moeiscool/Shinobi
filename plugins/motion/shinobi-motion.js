@@ -21,6 +21,7 @@ process.on('uncaughtException', function (err) {
     console.error('uncaughtException',err);
 });
 var fs = require('fs');
+var moment = require('moment');
 var Canvas = require('canvas');
 var config=require('./conf.json');
 if(config.systemLog===undefined){config.systemLog=true}
