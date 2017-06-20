@@ -77,8 +77,8 @@ s.blenderRegion=function(d,cord){
         average += (blendedData.data[i * 4] + blendedData.data[i * 4 + 1] + blendedData.data[i * 4 + 2]);
         ++i;
     }
-    average = (average / (blendedData.data.length * 0.25))*100;
-    if (average > cord.sensitivity){
+    average = (average / (blendedData.data.length * 0.25))*10;
+    if (average > parseFloat(cord.sensitivity)){
         s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:cord.name,reason:'motion',confidence:average}})
 
     }
@@ -147,7 +147,7 @@ io.on('disconnect',function(d){
 io.on('f',function(d){
     switch(d.f){
         case'init_monitor':
-            if(s.group[d.ke]&&s.group[d.ke][d.id].cords){
+            if(s.group[d.ke]&&s.group[d.ke][d.id]){
                 s.group[d.ke][d.id].canvas={}
                 s.group[d.ke][d.id].canvasContext={}
                 s.group[d.ke][d.id].blendRegion={}
