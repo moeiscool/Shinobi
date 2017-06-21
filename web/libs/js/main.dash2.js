@@ -1771,11 +1771,11 @@ $.pwrvid.e.on('click','[preview]',function(e){
                 var labels=[]
                 var Dataset1=[]
                 $.each($.pwrvid.currentVideosObject[e.filename].motion,function(n,v){
-                    labels.push(moment(v.time).format('MM/DD/YYYY HH:mm'))
+                    labels.push(moment(v.time).format('MM/DD/YYYY HH:mm:ss'))
                     Dataset1.push(v.details.confidence)
                 })
                 $.pwrvid.mL.html("<canvas></canvas>")
-                var timeFormat = 'MM/DD/YYYY HH:mm';
+                var timeFormat = 'MM/DD/YYYY HH:mm:ss';
                 var color = Chart.helpers.color;
                 Chart.defaults.global.defaultFontColor = '#fff';
                 var config = {
