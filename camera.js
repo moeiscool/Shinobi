@@ -1056,7 +1056,7 @@ s.camera=function(x,e,cn,tx){
                     ++e.error_fatal_count;
                     if(s.group[e.ke].mon[e.id].started===1){
                         s.group[e.ke].mon[e.id].err_fatal_timeout=setTimeout(function(){
-                            if(e.error_fatal_count>e.details.fatal_max){
+                            if(e.details.fatal_max!==0&&e.error_fatal_count>e.details.fatal_max){
                                 s.camera('stop',{id:e.id,ke:e.ke})
                             }else{
                                 e.fn()
