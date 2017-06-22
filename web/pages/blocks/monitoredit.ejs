@@ -586,71 +586,71 @@
                     <div><input class="form-control" detail="detector_lock_timeout" placeholder="2000"></div>
                     </label>
                   </div>
-                  <div class="shinobi-detector" style="display:none">
-                      <div class="form-group important">
-                        <label><div><span>How to Record</span></div>
-                            <div><select class="form-control" detail="detector_record_method" selector="h_rec_mtd">
-                                <option value="hot" selected>Hotswap Modes (Watch-Only)</option>
-                                <option value="del">Delete Motionless Videos (Record)</option>
-                            </select></div>
-                        </label>
-                      </div>
-                      <div class="h_rec_mtd_input h_rec_mtd_hot">
-                          <div class="form-group">
-                            <label><div><span>Trigger Record</span></div>
-                                <div><select class="form-control" detail="detector_trigger">
-                                    <option value="0" selected>No</option>
-                                    <option value="1">Yes</option>
-                                </select></div>
-                            </label>
-                          </div>
-                          <div class="form-group">
-                            <label><div><span>Recording Timeout <small>in Minutes</small></span></div>
-                            <div><input class="form-control" detail="detector_timeout" placeholder="10"></div>
-                            </label>
-                          </div>
-                          <div class="form-group">
-                            <label><div><span>Timeout Reset on Next Motion</span></div>
-                                <div><select class="form-control" detail="watchdog_reset">
-                                    <option value="0">No</option>
-                                    <option value="1" selected>Yes</option>
-                                </select></div>
-                            </label>
-                          </div>
-                      </div>
-                      <div class="h_rec_mtd_input h_rec_mtd_del">
-                          <div class="form-group">
-                            <label><div><span>Delete Motionless Video</span></div>
-                                <div><select class="form-control" detail="detector_delete_motionless_videos">
-                                    <option value="0" selected>No</option>
-                                    <option value="1">Yes</option>
-                                </select></div>
-                            </label>
-                          </div>
-                      </div>
-                      <div class="form-group">
-                        <label><div><span>Save Events to SQL</span></div>
-                            <div><select class="form-control" detail="detector_save">
+                  <div class="form-group">
+                    <label><div><span>Save Events to SQL</span></div>
+                        <div><select class="form-control" detail="detector_save">
+                            <option value="0" selected>No</option>
+                            <option value="1">Yes</option>
+                        </select></div>
+                    </label>
+                  </div>
+                  <div class="row">
+                      <div class="form-group col-md-12">
+                        <label><div><span>Email on Trigger <small>Emails go to the main account holder's login address.</small></span></div>
+                            <div><select class="form-control" detail="detector_mail">
                                 <option value="0" selected>No</option>
                                 <option value="1">Yes</option>
                             </select></div>
                         </label>
                       </div>
-                      <div class="row">
-                          <div class="form-group col-md-12">
-                            <label><div><span>Email on Trigger <small>Emails go to the main account holder's login address.</small></span></div>
-                                <div><select class="form-control" detail="detector_mail">
-                                    <option value="0" selected>No</option>
-                                    <option value="1">Yes</option>
-                                </select></div>
-                            </label>
-                          </div>
-                          <div class="form-group col-md-12">
-                            <label><div><span>Allow Next Email <small>in Minutes</small></span></div>
-                            <div><input class="form-control" detail="detector_mail_timeout" placeholder="10"></div>
-                            </label>
-                          </div>
+                      <div class="form-group col-md-12">
+                        <label><div><span>Allow Next Email <small>in Minutes</small></span></div>
+                        <div><input class="form-control" detail="detector_mail_timeout" placeholder="10"></div>
+                        </label>
                       </div>
+                  </div>
+                  <div class="form-group important">
+                    <label><div><span>How to Record</span></div>
+                        <div><select class="form-control" detail="detector_record_method" selector="h_rec_mtd">
+                            <option value="hot" selected>Hotswap Modes (Watch-Only)</option>
+                            <option value="del">Delete Motionless Videos (Record)</option>
+                        </select></div>
+                    </label>
+                  </div>
+                  <div class="h_rec_mtd_input h_rec_mtd_hot">
+                      <div class="form-group">
+                        <label><div><span>Trigger Record</span></div>
+                            <div><select class="form-control" detail="detector_trigger">
+                                <option value="0" selected>No</option>
+                                <option value="1">Yes</option>
+                            </select></div>
+                        </label>
+                      </div>
+                      <div class="form-group">
+                        <label><div><span>Recording Timeout <small>in Minutes</small></span></div>
+                        <div><input class="form-control" detail="detector_timeout" placeholder="10"></div>
+                        </label>
+                      </div>
+                      <div class="form-group">
+                        <label><div><span>Timeout Reset on Next Motion</span></div>
+                            <div><select class="form-control" detail="watchdog_reset">
+                                <option value="0">No</option>
+                                <option value="1" selected>Yes</option>
+                            </select></div>
+                        </label>
+                      </div>
+                  </div>
+                  <div class="h_rec_mtd_input h_rec_mtd_del">
+                      <div class="form-group">
+                        <label><div><span>Delete Motionless Video</span></div>
+                            <div><select class="form-control" detail="detector_delete_motionless_videos">
+                                <option value="0" selected>No</option>
+                                <option value="1">Yes</option>
+                            </select></div>
+                        </label>
+                      </div>
+                  </div>
+                  <div class="shinobi-detector" style="display:none">
                       <div class="form-group important">
                         <label><div><span>Send Frames</span></div>
                             <div><select class="form-control" detail="detector_send_frames" selector="h_det_fra">
