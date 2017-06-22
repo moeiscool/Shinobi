@@ -2621,7 +2621,8 @@ $('body')
             switch(n){
                 case'montage':
                     if(v===1){
-                       $('#monitors_live').addClass('montage')
+                        $('#monitors_live').addClass('montage')
+                        $.ccio.init('montage')
                     }
                 break;
             }
