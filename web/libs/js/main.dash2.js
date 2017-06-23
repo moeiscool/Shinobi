@@ -17,6 +17,14 @@ $.ccio={fr:$('#files_recent'),mon:{}};
     $.ccio.init=function(x,d,z,k){
         if(!k){k={}};k.tmp='';
         switch(x){
+            case'clearTimers':
+                if(!d.mid){d.mid=d.id}
+                clearTimeout($.ccio.mon[d.mid]._signal);
+                clearInterval($.ccio.mon[d.mid].hlsGarbageCollectorTimer)
+                clearTimeout($.ccio.mon[d.mid].jpegInterval);
+                clearInterval($.ccio.mon[d.mid].signal);
+                clearInterval($.ccio.mon[d.mid].m3uCheck);
+            break;
             case'note':
                 k.o=$.ccio.op().switches
                 if(k.o&&k.o.notifyHide!==1){
@@ -471,12 +479,15 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 tmp+='<option value="'+d.id+'">'+d.name+'</option>'
             break;
             case'stream-element':
+                try{k.d=JSON.parse(d.details);}catch(er){k.d=d.details}
+                if($.ccio.mon[d.mid]&&$.ccio.mon[d.mid].previousStreamType===k.d.stream_type){
+                    return;
+                }
                 k.e=$('#monitor_live_'+d.mid+' .stream-block');
                 k.e.find('.stream-element').remove();
                 if($.ccio.op().jpeg_on===true){
                     tmp+='<img class="stream-element">';
                 }else{
-                    try{k.d=JSON.parse(d.details);}catch(er){k.d=d.details}
                     switch(k.d.stream_type){
                         case'hls':
                             tmp+='<video class="stream-element" autoplay></video>';
@@ -837,10 +848,7 @@ $.ccio.ws.on('f',function (d){
         break;
         case'monitor_delete':
             $('[mid="'+d.mid+'"][ke="'+d.ke+'"]:not(.modal)').remove();
-            clearTimeout($.ccio.mon[d.mid]._signal);
-            clearTimeout($.ccio.mon[d.mid].sk)
-            clearTimeout($.ccio.mon[d.mid].jpegInterval);
-            clearInterval($.ccio.mon[d.mid].signal);
+            $.ccio.init('clearTimers',d)
             delete($.ccio.mon[d.mid]);
         break;
         case'monitor_edit_failed':
@@ -854,7 +862,7 @@ $.ccio.ws.on('f',function (d){
         break;
         case'monitor_edit':
             d.e=$('[mid="'+d.mon.mid+'"][ke="'+d.mon.ke+'"]');
-            $.ccio.tm('stream-element',d.mon)
+            $.ccio.init('clearTimers',d)
             d.e=$('#monitor_live_'+d.mid);
             if(d.mon.details.control=="1"){d.e.find('[monitor="control_toggle"]').show()}else{d.e.find('.pad').remove();d.e.find('[monitor="control_toggle"]').hide()}
             
@@ -864,17 +872,18 @@ $.ccio.ws.on('f',function (d){
             d.mon.details=JSON.stringify(d.mon.details);
             if(!$.ccio.mon[d.mid]){$.ccio.mon[d.mid]={}}
             $.ccio.init('jpegModeStop',d);
+            $.ccio.mon[d.mid].previousStreamType=d.mon.details.stream_type
             $.each(d.mon,function(n,v){
                 $.ccio.mon[d.mid][n]=v;
             });
             if(d.new===true){$.ccio.tm(1,d.mon,'#monitors_list')}
             switch(d.mon.mode){
-//                case'stop':d.e.remove();break;
                 case'start':case'record':
-                    if(d.o[d.ke]&&d.o[d.ke][d.mid]===1){$.ccio.cx({f:'monitor',ff:'watch_on',id:d.mid})}
+                    if(d.o[d.ke]&&d.o[d.ke][d.mid]===1){
+                        $.ccio.cx({f:'monitor',ff:'watch_on',id:d.mid})
+                    }
                 break;
             }
-            
             d.e=$('.glM'+d.mon.mid);
             d.e.find('.monitor_name').text(d.mon.name)
             d.e.find('.monitor_mid').text(d.mon.mid)
@@ -918,7 +927,6 @@ $.ccio.ws.on('f',function (d){
             d.o=$.ccio.op().watch_on;if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=0;$.ccio.op('watch_on',d.o);
             if($.ccio.mon[d.id]){
                 $.ccio.init('jpegModeStop',{mid:d.id});
-                clearTimeout($.ccio.mon[d.id].sk)
                 clearInterval($.ccio.mon[d.id].signal);delete($.ccio.mon[d.id].signal);
                 $.ccio.mon[d.id].watch=0;
                 if($.ccio.mon[d.id].hls){$.ccio.mon[d.id].hls.destroy()}
@@ -929,6 +937,7 @@ $.ccio.ws.on('f',function (d){
             d.o=$.ccio.op().watch_on;if(!d.o){d.o={}};if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=1;$.ccio.op('watch_on',d.o);
             $.ccio.mon[d.id].watch=1;
             d.e=$('#monitor_live_'+d.id);
+            $.ccio.init('clearTimers',d)
             if(d.e.length==0){
                 $.ccio.tm(2,$.ccio.mon[d.id],'#monitors_live');
                 $.ccio.init('dragWindows')
@@ -943,30 +952,40 @@ $.ccio.ws.on('f',function (d){
                         $.ccio.init('jpegMode',$.ccio.mon[d.id]);
                     break;
                     case'hls':
-                        d.url=$user.auth_token+'/hls/'+d.ke+'/'+d.id+'/s.m3u8';
-                        var video = $('#monitor_live_'+d.id+' .stream-element')[0];
-                        if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)||(navigator.userAgent.match(/(Safari)/)&&!navigator.userAgent.match('Chrome'))) {
-                            video.src=d.url;
-                            if (video.paused) {
-                                video.play();
-                            }
-                        }else{
-                            if($.ccio.mon[d.id].hls){$.ccio.mon[d.id].hls.destroy()}
-                            $.ccio.mon[d.id].hls = new Hls();
-                            $.ccio.mon[d.id].hls.loadSource(d.url);
-                            $.ccio.mon[d.id].hls.attachMedia(video);
-                            $.ccio.mon[d.id].hls.on(Hls.Events.MANIFEST_PARSED,function() {
-                                if (video.paused) {
-                                    video.play();
+                        d.fn=function(){
+                            clearTimeout($.ccio.mon[d.id].m3uCheck)
+                            d.url=$user.auth_token+'/hls/'+d.ke+'/'+d.id+'/s.m3u8';
+                            $.get(d.url,function(m3u){
+                                if(m3u=='File Not Found'){
+                                    $.ccio.mon[d.id].m3uCheck=setTimeout(function(){
+                                        d.fn()
+                                    },2000)
+                                }else{
+                                    var video = $('#monitor_live_'+d.id+' .stream-element')[0];
+                                    if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)||(navigator.userAgent.match(/(Safari)/)&&!navigator.userAgent.match('Chrome'))) {
+                                        video.src=d.url;
+                                        if (video.paused) {
+                                            video.play();
+                                        }
+                                    }else{
+                                        $.ccio.mon[d.id].hlsGarbageCollector=function(){
+                                            if($.ccio.mon[d.id].hls){$.ccio.mon[d.id].hls.destroy();URL.revokeObjectURL(video.src)}
+                                            $.ccio.mon[d.id].hls = new Hls();
+                                            $.ccio.mon[d.id].hls.loadSource(d.url);
+                                            $.ccio.mon[d.id].hls.attachMedia(video);
+                                            $.ccio.mon[d.id].hls.on(Hls.Events.MANIFEST_PARSED,function() {
+                                                if (video.paused) {
+                                                    video.play();
+                                                }
+                                            });
+                                        }
+                                        $.ccio.mon[d.id].hlsGarbageCollector()
+                                        $.ccio.mon[d.id].hlsGarbageCollectorTimer=setInterval($.ccio.mon[d.id].hlsGarbageCollector,1000*60*20)
+                                    }
                                 }
-                            });
+                            })
                         }
-                        clearTimeout($.ccio.mon[d.id].sk);
-                        if(d.d.signal_check!=='0'){
-                            $.ccio.mon[d.id].sk=setTimeout(function(){
-                                $.ccio.init('signal-check',d)
-                            },15000)
-                        }
+                        d.fn()
                     break;
                     case'mjpeg':
                         $('#monitor_live_'+d.id+' .stream-element').attr('src',$user.auth_token+'/mjpeg/'+d.ke+'/'+d.id+'/full')
