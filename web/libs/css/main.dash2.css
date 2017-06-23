@@ -145,6 +145,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .form-group label span small{margin-left: 2px;display:block;font-weight: 600;}
 .form-group-group blockquote:before,.form-group-group blockquote:after{display:none!important}
 .form-group-group blockquote{letter-spacing:normal;font-style:normal}
+.form-group-group blockquote p:empty{display:none}
 .form-group-group blockquote p{font-size:inherit}
 .form-group-group blockquote p:last-child{margin-bottom:0}
 .form-group-group-group>div,.form-group-group-group .h_us_advanced>div{margin-bottom:15px;}

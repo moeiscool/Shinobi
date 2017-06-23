@@ -729,13 +729,16 @@ $.ccio.ws.on('f',function (d){
             }
         break;
         case'detector_plugged':
+            if(!d.notice){d.notice=''}
             $('.shinobi-detector').show()
+            $('.shinobi-detector-msg').html(d.notice)
             $('.shinobi-detector_name').text(d.plug)
             $('.shinobi-detector-'+d.plug).show()
             $('.shinobi-detector-invert').hide()
         break;
         case'detector_unplugged':
             $('.shinobi-detector').hide()
+            $('.shinobi-detector-msg').empty()
             $('.shinobi-detector_name').empty()
             $('.shinobi-detector_plug').hide()
             $('.shinobi-detector-invert').show()
@@ -927,6 +930,7 @@ $.ccio.ws.on('f',function (d){
             d.o=$.ccio.op().watch_on;if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=0;$.ccio.op('watch_on',d.o);
             if($.ccio.mon[d.id]){
                 $.ccio.init('jpegModeStop',{mid:d.id});
+                $.ccio.init('clearTimers',d)
                 clearInterval($.ccio.mon[d.id].signal);delete($.ccio.mon[d.id].signal);
                 $.ccio.mon[d.id].watch=0;
                 if($.ccio.mon[d.id].hls){$.ccio.mon[d.id].hls.destroy()}
@@ -1488,9 +1492,6 @@ $.aM.f.find('[name="type"]').change(function(e){
         break;
     }
 });
-$.aM.e.on('dblclick','.edit_id',function(e){
-    $.aM.e.find('[name="mid"]').parents('.form-group').toggle('show')
-})
 //api window
 $.apM={e:$('#apis')};$.apM.f=$.apM.e.find('form');
 $.apM.md=$.apM.f.find('[detail]');
@@ -2441,7 +2442,9 @@ $('body')
         break;
         case'edit':
             e.p=$('#add_monitor'),e.mt=e.p.attr('mid',e.mid).attr('ke',e.ke).find('.modal-title')
+            e.p.find('.am_notice').hide()
             if(!$.ccio.mon[e.mid]){
+                e.p.find('.am_notice_new').show()
                 //new monitor
                 e.p.find('[monitor="delete"]').hide()
                 e.mt.find('span').text('Add'),e.mt.find('i').attr('class','fa fa-plus');
@@ -2533,6 +2536,7 @@ $('body')
                 }
                 e.mt.find('.edit_id').text(e.values.mid);
             }else{
+                e.p.find('.am_notice_edit').show()
                 //edit monitor
                 e.p.find('[monitor="delete"]').show()
                 e.mt.find('.edit_id').text(e.mid);
