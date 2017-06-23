@@ -205,8 +205,9 @@ s.kill=function(x,e,p){
             s.cx({f:'kill',d:s.init('noReference',e)},s.group[e.ke].mon[e.id].child_node_id)
         }else{
             if(!x||x===1){return};
+            p=x.pid;
             if(s.group[e.ke].mon_conf[e.id].type===('socket'||'jpeg'||'pipe')){
-                x.stdin.pause();p=x.pid;setTimeout(function(){x.kill('SIGTERM');delete(x);},500)
+                x.stdin.pause();setTimeout(function(){x.kill('SIGTERM');delete(x);},500)
             }else{
                 try{
                     x.stdin.setEncoding('utf8');x.stdin.write('q');
@@ -1056,7 +1057,7 @@ s.camera=function(x,e,cn,tx){
                     ++e.error_fatal_count;
                     if(s.group[e.ke].mon[e.id].started===1){
                         s.group[e.ke].mon[e.id].err_fatal_timeout=setTimeout(function(){
-                            if(e.error_fatal_count>e.details.fatal_max){
+                            if(e.details.fatal_max!==0&&e.error_fatal_count>e.details.fatal_max){
                                 s.camera('stop',{id:e.id,ke:e.ke})
                             }else{
                                 e.fn()

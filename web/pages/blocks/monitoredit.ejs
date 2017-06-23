@@ -11,6 +11,12 @@
       <div class="modal-body form-group-group-group">
         <div class="form-group-group grey">
           <h4>Identity</h4>
+            <blockquote class="global_tip am_notice am_notice_new">
+                This is how the system will identify the data for this stream. You cannot change the <b>Monitor ID</b> once you have pressed save. If you want you can make the <b>Monitor ID</b> more human readable before you continue.
+            </blockquote>
+            <blockquote class="global_tip am_notice am_notice_edit">
+                You can duplicate a monitor by modifying the <b>Monitor ID</b> then pressing save. You <b>cannot</b> use the ID of a monitor that already exists or it will save over that monitor's database information.
+            </blockquote>
             <div class="form-group">
             <label>
                 <div><span>Mode</span></div>
@@ -47,7 +53,7 @@
           <div class="form-group-group forestgreen">
           <h4>Input</h4>
               <blockquote class="global_tip">
-                  <p>For optimal performance try accesing your camera's internal settings. Find the following options and set them as shown. To find your camera you can use the <b>built in ONVIF Scanner</b> of Shinobi. Some ONVIF cameras require the use of a management tool to modify their internal settings. If you can't find your cameras you can try <a href="https://s3.amazonaws.com/cloudcamio/odm-v2.2.250.msi">ONVIF Device Manager for Windows</a>.</p>
+                  <p>This section tells Shinobi how to consume a stream. For optimal performance try tuning your camera's internal settings. Find the following options and set them as shown. To find your camera you can use the <b>built in ONVIF Scanner</b> of Shinobi. Some ONVIF cameras require the use of a management tool to modify their internal settings. If you can't find your cameras you can try <a href="https://s3.amazonaws.com/cloudcamio/odm-v2.2.250.msi">ONVIF Device Manager for Windows</a>.</p>
                   <ul>
                       <li><b>I-frame interval :</b> 80</li>
                       <li><b>Bit Rate Control :</b> CBR</li>
@@ -138,11 +144,20 @@
                 <div><input class="form-control" detail="aduration"></div>
                 </label>
               </div>
+              <div class="form-group">
+                <label><div><span>Probe Size</span></div>
+                <div><input class="form-control" detail="probesize"></div>
+                </label>
+              </div>
           </div>
 <!--     END of Input     -->
 <!--     START of Stream     -->
           <div class="form-group-group navy">
           <h4>Stream</h4>
+              <blockquote class="global_tip">
+                  <p>This section will designate the primary stream out method and it's settings. This stream will be displayed in the dashboard. If you choose to use HLS, JPEG, or MJPEG then you can consume the stream through other programs.</p>
+                  <p class="h_st_input h_st_jpeg">Using JPEG stream essentially turns off the primary stream and uses the snapshot bin to get frames.</p>
+              </blockquote>
               <div class="form-group">
                 <label><div><span>Stream Type</span></div>
                     <div><select class="form-control" detail="stream_type" selector="h_st">
@@ -248,7 +263,8 @@
           </div>
 <!--     END of Stream     -->
 <!--     START of Stream to YouTube     -->
-          <div class="form-group-group navy" style="display:none">
+<!--
+          <div class="form-group-group navy">
           <h4>Stream to YouTube <small>or another server</small></h4>
               <div class="form-group">
                 <label><div><span>Enabled</span></div>
@@ -301,6 +317,7 @@
                   </div>
               </div>
           </div>
+-->
 <!--     START of JPEG     -->
           <div class="form-group-group forestgreen">
           <h4>JPEG API <small>Snapshot (cgi-bin)</small></h4>
@@ -541,6 +558,10 @@
 <!--     START of Detector     -->
           <div class="form-group-group orange">
           <h4>Detector : <span><b class="shinobi-detector_name"></b> <b class="shinobi-detector-invert">Not </b>Connected</span></h4>
+              <blockquote class="global_tip shinobi-detector">
+                <p>When the Width and Height boxes are shown you should set them to 640x480 or below. This will optimize the read speed of frames.</p>
+                <p class="shinobi-detector-msg"></p>
+              </blockquote>
               <div class="form-group">
                 <label><div><span>Enabled <small>Only do this if you have a Detector plugin running.</small></span></div>
                     <div><select class="form-control" detail="detector" selector="h_det">
@@ -586,71 +607,71 @@
                     <div><input class="form-control" detail="detector_lock_timeout" placeholder="2000"></div>
                     </label>
                   </div>
-                  <div class="shinobi-detector" style="display:none">
-                      <div class="form-group important">
-                        <label><div><span>How to Record</span></div>
-                            <div><select class="form-control" detail="detector_record_method" selector="h_rec_mtd">
-                                <option value="hot" selected>Hotswap Modes (Watch-Only)</option>
-                                <option value="del">Delete Motionless Videos (Record)</option>
-                            </select></div>
-                        </label>
-                      </div>
-                      <div class="h_rec_mtd_input h_rec_mtd_hot">
-                          <div class="form-group">
-                            <label><div><span>Trigger Record</span></div>
-                                <div><select class="form-control" detail="detector_trigger">
-                                    <option value="0" selected>No</option>
-                                    <option value="1">Yes</option>
-                                </select></div>
-                            </label>
-                          </div>
-                          <div class="form-group">
-                            <label><div><span>Recording Timeout <small>in Minutes</small></span></div>
-                            <div><input class="form-control" detail="detector_timeout" placeholder="10"></div>
-                            </label>
-                          </div>
-                          <div class="form-group">
-                            <label><div><span>Timeout Reset on Next Motion</span></div>
-                                <div><select class="form-control" detail="watchdog_reset">
-                                    <option value="0">No</option>
-                                    <option value="1" selected>Yes</option>
-                                </select></div>
-                            </label>
-                          </div>
-                      </div>
-                      <div class="h_rec_mtd_input h_rec_mtd_del">
-                          <div class="form-group">
-                            <label><div><span>Delete Motionless Video</span></div>
-                                <div><select class="form-control" detail="detector_delete_motionless_videos">
-                                    <option value="0" selected>No</option>
-                                    <option value="1">Yes</option>
-                                </select></div>
-                            </label>
-                          </div>
-                      </div>
-                      <div class="form-group">
-                        <label><div><span>Save Events to SQL</span></div>
-                            <div><select class="form-control" detail="detector_save">
+                  <div class="form-group">
+                    <label><div><span>Save Events to SQL</span></div>
+                        <div><select class="form-control" detail="detector_save">
+                            <option value="0" selected>No</option>
+                            <option value="1">Yes</option>
+                        </select></div>
+                    </label>
+                  </div>
+                  <div class="row">
+                      <div class="form-group col-md-12">
+                        <label><div><span>Email on Trigger <small>Emails go to the main account holder's login address.</small></span></div>
+                            <div><select class="form-control" detail="detector_mail">
                                 <option value="0" selected>No</option>
                                 <option value="1">Yes</option>
                             </select></div>
                         </label>
                       </div>
-                      <div class="row">
-                          <div class="form-group col-md-12">
-                            <label><div><span>Email on Trigger <small>Emails go to the main account holder's login address.</small></span></div>
-                                <div><select class="form-control" detail="detector_mail">
-                                    <option value="0" selected>No</option>
-                                    <option value="1">Yes</option>
-                                </select></div>
-                            </label>
-                          </div>
-                          <div class="form-group col-md-12">
-                            <label><div><span>Allow Next Email <small>in Minutes</small></span></div>
-                            <div><input class="form-control" detail="detector_mail_timeout" placeholder="10"></div>
-                            </label>
-                          </div>
+                      <div class="form-group col-md-12">
+                        <label><div><span>Allow Next Email <small>in Minutes</small></span></div>
+                        <div><input class="form-control" detail="detector_mail_timeout" placeholder="10"></div>
+                        </label>
                       </div>
+                  </div>
+                  <div class="form-group important">
+                    <label><div><span>How to Record</span></div>
+                        <div><select class="form-control" detail="detector_record_method" selector="h_rec_mtd">
+                            <option value="hot" selected>Hotswap Modes (Watch-Only)</option>
+                            <option value="del">Delete Motionless Videos (Record)</option>
+                        </select></div>
+                    </label>
+                  </div>
+                  <div class="h_rec_mtd_input h_rec_mtd_hot">
+                      <div class="form-group">
+                        <label><div><span>Trigger Record</span></div>
+                            <div><select class="form-control" detail="detector_trigger">
+                                <option value="0" selected>No</option>
+                                <option value="1">Yes</option>
+                            </select></div>
+                        </label>
+                      </div>
+                      <div class="form-group">
+                        <label><div><span>Recording Timeout <small>in Minutes</small></span></div>
+                        <div><input class="form-control" detail="detector_timeout" placeholder="10"></div>
+                        </label>
+                      </div>
+                      <div class="form-group">
+                        <label><div><span>Timeout Reset on Next Motion</span></div>
+                            <div><select class="form-control" detail="watchdog_reset">
+                                <option value="0">No</option>
+                                <option value="1" selected>Yes</option>
+                            </select></div>
+                        </label>
+                      </div>
+                  </div>
+                  <div class="h_rec_mtd_input h_rec_mtd_del">
+                      <div class="form-group">
+                        <label><div><span>Delete Motionless Video</span></div>
+                            <div><select class="form-control" detail="detector_delete_motionless_videos">
+                                <option value="0" selected>No</option>
+                                <option value="1">Yes</option>
+                            </select></div>
+                        </label>
+                      </div>
+                  </div>
+                  <div class="shinobi-detector" style="display:none">
                       <div class="form-group important">
                         <label><div><span>Send Frames</span></div>
                             <div><select class="form-control" detail="detector_send_frames" selector="h_det_fra">
@@ -730,82 +751,6 @@
                   </div>
               </div>
           </div>
-<!--
-          <div class="h_det_input h_det_1" style="display:none">
-              <div class="form-group-group orange shinobi-detector" style="display:none">
-              <h4>Motion Buffer <small>Background HLS Recording</small></h4>
-                  <div class="form-group">
-                    <label><div><span>Enabled</span></div>
-                        <div><select class="form-control" detail="detector_buffer" selector="h_dbf">
-                            <option value="0" selected>No</option>
-                            <option value="1">Yes</option>
-                        </select></div>
-                    </label>
-                  </div>
-                  <div class="h_dbf_input h_dbf_1" style="display:none">
-                      <div class="form-group">
-                        <label><div><span>Video Encoder</span></div>
-                            <div><select class="form-control" detail="detector_buffer_vcodec" selector="h_dbv">
-                                <option value="no" selected>Auto</option>
-                                <option value="libx264" selected>libx264</option>
-                                <option value="libx265">libx265</option>
-                                <option value="copy">copy</option>
-                            </select></div>
-                        </label>
-                      </div>
-                      <div class="form-group">
-                        <label><div><span>Audio Encoder</span></div>
-                            <div><select class="form-control" detail="detector_buffer_acodec">
-                                <option value="no" selected>No Audio</option>
-                                <option value="" selected>Auto</option>
-                                <option value="aac">aac</option>
-                                <option value="ac3">ac3</option>
-                                <option value="libmp3lame">libmp3lame</option>
-                                <option value="copy">copy</option>
-                            </select></div>
-                        </label>
-                      </div>
-                      <div class="form-group">
-                        <label><div><span>Segment Length <small>in Seconds</small></span></div>
-                            <div><input class="form-control" detail="detector_buffer_time" placeholder="2"></div>
-                        </label>
-                      </div>
-                      <div class="form-group">
-                        <label><div><span>Preset</span></div>
-                            <div><input class="form-control" detail="preset_detector_buffer" placeholder="ultrafast"></div>
-                        </label>
-                      </div>
-                      <div class="form-group">
-                        <label><div><span>List Size</span></div>
-                            <div><input class="form-control" detail="detector_buffer_list_size" placeholder="2"></div>
-                        </label>
-                      </div>
-                      <div class="h_dbv_input h_dbv_no h_dbv_libx264 h_dbv_libx265">
-                          <div class="form-group">
-                            <label><div><span>FPS</span></div>
-                                <div><input class="form-control" detail="detector_buffer_fps" placeholder="Example : 5"></div>
-                            </label>
-                          </div>
-                          <div class="form-group">
-                            <label><div><span>Quality</span></div>
-                                <div><input class="form-control" detail="detector_buffer_quality" placeholder="Example : 1 - 23"></div>
-                            </label>
-                          </div>
-                          <div class="form-group">
-                            <label><div><span>Clip Width</span></div>
-                            <div><input class="form-control" detail="detector_buffer_scale_x" placeholder="320"></div>
-                            </label>
-                          </div>
-                          <div class="form-group">
-                            <label><div><span>Clip Height</span></div>
-                            <div><input class="form-control" detail="detector_buffer_scale_y" placeholder="240"></div>
-                            </label>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-          </div>
--->
           <div class="h_det_input h_det_1" style="display:none">
               <div class="form-group-group orange shinobi-detector" style="display:none">
               <h4>"No Motion" Detector</h4>
