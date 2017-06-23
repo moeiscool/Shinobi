@@ -861,8 +861,8 @@ $.ccio.ws.on('f',function (d){
             $.ccio.init('note',d.pnote);
         break;
         case'monitor_edit':
-            d.e=$('[mid="'+d.mon.mid+'"][ke="'+d.mon.ke+'"]');
             $.ccio.init('clearTimers',d)
+            d.e=$('[mid="'+d.mon.mid+'"][ke="'+d.mon.ke+'"]');
             d.e=$('#monitor_live_'+d.mid);
             if(d.mon.details.control=="1"){d.e.find('[monitor="control_toggle"]').show()}else{d.e.find('.pad').remove();d.e.find('[monitor="control_toggle"]').hide()}
             

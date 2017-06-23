@@ -205,8 +205,9 @@ s.kill=function(x,e,p){
             s.cx({f:'kill',d:s.init('noReference',e)},s.group[e.ke].mon[e.id].child_node_id)
         }else{
             if(!x||x===1){return};
+            p=x.pid;
             if(s.group[e.ke].mon_conf[e.id].type===('socket'||'jpeg'||'pipe')){
-                x.stdin.pause();p=x.pid;setTimeout(function(){x.kill('SIGTERM');delete(x);},500)
+                x.stdin.pause();setTimeout(function(){x.kill('SIGTERM');delete(x);},500)
             }else{
                 try{
                     x.stdin.setEncoding('utf8');x.stdin.write('q');
