@@ -138,7 +138,7 @@
             <% } %>
           <% } %>
             <div class="form-group-group navy">
-                <h4>Custom Styles</h4>
+                <h4>Preferences</h4>
                 <div class="form-group">
                     <label><div><span>CSS <small>Style your dashboard.</small></span></div>
                         <div><textarea class="form-control" placeholder="#main_header{background:#b59f00}" detail="css"></textarea></div>
@@ -147,6 +147,14 @@
                 <div class="form-group">
                     <label><div><span>Monitors per row <small>for Montage</small></span></div>
                         <div><input class="form-control" placeholder="3" localStorage="montage"></div>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label><div><span>Browser Console Log</span></div>
+                            <div><select class="form-control" localStorage="browserLog">
+                                <option value="0" selected>No</option>  
+                                <option value="1">Yes</option>  
+                            </select></div>
                     </label>
                 </div>
             </div>

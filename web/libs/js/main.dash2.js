@@ -8,6 +8,12 @@ window.chartColors = {
     grey: 'rgb(201, 203, 207)'
 };
 $.ccio={fr:$('#files_recent'),mon:{}};
+    $.ccio.log=function(x,y,z){
+        if($.ccio.op().browserLog==="1"){
+            if(!y){y=''};if(!z){z=''};
+            console.log(x,y,z)
+        }
+    }
     $.ccio.gid=function(x){
         if(!x){x=10};var t = "";var p = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         for( var i=0; i < x; i++ )
@@ -320,7 +326,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                             $.ccio.cx({f:'monitor',ff:'watch_on',id:d.id});
                         break;
                         default:
-                            console.log('signal-check',er)
+                            $.ccio.log('signal-check',er)
                         break;
                     }
                     clearInterval($.ccio.mon[d.id].signal);delete($.ccio.mon[d.id].signal);
@@ -578,7 +584,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                         k.e.find('[monitor="control_toggle"]').hide()
                     }
                     $.ccio.tm('stream-element',d)
-                }catch(re){console.log(re)}
+                }catch(re){$.ccio.log(re)}
             break;
             case'filters-where':
                 $('#filters_where').append(tmp);
@@ -663,7 +669,7 @@ $.ccio.ws.on('ping', function(d){
     $.ccio.ws.emit('pong',{beat:1});
 });
 $.ccio.ws.on('f',function (d){
-    if(d.f!=='monitor_frame'&&d.f!=='os'&&d.f!=='video_delete'&&d.f!=='detector_trigger'&&d.f!=='detector_record_timeout_start'&&d.f!=='log'){console.log(d);}
+    if(d.f!=='monitor_frame'&&d.f!=='os'&&d.f!=='video_delete'&&d.f!=='detector_trigger'&&d.f!=='detector_record_timeout_start'&&d.f!=='log'){$.ccio.log(d);}
     if(d.viewers){
         $('#monitor_live_'+d.id+' .viewers').html(d.viewers);
     }
@@ -1023,7 +1029,7 @@ $.ccio.ws.on('f',function (d){
                 image.src='data:image/jpeg;base64,'+d.frame;
                 $.ccio.mon[d.id].last_frame='data:image/jpeg;base64,'+d.frame;
             }catch(er){
-                console.log('base64 frame')
+                $.ccio.log('base64 frame')
             }
             $.ccio.init('signal',d);
         break;
@@ -1045,6 +1051,8 @@ $.ccio.ws.on('f',function (d){
 $.ccio.cx=function(x){if(!x.ke){x.ke=$user.ke;};if(!x.uid){x.uid=$user.uid;};return $.ccio.ws.emit('f',x)}
 
 $(document).ready(function(e){
+console.log("%cWarning!", "font: 2em monospace; color: red;");
+console.log('%cLeaving the developer console open is fine if you turn off "Network Recording". This is because it will keep a log of all files, including frames and videos segments.', "font: 1.2em monospace; ");
 //global form functions
 $.ccio.form={};
 $.ccio.form.details=function(e){
@@ -1379,7 +1387,7 @@ $.aM.f.submit(function(e){
         return;
     }
     $.post('/'+$user.auth_token+'/configureMonitor/'+$user.ke+'/'+e.s.mid,{data:JSON.stringify(e.s)},function(d){
-        console.log(d)
+        $.ccio.log(d)
     })
     if(!$.ccio.mon[e.s.mid]){$.ccio.mon[e.s.mid]={}}
     $.each(e.s,function(n,v){$.ccio.mon[e.s.mid][n]=v;})
@@ -1445,7 +1453,7 @@ $.aM.e.find('.import_config').click(function(e){
             })
             $.aM.e.modal('show')
         }catch(err){
-            console.log(err)
+            $.ccio.log(err)
             $.ccio.init('note',{title:'Invalid JSON',text:'Please ensure this is a valid JSON string for Shinobi monitor configuration.',type:'error'})
         }
     });
@@ -2058,8 +2066,8 @@ $('body')
             switch(e.e.attr('host')){
                     <% if(config.DropboxAppKey){ %>
                 case'dropbox':
-                    Dropbox.save(e.e.attr('href'),e.e.attr('download'),{progress: function (progress) {console.log(progress)},success: function () {
-                        console.log("Success! Files saved to your Dropbox.");
+                    Dropbox.save(e.e.attr('href'),e.e.attr('download'),{progress: function (progress) {$.ccio.log(progress)},success: function () {
+                        $.ccio.log("Success! Files saved to your Dropbox.");
                     }});
                 break;
                     <% } %>
@@ -2189,7 +2197,7 @@ $('body')
             e.mode=e.e.attr('mode')
             if(e.mode){
                 $.getJSON('/'+$user.auth_token+'/monitor/'+e.ke+'/'+e.mid+'/'+e.mode,function(d){
-                    console.log(d)
+                    $.ccio.log(d)
                 })
             }
         break;
@@ -2436,7 +2444,7 @@ $('body')
             $.confirm.body.html(e.html)
             $.confirm.click({title:'Delete Monitor',class:'btn-danger'},function(){
                 $.get('/'+$user.auth_token+'/configureMonitor/'+$user.ke+'/'+e.mon.mid+'/delete',function(d){
-                    console.log(d)
+                    $.ccio.log(d)
                 })
             });
         break;
