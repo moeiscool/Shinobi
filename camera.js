@@ -572,6 +572,8 @@ s.ffmpeg=function(e,x){
     x.watch='',x.cust_input='',x.cust_detect=' ';
     //input - analyze duration
     if(e.details.aduration&&e.details.aduration!==''){x.cust_input+=' -analyzeduration '+e.details.aduration};
+    //input - probe size
+    if(e.details.probesize&&e.details.probesize!==''){x.cust_input+=' -probesize '+e.details.probesize};
     //input - check protocol
     //input
     switch(e.type){
@@ -1490,7 +1492,7 @@ var tx;
                         if(!s.group[d.ke].mon){s.group[d.ke].mon={}}
                     }
                     if(s.ocv){
-                        tx({f:'detector_plugged',plug:s.ocv.plug})
+                        tx({f:'detector_plugged',plug:s.ocv.plug,notice:s.ocv.notice})
                     }
                     tx({f:'users_online',users:s.group[d.ke].users})
                     s.tx({f:'user_status_change',ke:d.ke,uid:cn.uid,status:1,user:s.group[d.ke].users[d.auth]},'GRP_'+d.ke)
@@ -1896,9 +1898,9 @@ var tx;
     cn.on('ocv',function(d){
         if(!cn.ocv&&d.f==='init'){
             if(config.pluginKeys[d.plug]===d.pluginKey){
-                s.ocv={started:moment(),id:cn.id,plug:d.plug};
+                s.ocv={started:moment(),id:cn.id,plug:d.plug,notice:d.notice};
                 cn.ocv=1;
-                s.tx({f:'detector_plugged',plug:d.plug},'CPU')
+                s.tx({f:'detector_plugged',plug:d.plug,notice:d.notice},'CPU')
                 s.systemLog('Connected to plugin : Detector - '+d.plug)
             }else{
                 cn.disconnect()
@@ -2512,19 +2514,6 @@ app.post('/',function (req,res){
             req.failed()
         }
     }
-});
-// Get Motion Buffer stream (m3u8)
-app.get('/:auth/motionBuffer/:ke/:id/:file', function (req,res){
-    req.fn=function(user){
-        req.dir=s.dir.buffer+req.params.ke+'/'+req.params.id+'/'+req.params.file;
-        res.on('finish',function(){res.end();});
-        if (fs.existsSync(req.dir)){
-            fs.createReadStream(req.dir).pipe(res);
-        }else{
-            res.send('File Not Found')
-        }
-    }
-    s.auth(req.params,req.fn,res,req);
 });
 // Get HLS stream (m3u8)
 app.get('/:auth/hls/:ke/:id/:file', function (req,res){
