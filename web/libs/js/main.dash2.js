@@ -734,12 +734,16 @@ $.ccio.ws.on('f',function (d){
                         d.streamObjects=d.e.find('.stream-objects')
                         d.height=d.stream.height()
                         d.width=d.stream.width()
-//                        if(d.monitorDetails.detector_scale_x===''){d.monitorDetails.detector_scale_x=320}
-//                        if(d.monitorDetails.detector_scale_y===''){d.monitorDetails.detector_scale_y=240}
+                        if(d.monitorDetails.detector_scale_x===''){d.monitorDetails.detector_scale_x=320}
+                        if(d.monitorDetails.detector_scale_y===''){d.monitorDetails.detector_scale_y=240}
+                        
+                        d.widthRatio=d.width/d.monitorDetails.detector_scale_x
+                        d.heightRatio=d.height/d.monitorDetails.detector_scale_y
+                        
                         d.streamObjects.empty()
                         d.tmp=''
                         $.each(d.details.matrices,function(n,v){
-                            d.tmp+='<div class="stream-detected-object" style="height:'+v.height+'px;width:'+v.width+'px;top:'+v.y+'px;left:'+v.x+'px;"></div>'
+                            d.tmp+='<div class="stream-detected-object" style="height:'+(d.heightRatio*v.height)+'px;width:'+(d.widthRatio*v.width)+'px;top:'+(d.heightRatio*v.y)+'px;left:'+(d.widthRatio*v.x)+'px;"></div>'
                         })
                         d.streamObjects.append(d.tmp)
                     break;
