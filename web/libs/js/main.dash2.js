@@ -427,6 +427,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" mode="'+k.mode+'" class="monitor_item glM'+d.mid+' mdl-grid col-md-6">';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col">';
                 tmp+='<div class="stream-block no-padding mdl-card__media mdl-color-text--grey-50">';
+                tmp+='<div class="stream-objects"></div>';
                 tmp+='<div class="stream-hud"><div class="lamp" title="'+k.mode+'"><i class="fa fa-eercast"></i></div><div class="controls"><span title="Currently vieweing" class="label label-default"><span class="viewers"></span></span> <a class="btn-xs btn-danger btn" monitor="mode" mode="record"><i class="fa fa-circle"></i> Start Recording</a> <a class="btn-xs btn-primary btn" monitor="mode" mode="start"><i class="fa fa-eye"></i> Set to Watch Only</a></div></div>';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card__supporting-text text-center">';
@@ -726,12 +727,31 @@ $.ccio.ws.on('f',function (d){
         case'detector_trigger':
             d.e=$('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]')
             if($.ccio.mon[d.id]&&d.e.length>0){
-                d.e.addClass('detector_triggered')
-                clearTimeout($.ccio.mon[d.id].detector_trigger_timeout);
-                $.ccio.mon[d.id].detector_trigger_timeout=setTimeout(function(){
-                    $('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]').removeClass('detector_triggered')
-                },5000);
-                d.e.find('.indifference .progress-bar').css('width',d.details.confidence).find('span').text(d.details.confidence)
+                switch(d.details.reason){
+                    case'detectObject':
+                        d.monitorDetails=JSON.parse($.ccio.mon[d.id].details)
+                        d.stream=d.e.find('.stream-element')
+                        d.streamObjects=d.e.find('.stream-objects')
+                        d.height=d.stream.height()
+                        d.width=d.stream.width()
+//                        if(d.monitorDetails.detector_scale_x===''){d.monitorDetails.detector_scale_x=320}
+//                        if(d.monitorDetails.detector_scale_y===''){d.monitorDetails.detector_scale_y=240}
+                        d.streamObjects.empty()
+                        d.tmp=''
+                        $.each(d.details.matrices,function(n,v){
+                            d.tmp+='<div class="stream-detected-object" style="height:'+v.height+'px;width:'+v.width+'px;top:'+v.y+'px;left:'+v.x+'px;"></div>'
+                        })
+                        d.streamObjects.append(d.tmp)
+                    break;
+                    default://motion
+                        d.e.addClass('detector_triggered')
+                        clearTimeout($.ccio.mon[d.id].detector_trigger_timeout);
+                        $.ccio.mon[d.id].detector_trigger_timeout=setTimeout(function(){
+                            $('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]').removeClass('detector_triggered')
+                        },5000);
+                        d.e.find('.indifference .progress-bar').css('width',d.details.confidence).find('span').text(d.details.confidence)
+                    break;
+                }
             }
         break;
         case'detector_plugged':
