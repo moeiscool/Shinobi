@@ -747,14 +747,14 @@ $.ccio.ws.on('f',function (d){
                         })
                         d.streamObjects.append(d.tmp)
                     break;
-                    default://motion
-                        d.e.addClass('detector_triggered')
-                        clearTimeout($.ccio.mon[d.id].detector_trigger_timeout);
-                        $.ccio.mon[d.id].detector_trigger_timeout=setTimeout(function(){
-                            $('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]').removeClass('detector_triggered')
-                        },5000);
-                        d.e.find('.indifference .progress-bar').css('width',d.details.confidence).find('span').text(d.details.confidence)
-                    break;
+                }
+                if(d.details.confidence){
+                    d.e.addClass('detector_triggered')
+                    clearTimeout($.ccio.mon[d.id].detector_trigger_timeout);
+                    $.ccio.mon[d.id].detector_trigger_timeout=setTimeout(function(){
+                        $('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]').removeClass('detector_triggered')
+                    },5000);
+                    d.e.find('.indifference .progress-bar').css('width',d.details.confidence).find('span').text(d.details.confidence)
                 }
             }
         break;
@@ -779,7 +779,7 @@ $.ccio.ws.on('f',function (d){
             if(d.currentlyEditing&&d.currentlyEditing!==''){
                 d.currentlyEditing=JSON.parse($.ccio.mon[d.currentlyEditing].details).detector_cascades
                 $.each(d.currentlyEditing,function(m,b){
-                    d.e=$('.detector_cascade_selection[value="'+b+'"]').prop('checked',true)
+                    d.e=$('.detector_cascade_selection[value="'+m+'"]').prop('checked',true)
                     d.p=d.e.parents('.mdl-js-switch')
                     if(d.p.length>0){
                         d.p.addClass('is-checked')
@@ -1447,8 +1447,15 @@ $.aM.import=function(e){
                     parentOfObject.addClass('is-checked')
                 })
             }else{
+                console.log(v)
                 $.each(v,function(m,b){
-                    $('[detailContainer="'+n+'"][detailObject="'+m+'"]').val(b)
+                    if(typeof b ==='string'){
+                       $('[detailContainer="'+n+'"][detailObject="'+m+'"]').val(b).change()
+                    }else{
+                        $('[detailContainer="'+n+'"][detailObject="'+m+'"]').prop('checked',true)
+                        parentOfObject=$('[detailContainer="'+n+'"][detailObject="'+m+'"]').parents('.mdl-js-switch')
+                        parentOfObject.addClass('is-checked')
+                    }
                 })
             }
         }else{
@@ -1492,19 +1499,28 @@ $.aM.e.on('change','[group]',function(){
 })
 $.aM.e.on('change','.detector_cascade_selection',function(){
     e={};
-    e.details=$.aM.e.find('[name="details"]')
-    try{
-        e.detailsVal=JSON.parse(e.details.val())
-    }catch(err){
-        e.detailsVal={}
-    }
-    e.detailsVal.detector_cascades=[];
     e.e=$.aM.e.find('.detector_cascade_selection:checked');
+    e.s={};
     e.e.each(function(n,v){
-        e.detailsVal.detector_cascades.push($(v).val())
+        e.s[$(v).val()]={}
     });
-    e.details.val(JSON.stringify(e.detailsVal))
+    $.aM.e.find('[detail="detector_cascades"]').val(JSON.stringify(e.s)).change()
 })
+//$.aM.e.on('change','.detector_cascade_selection',function(){
+//    e={};
+//    e.details=$.aM.e.find('[name="details"]')
+//    try{
+//        e.detailsVal=JSON.parse(e.details.val())
+//    }catch(err){
+//        e.detailsVal={}
+//    }
+//    e.detailsVal.detector_cascades=[];
+//    e.e=$.aM.e.find('.detector_cascade_selection:checked');
+//    e.e.each(function(n,v){
+//        e.detailsVal.detector_cascades.push($(v).val())
+//    });
+//    e.details.val(JSON.stringify(e.detailsVal))
+//})
 $.aM.e.find('.probe_config').click(function(){
     e={};
     e.user=$.aM.e.find('[detail="muser"]').val();

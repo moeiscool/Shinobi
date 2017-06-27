@@ -272,6 +272,8 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .dark .table-striped>tbody>tr:nth-of-type(even){background:#616161}
 .dark .table-striped>tbody>tr>td{border-color:#222;color:#fff}
 .dark .table-striped>tbody>tr:nth-of-type(odd){background-color: #4c4747;}
+.dark code{color: #c49a68;background-color: #36333d;}
+.dark a:not(.btn){color: #c49a68;}
 .os_bars{width:500px;display:inline-block;padding:5px 0 0 10px}
 @media screen and (max-width: 600px){
     .os_bars{width:200px;}

@@ -804,14 +804,16 @@ s.camera=function(x,e,cn,tx){
     if(e.details&&(e.details instanceof Object)===false){
         try{e.details=JSON.parse(e.details)}catch(err){}
     }
-    if(e.details&&e.details.cords&&(e.details.cords instanceof Object)===false){
-        try{
-            e.details.cords=JSON.parse(e.details.cords);
-            if(!e.details.cords)e.details.cords={};
-        }catch(err){
-            e.details.cords={};
+    ['detector_cascades','cords'].forEach(function(v){
+        if(e.details&&e.details[v]&&(e.details[v] instanceof Object)===false){
+            try{
+                e.details[v]=JSON.parse(e.details[v]);
+                if(!e.details[v])e.details[v]={};
+            }catch(err){
+                e.details[v]={};
+            }
         }
-    }
+    })
     switch(x){
         case'snapshot'://get snapshot from monitor URL
             if(config.doSnapshot===true){
