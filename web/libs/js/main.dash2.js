@@ -767,7 +767,7 @@ $.ccio.ws.on('f',function (d){
                 d.tmp+='</span>';
                 d.tmp+='<span class="mdl-list__item-secondary-action">';
                 d.tmp+='<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect">';
-                d.tmp+='<input type="checkbox" value="'+v+'" detailObject="'+v+'" class="detector_cascade_selection mdl-switch__input"/>';
+                d.tmp+='<input type="checkbox" value="'+v+'" detailContainer="detector_cascades" detailObject="'+v+'" class="detector_cascade_selection mdl-switch__input"/>';
                 d.tmp+='</label>';
                 d.tmp+='</span>';
                 d.tmp+='</li>';
@@ -778,6 +778,13 @@ $.ccio.ws.on('f',function (d){
             d.currentlyEditing=$.aM.e.attr('mid')
             if(d.currentlyEditing&&d.currentlyEditing!==''){
                 d.currentlyEditing=JSON.parse($.ccio.mon[d.currentlyEditing].details).detector_cascades
+                $.each(d.currentlyEditing,function(m,b){
+                    d.e=$('.detector_cascade_selection[value="'+b+'"]').prop('checked',true)
+                    d.p=d.e.parents('.mdl-js-switch')
+                    if(d.p.length>0){
+                        d.p.addClass('is-checked')
+                    }
+                })
             }
         break;
         case'detector_plugged':
@@ -789,6 +796,7 @@ $.ccio.ws.on('f',function (d){
             $('.shinobi-detector-invert').hide()
         break;
         case'detector_unplugged':
+            $('.stream-objects').empty()
             $('.shinobi-detector').hide()
             $('.shinobi-detector-msg').empty()
             $('.shinobi-detector_name').empty()
@@ -1430,17 +1438,17 @@ $.aM.import=function(e){
     })
     $.each(e.ss,function(n,v){
         if(v instanceof Object){
+            $('[detailContainer="'+n+'"][detailObject]').prop('checked',false)
+            $('[detailContainer="'+n+'"][detailObject]').parents('.mdl-js-switch').removeClass('is-checked')
             if(v instanceof Array){
-                $.each(v,function(m,b){
-                    $('[detailObject="'+b+'"]').prop('checked',true)
-                    e.p=$('[detailObject="'+b+'"]').parents('.mdl-js-switch')
-                    if(e.p.length>0){
-                        e.p.addClass('is-checked')
-                    }
+                $.each(v,function(m,b,parentOfObject){
+                    $('[detailContainer="'+n+'"][detailObject="'+b+'"]').prop('checked',true)
+                    parentOfObject=$('[detailContainer="'+n+'"][detailObject="'+b+'"]').parents('.mdl-js-switch')
+                    parentOfObject.addClass('is-checked')
                 })
             }else{
                 $.each(v,function(m,b){
-                    $('[detailObject="'+m+'"]').val(b)
+                    $('[detailContainer="'+n+'"][detailObject="'+m+'"]').val(b)
                 })
             }
         }else{
@@ -1448,6 +1456,9 @@ $.aM.import=function(e){
         }
     });
 }
+$.aM.e.find('.refresh_cascades').click(function(e){
+    $.ccio.cx({f:'ocv_in',data:{f:'refreshPlugins',ke:$user.ke}})
+})
 $.aM.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
     e.er=[];
