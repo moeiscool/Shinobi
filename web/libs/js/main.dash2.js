@@ -740,10 +740,10 @@ $.ccio.ws.on('f',function (d){
                         d.widthRatio=d.width/d.monitorDetails.detector_scale_x
                         d.heightRatio=d.height/d.monitorDetails.detector_scale_y
                         
-                        d.streamObjects.empty()
+                        d.streamObjects.find('.stream-detected-object[name="'+d.details.name+'"]').remove()
                         d.tmp=''
                         $.each(d.details.matrices,function(n,v){
-                            d.tmp+='<div class="stream-detected-object" style="height:'+(d.heightRatio*v.height)+'px;width:'+(d.widthRatio*v.width)+'px;top:'+(d.heightRatio*v.y)+'px;left:'+(d.widthRatio*v.x)+'px;"></div>'
+                            d.tmp+='<div class="stream-detected-object" name="'+d.details.name+'" style="height:'+(d.heightRatio*v.height)+'px;width:'+(d.widthRatio*v.width)+'px;top:'+(d.heightRatio*v.y)+'px;left:'+(d.widthRatio*v.x)+'px;"></div>'
                         })
                         d.streamObjects.append(d.tmp)
                     break;
@@ -756,6 +756,28 @@ $.ccio.ws.on('f',function (d){
                         d.e.find('.indifference .progress-bar').css('width',d.details.confidence).find('span').text(d.details.confidence)
                     break;
                 }
+            }
+        break;
+        case'detector_cascade_list':
+            d.tmp=''
+            $.each(d.cascades,function(n,v){
+                d.tmp+='<li class="mdl-list__item">';
+                d.tmp+='<span class="mdl-list__item-primary-content">';
+                d.tmp+=v;
+                d.tmp+='</span>';
+                d.tmp+='<span class="mdl-list__item-secondary-action">';
+                d.tmp+='<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect">';
+                d.tmp+='<input type="checkbox" value="'+v+'" detailObject="'+v+'" class="detector_cascade_selection mdl-switch__input"/>';
+                d.tmp+='</label>';
+                d.tmp+='</span>';
+                d.tmp+='</li>';
+            })
+            $('#detector_cascade_list').html(d.tmp)
+            componentHandler.upgradeAllRegistered()
+            //add auto select for preferences
+            d.currentlyEditing=$.aM.e.attr('mid')
+            if(d.currentlyEditing&&d.currentlyEditing!==''){
+                d.currentlyEditing=JSON.parse($.ccio.mon[d.currentlyEditing].details).detector_cascades
             }
         break;
         case'detector_plugged':
@@ -897,6 +919,7 @@ $.ccio.ws.on('f',function (d){
             $.ccio.init('clearTimers',d)
             d.e=$('[mid="'+d.mon.mid+'"][ke="'+d.mon.ke+'"]');
             d.e=$('#monitor_live_'+d.mid);
+            d.e.find('.stream-detected-object').remove()
             if(d.mon.details.control=="1"){d.e.find('[monitor="control_toggle"]').show()}else{d.e.find('.pad').remove();d.e.find('[monitor="control_toggle"]').hide()}
             
             d.o=$.ccio.op().watch_on;
@@ -971,6 +994,7 @@ $.ccio.ws.on('f',function (d){
             d.o=$.ccio.op().watch_on;if(!d.o){d.o={}};if(!d.o[d.ke]){d.o[d.ke]={}};d.o[d.ke][d.id]=1;$.ccio.op('watch_on',d.o);
             $.ccio.mon[d.id].watch=1;
             d.e=$('#monitor_live_'+d.id);
+            d.e.find('.stream-detected-object').remove()
             $.ccio.init('clearTimers',d)
             if(d.e.length==0){
                 $.ccio.tm(2,$.ccio.mon[d.id],'#monitors_live');
@@ -1396,6 +1420,34 @@ $.log.lm.change(function(e){
 });
 //add Monitor
 $.aM={e:$('#add_monitor')};$.aM.f=$.aM.e.find('form')
+$.aM.import=function(e){
+    $.each(e.values,function(n,v){
+        $.aM.e.find('[name="'+n+'"]').val(v).change()
+    })
+    e.ss=JSON.parse(e.values.details);
+    e.p.find('[detail]').each(function(n,v){
+        v=$(v).attr('detail');if(!e.ss[v]){e.ss[v]=''}
+    })
+    $.each(e.ss,function(n,v){
+        if(v instanceof Object){
+            if(v instanceof Array){
+                $.each(v,function(m,b){
+                    $('[detailObject="'+b+'"]').prop('checked',true)
+                    e.p=$('[detailObject="'+b+'"]').parents('.mdl-js-switch')
+                    if(e.p.length>0){
+                        e.p.addClass('is-checked')
+                    }
+                })
+            }else{
+                $.each(v,function(m,b){
+                    $('[detailObject="'+m+'"]').val(b)
+                })
+            }
+        }else{
+            $.aM.e.find('[detail="'+n+'"]').val(v).change();
+        }
+    });
+}
 $.aM.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
     e.er=[];
@@ -1426,6 +1478,21 @@ $.aM.e.on('change','[group]',function(){
         e.s.push($(v).val())
     });
     $.aM.e.find('[detail="groups"]').val(JSON.stringify(e.s)).change()
+})
+$.aM.e.on('change','.detector_cascade_selection',function(){
+    e={};
+    e.details=$.aM.e.find('[name="details"]')
+    try{
+        e.detailsVal=JSON.parse(e.details.val())
+    }catch(err){
+        e.detailsVal={}
+    }
+    e.detailsVal.detector_cascades=[];
+    e.e=$.aM.e.find('.detector_cascade_selection:checked');
+    e.e.each(function(n,v){
+        e.detailsVal.detector_cascades.push($(v).val())
+    });
+    e.details.val(JSON.stringify(e.detailsVal))
 })
 $.aM.e.find('.probe_config').click(function(){
     e={};
@@ -1465,16 +1532,7 @@ $.aM.e.find('.import_config').click(function(e){
     $.confirm.click({title:'Import',class:'btn-primary'},function(){
         try{
             e.values=JSON.parse($.confirm.e.find('textarea').val());
-            $.each(e.values,function(n,v){
-                $.aM.e.find('[name="'+n+'"]').val(v).change()
-            })
-            e.ss=JSON.parse(e.values.details);
-            $.aM.f.find('[detail]').each(function(n,v){
-                v=$(v).attr('detail');if(!e.ss[v]){e.ss[v]=''}
-            })
-            $.each(e.ss,function(n,v){
-                $.aM.e.find('[detail="'+n+'"]').val(v).change();
-            })
+            $.aM.import(e)
             $.aM.e.modal('show')
         }catch(err){
             $.ccio.log(err)
@@ -2577,16 +2635,7 @@ $('body')
                 e.values=$.ccio.mon[e.mid];
             }
             $.aM.selected=e.mid;
-            $.each(e.values,function(n,v){
-                $.aM.e.find('[name="'+n+'"]').val(v).change()
-            })
-            e.ss=JSON.parse(e.values.details);
-            e.p.find('[detail]').each(function(n,v){
-                v=$(v).attr('detail');if(!e.ss[v]){e.ss[v]=''}
-            })
-            $.each(e.ss,function(n,v){
-                $.aM.e.find('[detail="'+n+'"]').val(v).change();
-            });
+            $.aM.import(e)
             try{
                 e.tmp='';
                 $.each($user.mon_groups,function(n,v){

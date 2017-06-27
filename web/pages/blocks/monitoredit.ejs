@@ -723,35 +723,13 @@
                         <a class="btn btn-danger btn-block" monitor="region"><i class="fa fa-grav"></i> &nbsp; Region Editor</a>
                       </div>
                   </div>
-                  <div class="shinobi-detector-opencv shinobi-detector_plug" style="display:none">
-                      <div class="form-group">
-                        <label><div><span>Face Detection</span></div>
-                            <div><select class="form-control" detail="detector_face">
-                                <option value="0" selected>No</option>
-                                <option value="1">Yes</option>
-                            </select></div>
-                        </label>
-                      </div>
-                      <div class="form-group">
-                        <label><div><span>Full Body Detection</span></div>
-                            <div><select class="form-control" detail="detector_fullbody">
-                                <option value="0" selected>No</option>
-                                <option value="1">Yes</option>
-                            </select></div>
-                        </label>
-                      </div>
-                      <div class="form-group">
-                        <label><div><span>Car Side Detection</span></div>
-                            <div><select class="form-control" detail="detector_car">
-                                <option value="0" selected>No</option>
-                                <option value="1">Yes</option>
-                            </select></div>
-                        </label>
-                      </div>
-                  </div>
               </div>
           </div>
           <div class="h_det_input h_det_1" style="display:none">
+              <div class="form-group-group orange shinobi-detector-opencv shinobi-detector_plug" style="display:none">
+              <h4>OpenCV Cascades</h4>
+                  <div id="detector_cascade_list"></div>
+              </div>
               <div class="form-group-group orange shinobi-detector" style="display:none">
               <h4>"No Motion" Detector</h4>
                   <div class="form-group">

@@ -155,6 +155,8 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .form-group-group table tr:not(:last-child) td{border-bottom:1px dotted #eee}
 .form-group-group .mdl-list__item{border-bottom:1px solid #eee;}
 .form-group-group .mdl-list__item:hover{background:#e6e6e6;border-radius:4px;}
+.dark .form-group-group .mdl-list__item{color:#fff;border-bottom:1px solid #444;}
+.dark .form-group-group .mdl-list__item:hover{background:#555;}
 .form-group-group:last-child,.form-group-group > .form-group:last-child{margin-bottom:0}
 .form-group-group h4{margin:0 -10px 15px -10px;padding:15px;background:#ddd;}
 .form-group-group h4 small{color:#fff;}

@@ -1493,6 +1493,7 @@ var tx;
                     }
                     if(s.ocv){
                         tx({f:'detector_plugged',plug:s.ocv.plug,notice:s.ocv.notice})
+                        s.tx({f:'readPlugins',ke:d.ke},s.ocv.id)
                     }
                     tx({f:'users_online',users:s.group[d.ke].users})
                     s.tx({f:'user_status_change',ke:d.ke,uid:cn.uid,status:1,user:s.group[d.ke].users[d.auth]},'GRP_'+d.ke)
@@ -1901,6 +1902,7 @@ var tx;
                 s.ocv={started:moment(),id:cn.id,plug:d.plug,notice:d.notice};
                 cn.ocv=1;
                 s.tx({f:'detector_plugged',plug:d.plug,notice:d.notice},'CPU')
+                s.tx({f:'readPlugins',ke:d.ke},'CPU')
                 s.systemLog('Connected to plugin : Detector - '+d.plug)
             }else{
                 cn.disconnect()
