@@ -163,6 +163,7 @@ io.on('f',function(d){
                 s.group[d.ke][d.id].blendRegionContext={}
                 s.group[d.ke][d.id].lastRegionImageData={}
                 delete(s.group[d.ke][d.id].cords)
+                delete(s.group[d.ke][d.id].buffer)
             }
         break;
         case'frame':
