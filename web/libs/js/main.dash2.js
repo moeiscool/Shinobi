@@ -752,7 +752,7 @@ $.ccio.ws.on('f',function (d){
                     d.e.addClass('detector_triggered')
                     clearTimeout($.ccio.mon[d.id].detector_trigger_timeout);
                     $.ccio.mon[d.id].detector_trigger_timeout=setTimeout(function(){
-                        $('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]').removeClass('detector_triggered')
+                        $('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]').removeClass('detector_triggered').find('.stream-detected-object').remove()
                     },5000);
                     d.e.find('.indifference .progress-bar').css('width',d.details.confidence).find('span').text(d.details.confidence)
                 }

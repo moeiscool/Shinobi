@@ -120,7 +120,7 @@ s.blenderRegion=function(d,cord){
                      throw new Error('Image has no size');
                   }
                   keys.forEach(function(v,n){
-                      im.detectObject(require(s.dir.cascades+v+'.xml'),{}, function(err,mats){
+                      im.detectObject(s.dir.cascades+v+'.xml',{}, function(err,mats){
                           if(err){console.log(err);return false;}
                           if(mats&&mats.length>0){
                               s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:v,reason:'detectObject',matrices:mats,confidence:average}})
