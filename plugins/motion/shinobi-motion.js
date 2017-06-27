@@ -134,7 +134,7 @@ s.checkAreas=function(d){
         if(!d.mon.cords){d.mon.cords={}}
         s.group[d.ke][d.id].cords=Object.values(d.mon.cords);
     }
-    if(d.mon.detector_frame==='1'&&!d.mon.cords.frame){
+    if(d.mon.detector_frame==='1'){
         d.mon.cords.frame={name:'frame',s:d.mon.detector_sensitivity,points:[[0,0],[0,d.image.height],[d.image.width,d.image.height],[d.image.width,0]]};
         s.group[d.ke][d.id].cords.push(d.mon.cords.frame);
     }
