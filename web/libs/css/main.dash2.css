@@ -69,7 +69,7 @@ img{max-width:100%}
 .monitor_item{position:relative;padding:0;}
 .monitor_item{transition:none;}
 .monitor_item .mdl-card{min-height:auto;border:1px solid #272727;border-radius:0px;overflow:hidden}
-.monitor_item .mdl-card__media{position:relative;padding:0!important;display:block!important;background:#000}
+.monitor_item .mdl-card__media{position:relative;padding:0!important;display:block!important;background:#000;min-height:250px;}
 .monitor_item.selected .stream-element{height:600px}
 .monitor_item.selected .fa-expand:before{content:"\f066"}
 .monitor_item .mdl-card__supporting-text{background:#222;color:#fff!important;display:block}

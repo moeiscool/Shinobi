@@ -64,7 +64,7 @@ s.blenderRegion=function(d,cord){
         }
         s.group[d.ke][d.id].canvas[cord.name] = new Canvas(d.width,d.height);
         s.group[d.ke][d.id].canvasContext[cord.name] = s.group[d.ke][d.id].canvas[cord.name].getContext('2d');
-        s.group[d.ke][d.id].canvasContext[cord.name].fillStyle = '#005337';
+        s.group[d.ke][d.id].canvasContext[cord.name].fillStyle = '#000';
         s.group[d.ke][d.id].canvasContext[cord.name].fillRect( 0, 0,d.width,d.height);
         if(cord.points&&cord.points.length>0){
             s.group[d.ke][d.id].canvasContext[cord.name].beginPath();
@@ -108,26 +108,27 @@ s.blenderRegion=function(d,cord){
     }
     average = (average / (blendedData.data.length * 0.25))*10;
     if (average > parseFloat(cord.sensitivity)){
-          cv.readImage(s.group[d.ke][d.id].canvas[cord.name].toBuffer(), function(err,im){
-              if(err){console.log(err);return false;}
-              var width = im.width();
-              var height = im.height();
+          if(d.mon.detector_cascades&&d.mon.detector_cascades instanceof Object){
+              var keys = Object.keys(d.mon.detector_cascades);
+              if(keys.length===0){return false}
+              cv.readImage(s.group[d.ke][d.id].canvas[cord.name].toBuffer(), function(err,im){
+                  if(err){console.log(err);return false;}
+                  var width = im.width();
+                  var height = im.height();
 
-              if (width < 1 || height < 1) {
-                 throw new Error('Image has no size');
-              }
-              console.log(d.mon.detector_cascades)
-              if(d.mon.detector_cascades&&d.mon.detector_cascades instanceof Object){
-                  Object.keys(d.mon.detector_cascades).forEach(function(v,n){
-                      im.detectObject(s.dir.cascades+v+'.xml',{}, function(err,mats){
+                  if (width < 1 || height < 1) {
+                     throw new Error('Image has no size');
+                  }
+                  keys.forEach(function(v,n){
+                      im.detectObject(require(s.dir.cascades+v+'.xml'),{}, function(err,mats){
                           if(err){console.log(err);return false;}
                           if(mats&&mats.length>0){
                               s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:v,reason:'detectObject',matrices:mats,confidence:average}})
                           }
                       })
                   })
-              }
-          })
+              })
+          }
     }
     s.group[d.ke][d.id].canvasContext[cord.name].clearRect(0, 0, d.width, d.height);
     s.group[d.ke][d.id].blendRegionContext[cord.name].clearRect(0, 0, d.width, d.height);
