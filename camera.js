@@ -1541,6 +1541,11 @@ var tx;
         if((d.id||d.uid||d.mid)&&cn.ke){
             try{
             switch(d.f){
+                case'ocv_in':
+                    if(s.ocv){
+                       s.tx(d.data,s.ocv.id)
+                    }
+                break;
                 case'monitorOrder':
                     if(d.monitorOrder&&d.monitorOrder instanceof Array){
                         sql.query('SELECT details FROM Users WHERE uid=? AND ke=?',[cn.uid,cn.ke],function(err,r){

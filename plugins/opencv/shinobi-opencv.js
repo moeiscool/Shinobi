@@ -131,7 +131,7 @@ io.on('f',function(d){
             //              }
                           if(d.mon.detector_cascades&&d.mon.detector_cascades instanceof Array){
                               d.mon.detector_cascades.forEach(function(v,n){
-                                  im.detectObject(s.dir.cascades+v'.xml',{}, function(err,mats){
+                                  im.detectObject(s.dir.cascades+v+'.xml',{}, function(err,mats){
                                       if(err){console.log(err);return false;}
                                       if(mats&&mats.length>0){
                                           d.details.CAR_SIDE_CASCADE=mats;
