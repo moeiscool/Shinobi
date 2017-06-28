@@ -24,7 +24,6 @@ $.ccio={fr:$('#files_recent'),mon:{}};
         if(!k){k={}};k.tmp='';
         switch(x){
             case'drawMatrices':
-                console.log(d)
                 d.height=d.stream.height()
                 d.width=d.stream.width()
                 if(d.monitorDetails.detector_scale_x===''){d.monitorDetails.detector_scale_x=320}
@@ -1909,6 +1908,9 @@ $.pwrvid.e.on('click','[preview]',function(e){
                 .find('[download],[video="download"]')
                 .attr('download',e.filename)
                 .attr('href',e.href)
+                $.pwrvid.vp.find('video').off('loadeddata').on('loadeddata',function(){
+                    $.pwrvid.vp.find('.stream-objects').css('width',$(this).width())
+                })
             if(e.status==1){
                 $.get(e.href+'/status/2',function(d){
                 })
@@ -1989,9 +1991,9 @@ $.pwrvid.e.on('click','[preview]',function(e){
                 }
             }
             $.pwrvid.vp.find('video')
-                .on("pause",$.pwrvid.vpOnPlayPause)
-                .on("play",$.pwrvid.vpOnPlayPause)
-                .on("timeupdate",function(){
+                .off("pause").on("pause",$.pwrvid.vpOnPlayPause)
+                .off("play").on("play",$.pwrvid.vpOnPlayPause)
+                .off("timeupdate").on("timeupdate",function(){
                     var video = $.pwrvid.currentVideosObject[e.filename];
                     var video1 = $('#video_preview video');
                     var videoTime=moment(video.row.time).add(parseInt(video1[0].currentTime),'seconds').format('MM/DD/YYYY HH:mm:ss');

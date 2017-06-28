@@ -217,6 +217,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 #monitors_list .monitor_block{transition:none}
 .dropdown-menu.scrollable{max-height:300px}
 .upload_file input{display:none}
+#video_preview .stream-objects{right:0;margin:auto}
 .stream-objects{position:absolute;top:0;left:0;width:100%;height:100%;z-index:1}
 .stream-objects .stream-detected-object{position:absolute;top:0;left:0;border:3px solid red;background:transparent}
 .monitor_item .stream-hud{opacity:0;position:absolute;top:0;left:0;width:100%;height:calc(100% - 30px);z-index:2}
