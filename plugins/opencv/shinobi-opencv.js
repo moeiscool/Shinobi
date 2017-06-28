@@ -48,6 +48,27 @@ s.findCascades=function(callback){
 s.findCascades(function(){
     //get cascades
 })
+s.detectObject=function(buffer,d){
+  var keys = Object.keys(d.mon.detector_cascades);
+  if(keys.length===0){return false}
+  cv.readImage(buffer, function(err,im){
+      if(err){console.log(err);return false;}
+      var width = im.width();
+      var height = im.height();
+
+      if (width < 1 || height < 1) {
+         throw new Error('Image has no size');
+      }
+      keys.forEach(function(v,n){
+          im.detectObject(s.dir.cascades+v+'.xml',{}, function(err,mats){
+              if(err){console.log(err);return false;}
+              if(mats&&mats.length>0){
+                  s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:v,reason:'detectObject',matrices:mats,confidence:d.average}})
+              }
+          })
+      })
+  })
+}
 s.systemLog=function(q,w,e){
     if(!w){w=''}
     if(!e){e=''}
@@ -101,33 +122,16 @@ s.blenderRegion=function(d,cord){
     s.group[d.ke][d.id].lastRegionImageData[cord.name] = sourceData;
     blendedData = s.group[d.ke][d.id].blendRegionContext[cord.name].getImageData(0, 0, d.width, d.height);
     var i = 0;
-    var average = 0;
+    d.average = 0;
     while (i < (blendedData.data.length * 0.25)) {
-        average += (blendedData.data[i * 4] + blendedData.data[i * 4 + 1] + blendedData.data[i * 4 + 2]);
+        d.average += (blendedData.data[i * 4] + blendedData.data[i * 4 + 1] + blendedData.data[i * 4 + 2]);
         ++i;
     }
-    average = (average / (blendedData.data.length * 0.25))*10;
-    if (average > parseFloat(cord.sensitivity)){
+    d.average = (d.average / (blendedData.data.length * 0.25))*10;
+    if (d.average > parseFloat(cord.sensitivity)){
           if(d.mon.detector_cascades&&d.mon.detector_cascades instanceof Object){
-              var keys = Object.keys(d.mon.detector_cascades);
-              if(keys.length===0){return false}
-              cv.readImage(s.group[d.ke][d.id].canvas[cord.name].toBuffer(), function(err,im){
-                  if(err){console.log(err);return false;}
-                  var width = im.width();
-                  var height = im.height();
-
-                  if (width < 1 || height < 1) {
-                     throw new Error('Image has no size');
-                  }
-                  keys.forEach(function(v,n){
-                      im.detectObject(s.dir.cascades+v+'.xml',{}, function(err,mats){
-                          if(err){console.log(err);return false;}
-                          if(mats&&mats.length>0){
-                              s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:v,reason:'detectObject',matrices:mats,confidence:average}})
-                          }
-                      })
-                  })
-              })
+              var buffer=s.group[d.ke][d.id].canvas[cord.name].toBuffer();
+              s.detectObject(buffer,d)
           }
     }
     s.group[d.ke][d.id].canvasContext[cord.name].clearRect(0, 0, d.width, d.height);
@@ -267,29 +271,33 @@ io.on('f',function(d){
                     }
                     s.group[d.ke][d.id].buffer=Buffer.concat(s.group[d.ke][d.id].buffer);
                     try{
-                        d.mon.cords=JSON.parse(d.mon.cords)
-                    }catch(err){
-                        
-                    }
-                    try{
                         d.mon.detector_cascades=JSON.parse(d.mon.detector_cascades)
                     }catch(err){
                         
                     }
-                    s.group[d.ke][d.id].cords=Object.values(d.mon.cords);
-                    d.mon.cords=d.mon.cords;
-                    d.image = new Canvas.Image;
-                    if(d.mon.detector_scale_x===''||d.mon.detector_scale_y===''){
-                        s.systemLog('Must set detector image size')
-                        return
+                    if(d.mon.detector_use_motion==="1"){
+                        try{
+                            d.mon.cords=JSON.parse(d.mon.cords)
+                        }catch(err){
+
+                        }
+                        s.group[d.ke][d.id].cords=Object.values(d.mon.cords);
+                        d.mon.cords=d.mon.cords;
+                        d.image = new Canvas.Image;
+                        if(d.mon.detector_scale_x===''||d.mon.detector_scale_y===''){
+                            s.systemLog('Must set detector image size')
+                            return
+                        }else{
+                            d.image.width=d.mon.detector_scale_x;
+                            d.image.height=d.mon.detector_scale_y;
+                        }
+                        d.image.onload = function() { 
+                            s.checkAreas(d);
+                        }
+                        d.image.src = s.group[d.ke][d.id].buffer;
                     }else{
-                        d.image.width=d.mon.detector_scale_x;
-                        d.image.height=d.mon.detector_scale_y;
+                        s.detectObject(s.group[d.ke][d.id].buffer,d)
                     }
-                    d.image.onload = function() { 
-                        s.checkAreas(d);
-                    }
-                    d.image.src = s.group[d.ke][d.id].buffer;
                     s.group[d.ke][d.id].buffer=null;
                 }
             }catch(err){
