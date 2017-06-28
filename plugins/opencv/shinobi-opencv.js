@@ -279,7 +279,7 @@ io.on('f',function(d){
                     }catch(err){
                         
                     }
-                    if(d.mon.detector_use_motion==="1"){
+                    if(d.mon.detector_use_motion==="1"||d.mon.detector_use_detect_object!=="1"){
                         try{
                             d.mon.cords=JSON.parse(d.mon.cords)
                         }catch(err){
