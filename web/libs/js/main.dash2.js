@@ -1909,7 +1909,7 @@ $.pwrvid.e.on('click','[preview]',function(e){
                 .attr('download',e.filename)
                 .attr('href',e.href)
                 $.pwrvid.vp.find('video').off('loadeddata').on('loadeddata',function(){
-                    $.pwrvid.vp.find('.stream-objects').css('width',$(this).width())
+                    $.pwrvid.vp.find('.stream-objects').empty().css('width',$(this).width())
                 })
             if(e.status==1){
                 $.get(e.href+'/status/2',function(d){
