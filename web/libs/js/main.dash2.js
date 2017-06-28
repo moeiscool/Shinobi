@@ -23,6 +23,23 @@ $.ccio={fr:$('#files_recent'),mon:{}};
     $.ccio.init=function(x,d,z,k){
         if(!k){k={}};k.tmp='';
         switch(x){
+            case'drawMatrices':
+                console.log(d)
+                d.height=d.stream.height()
+                d.width=d.stream.width()
+                if(d.monitorDetails.detector_scale_x===''){d.monitorDetails.detector_scale_x=320}
+                if(d.monitorDetails.detector_scale_y===''){d.monitorDetails.detector_scale_y=240}
+
+                d.widthRatio=d.width/d.monitorDetails.detector_scale_x
+                d.heightRatio=d.height/d.monitorDetails.detector_scale_y
+
+                d.streamObjects.find('.stream-detected-object[name="'+d.details.name+'"]').remove()
+                d.tmp=''
+                $.each(d.details.matrices,function(n,v){
+                    d.tmp+='<div class="stream-detected-object" name="'+d.details.name+'" style="height:'+(d.heightRatio*v.height)+'px;width:'+(d.widthRatio*v.width)+'px;top:'+(d.heightRatio*v.y)+'px;left:'+(d.widthRatio*v.x)+'px;"></div>'
+                })
+                d.streamObjects.append(d.tmp)
+            break;
             case'clearTimers':
                 if(!d.mid){d.mid=d.id}
                 clearTimeout($.ccio.mon[d.mid]._signal);
@@ -727,26 +744,11 @@ $.ccio.ws.on('f',function (d){
         case'detector_trigger':
             d.e=$('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]')
             if($.ccio.mon[d.id]&&d.e.length>0){
-                switch(d.details.reason){
-                    case'detectObject':
-                        d.monitorDetails=JSON.parse($.ccio.mon[d.id].details)
-                        d.stream=d.e.find('.stream-element')
-                        d.streamObjects=d.e.find('.stream-objects')
-                        d.height=d.stream.height()
-                        d.width=d.stream.width()
-                        if(d.monitorDetails.detector_scale_x===''){d.monitorDetails.detector_scale_x=320}
-                        if(d.monitorDetails.detector_scale_y===''){d.monitorDetails.detector_scale_y=240}
-                        
-                        d.widthRatio=d.width/d.monitorDetails.detector_scale_x
-                        d.heightRatio=d.height/d.monitorDetails.detector_scale_y
-                        
-                        d.streamObjects.find('.stream-detected-object[name="'+d.details.name+'"]').remove()
-                        d.tmp=''
-                        $.each(d.details.matrices,function(n,v){
-                            d.tmp+='<div class="stream-detected-object" name="'+d.details.name+'" style="height:'+(d.heightRatio*v.height)+'px;width:'+(d.widthRatio*v.width)+'px;top:'+(d.heightRatio*v.y)+'px;left:'+(d.widthRatio*v.x)+'px;"></div>'
-                        })
-                        d.streamObjects.append(d.tmp)
-                    break;
+                if(d.details.matrices&&d.details.matrices.length>0){
+                    d.monitorDetails=JSON.parse($.ccio.mon[d.id].details)
+                    d.stream=d.e.find('.stream-element')
+                    d.streamObjects=d.e.find('.stream-objects')
+                    $.ccio.init('drawMatrices',d)
                 }
                 if(d.details.confidence){
                     d.e.addClass('detector_triggered')
@@ -777,7 +779,8 @@ $.ccio.ws.on('f',function (d){
             //add auto select for preferences
             d.currentlyEditing=$.aM.e.attr('mid')
             if(d.currentlyEditing&&d.currentlyEditing!==''){
-                d.currentlyEditing=JSON.parse($.ccio.mon[d.currentlyEditing].details).detector_cascades
+                d.currentlyEditing=JSON.parse(JSON.parse($.ccio.mon[d.currentlyEditing].details).detector_cascades)
+                console.log(d.currentlyEditing)
                 $.each(d.currentlyEditing,function(m,b){
                     d.e=$('.detector_cascade_selection[value="'+m+'"]').prop('checked',true)
                     d.p=d.e.parents('.mdl-js-switch')
@@ -1437,18 +1440,24 @@ $.aM.import=function(e){
         v=$(v).attr('detail');if(!e.ss[v]){e.ss[v]=''}
     })
     $.each(e.ss,function(n,v){
-        if(v instanceof Object){
+        console.log(n,v)
+        try{
+            var variable=JSON.parse(v)
+        }catch(err){
+            var variable=v
+        }
+        console.log(n,variable)
+        if(variable instanceof Object){
             $('[detailContainer="'+n+'"][detailObject]').prop('checked',false)
             $('[detailContainer="'+n+'"][detailObject]').parents('.mdl-js-switch').removeClass('is-checked')
-            if(v instanceof Array){
-                $.each(v,function(m,b,parentOfObject){
+            if(variable instanceof Array){
+                $.each(variable,function(m,b,parentOfObject){
                     $('[detailContainer="'+n+'"][detailObject="'+b+'"]').prop('checked',true)
                     parentOfObject=$('[detailContainer="'+n+'"][detailObject="'+b+'"]').parents('.mdl-js-switch')
                     parentOfObject.addClass('is-checked')
                 })
             }else{
-                console.log(v)
-                $.each(v,function(m,b){
+                $.each(variable,function(m,b){
                     if(typeof b ==='string'){
                        $('[detailContainer="'+n+'"][detailObject="'+m+'"]').val(b).change()
                     }else{
@@ -1459,7 +1468,7 @@ $.aM.import=function(e){
                 })
             }
         }else{
-            $.aM.e.find('[detail="'+n+'"]').val(v).change();
+            $.aM.e.find('[detail="'+n+'"]').val(variable).change();
         }
     });
 }
@@ -1904,13 +1913,18 @@ $.pwrvid.e.on('click','[preview]',function(e){
                 $.get(e.href+'/status/2',function(d){
                 })
             }
-            if($.pwrvid.currentVideosObject[e.filename].motion.length>0){
-                var labels=[]
-                var Dataset1=[]
-                $.each($.pwrvid.currentVideosObject[e.filename].motion,function(n,v){
-                    labels.push(moment(v.time).format('MM/DD/YYYY HH:mm:ss'))
-                    Dataset1.push(v.details.confidence)
-                })
+            var labels=[]
+            var Dataset1=[]
+            var events=$.pwrvid.currentVideosObject[e.filename].motion
+            var eventsLabeledByTime={}
+            $.each(events,function(n,v){
+                if(!v.details.confidence){v.details.confidence=0}
+                var time=moment(v.time).format('MM/DD/YYYY HH:mm:ss')
+                labels.push(time)
+                Dataset1.push(v.details.confidence)
+                eventsLabeledByTime[time]=v;
+            })
+            if(events.length>0){
                 $.pwrvid.mL.html("<canvas></canvas>")
                 var timeFormat = 'MM/DD/YYYY HH:mm:ss';
                 var color = Chart.helpers.color;
@@ -1974,7 +1988,26 @@ $.pwrvid.e.on('click','[preview]',function(e){
                     if(x==1)e.video.pause();
                 }
             }
-            $.pwrvid.vp.find('video').on("pause",$.pwrvid.vpOnPlayPause).on("play",$.pwrvid.vpOnPlayPause);
+            $.pwrvid.vp.find('video')
+                .on("pause",$.pwrvid.vpOnPlayPause)
+                .on("play",$.pwrvid.vpOnPlayPause)
+                .on("timeupdate",function(){
+                    var video = $.pwrvid.currentVideosObject[e.filename];
+                    var video1 = $('#video_preview video');
+                    var videoTime=moment(video.row.time).add(parseInt(video1[0].currentTime),'seconds').format('MM/DD/YYYY HH:mm:ss');
+                    var event =eventsLabeledByTime[videoTime];
+                    if(event){
+                        if(event.details.matrices){
+                            event.monitorDetails=JSON.parse(e.mon.details)
+                            event.stream=video1
+                            event.streamObjects=$.pwrvid.vp.find('.stream-objects')
+                            $.ccio.init('drawMatrices',event)
+                        }
+                        if(event.details.confidence){
+                            $.pwrvid.vp.find('.motion-meter .progress-bar').css('width',event.details.confidence+'px').find('span').text(event.details.confidence)
+                        }
+                    }
+                })
         break;
     }
 })
@@ -2006,8 +2039,6 @@ $.pwrvid.drawTimeline=function(){
                 }
             });
             $.each(events,function(n,v){
-//                v.mon=$.ccio.mon[v.mid];
-//                    data.push({src:v,x:v.time,yy:v.details.confidence})
                 $.each(data,function(m,b){
                     if (moment(v.time).isBetween(moment(b.time).format(),moment(b.endTime).format())) {
                         data[m].motion.push(v)
