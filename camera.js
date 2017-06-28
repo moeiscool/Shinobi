@@ -696,19 +696,19 @@ s.ffmpeg=function(e,x){
     //stream - timestamp
     if(e.details.stream_timestamp&&e.details.stream_timestamp=="1"&&e.details.vcodec!=='copy'){
         //font
-        if(e.details.stream_timestamp_font&&e.details.stream_timestamp_font!==''){x.time_font=e.details.stream_timestamp_font}else{x.time_font='/usr/share/fonts/truetype/freefont/FreeSans.ttf'}
+        if(e.details.stream_timestamp_font&&e.details.stream_timestamp_font!==''){x.stream_timestamp_font=e.details.stream_timestamp_font}else{x.stream_timestamp_font='/usr/share/fonts/truetype/freefont/FreeSans.ttf'}
         //position x
-        if(e.details.stream_timestamp_x&&e.details.stream_timestamp_x!==''){x.timex=e.details.stream_timestamp_x}else{x.timex='(w-tw)/2'}
+        if(e.details.stream_timestamp_x&&e.details.stream_timestamp_x!==''){x.stream_timestamp_x=e.details.stream_timestamp_x}else{x.stream_timestamp_x='(w-tw)/2'}
         //position y
-        if(e.details.stream_timestamp_y&&e.details.stream_timestamp_y!==''){x.timey=e.details.stream_timestamp_y}else{x.timey='0'}
+        if(e.details.stream_timestamp_y&&e.details.stream_timestamp_y!==''){x.stream_timestamp_y=e.details.stream_timestamp_y}else{x.stream_timestamp_y='0'}
         //text color
-        if(e.details.stream_timestamp_color&&e.details.stream_timestamp_color!==''){x.time_color=e.details.stream_timestamp_color}else{x.time_color='white'}
+        if(e.details.stream_timestamp_color&&e.details.stream_timestamp_color!==''){x.stream_timestamp_color=e.details.stream_timestamp_color}else{x.stream_timestamp_color='white'}
         //box color
-        if(e.details.stream_timestamp_box_color&&e.details.stream_timestamp_box_color!==''){x.time_box_color=e.details.stream_timestamp_box_color}else{x.time_box_color='0x00000000@1'}
+        if(e.details.stream_timestamp_box_color&&e.details.stream_timestamp_box_color!==''){x.stream_timestamp_box_color=e.details.stream_timestamp_box_color}else{x.stream_timestamp_box_color='0x00000000@1'}
         //text size
-        if(e.details.stream_timestamp_font_size&&e.details.stream_timestamp_font_size!==''){x.time_font_size=e.details.stream_timestamp_font_size}else{x.time_font_size='10'}
+        if(e.details.stream_timestamp_font_size&&e.details.stream_timestamp_font_size!==''){x.stream_timestamp_font_size=e.details.stream_timestamp_font_size}else{x.stream_timestamp_font_size='10'}
 
-        x.stream_video_filters.push('drawtext=fontfile='+x.time_font+':text=\'%{localtime}\':x='+x.timex+':y='+x.timey+':fontcolor='+x.time_color+':box=1:boxcolor='+x.time_box_color+':fontsize='+x.time_font_size);
+        x.stream_video_filters.push('drawtext=fontfile='+x.stream_timestamp_font+':text=\'%{localtime}\':x='+x.stream_timestamp_x+':y='+x.stream_timestamp_y+':fontcolor='+x.stream_timestamp_color+':box=1:boxcolor='+x.stream_timestamp_box_color+':fontsize='+x.stream_timestamp_font_size);
     }
     //stream - watermark for -vf
     if(e.details.stream_watermark&&e.details.stream_watermark=="1"&&e.details.stream_watermark_location&&e.details.stream_watermark_location!==''){
@@ -764,15 +764,15 @@ s.ffmpeg=function(e,x){
             if(x.cust_stream.indexOf('-tune')===-1){x.cust_stream+=' -tune zerolatency'}
             if(x.cust_stream.indexOf('-g ')===-1){x.cust_stream+=' -g 1'}
             if(x.stream_quality)x.stream_quality=' -crf '+x.stream_quality;
-            x.pipe=x.preset_stream+x.stream_quality+x.stream_acodec+x.stream_vcodec+x.stream_fps+' -f hls -s '+x.ratio+x.cust_stream+' -hls_time '+x.hls_time+' -hls_list_size '+x.hls_list_size+' -start_number 0 -hls_allow_cache 0 -hls_flags +delete_segments+omit_endlist '+e.sdir+'s.m3u8';
+            x.pipe=x.preset_stream+x.stream_quality+x.stream_acodec+x.stream_vcodec+x.stream_fps+' -f hls -s '+x.ratio+x.stream_video_filters+x.cust_stream+' -hls_time '+x.hls_time+' -hls_list_size '+x.hls_list_size+' -start_number 0 -hls_allow_cache 0 -hls_flags +delete_segments+omit_endlist '+e.sdir+'s.m3u8';
         break;
         case'mjpeg':
             if(x.stream_quality)x.stream_quality=' -q:v '+x.stream_quality;
-            x.pipe=' -c:v mjpeg -f mpjpeg -boundary_tag shinobi'+x.cust_stream+x.svf+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
+            x.pipe=' -c:v mjpeg -f mpjpeg -boundary_tag shinobi'+x.cust_stream+x.stream_video_filters+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
         break;
         case'b64':case'':case undefined:case null://base64
             if(x.stream_quality)x.stream_quality=' -q:v '+x.stream_quality;
-            x.pipe=' -c:v mjpeg -f image2pipe'+x.cust_stream+x.svf+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
+            x.pipe=' -c:v mjpeg -f image2pipe'+x.cust_stream+x.stream_video_filters+x.stream_quality+x.stream_fps+' -s '+x.ratio+' pipe:1';
         break;
         default:
             x.pipe=''
