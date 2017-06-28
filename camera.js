@@ -569,7 +569,11 @@ s.ffmpeg=function(e,x){
     //set X for temporary values so we don't break our main monitor object.
     if(!x){x={tmp:''}}
     //set some placeholding values to avoid "undefined" in ffmpeg string.
-    x.watch='',x.cust_input='',x.cust_detect=' ';
+    x.record_string=''
+    x.cust_input=''
+    x.cust_detect=' '
+    x.record_video_filters=[]
+    x.stream_video_filters=[]
     //input - analyze duration
     if(e.details.aduration&&e.details.aduration!==''){x.cust_input+=' -analyzeduration '+e.details.aduration};
     //input - probe size
@@ -594,6 +598,11 @@ s.ffmpeg=function(e,x){
             x.ratio='640x480';
         break;
     }
+    if(e.width!==''&&e.height!==''&&!isNaN(e.width)&&!isNaN(e.height)){
+        x.record_dimensions=' -s '+e.width+'x'+e.height
+    }else{
+        x.record_dimensions=''
+    }
     if(e.details.stream_scale_x&&e.details.stream_scale_x!==''&&e.details.stream_scale_y&&e.details.stream_scale_y!==''){
         x.ratio=e.details.stream_scale_x+'x'+e.details.stream_scale_y;
     }
@@ -605,23 +614,6 @@ s.ffmpeg=function(e,x){
     }else{
         x.segment+=e.dir+'%Y-%m-%dT%H-%M-%S.'+e.ext;
     }
-    //record - timestamp options
-    if(e.details.timestamp&&e.details.timestamp=="1"&&e.details.vcodec!=='copy'){
-        //font
-        if(e.details.timestamp_font&&e.details.timestamp_font!==''){x.time_font=e.details.timestamp_font}else{x.time_font='/usr/share/fonts/truetype/freefont/FreeSans.ttf'}
-        //position x
-        if(e.details.timestamp_x&&e.details.timestamp_x!==''){x.timex=e.details.timestamp_x}else{x.timex='(w-tw)/2'}
-        //position y
-        if(e.details.timestamp_y&&e.details.timestamp_y!==''){x.timey=e.details.timestamp_y}else{x.timey='0'}
-        //text color
-        if(e.details.timestamp_color&&e.details.timestamp_color!==''){x.time_color=e.details.timestamp_color}else{x.time_color='white'}
-        //box color
-        if(e.details.timestamp_box_color&&e.details.timestamp_box_color!==''){x.time_box_color=e.details.timestamp_box_color}else{x.time_box_color='0x00000000@1'}
-        //text size
-        if(e.details.timestamp_font_size&&e.details.timestamp_font_size!==''){x.time_font_size=e.details.timestamp_font_size}else{x.time_font_size='10'}
-
-        x.time=' -vf drawtext=fontfile='+x.time_font+':text=\'%{localtime}\':x='+x.timex+':y='+x.timey+':fontcolor='+x.time_color+':box=1:boxcolor='+x.time_box_color+':fontsize='+x.time_font_size;
-    }else{x.time=''}
     //record - set defaults for extension, video quality
     switch(e.ext){
         case'mp4':
@@ -656,14 +648,95 @@ s.ffmpeg=function(e,x){
     }
     if(e.fps&&e.fps!==''){x.framerate=' -r '+e.fps}else{x.framerate=''}
     if(e.details.stream_fps&&e.details.stream_fps!==''){x.stream_fps=' -r '+e.details.stream_fps}else{x.stream_fps=''}
-    //record - video filter
+    //record - timestamp options for -vf
+    if(e.details.timestamp&&e.details.timestamp=="1"&&e.details.vcodec!=='copy'){
+        //font
+        if(e.details.timestamp_font&&e.details.timestamp_font!==''){x.time_font=e.details.timestamp_font}else{x.time_font='/usr/share/fonts/truetype/freefont/FreeSans.ttf'}
+        //position x
+        if(e.details.timestamp_x&&e.details.timestamp_x!==''){x.timex=e.details.timestamp_x}else{x.timex='(w-tw)/2'}
+        //position y
+        if(e.details.timestamp_y&&e.details.timestamp_y!==''){x.timey=e.details.timestamp_y}else{x.timey='0'}
+        //text color
+        if(e.details.timestamp_color&&e.details.timestamp_color!==''){x.time_color=e.details.timestamp_color}else{x.time_color='white'}
+        //box color
+        if(e.details.timestamp_box_color&&e.details.timestamp_box_color!==''){x.time_box_color=e.details.timestamp_box_color}else{x.time_box_color='0x00000000@1'}
+        //text size
+        if(e.details.timestamp_font_size&&e.details.timestamp_font_size!==''){x.time_font_size=e.details.timestamp_font_size}else{x.time_font_size='10'}
+
+        x.record_video_filters.push('drawtext=fontfile='+x.time_font+':text=\'%{localtime}\':x='+x.timex+':y='+x.timey+':fontcolor='+x.time_color+':box=1:boxcolor='+x.time_box_color+':fontsize='+x.time_font_size);
+    }
+    //record - watermark for -vf
+    if(e.details.watermark&&e.details.watermark=="1"&&e.details.watermark_location&&e.details.watermark_location!==''){
+        switch(e.details.watermark_position){
+            case'tl'://top left
+                x.watermark_position='10:10'
+            break;
+            case'tr'://top right
+                x.watermark_position='main_w-overlay_w-10:10'
+            break;
+            case'bl'://bottom left
+                x.watermark_position='10:main_h-overlay_h-10'
+            break;
+            default://bottom right
+                x.watermark_position='(main_w-overlay_w-10)/2:(main_h-overlay_h-10)/2'
+            break;
+        }
+        x.record_video_filters.push('movie='+e.details.watermark_location+'[watermark],[in][watermark]overlay='+x.watermark_position+'[out]');
+    }
+    //check custom record filters for -vf
     if(e.details.vf&&e.details.vf!==''){
-        if(x.time===''){x.vf=' -vf '}else{x.vf=','}
-        x.vf+=e.details.vf;
-        x.time+=x.vf;
+        x.record_video_filters.push(e.details.vf)
+    }
+    //compile filter string for -vf
+    if(x.record_video_filters.length>0){
+       x.record_video_filters=' -vf '+x.record_video_filters.join(',')
+    }else{
+        x.record_video_filters=''
+    }
+    //stream - timestamp
+    if(e.details.stream_timestamp&&e.details.stream_timestamp=="1"&&e.details.vcodec!=='copy'){
+        //font
+        if(e.details.stream_timestamp_font&&e.details.stream_timestamp_font!==''){x.time_font=e.details.stream_timestamp_font}else{x.time_font='/usr/share/fonts/truetype/freefont/FreeSans.ttf'}
+        //position x
+        if(e.details.stream_timestamp_x&&e.details.stream_timestamp_x!==''){x.timex=e.details.stream_timestamp_x}else{x.timex='(w-tw)/2'}
+        //position y
+        if(e.details.stream_timestamp_y&&e.details.stream_timestamp_y!==''){x.timey=e.details.stream_timestamp_y}else{x.timey='0'}
+        //text color
+        if(e.details.stream_timestamp_color&&e.details.stream_timestamp_color!==''){x.time_color=e.details.stream_timestamp_color}else{x.time_color='white'}
+        //box color
+        if(e.details.stream_timestamp_box_color&&e.details.stream_timestamp_box_color!==''){x.time_box_color=e.details.stream_timestamp_box_color}else{x.time_box_color='0x00000000@1'}
+        //text size
+        if(e.details.stream_timestamp_font_size&&e.details.stream_timestamp_font_size!==''){x.time_font_size=e.details.stream_timestamp_font_size}else{x.time_font_size='10'}
+
+        x.stream_video_filters.push('drawtext=fontfile='+x.time_font+':text=\'%{localtime}\':x='+x.timex+':y='+x.timey+':fontcolor='+x.time_color+':box=1:boxcolor='+x.time_box_color+':fontsize='+x.time_font_size);
+    }
+    //stream - watermark for -vf
+    if(e.details.stream_watermark&&e.details.stream_watermark=="1"&&e.details.stream_watermark_location&&e.details.stream_watermark_location!==''){
+        switch(e.details.stream_watermark_position){
+            case'tl'://top left
+                x.stream_watermark_position='10:10'
+            break;
+            case'tr'://top right
+                x.stream_watermark_position='main_w-overlay_w-10:10'
+            break;
+            case'bl'://bottom left
+                x.stream_watermark_position='10:main_h-overlay_h-10'
+            break;
+            default://bottom right
+                x.stream_watermark_position='(main_w-overlay_w-10)/2:(main_h-overlay_h-10)/2'
+            break;
+        }
+        x.stream_video_filters.push('movie='+e.details.stream_watermark_location+'[watermark],[in][watermark]overlay='+x.stream_watermark_position+'[out]');
     }
     //stream - video filter
-    if(e.details.svf&&e.details.svf!==''){x.svf=' -vf '+e.details.svf;}else{x.svf='';}
+    if(e.details.svf&&e.details.svf!==''){
+        x.stream_video_filters.push(e.details.svf)
+    }
+    if(x.stream_video_filters.length>0){
+       x.stream_video_filters=' -vf '+x.stream_video_filters.join(',')
+    }else{
+        x.stream_video_filters=''
+    }
     //stream - hls vcodec
     if(e.details.stream_vcodec&&e.details.stream_vcodec!=='no'){
         if(e.details.stream_vcodec!==''){x.stream_vcodec=' -c:v '+e.details.stream_vcodec}else{x.stream_vcodec='libx264'}
@@ -744,35 +817,33 @@ s.ffmpeg=function(e,x){
     if(e.details.loglevel&&e.details.loglevel!==''){x.loglevel='-loglevel '+e.details.loglevel;}else{x.loglevel='-loglevel error'}
     if(e.mode=='record'){
         //custom - record flags
-        if(e.details.cust_record&&e.details.cust_record!==''){x.watch+=' '+e.details.cust_record;}
+        if(e.details.cust_record&&e.details.cust_record!==''){x.record_string+=' '+e.details.cust_record;}
         //record - preset
-        if(e.details.preset_record&&e.details.preset_record!==''){x.watch+=' -preset '+e.details.preset_record;}
+        if(e.details.preset_record&&e.details.preset_record!==''){x.record_string+=' -preset '+e.details.preset_record;}
     }
-    //record - if video filter had nothing set to it, make it blank
-    if(!x.vf||x.vf===','){x.vf=''}
     //build final string based on the input type.
     switch(e.type){
         case'socket':case'jpeg':case'pipe':
-            if(e.mode==='record'){x.watch+=x.vcodec+x.time+x.framerate+x.vf+' -s '+e.width+'x'+e.height+x.segment;}
-            x.tmp=x.loglevel+' -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg'+x.cust_input+' -i -'+x.watch+x.pipe;
+            if(e.mode==='record'){x.record_string+=x.vcodec+x.framerate+x.record_video_filters+x.record_dimensions+x.segment;}
+            x.tmp=x.loglevel+' -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg'+x.cust_input+' -i -'+x.record_string+x.pipe;
         break;
         case'mjpeg':
             if(e.mode=='record'){
-                x.watch+=x.vcodec+x.time+x.vf+x.framerate+' -s '+e.width+'x'+e.height+x.segment;
+                x.record_string+=x.vcodec+x.record_video_filters+x.framerate+x.record_dimensions+x.segment;
             }
-            x.tmp=x.loglevel+' -reconnect 1 -r '+e.details.sfps+' -f mjpeg'+x.cust_input+' -i '+e.url+''+x.watch+x.pipe;
+            x.tmp=x.loglevel+' -reconnect 1 -r '+e.details.sfps+' -f mjpeg'+x.cust_input+' -i '+e.url+''+x.record_string+x.pipe;
         break;
         case'h264':case'hls':case'mp4':
             if(e.mode=='record'){
-                x.watch+=x.vcodec+x.time+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+x.vf+' '+x.segment;
+                x.record_string+=x.vcodec+x.framerate+x.acodec+x.record_dimensions+x.record_video_filters+' '+x.segment;
             }
-            x.tmp=x.loglevel+x.cust_input+' -i '+e.url+x.watch+x.pipe;
+            x.tmp=x.loglevel+x.cust_input+' -i '+e.url+x.record_string+x.pipe;
         break;
         case'local':
             if(e.mode=='record'){
-                x.watch+=x.vcodec+x.time+x.framerate+x.acodec+' -s '+e.width+'x'+e.height+x.vf+' '+x.segment;
+                x.record_string+=x.vcodec+x.framerate+x.acodec+x.record_dimensions+x.record_video_filters+' '+x.segment;
             }
-            x.tmp=x.loglevel+x.cust_input+' -i '+e.path+''+x.watch+x.pipe;
+            x.tmp=x.loglevel+x.cust_input+' -i '+e.path+''+x.record_string+x.pipe;
         break;
     }
     s.group[e.ke].mon[e.mid].ffmpeg=x.tmp;
