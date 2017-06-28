@@ -1329,6 +1329,9 @@ s.camera=function(x,e,cn,tx){
         break;
         case'motion':
             var d=e;
+            if(!s.group[d.ke]||!s.group[d.ke].mon[d.id]){
+                return s.systemLog('No Monitor Found, Ignoring Request')
+            }
             d.mon=s.group[d.ke].mon_conf[d.id];
             if(!s.group[d.ke].mon[d.id].detector_motion_count){
                 s.group[d.ke].mon[d.id].detector_motion_count=0
@@ -3135,7 +3138,7 @@ s.cpuUsage=function(e){
             k.cmd="ps -A -o %cpu | awk '{s+=$1} END {print s}'";
         break;
         case'linux':
-            k.cmd='top -b -n 2 | grep "^'+config.cpuUsageMarker+'" | awk \'{print $2}\' | tail -n1';
+            k.cmd='LANG=C top -b -n 2 | grep "^'+config.cpuUsageMarker+'" | awk \'{print $2}\' | tail -n1';
         break;
     }
     if(k.cmd){
@@ -3159,7 +3162,7 @@ s.ramUsage=function(e){
             k.cmd = "vm_stat | awk '/^Pages free: /{f=substr($3,1,length($3)-1)} /^Pages active: /{a=substr($3,1,length($3-1))} /^Pages inactive: /{i=substr($3,1,length($3-1))} /^Pages speculative: /{s=substr($3,1,length($3-1))} /^Pages wired down: /{w=substr($4,1,length($4-1))} /^Pages occupied by compressor: /{c=substr($5,1,length($5-1)); print ((a+w)/(f+a+i+w+s+c))*100;}'"
         break;
         default:
-            k.cmd = "free | grep Mem | awk '{print $4/$2 * 100.0}'";
+            k.cmd = "LANG=C free | grep Mem | awk '{print $4/$2 * 100.0}'";
         break;
     }
     if(k.cmd){
