@@ -131,7 +131,11 @@ s.blenderRegion=function(d,cord){
     if (d.average > parseFloat(cord.sensitivity)){
           if(d.mon.detector_cascades&&d.mon.detector_cascades instanceof Object){
               var buffer=s.group[d.ke][d.id].canvas[cord.name].toBuffer();
-              s.detectObject(buffer,d)
+              if(d.mon.detector_use_detect_object==="1"){
+                  s.detectObject(buffer,d)
+              }else{
+                  s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:cord.name,reason:'motion',confidence:d.average}})
+              }
           }
     }
     s.group[d.ke][d.id].canvasContext[cord.name].clearRect(0, 0, d.width, d.height);
