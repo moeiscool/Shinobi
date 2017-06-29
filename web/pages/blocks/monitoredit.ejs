@@ -262,80 +262,76 @@
               </div>
           </div>
           <div class=" h_us_input h_us_advanced" style="display:none">
-              <div class="h_vc_input h_vc_libvpx h_vc_libvpx-vp9 h_vc_libx264 h_vc_libx265 h_vc_default h_vc_none">
-                  <div class="form-group-group navy h_m_input h_m_record h_m_idle">
-                  <h4>Timestamp</h4>
+              <div class="form-group-group navy">
+              <h4>Stream Timestamp</h4>
+                  <div class="form-group">
+                      <label><div><span>Enabled <small>Does not work with copy encoder</small></span></div>
+                        <div><select class="form-control" detail="stream_timestamp" selector="h_tm">
+                            <option value="1">Yes</option>  
+                            <option value="0" selected>No</option>  
+                        </select></div>
+                      </label>
+                  </div>
+                  <div class="h_tm_input h_tm_1">
                       <div class="form-group">
-                          <label><div><span>Enabled <small>Does not work with copy encoder</small></span></div>
-                            <div><select class="form-control" detail="stream_timestamp" selector="h_tm">
-                                <option value="1">Yes</option>  
-                                <option value="0" selected>No</option>  
-                            </select></div>
-                          </label>
+                        <label><div><span>Font Path</span></div>
+                        <div><input class="form-control" detail="stream_timestamp_font" placeholder="/usr/share/fonts/truetype/freefont/FreeSans.ttf"></div>
+                        </label>
                       </div>
-                      <div class="h_tm_input h_tm_1">
-                          <div class="form-group">
-                            <label><div><span>Font Path</span></div>
-                            <div><input class="form-control" detail="stream_timestamp_font" placeholder="/usr/share/fonts/truetype/freefont/FreeSans.ttf"></div>
-                            </label>
-                          </div>
-                          <div class="form-group">
-                            <label><div><span>Font Size</span></div>
-                            <div><input class="form-control" detail="stream_timestamp_font_size" placeholder="10"></div>
-                            </label>
-                          </div>
+                      <div class="form-group">
+                        <label><div><span>Font Size</span></div>
+                        <div><input class="form-control" detail="stream_timestamp_font_size" placeholder="10"></div>
+                        </label>
+                      </div>
 
-                          <div class="form-group">
-                            <label><div><span>Text Color</span></div>
-                            <div><input class="form-control" detail="stream_timestamp_color" placeholder="white"></div>
-                            </label>
-                          </div>
-                          <div class="form-group">
-                            <label><div><span>Text Box Color</span></div>
-                            <div><input class="form-control" detail="stream_timestamp_box_color" placeholder="0x00000000@1"></div>
-                            </label>
-                          </div>
+                      <div class="form-group">
+                        <label><div><span>Text Color</span></div>
+                        <div><input class="form-control" detail="stream_timestamp_color" placeholder="white"></div>
+                        </label>
+                      </div>
+                      <div class="form-group">
+                        <label><div><span>Text Box Color</span></div>
+                        <div><input class="form-control" detail="stream_timestamp_box_color" placeholder="0x00000000@1"></div>
+                        </label>
+                      </div>
 
-                          <div class="form-group">
-                            <label><div><span>Position X</span></div>
-                            <div><input class="form-control" detail="stream_timestamp_x" placeholder="(w-tw)/2"></div>
-                            </label>
-                          </div>
-                          <div class="form-group">
-                            <label><div><span>Position Y</span></div>
-                            <div><input class="form-control" detail="stream_timestamp_y" placeholder="0"></div>
-                            </label>
-                          </div>
+                      <div class="form-group">
+                        <label><div><span>Position X</span></div>
+                        <div><input class="form-control" detail="stream_timestamp_x" placeholder="(w-tw)/2"></div>
+                        </label>
+                      </div>
+                      <div class="form-group">
+                        <label><div><span>Position Y</span></div>
+                        <div><input class="form-control" detail="stream_timestamp_y" placeholder="0"></div>
+                        </label>
                       </div>
                   </div>
               </div>
-              <div class="h_vc_input h_vc_libvpx h_vc_libvpx-vp9 h_vc_libx264 h_vc_libx265 h_vc_default h_vc_none">
-                  <div class="form-group-group navy h_m_input h_m_record h_m_idle">
-                  <h4>Watermark</h4>
+              <div class="form-group-group navy">
+              <h4>Stream Watermark</h4>
+                  <div class="form-group">
+                      <label><div><span>Enabled <small>Does not work with copy encoder</small></span></div>
+                        <div><select class="form-control" detail="stream_watermark" selector="h_wat">
+                            <option value="1">Yes</option>
+                            <option value="0" selected>No</option>
+                        </select></div>
+                      </label>
+                  </div>
+                  <div class="h_wat_input h_wat_1">
+                      <div class="form-group important">
+                        <label><div><span>Image Location <small>Absolute Path or leave blank to use global</small></span></div>
+                        <div><input class="form-control" detail="stream_watermark_location" placeholder="Example : /usr/share/watermark.logo"></div>
+                        </label>
+                      </div>
                       <div class="form-group">
-                          <label><div><span>Enabled <small>Does not work with copy encoder</small></span></div>
-                            <div><select class="form-control" detail="stream_watermark" selector="h_wat">
-                                <option value="1">Yes</option>
-                                <option value="0" selected>No</option>
+                          <label><div><span>Image Position</span></div>
+                            <div><select class="form-control" detail="stream_watermark_position">
+                                <option value="tr">Top Right</option>
+                                <option value="tl">Top Left</option>
+                                <option value="br" selected>Bottom Right</option>
+                                <option value="bl">Bottom Left</option>
                             </select></div>
                           </label>
-                      </div>
-                      <div class="h_wat_input h_wat_1">
-                          <div class="form-group important">
-                            <label><div><span>Image Location <small>Absolute Path or leave blank to use global</small></span></div>
-                            <div><input class="form-control" detail="stream_watermark_location" placeholder="Example : /usr/share/watermark.logo"></div>
-                            </label>
-                          </div>
-                          <div class="form-group">
-                              <label><div><span>Image Position</span></div>
-                                <div><select class="form-control" detail="stream_watermark_position">
-                                    <option value="tr">Top Right</option>
-                                    <option value="tl">Top Left</option>
-                                    <option value="br" selected>Bottom Right</option>
-                                    <option value="bl">Bottom Left</option>
-                                </select></div>
-                              </label>
-                          </div>
                       </div>
                   </div>
               </div>
@@ -535,9 +531,9 @@
           </div>
           <div class="h_vc_input h_vc_libvpx h_vc_libvpx-vp9 h_vc_libx264 h_vc_libx265 h_vc_default h_vc_none">
               <div class="form-group-group red h_m_input h_m_record h_m_idle">
-              <h4>Timestamp</h4>
+              <h4>Recording Timestamp</h4>
                   <div class="form-group">
-                      <label><div><span>Enabled <small>Does not work with copy encoder</small></span></div>
+                      <label><div><span>Enabled <small>Does not work with HLS copy encoder</small></span></div>
                         <div><select class="form-control" detail="timestamp" selector="h_tm">
                             <option value="1">Yes</option>  
                             <option value="0" selected>No</option>  
@@ -583,7 +579,7 @@
           <div class=" h_us_input h_us_advanced" style="display:none">
               <div class="h_vc_input h_vc_libvpx h_vc_libvpx-vp9 h_vc_libx264 h_vc_libx265 h_vc_default h_vc_none">
                   <div class="form-group-group red h_m_input h_m_record h_m_idle">
-                  <h4>Watermark</h4>
+                  <h4>Recording Watermark</h4>
                       <div class="form-group">
                           <label><div><span>Enabled <small>Does not work with copy encoder</small></span></div>
                             <div><select class="form-control" detail="watermark" selector="h_wat">
