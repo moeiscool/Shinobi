@@ -260,10 +260,6 @@ if(!fs.existsSync(s.dir.streams)){
 if(!fs.existsSync(s.dir.videos)){
     fs.mkdirSync(s.dir.videos);
 }
-//buffer dir
-if(!fs.existsSync(s.dir.buffer)){
-    fs.mkdirSync(s.dir.buffer);
-}
 ////Camera Controller
 s.init=function(x,e,k,fn){
     if(!e){e={}}
@@ -1028,17 +1024,6 @@ s.camera=function(x,e,cn,tx){
                 fs.mkdirSync(e.sdir);
             }else{
                 s.file('delete',e.sdir+'*')
-            }
-            //buffer dir
-            e.bdir=s.dir.buffer+e.ke+'/';
-            if (!fs.existsSync(e.bdir)){
-                fs.mkdirSync(e.bdir);
-            }
-            e.bdir=s.dir.buffer+e.ke+'/'+e.id+'/';
-            if (!fs.existsSync(e.bdir)){
-                fs.mkdirSync(e.bdir);
-            }else{
-                s.file('delete',e.bdir+'*')
             }
             //start "no motion" checker
             if(e.details.detector=='1'&&e.details.detector_notrigger=='1'){
