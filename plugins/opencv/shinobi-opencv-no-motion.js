@@ -22,11 +22,46 @@ process.on('uncaughtException', function (err) {
 });
 var fs=require('fs');
 var cv=require('opencv');
+var exec = require('child_process').exec;
+var moment = require('moment');
 var config=require('./conf.json');
+if(config.systemLog===undefined){config.systemLog=true}
 s={
     group:{},
     dir:{
         cascades:__dirname+'/cascades/'
+    },
+    isWin:(process.platform==='win32')
+}
+//default stream folder check
+if(!config.streamDir){
+    if(s.isWin===false){
+        config.streamDir='/dev/shm'
+    }else{
+        config.streamDir=config.windowsTempDir
+    }
+    if(!fs.existsSync(config.streamDir)){
+        config.streamDir=__dirname+'/streams/'
+    }else{
+        config.streamDir+='/streams/'
+    }
+}
+s.dir.streams=config.streamDir;
+//streams dir
+if(!fs.existsSync(s.dir.streams)){
+    fs.mkdirSync(s.dir.streams);
+}
+s.gid=function(x){
+    if(!x){x=10};var t = "";var p = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for( var i=0; i < x; i++ )
+        t += p.charAt(Math.floor(Math.random() * p.length));
+    return t;
+};
+s.systemLog=function(q,w,e){
+    if(!w){w=''}
+    if(!e){e=''}
+    if(config.systemLog===true){
+       return console.log(moment().format(),q,w,e)
     }
 }
 s.findCascades=function(callback){
@@ -45,6 +80,69 @@ s.findCascades=function(callback){
 s.findCascades(function(){
     //get cascades
 })
+s.detectObject=function(buffer,d){
+  var keys = Object.keys(d.mon.detector_cascades);
+  if(d.mon.detector_lisence_plate==="1"){
+      if(!d.mon.detector_lisence_plate_country||d.mon.detector_lisence_plate_country===''){
+          d.mon.detector_lisence_plate_country='us'
+      }
+      d.tmpFile=s.gid(5)+'.jpg'
+      if(!fs.existsSync(s.dir.streams)){
+          fs.mkdirSync(s.dir.streams);
+      }
+      d.dir=s.dir.streams+d.ke+'/'
+      if(!fs.existsSync(d.dir)){
+          fs.mkdirSync(d.dir);
+      }
+      d.dir=s.dir.streams+d.ke+'/'+d.id+'/'
+      if(!fs.existsSync(d.dir)){
+          fs.mkdirSync(d.dir);
+      }
+      fs.writeFile(d.dir+d.tmpFile,buffer,function(err){
+          if(err) return s.systemLog(err);
+          exec('alpr -j -c '+d.mon.detector_lisence_plate_country+' '+d.dir+d.tmpFile,{encoding:'utf8'},(err, scan, stderr) => {
+              if(err){
+                  s.systemLog(err);
+              }else{
+                  try{
+                      scan=JSON.parse(scan)
+                      if(scan.results.length>0){
+                          scan.plates=[]
+                          scan.results.forEach(function(v){
+                              v.candidates.forEach(function(g,n){
+                                  delete(v[n].matches_template)
+                              })
+                              scan.plates.push({coordinates:v.coordinates,candidates:v.candidates,confidence:v.confidence,plate:v.plate})
+                          })
+                          s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:v,reason:'licensePlate',plates:scan.plates,confidence:d.average,imgHeight:d.height,imgWidth:d.width}})
+                      }
+                  }catch(err){
+                      s.systemLog(err);
+                  }
+              }
+              exec('rm -rf '+d.dir+d.tmpFile,{encoding:'utf8'})
+          })
+      })
+  }
+  if(keys.length===0){return false}
+  cv.readImage(buffer, function(err,im){
+      if(err){console.log(err);return false;}
+      var width = im.width();
+      var height = im.height();
+
+      if (width < 1 || height < 1) {
+         throw new Error('Image has no size');
+      }
+      keys.forEach(function(v,n){
+          im.detectObject(s.dir.cascades+v+'.xml',{}, function(err,mats){
+              if(err){console.log(err);return false;}
+              if(mats&&mats.length>0){
+                  s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:v,reason:'object',matrices:mats,confidence:d.average,imgHeight:height,imgWidth:width}})
+              }
+          })
+      })
+  })
+}
 io = require('socket.io-client')('ws://'+config.host+':'+config.port);//connect to master
 s.cx=function(x){x.pluginKey=config.key;x.plug=config.plug;return io.emit('ocv',x)}
 io.on('connect',function(d){
@@ -96,52 +194,7 @@ io.on('f',function(d){
                 }
                 if(d.frame[d.frame.length-2] === 0xFF && d.frame[d.frame.length-1] === 0xD9){
                     s.group[d.ke][d.id].buffer=Buffer.concat(s.group[d.ke][d.id].buffer);
-                      cv.readImage(s.group[d.ke][d.id].buffer, function(err,im){
-                          if(err){console.log(err);return false;}
-                          var width = im.width();
-                          var height = im.height();
-
-                          if (width < 1 || height < 1) {
-                             throw new Error('Image has no size');
-                          }
-            //              if(d.mon.detector_face==='1'){
-            //                  im.detectObject(cv.EYE_CASCADE, {}, function(err,mats){
-            //                      if(err){console.log(err);return false;}
-            //                      if(mats&&mats.length>0){
-            //                          d.details.EYE_CASCADE=mats;
-            //                          console.log('EYE_CASCADE',mats)
-            //    //                    for (var i=0;i<mats.length; i++){
-            //    //                      var x = mats[i];
-            //    //                      im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
-            //    //                    }
-            ////                          s.cx({f:'trigger',id:d.id,ke:d.ke})
-            //                      }
-            //                      im.detectObject(cv.FACE_CASCADE, {}, function(err, mats){
-            //                          if(err){console.log(err);return false;}
-            //                          if(mats&&mats.length>0){
-            //                              d.details.FACE_CASCADE=mats;
-            //    //                        for (var i=0;i<mats.length; i++){
-            //    //                          var x = mats[i];
-            //    //                          im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
-            //    //                        }
-            ////                              s.cx({f:'trigger',id:d.id,ke:d.ke})
-            //    //                          s.cx({f:'frame',frame:im.toBuffer(),id:d.id,ke:d.ke})
-            //                          }
-            //                      });
-            //                  });
-            //              }
-                          if(d.mon.detector_cascades&&d.mon.detector_cascades instanceof Array){
-                              d.mon.detector_cascades.forEach(function(v,n){
-                                  im.detectObject(s.dir.cascades+v+'.xml',{}, function(err,mats){
-                                      if(err){console.log(err);return false;}
-                                      if(mats&&mats.length>0){
-                                          d.details.CAR_SIDE_CASCADE=mats;
-                                          s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:v,reason:'detectObject',matrices:mats}})
-                                      }
-                                  })
-                              })
-                          }
-                      });
+                    s.detectObject(s.group[d.ke][d.id].buffer,d)
                     s.group[d.ke][d.id].buffer=null;
                 }
             } catch(err){

@@ -22,6 +22,7 @@ process.on('uncaughtException', function (err) {
 });
 var fs=require('fs');
 var cv=require('opencv');
+var exec = require('child_process').exec;
 var moment = require('moment');
 var Canvas = require('canvas');
 var config=require('./conf.json');
@@ -30,8 +31,33 @@ s={
     group:{},
     dir:{
         cascades:__dirname+'/cascades/'
+    },
+    isWin:(process.platform==='win32')
+}
+//default stream folder check
+if(!config.streamDir){
+    if(s.isWin===false){
+        config.streamDir='/dev/shm'
+    }else{
+        config.streamDir=config.windowsTempDir
+    }
+    if(!fs.existsSync(config.streamDir)){
+        config.streamDir=__dirname+'/streams/'
+    }else{
+        config.streamDir+='/streams/'
     }
 }
+s.dir.streams=config.streamDir;
+//streams dir
+if(!fs.existsSync(s.dir.streams)){
+    fs.mkdirSync(s.dir.streams);
+}
+s.gid=function(x){
+    if(!x){x=10};var t = "";var p = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for( var i=0; i < x; i++ )
+        t += p.charAt(Math.floor(Math.random() * p.length));
+    return t;
+};
 s.findCascades=function(callback){
     var tmp={};
     tmp.foundCascades=[];
@@ -50,6 +76,48 @@ s.findCascades(function(){
 })
 s.detectObject=function(buffer,d){
   var keys = Object.keys(d.mon.detector_cascades);
+  if(d.mon.detector_lisence_plate==="1"){
+      if(!d.mon.detector_lisence_plate_country||d.mon.detector_lisence_plate_country===''){
+          d.mon.detector_lisence_plate_country='us'
+      }
+      d.tmpFile=s.gid(5)+'.jpg'
+      if(!fs.existsSync(s.dir.streams)){
+          fs.mkdirSync(s.dir.streams);
+      }
+      d.dir=s.dir.streams+d.ke+'/'
+      if(!fs.existsSync(d.dir)){
+          fs.mkdirSync(d.dir);
+      }
+      d.dir=s.dir.streams+d.ke+'/'+d.id+'/'
+      if(!fs.existsSync(d.dir)){
+          fs.mkdirSync(d.dir);
+      }
+      fs.writeFile(d.dir+d.tmpFile,buffer,function(err){
+          if(err) return s.systemLog(err);
+          exec('alpr -j -c '+d.mon.detector_lisence_plate_country+' '+d.dir+d.tmpFile,{encoding:'utf8'},(err, scan, stderr) => {
+              if(err){
+                  s.systemLog(err);
+              }else{
+                  try{
+                      scan=JSON.parse(scan)
+                      if(scan.results.length>0){
+                          scan.plates=[]
+                          scan.results.forEach(function(v){
+                              v.candidates.forEach(function(g,n){
+                                  delete(v[n].matches_template)
+                              })
+                              scan.plates.push({coordinates:v.coordinates,candidates:v.candidates,confidence:v.confidence,plate:v.plate})
+                          })
+                          s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:v,reason:'licensePlate',plates:scan.plates,confidence:d.average,imgHeight:d.height,imgWidth:d.width}})
+                      }
+                  }catch(err){
+                      s.systemLog(err);
+                  }
+              }
+              exec('rm -rf '+d.dir+d.tmpFile,{encoding:'utf8'})
+          })
+      })
+  }
   if(keys.length===0){return false}
   cv.readImage(buffer, function(err,im){
       if(err){console.log(err);return false;}
@@ -63,7 +131,7 @@ s.detectObject=function(buffer,d){
           im.detectObject(s.dir.cascades+v+'.xml',{}, function(err,mats){
               if(err){console.log(err);return false;}
               if(mats&&mats.length>0){
-                  s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:v,reason:'detectObject',matrices:mats,confidence:d.average}})
+                  s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:v,reason:'object',matrices:mats,confidence:d.average,imgHeight:height,imgWidth:width}})
               }
           })
       })
@@ -295,6 +363,8 @@ io.on('f',function(d){
                             d.image.width=d.mon.detector_scale_x;
                             d.image.height=d.mon.detector_scale_y;
                         }
+                        d.width=d.image.width;
+                        d.height=d.image.height;
                         d.image.onload = function() { 
                             s.checkAreas(d);
                         }

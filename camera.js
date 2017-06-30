@@ -250,21 +250,8 @@ if(!config.streamDir){
         config.streamDir+='/streams/'
     }
 }
-//default buffer folder check
-if(!config.bufferDir){
-    if(s.isWin===false){
-        config.bufferDir='/dev/shm'
-    }else{
-        config.bufferDir=config.windowsTempDir
-    }
-    if(!fs.existsSync(config.bufferDir)){
-        config.bufferDir=__dirname+'/buffer/'
-    }else{
-        config.bufferDir+='/buffer/'
-    }
-}
 if(!config.videosDir){config.videosDir=__dirname+'/videos/'}
-s.dir={videos:config.videosDir,streams:config.streamDir,buffer:config.bufferDir};
+s.dir={videos:config.videosDir,streams:config.streamDir};
 //streams dir
 if(!fs.existsSync(s.dir.streams)){
     fs.mkdirSync(s.dir.streams);

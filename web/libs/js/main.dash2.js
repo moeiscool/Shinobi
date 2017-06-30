@@ -743,6 +743,9 @@ $.ccio.ws.on('f',function (d){
         case'detector_trigger':
             d.e=$('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]')
             if($.ccio.mon[d.id]&&d.e.length>0){
+                if(d.details.plates&&d.details.plates.length>0){
+                    console.log('licensePlateStream',d.id,d)
+                }
                 if(d.details.matrices&&d.details.matrices.length>0){
                     d.monitorDetails=JSON.parse($.ccio.mon[d.id].details)
                     d.stream=d.e.find('.stream-element')
@@ -1439,13 +1442,11 @@ $.aM.import=function(e){
         v=$(v).attr('detail');if(!e.ss[v]){e.ss[v]=''}
     })
     $.each(e.ss,function(n,v){
-        console.log(n,v)
         try{
             var variable=JSON.parse(v)
         }catch(err){
             var variable=v
         }
-        console.log(n,variable)
         if(variable instanceof Object){
             $('[detailContainer="'+n+'"][detailObject]').prop('checked',false)
             $('[detailContainer="'+n+'"][detailObject]').parents('.mdl-js-switch').removeClass('is-checked')
@@ -1997,8 +1998,11 @@ $.pwrvid.e.on('click','[preview]',function(e){
                     var video = $.pwrvid.currentVideosObject[e.filename];
                     var video1 = $('#video_preview video');
                     var videoTime=moment(video.row.time).add(parseInt(video1[0].currentTime),'seconds').format('MM/DD/YYYY HH:mm:ss');
-                    var event =eventsLabeledByTime[videoTime];
+                    var event = eventsLabeledByTime[videoTime];
                     if(event){
+                        if(event.details.plates){
+                            console.log('licensePlateVideo',event)
+                        }
                         if(event.details.matrices){
                             event.monitorDetails=JSON.parse(e.mon.details)
                             event.stream=video1
