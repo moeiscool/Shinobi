@@ -1438,9 +1438,12 @@ $.aM.import=function(e){
         $.aM.e.find('[name="'+n+'"]').val(v).change()
     })
     e.ss=JSON.parse(e.values.details);
-    e.p.find('[detail]').each(function(n,v){
+    $.aM.e.find('[detail]').each(function(n,v){
         v=$(v).attr('detail');if(!e.ss[v]){e.ss[v]=''}
     })
+    $.each(e.ss,function(n,v){
+        $.aM.e.find('[detail="'+n+'"]').val(v).change();
+    });
     $.each(e.ss,function(n,v){
         try{
             var variable=JSON.parse(v)
@@ -1467,8 +1470,6 @@ $.aM.import=function(e){
                     }
                 })
             }
-        }else{
-            $.aM.e.find('[detail="'+n+'"]').val(variable).change();
         }
     });
 }
