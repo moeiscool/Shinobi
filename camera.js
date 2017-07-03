@@ -28,12 +28,14 @@ var moment = require('moment');
 var request = require("request");
 var express = require('express');
 var app = express();
+var appHTTPS = express();
 var http = require('http');
-var server = http.Server(app);
+var https = require('https');
+var server = http.createServer(app);
 var bodyParser = require('body-parser');
 var CircularJSON = require('circular-json');
 var ejs = require('ejs');
-var io = require('socket.io')(server);
+var io = new (require('socket.io'))();
 var execSync = require('child_process').execSync;
 var exec = require('child_process').exec;
 var spawn = require('child_process').spawn;
@@ -48,6 +50,7 @@ process.send = process.send || function () {};
 if(config.mail){
     var nodemailer = require('nodemailer').createTransport(config.mail);
 }
+//config defaults
 if(config.cpuUsageMarker===undefined){config.cpuUsageMarker='%Cpu'}
 if(config.autoDropCache===undefined){config.autoDropCache=true}
 if(config.doSnapshot===undefined){config.doSnapshot=true}
@@ -60,9 +63,6 @@ if(config.cron===undefined)config.cron={};
 if(config.cron.deleteOverMax===undefined)config.cron.deleteOverMax=true;
 if(config.cron.deleteOverMaxOffset===undefined)config.cron.deleteOverMaxOffset=0.9;
 if(config.pluginKeys===undefined)config.pluginKeys={};
-
-
-server.listen(config.port,config.bindip);
 s={factorAuth:{},child_help:false,totalmem:os.totalmem(),platform:os.platform(),s:JSON.stringify,isWin:(process.platform==='win32')};
 s.systemLog=function(q,w,e){
     if(!w){w=''}
@@ -71,12 +71,6 @@ s.systemLog=function(q,w,e){
        return console.log(moment().format(),q,w,e)
     }
 }
-try{
-    console.log('Shinobi - PORT : '+config.port+', NODE.JS : '+execSync("node -v"));
-}catch(err){
-    console.log('Shinobi - PORT : '+config.port);
-}
-
 s.disc=function(){
     sql = mysql.createConnection(config.db);
     sql.connect(function(err){if(err){s.systemLog('Error Connecting : DB',err);setTimeout(s.disc, 2000);}});
@@ -90,6 +84,19 @@ process.on('SIGINT',s.ffmpegKill.bind(null, {exit:true}));
 //key for child servers
 s.child_nodes={};
 s.child_key='3123asdasdf1dtj1hjk23sdfaasd12asdasddfdbtnkkfgvesra3asdsd3123afdsfqw345';
+s.checkRelativePath=function(x){
+    if(x.charAt(0)!=='/'){
+        x=__dirname+'/'+x
+    }
+    return x
+}
+s.checkCorrectPathEnding=function(x){
+    var length=x.length
+    if(x.charAt(length-1)!=='/'){
+        x=x+'/'
+    }
+    return x
+}
 s.md5=function(x){return crypto.createHash('md5').update(x).digest("hex");}
 s.tx=function(z,y,x){if(x){return x.broadcast.to(y).emit('f',z)};io.to(y).emit('f',z);}
 s.cx=function(z,y,x){if(x){return x.broadcast.to(y).emit('c',z)};io.to(y).emit('c',z);}
@@ -225,6 +232,28 @@ s.log=function(e,x){
     s.tx({f:'log',ke:e.ke,mid:e.mid,log:x,time:moment()},'GRP_'+e.ke);
 //    s.systemLog('s.log : ',{f:'log',ke:e.ke,mid:e.mid,log:x,time:moment()},'GRP_'+e.ke)
 }
+//SSL options
+if(config.ssl&&config.ssl.key&&config.ssl.cert){
+    config.ssl.key=fs.readFileSync(s.checkRelativePath(config.ssl.key),'utf8')
+    config.ssl.cert=fs.readFileSync(s.checkRelativePath(config.ssl.cert),'utf8')
+    if(config.ssl.port===undefined){
+        config.ssl.port=443
+    }
+    if(config.ssl.bindip===undefined){
+        config.ssl.bindip=config.bindip
+    }
+    var serverHTTPS = https.createServer(config.ssl,app);
+    serverHTTPS.listen(config.ssl.port,config.bindip,function(){
+        console.log('SSL Shinobi - SSL PORT : '+config.ssl.port);
+    });
+    io.attach(serverHTTPS);
+}
+//start HTTP
+server.listen(config.port,config.bindip,function(){
+    console.log('Shinobi - PORT : '+config.port);
+});
+io.attach(server);
+console.log('NODE.JS : '+execSync("node -v"))
 //ffmpeg location
 if(!config.ffmpegDir){
     if(s.isWin===true){
@@ -956,7 +985,6 @@ s.camera=function(x,e,cn,tx){
         case'idle':case'stop'://stop monitor
             if(!s.group[e.ke]||!s.group[e.ke].mon[e.id]){return}
             if(s.group[e.ke].mon[e.id].fswatch){s.group[e.ke].mon[e.id].fswatch.close();delete(s.group[e.ke].mon[e.id].fswatch)}
-            if(s.group[e.ke].mon[e.id].fswatch_buffer){s.group[e.ke].mon[e.id].fswatch_buffer.close();delete(s.group[e.ke].mon[e.id].fswatch_buffer)}
             if(s.group[e.ke].mon[e.id].open){ee.filename=s.group[e.ke].mon[e.id].open,ee.ext=s.group[e.ke].mon[e.id].open_ext;s.video('close',ee)}
             if(s.group[e.ke].mon[e.id].last_frame){delete(s.group[e.ke].mon[e.id].last_frame)}
             if(s.group[e.ke].mon[e.id].started!==1){return}
