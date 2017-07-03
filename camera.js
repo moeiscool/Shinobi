@@ -2677,6 +2677,7 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
 //embed monitor
 app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,res){
     res.header("Access-Control-Allow-Origin",req.headers.origin);
+    req.params.protocol=req.protocol;
     s.auth(req.params,function(user){
         if(user.permissions.watch_stream==="0"||user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
             res.end('Not Permitted')

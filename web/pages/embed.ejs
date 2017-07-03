@@ -1,7 +1,7 @@
 <script>var io=null;</script>
 <%
 data.name='SHINOBI_'+data.ke+'_'+data.id;
-if(config.ssl&&config.ssl.port){
+if(config.ssl&&config.ssl.port&&data.protocol==='https'){
     data.port=config.ssl.port
 }else{
     data.port=config.port
