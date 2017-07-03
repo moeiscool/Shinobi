@@ -22,6 +22,7 @@ process.on('uncaughtException', function (err) {
 });
 var fs = require('fs');
 var os = require('os');
+var URL = require('url');
 var path = require('path');
 var mysql = require('mysql');
 var moment = require('moment');
@@ -1778,15 +1779,36 @@ var tx;
                             }else{
                                 d.base=d.m.details.control_base_url;
                             }
-                            if(!d.m.details.control_url_stop_timeout||d.m.details.control_url_stop_timeout===''){d.m.details.control_url_stop_timeout=1000} 
-                            http.get(d.base+d.m.details['control_url_'+d.direction], function(first) {
+                            if(!d.m.details.control_url_stop_timeout||d.m.details.control_url_stop_timeout===''){d.m.details.control_url_stop_timeout=1000}
+                            d.setURL=function(url){
+                                d.URLobject=URL.parse(url)
+                                if(!d.URLobject.port){d.URLobject.port=80}
+                                d.options = {
+                                    host: d.URLobject.host,
+                                    port: d.URLobject.port,
+                                    method: "GET",
+                                    path: d.URLobject.pathname,
+                                };
+                                if(d.URLobject.query){
+                                    d.options.path=d.options.path+'?'+d.URLobject.query
+                                }
+                                if(d.URLobject.username&&d.URLobject.password){
+                                    d.options.auth=d.URLobject.username+':'+d.URLobject.password
+                                }
+                                if(d.URLobject.auth){
+                                    d.options.auth=d.URLobject.auth
+                                }
+                            }
+                            d.setURL(d.base+d.m.details['control_url_'+d.direction])
+                            http.get(d.options, function(first) {
                                   first.on('end', function(){
                                     if(d.m.details.control_stop=='1'&&d.direction!=='center'){
+                                        d.setURL(d.base+d.m.details['control_url_'+d.direction+'_stop'])
                                         setTimeout(function(){
-                                            http.get(d.base+d.m.details['control_url_'+d.direction+'_stop'], function(data) {
+                                            http.get(d.options, function(data) {
                                                   data.on('end', function(){
-                                                       if(err){s.log(d,{type:'Control Error',msg:err});return false}
-                                                       s.tx({f:'control',mid:d.mid,ke:d.ke,direction:d.direction,url_stop:true});
+                                                      if(err){s.log(d,{type:'Control Error',msg:err});return false}
+                                                      s.tx({f:'control',mid:d.mid,ke:d.ke,direction:d.direction,url_stop:true});
                                                   });
                                             }).on('error', function(err) {
                                                s.log(d,{type:'Control Error',msg:err});
