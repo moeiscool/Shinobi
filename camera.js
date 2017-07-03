@@ -242,6 +242,11 @@ if(config.ssl&&config.ssl.key&&config.ssl.cert){
     if(config.ssl.bindip===undefined){
         config.ssl.bindip=config.bindip
     }
+    if(config.ssl.ca&&config.ssl.ca instanceof Array){
+        config.ssl.ca.forEach(function(v,n){
+            config.ssl.ca[n]=fs.readFileSync(s.checkRelativePath(v),'utf8')
+        })
+    }
     var serverHTTPS = https.createServer(config.ssl,app);
     serverHTTPS.listen(config.ssl.port,config.bindip,function(){
         console.log('SSL Shinobi - SSL PORT : '+config.ssl.port);
