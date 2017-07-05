@@ -403,6 +403,32 @@ $.ccio={fr:$('#files_recent'),mon:{}};
             URL.revokeObjectURL(url)
         }catch(er){}
     }
+    $.ccio.snapshotVideo=function(videoElement,cb){
+        var image_data;
+        var base64
+        $('#temp').html('<canvas></canvas>')
+        var c = $('#temp canvas')[0];
+        var img = videoElement;
+        c.width = img.videoWidth;
+        c.height = img.videoHeight;
+        var ctx = c.getContext('2d');
+        ctx.drawImage(img, 0, 0,c.width,c.height);
+        base64=c.toDataURL('image/jpeg')
+        image_data=atob(base64.split(',')[1]);
+        var arraybuffer = new ArrayBuffer(image_data.length);
+        var view = new Uint8Array(arraybuffer);
+        for (var i=0; i<image_data.length; i++) {
+            view[i] = image_data.charCodeAt(i) & 0xff;
+        }
+        try {
+            var blob = new Blob([arraybuffer], {type: 'application/octet-stream'});
+        } catch (e) {
+            var bb = new (window.WebKitBlobBuilder || window.MozBlobBuilder);
+            bb.append(arraybuffer);
+            var blob = bb.getBlob('application/octet-stream');
+        }
+        cb(base64,image_data);
+    }
     $.ccio.tm=function(x,d,z,k){
         var tmp='';if(!d){d={}};if(!k){k={}};
         if(d.id&&!d.mid){d.mid=d.id;}
@@ -1870,7 +1896,7 @@ $.timelapse.drawTimeline=function(){
 //    $.getJSON(e.eventURL,function(events){
         $.getJSON(e.videoURL,function(videos){
             videos.videos=videos.videos.reverse()
-            $.timelapse.currentVideos=videos.videos
+            $.timelapse.currentVideos={}
             e.tmp=''
 //            $.each(events,function(n,v){
 //                $.each(videos.videos,function(m,b){
@@ -1886,13 +1912,15 @@ $.timelapse.drawTimeline=function(){
                 v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
                 v.videoBefore=videos.videos[n-1];
                 v.videoAfter=videos.videos[n+1];
+                v.downloadLink=v.href+'?downloadName='+v.mid+'-'+v.filename
                 $.timelapse.currentVideos[v.filename]=v;
-                e.tmp+='<li class="list-group-item timelapse_video" file="'+v.filename+'" href="'+v.href+'?downloadName='+v.mid+'-'+v.filename+'">'
-                e.tmp+='<div>'+v.time+'</div>'
-                e.tmp+='<div>'+v.filename+'</div>'
+                e.tmp+='<li class="list-group-item timelapse_video flex-block" file="'+v.filename+'" href="'+v.href+'">'
+                e.tmp+='<div><div class="frame" style="background-image:url('+placeholder.getData(placeholder.plcimg({bgcolor:'#b57d00',text:'...'}))+')"></div></div>'
+                e.tmp+='<div><div><span title="'+v.time+'" class="livestamp"></span></div><div>'+v.filename+'</div></div>'
                 e.tmp+='</li>'
             })
             $.timelapse.line.html(e.tmp)
+            $.ccio.init('ls')
         })
 //    })
 }
@@ -1947,14 +1975,30 @@ $.timelapse.e.on('click','.timelapse_video',function(){
         e.drawVideoHTML('videoBefore')
         e.drawVideoHTML('videoAfter')
     }
+    $.timelapse.display.find('video').each(function(n,v){
+        v.addEventListener('loadeddata', function() {
+            v.play()
+            if(v.playing){
+               v.paused()
+            }
+            $.ccio.snapshotVideo(v,function(url,buffer){
+                console.log($(v).attr('video'))
+                console.log(url)
+                console.log('.timelapse_video[href="'+$(v).attr('video')+'"] .frame')
+                $('.timelapse_video[href="'+$(v).attr('video')+'"] .frame').css('background-image','url('+url+')')
+            })
+        }, false);
+    })
     e.videoNow=$.timelapse.display.find('video.videoNow')[0]
     e.videoNow.playbackRate = $.timelapse.playRate
-    e.videoNow.pause()
+    if(e.videoNow.playing){
+        e.videoNow.pause()
+    }
     e.videoNow.play()
     e.videoNow.onended = function() {
         $.timelapse.line.find('[file="'+e.video[$.timelapse.playDirection].filename+'"]').click()
     };
-    console.log('$.timelapse',e.video)
+    $.ccio.log('$.timelapse',e.video)
     $.timelapse.line.find('.timelapse_video').removeClass('active')
     e.videoCurrentNow=$.timelapse.display.find('.videoNow')
     e.e.addClass('active')
