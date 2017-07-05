@@ -38,6 +38,8 @@
 }
 
 /**/
+.flex-block{display: flex}
+.flex-inline{display: inline-flex;position:relative}
 @import (less) "../less/pie.less";
 ul{list-style:none}
 *{transition:0.2s;box-sizing:border-box}
@@ -69,7 +71,7 @@ img{max-width:100%}
 .monitor_item{position:relative;padding:0;}
 .monitor_item{transition:none;}
 .monitor_item .mdl-card{min-height:auto;border:1px solid #272727;border-radius:0px;overflow:hidden}
-.monitor_item .mdl-card__media{position:relative;padding:0!important;display:block!important;background:#000}
+.monitor_item .mdl-card__media{position:relative;padding:0!important;display:block!important;background:#000;min-height:250px;}
 .monitor_item.selected .stream-element{height:600px}
 .monitor_item.selected .fa-expand:before{content:"\f066"}
 .monitor_item .mdl-card__supporting-text{background:#222;color:#fff!important;display:block}
@@ -155,6 +157,8 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .form-group-group table tr:not(:last-child) td{border-bottom:1px dotted #eee}
 .form-group-group .mdl-list__item{border-bottom:1px solid #eee;}
 .form-group-group .mdl-list__item:hover{background:#e6e6e6;border-radius:4px;}
+.dark .form-group-group .mdl-list__item{color:#fff;border-bottom:1px solid #444;}
+.dark .form-group-group .mdl-list__item:hover{background:#555;}
 .form-group-group:last-child,.form-group-group > .form-group:last-child{margin-bottom:0}
 .form-group-group h4{margin:0 -10px 15px -10px;padding:15px;background:#ddd;}
 .form-group-group h4 small{color:#fff;}
@@ -215,7 +219,10 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 #monitors_list .monitor_block{transition:none}
 .dropdown-menu.scrollable{max-height:300px}
 .upload_file input{display:none}
-.monitor_item .stream-hud{opacity:0;position:absolute;top:0;left:0;width:100%;height:calc(100% - 30px);z-index:1}
+#video_preview .stream-objects{right:0;margin:auto}
+.stream-objects{position:absolute;top:0;left:0;width:100%;height:100%;z-index:1}
+.stream-objects .stream-detected-object{position:absolute;top:0;left:0;border:3px solid red;background:transparent}
+.monitor_item .stream-hud{opacity:0;position:absolute;top:0;left:0;width:100%;height:calc(100% - 30px);z-index:2}
 .monitor_item .stream-hud .controls{position:absolute;top:10px;left:10px;}
 .monitor_item .stream-hud:hover{opacity:1}
 .monitor_item .stream-hud .lamp{position:absolute;top:5px;right:5px;z-index:1;text-shadow: 0 0 15px #333;}
@@ -249,8 +256,18 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 #vis_monitors{overflow:auto;max-height:400px}
 #vis_monitors .btn-group-vertical{width:100%}
 
+/*timeline*/
+#timelapse_video_line{overflow-y:scroll;overflow-x:hidden;max-height:400px;margin:0;text-align:left}
+#timelapse_video_display .videoBefore,#timelapse_video_display .videoAfter{display:none}
+.timelapse_video:not(:last-child){border-bottom:1px solid #444;}
+.timelapse_video .frame{width:50px;height:50px;background-size:cover;background-position:center;border-radius:5px}
+.timelapse_video>div{flex:3}
+.timelapse_video>div:not(:last-child){padding-right:10px}
+.timelapse_video.list-group-item{padding:10px}
+
 #motion_list{height:195px;overflow:auto;border-radius:5px;border:1px solid #444;position:relative;background: #222;}
 .dark .list-group-item{border-color: #444;background:#222}
+.dark .list-group-item.active{background:#c49a68;border-color:#a7865f}
 .novideos{text-transform: uppercase;text-align: center;border-bottom:0!important;padding-top: 55%!important;letter-spacing:2px}
 
 .btn-warning {
@@ -268,6 +285,9 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .dark .table-striped>tbody>tr:nth-of-type(even){background:#616161}
 .dark .table-striped>tbody>tr>td{border-color:#222;color:#fff}
 .dark .table-striped>tbody>tr:nth-of-type(odd){background-color: #4c4747;}
+.dark .table>tbody>tr.active>td{background:inherit;border:0}
+.dark code{color: #c49a68;background-color: #36333d;}
+.dark a:not(.btn){color: #c49a68;}
 .os_bars{width:500px;display:inline-block;padding:5px 0 0 10px}
 @media screen and (max-width: 600px){
     .os_bars{width:200px;}

@@ -261,6 +261,81 @@
                   </div>
               </div>
           </div>
+          <div class=" h_us_input h_us_advanced" style="display:none">
+              <div class="form-group-group navy">
+              <h4>Stream Timestamp</h4>
+                  <div class="form-group">
+                      <label><div><span>Enabled <small>Does not work with copy encoder</small></span></div>
+                        <div><select class="form-control" detail="stream_timestamp" selector="h_tm">
+                            <option value="1">Yes</option>  
+                            <option value="0" selected>No</option>  
+                        </select></div>
+                      </label>
+                  </div>
+                  <div class="h_tm_input h_tm_1">
+                      <div class="form-group">
+                        <label><div><span>Font Path</span></div>
+                        <div><input class="form-control" detail="stream_timestamp_font" placeholder="/usr/share/fonts/truetype/freefont/FreeSans.ttf"></div>
+                        </label>
+                      </div>
+                      <div class="form-group">
+                        <label><div><span>Font Size</span></div>
+                        <div><input class="form-control" detail="stream_timestamp_font_size" placeholder="10"></div>
+                        </label>
+                      </div>
+
+                      <div class="form-group">
+                        <label><div><span>Text Color</span></div>
+                        <div><input class="form-control" detail="stream_timestamp_color" placeholder="white"></div>
+                        </label>
+                      </div>
+                      <div class="form-group">
+                        <label><div><span>Text Box Color</span></div>
+                        <div><input class="form-control" detail="stream_timestamp_box_color" placeholder="0x00000000@1"></div>
+                        </label>
+                      </div>
+
+                      <div class="form-group">
+                        <label><div><span>Position X</span></div>
+                        <div><input class="form-control" detail="stream_timestamp_x" placeholder="(w-tw)/2"></div>
+                        </label>
+                      </div>
+                      <div class="form-group">
+                        <label><div><span>Position Y</span></div>
+                        <div><input class="form-control" detail="stream_timestamp_y" placeholder="0"></div>
+                        </label>
+                      </div>
+                  </div>
+              </div>
+              <div class="form-group-group navy">
+              <h4>Stream Watermark</h4>
+                  <div class="form-group">
+                      <label><div><span>Enabled <small>Does not work with copy encoder</small></span></div>
+                        <div><select class="form-control" detail="stream_watermark" selector="h_wat">
+                            <option value="1">Yes</option>
+                            <option value="0" selected>No</option>
+                        </select></div>
+                      </label>
+                  </div>
+                  <div class="h_wat_input h_wat_1">
+                      <div class="form-group important">
+                        <label><div><span>Image Location <small>Absolute Path or leave blank to use global</small></span></div>
+                        <div><input class="form-control" detail="stream_watermark_location" placeholder="Example : /usr/share/watermark.logo"></div>
+                        </label>
+                      </div>
+                      <div class="form-group">
+                          <label><div><span>Image Position</span></div>
+                            <div><select class="form-control" detail="stream_watermark_position">
+                                <option value="tr">Top Right</option>
+                                <option value="tl">Top Left</option>
+                                <option value="br" selected>Bottom Right</option>
+                                <option value="bl">Bottom Left</option>
+                            </select></div>
+                          </label>
+                      </div>
+                  </div>
+              </div>
+          </div>
 <!--     END of Stream     -->
 <!--     START of Stream to YouTube     -->
 <!--
@@ -456,9 +531,9 @@
           </div>
           <div class="h_vc_input h_vc_libvpx h_vc_libvpx-vp9 h_vc_libx264 h_vc_libx265 h_vc_default h_vc_none">
               <div class="form-group-group red h_m_input h_m_record h_m_idle">
-              <h4>Timestamp</h4>
+              <h4>Recording Timestamp</h4>
                   <div class="form-group">
-                      <label><div><span>Enabled <small>Does not work with copy encoder</small></span></div>
+                      <label><div><span>Enabled <small>Does not work with HLS copy encoder</small></span></div>
                         <div><select class="form-control" detail="timestamp" selector="h_tm">
                             <option value="1">Yes</option>  
                             <option value="0" selected>No</option>  
@@ -466,40 +541,68 @@
                       </label>
                   </div>
                   <div class="h_tm_input h_tm_1">
-                      <div class="row">
-                          <div class="form-group col-md-12">
-                            <label><div><span>Font Path</span></div>
-                            <div><input class="form-control" detail="timestamp_font" placeholder="/usr/share/fonts/truetype/freefont/FreeSans.ttf"></div>
-                            </label>
-                          </div>
-                          <div class="form-group col-md-12">
-                            <label><div><span>Font Size</span></div>
-                            <div><input class="form-control" detail="timestamp_font_size" placeholder="10"></div>
-                            </label>
-                          </div>
+                      <div class="form-group">
+                        <label><div><span>Font Path</span></div>
+                        <div><input class="form-control" detail="timestamp_font" placeholder="/usr/share/fonts/truetype/freefont/FreeSans.ttf"></div>
+                        </label>
                       </div>
-                      <div class="row">
-                          <div class="form-group col-md-12">
-                            <label><div><span>Text Color</span></div>
-                            <div><input class="form-control" detail="timestamp_color" placeholder="white"></div>
-                            </label>
-                          </div>
-                          <div class="form-group col-md-12">
-                            <label><div><span>Text Box Color</span></div>
-                            <div><input class="form-control" detail="timestamp_box_color" placeholder="0x00000000@1"></div>
-                            </label>
-                          </div>
+                      <div class="form-group">
+                        <label><div><span>Font Size</span></div>
+                        <div><input class="form-control" detail="timestamp_font_size" placeholder="10"></div>
+                        </label>
                       </div>
-                      <div class="row">
-                          <div class="form-group col-md-12">
-                            <label><div><span>Position X</span></div>
-                            <div><input class="form-control" detail="timestamp_x" placeholder="(w-tw)/2"></div>
+
+                      <div class="form-group">
+                        <label><div><span>Text Color</span></div>
+                        <div><input class="form-control" detail="timestamp_color" placeholder="white"></div>
+                        </label>
+                      </div>
+                      <div class="form-group">
+                        <label><div><span>Text Box Color</span></div>
+                        <div><input class="form-control" detail="timestamp_box_color" placeholder="0x00000000@1"></div>
+                        </label>
+                      </div>
+
+                      <div class="form-group">
+                        <label><div><span>Position X</span></div>
+                        <div><input class="form-control" detail="timestamp_x" placeholder="(w-tw)/2"></div>
+                        </label>
+                      </div>
+                      <div class="form-group">
+                        <label><div><span>Position Y</span></div>
+                        <div><input class="form-control" detail="timestamp_y" placeholder="0"></div>
+                        </label>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <div class=" h_us_input h_us_advanced" style="display:none">
+              <div class="h_vc_input h_vc_libvpx h_vc_libvpx-vp9 h_vc_libx264 h_vc_libx265 h_vc_default h_vc_none">
+                  <div class="form-group-group red h_m_input h_m_record h_m_idle">
+                  <h4>Recording Watermark</h4>
+                      <div class="form-group">
+                          <label><div><span>Enabled <small>Does not work with copy encoder</small></span></div>
+                            <div><select class="form-control" detail="watermark" selector="h_wat">
+                                <option value="1">Yes</option>
+                                <option value="0" selected>No</option>
+                            </select></div>
+                          </label>
+                      </div>
+                      <div class="h_wat_input h_wat_1">
+                          <div class="form-group important">
+                            <label><div><span>Image Location <small>Absolute Path or leave blank to use global</small></span></div>
+                            <div><input class="form-control" detail="watermark_location" placeholder="Example : /usr/share/watermark.logo"></div>
                             </label>
                           </div>
-                          <div class="form-group col-md-12">
-                            <label><div><span>Position Y</span></div>
-                            <div><input class="form-control" detail="timestamp_y" placeholder="0"></div>
-                            </label>
+                          <div class="form-group">
+                              <label><div><span>Image Position</span></div>
+                                <div><select class="form-control" detail="watermark_position">
+                                    <option value="tr">Top Right</option>
+                                    <option value="tl">Top Left</option>
+                                    <option value="br" selected>Bottom Right</option>
+                                    <option value="bl">Bottom Left</option>
+                                </select></div>
+                              </label>
                           </div>
                       </div>
                   </div>
@@ -673,7 +776,7 @@
                   </div>
                   <div class="shinobi-detector" style="display:none">
                       <div class="form-group important">
-                        <label><div><span>Send Frames</span></div>
+                        <label><div><span>Send Frames <small>Push frames to be analyzed</small></span></div>
                             <div><select class="form-control" detail="detector_send_frames" selector="h_det_fra">
                                 <option value="0" selected>No</option>
                                 <option value="1">Yes</option>
@@ -700,7 +803,25 @@
                       </div>
                       </div>
                   </div>
-                  <div class="shinobi-detector-stemkoski shinobi-detector-motion shinobi-detector_plug" style="display:none">
+                  <div class="shinobi-detector-opencv shinobi-detector_plug" style="display:none">
+                      <div class="form-group">
+                        <label><div><span>Check for Motion First</span></div>
+                            <div><select class="form-control" detail="detector_use_motion">
+                                <option value="0" selected>No</option>
+                                <option value="1">Yes</option>
+                            </select></div>
+                        </label>
+                      </div>
+                      <div class="form-group">
+                        <label><div><span>Detect Objects <small class="">See below</small></span></div>
+                            <div><select class="form-control" detail="detector_use_detect_object" selector="h_casc">
+                                <option value="0" selected>No</option>
+                                <option value="1">Yes</option>
+                            </select></div>
+                        </label>
+                      </div>
+                  </div>
+                  <div class="shinobi-detector-opencv  shinobi-detector-motion shinobi-detector_plug" style="display:none">
                       <div class="row">
                           <div class="form-group col-md-12">
                             <label><div><span>Full Frame Detection</span></div>
@@ -723,35 +844,37 @@
                         <a class="btn btn-danger btn-block" monitor="region"><i class="fa fa-grav"></i> &nbsp; Region Editor</a>
                       </div>
                   </div>
-                  <div class="shinobi-detector-opencv shinobi-detector_plug" style="display:none">
-                      <div class="form-group">
-                        <label><div><span>Face Detection</span></div>
-                            <div><select class="form-control" detail="detector_face">
-                                <option value="0" selected>No</option>
-                                <option value="1">Yes</option>
-                            </select></div>
-                        </label>
-                      </div>
-                      <div class="form-group">
-                        <label><div><span>Full Body Detection</span></div>
-                            <div><select class="form-control" detail="detector_fullbody">
-                                <option value="0" selected>No</option>
-                                <option value="1">Yes</option>
-                            </select></div>
-                        </label>
-                      </div>
-                      <div class="form-group">
-                        <label><div><span>Car Side Detection</span></div>
-                            <div><select class="form-control" detail="detector_car">
-                                <option value="0" selected>No</option>
-                                <option value="1">Yes</option>
-                            </select></div>
-                        </label>
-                      </div>
-                  </div>
               </div>
           </div>
           <div class="h_det_input h_det_1" style="display:none">
+              <div class="form-group-group orange shinobi-detector-opencv shinobi-detector_plug" style="display:none">
+              <h4>Lisence Plate Detector</h4>
+                  <div class="form-group">
+                    <label><div><span>Enabled</span></div>
+                        <div><select class="form-control" detail="detector_lisence_plate">
+                            <option value="0" selected>No</option>
+                            <option value="1">Yes</option>
+                        </select></div>
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label><div><span>Country of Plates</span></div>
+                        <div><select class="form-control" detail="detector_lisence_plate_country">
+                            <option value="us" selected>US</option>
+                            <option value="eu">EU</option>
+                        </select></div>
+                    </label>
+                  </div>
+              </div>
+              <div class="h_casc_input h_casc_1" style="display:none">
+                  <div class="form-group-group orange shinobi-detector-opencv shinobi-detector_plug" style="display:none">
+                  <h4>OpenCV Cascades<a class="pull-right btn-xs btn-default refresh_cascades" title="Refresh List of Cascades">&nbsp;<i class="fa fa-retweet"></i>&nbsp;</a></h4>
+                      <blockquote>
+                        If you see nothing here then just download this package of <a href="https://s3.amazonaws.com/cloudcamio/cascades.zip">cascades</a>. Drop them into <code>plugins/opencv/cascades</code> then press refresh <i class="fa fa-retweet"></i>.
+                      </blockquote>
+                      <div id="detector_cascade_list"></div>
+                  </div>
+               </div>
               <div class="form-group-group orange shinobi-detector" style="display:none">
               <h4>"No Motion" Detector</h4>
                   <div class="form-group">
@@ -915,6 +1038,7 @@
                   </div>
               </div>
               <div class="form-group" style="display:none">
+                  <input type="hidden" detail="detector_cascades">
                 <input class="form-control" name="details" value="{}">
                 <input class="form-control" name="shto" value="[]">
                 <input class="form-control" name="shfr" value="[]">
@@ -929,7 +1053,7 @@
             <button type="button" class="btn btn-default save_config"><i class="fa fa-download"></i> Export</button>
             <button type="button" class="btn btn-default import_config"><i class="fa fa-upload"></i> Import</button>
             <button type="button" class="btn btn-primary probe_config"><i class="fa fa-search"></i> Probe</button>
-            <span class="h_det_input h_det_1"><button type="button" style="display:none" class="btn btn-warning shinobi-detector-stemkoski shinobi-detector-motion shinobi-detector_plug" monitor="region"><i class="fa fa-grav"></i> Region Editor</button></span>
+            <span class="h_det_input h_det_1"><button type="button" style="display:none" class="btn btn-warning shinobi-detector-opencv shinobi-detector-motion shinobi-detector_plug" monitor="region"><i class="fa fa-grav"></i> Region Editor</button></span>
           </div>
           <div style="display:inline-block;margin-right:5px">
             <div><select class="form-control btn-default" dropdown_toggle="monedit_user_type" selector="h_us">

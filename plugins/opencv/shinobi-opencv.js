@@ -1,5 +1,5 @@
 //
-// Shinobi - Motion Plugin
+// Shinobi - OpenCV Plugin
 // Copyright (C) 2016-2025 Moe Alam, moeiscool
 //
 // This program is free software; you can redistribute it and/or
@@ -20,13 +20,122 @@
 process.on('uncaughtException', function (err) {
     console.error('uncaughtException',err);
 });
-var fs = require('fs');
+var fs=require('fs');
+var cv=require('opencv');
+var exec = require('child_process').exec;
 var moment = require('moment');
 var Canvas = require('canvas');
 var config=require('./conf.json');
 if(config.systemLog===undefined){config.systemLog=true}
 s={
     group:{},
+    dir:{
+        cascades:__dirname+'/cascades/'
+    },
+    isWin:(process.platform==='win32')
+}
+//default stream folder check
+if(!config.streamDir){
+    if(s.isWin===false){
+        config.streamDir='/dev/shm'
+    }else{
+        config.streamDir=config.windowsTempDir
+    }
+    if(!fs.existsSync(config.streamDir)){
+        config.streamDir=__dirname+'/streams/'
+    }else{
+        config.streamDir+='/streams/'
+    }
+}
+s.dir.streams=config.streamDir;
+//streams dir
+if(!fs.existsSync(s.dir.streams)){
+    fs.mkdirSync(s.dir.streams);
+}
+s.gid=function(x){
+    if(!x){x=10};var t = "";var p = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for( var i=0; i < x; i++ )
+        t += p.charAt(Math.floor(Math.random() * p.length));
+    return t;
+};
+s.findCascades=function(callback){
+    var tmp={};
+    tmp.foundCascades=[];
+    fs.readdir(s.dir.cascades,function(err,files){
+        files.forEach(function(cascade,n){
+            if(cascade.indexOf('.xml')>-1){
+                tmp.foundCascades.push(cascade.replace('.xml',''))
+            }
+        })
+        s.cascadesInDir=tmp.foundCascades;
+        callback(tmp.foundCascades)
+    })
+}
+s.findCascades(function(){
+    //get cascades
+})
+s.detectObject=function(buffer,d){
+  var keys = Object.keys(d.mon.detector_cascades);
+  if(d.mon.detector_lisence_plate==="1"){
+      if(!d.mon.detector_lisence_plate_country||d.mon.detector_lisence_plate_country===''){
+          d.mon.detector_lisence_plate_country='us'
+      }
+      d.tmpFile=s.gid(5)+'.jpg'
+      if(!fs.existsSync(s.dir.streams)){
+          fs.mkdirSync(s.dir.streams);
+      }
+      d.dir=s.dir.streams+d.ke+'/'
+      if(!fs.existsSync(d.dir)){
+          fs.mkdirSync(d.dir);
+      }
+      d.dir=s.dir.streams+d.ke+'/'+d.id+'/'
+      if(!fs.existsSync(d.dir)){
+          fs.mkdirSync(d.dir);
+      }
+      fs.writeFile(d.dir+d.tmpFile,buffer,function(err){
+          if(err) return s.systemLog(err);
+          exec('alpr -j -c '+d.mon.detector_lisence_plate_country+' '+d.dir+d.tmpFile,{encoding:'utf8'},(err, scan, stderr) => {
+              if(err){
+                  s.systemLog(err);
+              }else{
+                  try{
+                      scan=JSON.parse(scan)
+                      if(scan.results.length>0){
+                          scan.plates=[]
+                          scan.results.forEach(function(v){
+                              v.candidates.forEach(function(g,n){
+                                  delete(v[n].matches_template)
+                              })
+                              scan.plates.push({coordinates:v.coordinates,candidates:v.candidates,confidence:v.confidence,plate:v.plate})
+                          })
+                          s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:v,reason:'licensePlate',plates:scan.plates,confidence:d.average,imgHeight:d.height,imgWidth:d.width}})
+                      }
+                  }catch(err){
+                      s.systemLog(err);
+                  }
+              }
+              exec('rm -rf '+d.dir+d.tmpFile,{encoding:'utf8'})
+          })
+      })
+  }
+  if(keys.length===0){return false}
+  cv.readImage(buffer, function(err,im){
+      if(err){console.log(err);return false;}
+      var width = im.width();
+      var height = im.height();
+
+      if (width < 1 || height < 1) {
+         throw new Error('Image has no size');
+      }
+      keys.forEach(function(v,n){
+          im.detectObject(s.dir.cascades+v+'.xml',{}, function(err,mats){
+              if(err){console.log(err);return false;}
+              if(mats&&mats.length>0){
+                  s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:v,reason:'object',matrices:mats,confidence:d.average,imgHeight:height,imgWidth:width}})
+              }
+          })
+      })
+  })
 }
 s.systemLog=function(q,w,e){
     if(!w){w=''}
@@ -44,7 +153,7 @@ s.blenderRegion=function(d,cord){
         }
         s.group[d.ke][d.id].canvas[cord.name] = new Canvas(d.width,d.height);
         s.group[d.ke][d.id].canvasContext[cord.name] = s.group[d.ke][d.id].canvas[cord.name].getContext('2d');
-        s.group[d.ke][d.id].canvasContext[cord.name].fillStyle = '#005337';
+        s.group[d.ke][d.id].canvasContext[cord.name].fillStyle = '#000';
         s.group[d.ke][d.id].canvasContext[cord.name].fillRect( 0, 0,d.width,d.height);
         if(cord.points&&cord.points.length>0){
             s.group[d.ke][d.id].canvasContext[cord.name].beginPath();
@@ -81,18 +190,43 @@ s.blenderRegion=function(d,cord){
     s.group[d.ke][d.id].lastRegionImageData[cord.name] = sourceData;
     blendedData = s.group[d.ke][d.id].blendRegionContext[cord.name].getImageData(0, 0, d.width, d.height);
     var i = 0;
-    var average = 0;
+    d.average = 0;
     while (i < (blendedData.data.length * 0.25)) {
-        average += (blendedData.data[i * 4] + blendedData.data[i * 4 + 1] + blendedData.data[i * 4 + 2]);
+        d.average += (blendedData.data[i * 4] + blendedData.data[i * 4 + 1] + blendedData.data[i * 4 + 2]);
         ++i;
     }
-    average = (average / (blendedData.data.length * 0.25))*10;
-    if (average > parseFloat(cord.sensitivity)){
-        s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:cord.name,reason:'motion',confidence:average}})
-
+    d.average = (d.average / (blendedData.data.length * 0.25))*10;
+    if (d.average > parseFloat(cord.sensitivity)){
+          if(d.mon.detector_cascades&&d.mon.detector_cascades instanceof Object){
+              var buffer=s.group[d.ke][d.id].canvas[cord.name].toBuffer();
+              if(d.mon.detector_use_detect_object==="1"){
+                  s.detectObject(buffer,d)
+              }else{
+                  s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:cord.name,reason:'motion',confidence:d.average}})
+              }
+          }
     }
     s.group[d.ke][d.id].canvasContext[cord.name].clearRect(0, 0, d.width, d.height);
     s.group[d.ke][d.id].blendRegionContext[cord.name].clearRect(0, 0, d.width, d.height);
+}
+function blobToBuffer (blob, cb) {
+  if (typeof Blob === 'undefined' || !(blob instanceof Blob)) {
+    throw new Error('first argument must be a Blob')
+  }
+  if (typeof cb !== 'function') {
+    throw new Error('second argument must be a function')
+  }
+
+  var reader = new FileReader()
+
+  function onLoadEnd (e) {
+    reader.removeEventListener('loadend', onLoadEnd, false)
+    if (e.error) cb(e.error)
+    else cb(null, Buffer.from(reader.result))
+  }
+
+  reader.addEventListener('loadend', onLoadEnd, false)
+  reader.readAsArrayBuffer(blob)
 }
 function fastAbs(value) {
     return (value ^ (value >> 31)) - (value >> 31);
@@ -135,7 +269,7 @@ s.checkAreas=function(d){
         s.group[d.ke][d.id].cords=Object.values(d.mon.cords);
     }
     if(d.mon.detector_frame==='1'){
-        d.mon.cords.frame={name:'frame',s:d.mon.detector_sensitivity,points:[[0,0],[0,d.image.height],[d.image.width,d.image.height],[d.image.width,0]]};
+        d.mon.cords.frame={name:'FULL_FRAME',s:d.mon.detector_sensitivity,points:[[0,0],[0,d.image.height],[d.image.width,d.image.height],[d.image.width,0]]};
         s.group[d.ke][d.id].cords.push(d.mon.cords.frame);
     }
     for (var b = 0; b < s.group[d.ke][d.id].cords.length; b++){
@@ -155,6 +289,14 @@ io.on('disconnect',function(d){
 })
 io.on('f',function(d){
     switch(d.f){
+        case'refreshPlugins':
+            s.findCascades(function(cascades){
+                s.cx({f:'s.tx',data:{f:'detector_cascade_list',cascades:cascades},to:'GRP_'+d.ke})
+            })
+        break;
+        case'readPlugins':
+            s.cx({f:'s.tx',data:{f:'detector_cascade_list',cascades:s.cascadesInDir},to:'GRP_'+d.ke})
+        break;
         case'init_monitor':
             if(s.group[d.ke]&&s.group[d.ke][d.id]){
                 s.group[d.ke][d.id].canvas={}
@@ -201,24 +343,35 @@ io.on('f',function(d){
                     }
                     s.group[d.ke][d.id].buffer=Buffer.concat(s.group[d.ke][d.id].buffer);
                     try{
-                        d.mon.cords=JSON.parse(d.mon.cords)
+                        d.mon.detector_cascades=JSON.parse(d.mon.detector_cascades)
                     }catch(err){
                         
                     }
-                    s.group[d.ke][d.id].cords=Object.values(d.mon.cords);
-                    d.mon.cords=d.mon.cords;
-                    d.image = new Canvas.Image;
-                    if(d.mon.detector_scale_x===''||d.mon.detector_scale_y===''){
-                        s.systemLog('Must set detector image size')
-                        return
+                    if(d.mon.detector_use_motion==="1"||d.mon.detector_use_detect_object!=="1"){
+                        try{
+                            d.mon.cords=JSON.parse(d.mon.cords)
+                        }catch(err){
+
+                        }
+                        s.group[d.ke][d.id].cords=Object.values(d.mon.cords);
+                        d.mon.cords=d.mon.cords;
+                        d.image = new Canvas.Image;
+                        if(d.mon.detector_scale_x===''||d.mon.detector_scale_y===''){
+                            s.systemLog('Must set detector image size')
+                            return
+                        }else{
+                            d.image.width=d.mon.detector_scale_x;
+                            d.image.height=d.mon.detector_scale_y;
+                        }
+                        d.width=d.image.width;
+                        d.height=d.image.height;
+                        d.image.onload = function() { 
+                            s.checkAreas(d);
+                        }
+                        d.image.src = s.group[d.ke][d.id].buffer;
                     }else{
-                        d.image.width=d.mon.detector_scale_x;
-                        d.image.height=d.mon.detector_scale_y;
+                        s.detectObject(s.group[d.ke][d.id].buffer,d)
                     }
-                    d.image.onload = function() { 
-                        s.checkAreas(d);
-                    }
-                    d.image.src = s.group[d.ke][d.id].buffer;
                     s.group[d.ke][d.id].buffer=null;
                 }
             }catch(err){
