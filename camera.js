@@ -2488,32 +2488,44 @@ s.deleteFactorAuth=function(r){
     }
 }
 app.post('/',function (req,res){
+    req.renderFunction=function(focus,data){
+        if(req.query.json=='true'){
+            delete(data.config)
+            res.send(s.s({ok:true,data:data}, null, 3))
+        }else{
+            res.render(focus,data);
+        }
+    }
     req.failed=function(){
-        res.render("index",{failedLogin:true});
-        res.end();
+        if(req.query.json=='true'){
+            res.send(s.s({ok:false}, null, 3))
+        }else{
+            res.render("index",{failedLogin:true});
+            res.end();
+        }
     }
     req.fn=function(r){
         switch(req.body.function){
             case'streamer':
                 sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
                     req.resp.mons=rr;
-                    res.render("streamer",{$user:req.resp});
+                    req.renderFunction("streamer",{$user:req.resp});
                 })
             break;
             case'admin':
                 if(!r.details.sub){
                     sql.query('SELECT uid,mail,details FROM Users WHERE ke=? AND details LIKE \'%"sub"%\'',[r.ke],function(err,rr) {
                         sql.query('SELECT * FROM Monitors WHERE ke=?',[r.ke],function(err,rrr) {
-                            res.render("admin",{$user:req.resp,$subs:rr,$mons:rrr});
+                            req.renderFunction("admin",{$user:req.resp,$subs:rr,$mons:rrr});
                         })
                     })
                 }else{
                     //not admin user
-                    res.render("home",{$user:req.resp,config:config});
+                    req.renderFunction("home",{$user:req.resp,config:config});
                 }
             break;
             default:
-                res.render("home",{$user:req.resp,config:config});
+                req.renderFunction("home",{$user:req.resp,config:config});
             break;
         }
     //    res.end();
@@ -2526,7 +2538,7 @@ app.post('/',function (req,res){
                 return
             }
             req.ok=s.superAuth({mail:req.body.mail,pass:req.body.pass,users:true,md5:true},function(data){
-                res.render("super",data);
+                req.renderFunction("super",data);
             })
             if(req.ok===false){
                 req.failed()
@@ -2552,7 +2564,7 @@ app.post('/',function (req,res){
                                     s.factorAuth[r.ke][r.uid].expireAuth=setTimeout(function(){
                                         s.deleteFactorAuth(r)
                                     },1000*60*15)
-                                    res.render("factor",{$user:req.resp})
+                                    req.renderFunction("factor",{$user:req.resp})
                                 }
                                 if(!s.factorAuth[r.ke]){s.factorAuth[r.ke]={}}
                                 if(!s.factorAuth[r.ke][r.uid]){
@@ -2614,7 +2626,7 @@ app.post('/',function (req,res){
                     req.resp=s.factorAuth[req.body.ke][req.body.id].info
                     req.fn(s.factorAuth[req.body.ke][req.body.id].user)
                 }else{
-                    res.render("factor",{$user:s.factorAuth[req.body.ke][req.body.id].info});
+                    req.renderFunction("factor",{$user:s.factorAuth[req.body.ke][req.body.id].info});
                     res.end();
                 }
             }else{
