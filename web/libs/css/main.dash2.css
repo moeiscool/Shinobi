@@ -38,7 +38,8 @@
 }
 
 /**/
-.flex-block{display: flex}
+.flex-block{display:inline-flex;width:100%;flex-flow: row wrap;}
+.flex-unit-3{flex:3}
 .flex-inline{display: inline-flex;position:relative}
 @import (less) "../less/pie.less";
 ul{list-style:none}
@@ -261,11 +262,14 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 #timelapse_video_display .videoBefore,#timelapse_video_display .videoAfter{display:none}
 .timelapse_video:not(:last-child){border-bottom:1px solid #444;}
 .timelapse_video .frame{width:50px;height:50px;background-size:cover;background-position:center;border-radius:5px}
-.timelapse_video>div{flex:3}
-.timelapse_video>div:not(:last-child){padding-right:10px}
+.timelapse_video>div>div:not(:last-child){padding-right:10px}
+.timelapse_video .flex-block:not(:last-child){padding-bottom:10px}
 .timelapse_video.list-group-item{padding:10px}
 .timelapse_hud{position: relative}
 .timelapse_hud .timelapse_playRate{position: absolute;font-family: monospace;top:10px;right:0;left:0;margin:auto;font-size:23px}
+#timelapse .progress-bar{transition:none}
+
+
 
 #motion_list{height:195px;overflow:auto;border-radius:5px;border:1px solid #444;position:relative;background: #222;}
 .dark .list-group-item{border-color: #444;background:#222}
