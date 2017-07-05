@@ -1944,10 +1944,51 @@ $.timelapse.drawTimeline=function(getData){
 $.timelapse.e.on('click','[timelapse]',function(){
     var e={}
     e.e=$(this)
+    e.videoCurrentNow=$.timelapse.display.find('.videoNow')
+    e.videoCurrentAfter=$.timelapse.display.find('.videoAfter')
+    e.videoCurrentBefore=$.timelapse.display.find('.videoBefore')
+    if($.timelapse.videoInterval){
+        clearInterval($.timelapse.videoInterval);
+    }
     switch(e.e.attr('timelapse')){
-        case'delete':
+        case'mute':
+            e.videoCurrentNow[0].muted = !e.videoCurrentNow[0].muted
+            e.e.find('i').toggleClass('fa-volume-off fa-volume-up')
+            e.e.toggleClass('btn-danger')
+        break;
+        case'play':
+            $.timelapse.playRate =1
+            e.videoCurrentNow[0].playbackRate = $.timelapse.playRate;
+            $.timelapse.onPlayPause(1)
+        break;
+        case'stepFrontFront':
+            $.timelapse.playRate += 5
+            e.videoCurrentNow[0].playbackRate = $.timelapse.playRate;
+            e.videoCurrentNow[0].play()
+        break;
+        case'stepFront':
+            e.videoCurrentNow[0].currentTime += 5;
+            e.videoCurrentNow[0].pause()
+        break;
+        case'stepBackBack':
+           $.timelapse.videoInterval = setInterval(function(){
+               $.timelapse.playRate = 1
+               e.videoCurrentNow[0].playbackRate = $.timelapse.playRate;
+               if(e.videoCurrentNow[0].currentTime == 0){
+                   clearInterval($.timelapse.videoInterval);
+                   e.videoCurrentNow[0].pause();
+               }
+               else{
+                   e.videoCurrentNow[0].currentTime += -.5;
+               }
+           },30);
+        break;
+        case'stepBack':
+            e.videoCurrentNow[0].currentTime += -5;
+            e.videoCurrentNow[0].pause()
         break;
         case'video':
+            e.playButtonIcon=$.timelapse.e.find('[timelapse="play"]').find('i')
             e.drawVideoHTML=function(position){
                 var video
                 var exisitingElement=$.timelapse.display.find('.'+position)
@@ -1963,9 +2004,6 @@ $.timelapse.e.on('click','[timelapse]',function(){
             }
             e.filename=e.e.attr('file')
             e.video=$.timelapse.currentVideos[e.filename]
-            e.videoCurrentNow=$.timelapse.display.find('.videoNow')
-            e.videoCurrentAfter=$.timelapse.display.find('.videoAfter')
-            e.videoCurrentBefore=$.timelapse.display.find('.videoBefore')
             e.videoIsSame=(e.video.href==e.videoCurrentNow.attr('video'))
             e.videoIsAfter=(e.video.href==e.videoCurrentAfter.attr('video'))
             e.videoIsBefore=(e.video.href==e.videoCurrentBefore.attr('video'))
@@ -2013,17 +2051,33 @@ $.timelapse.e.on('click','[timelapse]',function(){
                 e.videoNow.pause()
             }
             e.videoNow.play()
-            e.videoNow.onended = function() {
+            e.playButtonIcon.removeClass('fa-pause').addClass('fa-play')
+            $.timelapse.onended = function() {
                 $.timelapse.line.find('[file="'+e.video[$.timelapse.playDirection].filename+'"]').click()
             };
-            e.videoNow.removeEventListener('error', e.videoNow.onended, true);
-            e.videoNow.addEventListener('error', e.videoNow.onended, true);
+            e.videoNow.onended = $.timelapse.onended
+            e.videoNow.removeEventListener('error', $.timelapse.onended, true);
+            e.videoNow.addEventListener('error',$.timelapse.onended, true);
+            $.timelapse.onPlayPause=function(x){
+                if(e.videoNow.paused===true){
+                    e.playButtonIcon.removeClass('fa-pause').addClass('fa-play')
+                    if(x==1)e.videoNow.play();
+                }else{
+                    e.playButtonIcon.removeClass('fa-play').addClass('fa-pause')
+                    if(x==1)e.videoNow.pause();
+                }
+            }
+            $(e.videoNow)
+                .off("pause").on("pause",$.timelapse.onPlayPause)
+                .off("play").on("play",$.timelapse.onPlayPause)
+            
+            
             $.ccio.log('$.timelapse',e.video)
             $.timelapse.line.find('.timelapse_video').removeClass('active')
             e.videoCurrentNow=$.timelapse.display.find('.videoNow')
             e.e.addClass('active')
             if ($('#timelapse_video_line:hover').length === 0) {
-                $.timelapse.line.animate({scrollTop:e.e.position().top-e.e.height()-100},700);
+                $.timelapse.line.scrollTop($.timelapse.line.scrollTop() + e.e.position().top - $.timelapse.line.height()/2 + e.e.height()/2);
             }
         break;
     }
@@ -2076,7 +2130,7 @@ $.pwrvid.e.on('click','[preview]',function(e){
             $.pwrvid.vpOnPlayPause(1)
         break;
         case'stepFrontFront':
-            e.video.playbackRate = 5;
+            e.video.playbackRate += 5;
             e.video.play()
         break;
         case'stepFront':
@@ -2091,7 +2145,7 @@ $.pwrvid.e.on('click','[preview]',function(e){
                    e.video.pause();
                }
                else{
-                   e.video.currentTime += -.1;
+                   e.video.currentTime += -.2;
                }
            },30);
         break;
