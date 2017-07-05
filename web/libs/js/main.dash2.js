@@ -915,7 +915,7 @@ $.ccio.ws.on('f',function (d){
                 $.pwrvid.drawTimeline(false)
             }
             if($.timelapse.currentVideos&&$.timelapse.currentVideos[d.filename]){
-                delete($.timelapse.currentVideosArray[$.timelapse.currentVideos[d.filename].position])
+                delete($.timelapse.currentVideosArray.videos[$.timelapse.currentVideos[d.filename].position])
                 $.timelapse.drawTimeline(false)
             }
         break;
