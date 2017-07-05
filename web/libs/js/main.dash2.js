@@ -910,6 +910,14 @@ $.ccio.ws.on('f',function (d){
             if($('.modal[mid="'+d.mid+'"]').length>0){$('#video_viewer[mid="'+d.mid+'"]').attr('file',null).attr('ke',null).attr('mid',null).modal('hide')}
             $('[file="'+d.filename+'"][mid="'+d.mid+'"][ke="'+d.ke+'"]').remove();
             $('[data-file="'+d.filename+'"][data-mid="'+d.mid+'"][data-ke="'+d.ke+'"]').remove();
+            if($.pwrvid.currentDataObject&&$.pwrvid.currentDataObject[d.filename]){
+                delete($.timelapse.currentVideos[$.pwrvid.currentDataObject[d.filename].position])
+                $.pwrvid.drawTimeline(false)
+            }
+            if($.timelapse.currentVideos&&$.timelapse.currentVideos[d.filename]){
+                delete($.timelapse.currentVideosArray[$.timelapse.currentVideos[d.filename].position])
+                $.timelapse.drawTimeline(false)
+            }
         break;
         case'video_build_success':
             if(!d.mid){d.mid=d.id;};d.status=1;
@@ -1882,8 +1890,9 @@ $.timelapse.f.submit(function(e){
     $.timelapse.drawTimeline()
     return false;
 })
-$.timelapse.drawTimeline=function(){
-  var e={};
+$.timelapse.drawTimeline=function(getData){
+    var e={};
+    if(getData===undefined){getData=true}
     var mid=$.timelapse.monitors.val();
     e.dateRange=$.timelapse.dr.data('daterangepicker');
     e.eventLimit=$('#tlapse_event_limit').val();
@@ -1893,118 +1902,134 @@ $.timelapse.drawTimeline=function(){
     e.eventURL='/'+$user.auth_token+'/events/'+$user.ke+'/'+mid;
     e.videoURL+='?limit=100&start='+$.ccio.init('th',e.dateRange.startDate)+'&end='+$.ccio.init('th',e.dateRange.endDate);
     e.eventURL+='/'+e.eventLimit+'/'+$.ccio.init('th',e.dateRange.startDate)+'/'+$.ccio.init('th',e.dateRange.endDate);
-//    $.getJSON(e.eventURL,function(events){
+    e.next=function(videos){
+        $.timelapse.currentVideos={}
+        e.tmp=''
+        $.each(videos.videos,function(n,v){
+            v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
+            v.videoBefore=videos.videos[n-1];
+            v.videoAfter=videos.videos[n+1];
+            v.downloadLink=v.href+'?downloadName='+v.mid+'-'+v.filename
+            v.position=n;
+            $.timelapse.currentVideos[v.filename]=v;
+            e.tmp+='<li class="glM'+v.mid+' list-group-item timelapse_video flex-block" timelapse="video" file="'+v.filename+'" href="'+v.href+'" mid="'+v.mid+'" ke="'+v.ke+'">'
+            e.tmp+='<div><div class="frame" style="background-image:url('+placeholder.getData(placeholder.plcimg({bgcolor:'#b57d00',text:'...'}))+')"></div></div>'
+            e.tmp+='<div><div><span title="'+v.time+'" class="livestamp"></span></div><div>'+v.filename+'</div></div>'
+            e.tmp+='<div class="text-right"><a class="btn btn-xs btn-danger" video="delete"><i class="fa fa-trash-o"></i></a></div>'
+            e.tmp+='</li>'
+        })
+        $.timelapse.line.html(e.tmp)
+        $.ccio.init('ls')
+        if(getData===true){
+            e.timeout=50
+        }else{
+            e.timeout=2000
+        }
+        setTimeout(function(){
+            if($.timelapse.e.find('.timelapse_video.active').length===0){
+                $.timelapse.e.find('[timelapse="video"]').first().click()
+            }
+        },e.timeout)
+    }
+    if(getData===true){
         $.getJSON(e.videoURL,function(videos){
             videos.videos=videos.videos.reverse()
-            $.timelapse.currentVideos={}
-            e.tmp=''
-//            $.each(events,function(n,v){
-//                $.each(videos.videos,function(m,b){
-//                    if (moment(v.time).isBetween(moment(b.time).format(),moment(b.endTime).format())) {
-//                        if(!videos[m].motion){
-//                            videos[m].motion=[]
-//                        }
-//                        videos[m].motion.push(v)
-//                    }
-//                })
-//            });
-            $.each(videos.videos,function(n,v){
-                v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
-                v.videoBefore=videos.videos[n-1];
-                v.videoAfter=videos.videos[n+1];
-                v.downloadLink=v.href+'?downloadName='+v.mid+'-'+v.filename
-                $.timelapse.currentVideos[v.filename]=v;
-                e.tmp+='<li class="list-group-item timelapse_video flex-block" file="'+v.filename+'" href="'+v.href+'">'
-                e.tmp+='<div><div class="frame" style="background-image:url('+placeholder.getData(placeholder.plcimg({bgcolor:'#b57d00',text:'...'}))+')"></div></div>'
-                e.tmp+='<div><div><span title="'+v.time+'" class="livestamp"></span></div><div>'+v.filename+'</div></div>'
-                e.tmp+='</li>'
-            })
-            $.timelapse.line.html(e.tmp)
-            $.ccio.init('ls')
+            $.timelapse.currentVideosArray=videos
+            e.next(videos)
         })
-//    })
-}
-$.timelapse.e.on('click','.timelapse_video',function(){
-    var e={}
-    e.drawVideoHTML=function(position){
-        var video
-        var exisitingElement=$.timelapse.display.find('.'+position)
-        if(position){
-            video=e.video[position]
-        }else{
-            position='videoNow'
-            video=e.video
-        }
-        if(video){
-           $.timelapse.display.append('<video class="video_video '+position+'" video="'+video.href+'" preload controls><source src="'+video.href+'" type="video/'+video.ext+'"></video>')
-        }
-    }
-    e.e=$(this)
-    e.filename=e.e.attr('file')
-    e.video=$.timelapse.currentVideos[e.filename]
-    e.videoCurrentNow=$.timelapse.display.find('.videoNow')
-    e.videoCurrentAfter=$.timelapse.display.find('.videoAfter')
-    e.videoCurrentBefore=$.timelapse.display.find('.videoBefore')
-    e.videoIsSame=(e.video.href==e.videoCurrentNow.attr('video'))
-    e.videoIsAfter=(e.video.href==e.videoCurrentAfter.attr('video'))
-    e.videoIsBefore=(e.video.href==e.videoCurrentBefore.attr('video'))
-    if(e.videoIsSame||e.videoIsAfter||e.videoIsBefore){
-        switch(true){
-            case e.videoIsSame:
-                $.ccio.log('$.timelapse','videoIsSame')
-                return
-            break;
-            case e.videoIsAfter:
-                $.ccio.log('$.timelapse','videoIsAfter')
-                e.videoCurrentBefore.remove()
-                e.videoCurrentAfter.removeClass('videoAfter').addClass('videoNow')
-                e.videoCurrentNow.removeClass('videoNow').addClass('videoBefore')
-                e.drawVideoHTML('videoAfter')
-            break;
-            case e.videoIsBefore:
-                $.ccio.log('$.timelapse','videoIsBefore')
-                e.videoCurrentAfter.remove()
-                e.videoCurrentBefore.removeClass('videoBefore').addClass('videoNow')
-                e.videoCurrentNow.removeClass('videoNow').addClass('videoAfter')
-                e.drawVideoHTML('videoBefore')
-            break;
-        }
     }else{
-        $.timelapse.display.empty()
-        e.drawVideoHTML()//videoNow
-        e.drawVideoHTML('videoBefore')
-        e.drawVideoHTML('videoAfter')
+        e.next($.timelapse.currentVideosArray)
     }
-    $.timelapse.display.find('video').each(function(n,v){
-        v.addEventListener('loadeddata', function() {
-            v.play()
-            if(v.playing){
-               v.paused()
+}
+$.timelapse.e.on('click','[timelapse]',function(){
+    var e={}
+    e.e=$(this)
+    switch(e.e.attr('timelapse')){
+        case'delete':
+        break;
+        case'video':
+            e.drawVideoHTML=function(position){
+                var video
+                var exisitingElement=$.timelapse.display.find('.'+position)
+                if(position){
+                    video=e.video[position]
+                }else{
+                    position='videoNow'
+                    video=e.video
+                }
+                if(video){
+                   $.timelapse.display.append('<video class="video_video '+position+'" video="'+video.href+'" preload controls><source src="'+video.href+'" type="video/'+video.ext+'"></video>')
+                }
             }
-            $.ccio.snapshotVideo(v,function(url,buffer){
-                console.log($(v).attr('video'))
-                console.log(url)
-                console.log('.timelapse_video[href="'+$(v).attr('video')+'"] .frame')
-                $('.timelapse_video[href="'+$(v).attr('video')+'"] .frame').css('background-image','url('+url+')')
+            e.filename=e.e.attr('file')
+            e.video=$.timelapse.currentVideos[e.filename]
+            e.videoCurrentNow=$.timelapse.display.find('.videoNow')
+            e.videoCurrentAfter=$.timelapse.display.find('.videoAfter')
+            e.videoCurrentBefore=$.timelapse.display.find('.videoBefore')
+            e.videoIsSame=(e.video.href==e.videoCurrentNow.attr('video'))
+            e.videoIsAfter=(e.video.href==e.videoCurrentAfter.attr('video'))
+            e.videoIsBefore=(e.video.href==e.videoCurrentBefore.attr('video'))
+            if(e.videoIsSame||e.videoIsAfter||e.videoIsBefore){
+                switch(true){
+                    case e.videoIsSame:
+                        $.ccio.log('$.timelapse','videoIsSame')
+                        return
+                    break;
+                    case e.videoIsAfter:
+                        $.ccio.log('$.timelapse','videoIsAfter')
+                        e.videoCurrentBefore.remove()
+                        e.videoCurrentAfter.removeClass('videoAfter').addClass('videoNow')
+                        e.videoCurrentNow.removeClass('videoNow').addClass('videoBefore')
+                        e.drawVideoHTML('videoAfter')
+                    break;
+                    case e.videoIsBefore:
+                        $.ccio.log('$.timelapse','videoIsBefore')
+                        e.videoCurrentAfter.remove()
+                        e.videoCurrentBefore.removeClass('videoBefore').addClass('videoNow')
+                        e.videoCurrentNow.removeClass('videoNow').addClass('videoAfter')
+                        e.drawVideoHTML('videoBefore')
+                    break;
+                }
+            }else{
+                $.timelapse.display.empty()
+                e.drawVideoHTML()//videoNow
+                e.drawVideoHTML('videoBefore')
+                e.drawVideoHTML('videoAfter')
+            }
+            $.timelapse.display.find('video').each(function(n,v){
+                v.addEventListener('loadeddata', function() {
+                    v.play()
+                    if(v.playing){
+                       v.paused()
+                    }
+                    $.ccio.snapshotVideo(v,function(url,buffer){
+                        $('.timelapse_video[href="'+$(v).attr('video')+'"] .frame').css('background-image','url('+url+')')
+                    })
+                }, false);
             })
-        }, false);
-    })
-    e.videoNow=$.timelapse.display.find('video.videoNow')[0]
-    e.videoNow.playbackRate = $.timelapse.playRate
-    if(e.videoNow.playing){
-        e.videoNow.pause()
+            e.videoNow=$.timelapse.display.find('video.videoNow')[0]
+            e.videoNow.playbackRate = $.timelapse.playRate
+            if(e.videoNow.playing){
+                e.videoNow.pause()
+            }
+            e.videoNow.play()
+            e.videoNow.onended = function() {
+                $.timelapse.line.find('[file="'+e.video[$.timelapse.playDirection].filename+'"]').click()
+            };
+            e.videoNow.addEventListener('error', e.videoNow.onended, true);
+            $.ccio.log('$.timelapse',e.video)
+            $.timelapse.line.find('.timelapse_video').removeClass('active')
+            e.videoCurrentNow=$.timelapse.display.find('.videoNow')
+            e.e.addClass('active')
+            if ($('#timelapse_video_line:hover').length === 0) {
+                $.timelapse.line.animate({scrollTop:e.e.position().top-e.e.height()-100},700);
+            }
+        break;
     }
-    e.videoNow.play()
-    e.videoNow.onended = function() {
-        $.timelapse.line.find('[file="'+e.video[$.timelapse.playDirection].filename+'"]').click()
-    };
-    $.ccio.log('$.timelapse',e.video)
-    $.timelapse.line.find('.timelapse_video').removeClass('active')
-    e.videoCurrentNow=$.timelapse.display.find('.videoNow')
-    e.e.addClass('active')
-    if ($('#timelapse_video_line:hover').length === 0) {
-        $.timelapse.line.animate({scrollTop:e.e.position().top-e.e.height()-100},700);
-    }
+})
+$.timelapse.e.on('hidden.bs.modal',function(e){
+    delete($.timelapse.currentVideos)
+    delete($.timelapse.currentVideosArray)
 })
 //POWER videos window
 $.pwrvid={e:$('#pvideo_viewer')};
@@ -2099,7 +2124,7 @@ $.pwrvid.e.on('click','[preview]',function(e){
             }
             var labels=[]
             var Dataset1=[]
-            var events=$.pwrvid.currentVideosObject[e.filename].motion
+            var events=$.pwrvid.currentDataObject[e.filename].motion
             var eventsLabeledByTime={}
             $.each(events,function(n,v){
                 if(!v.details.confidence){v.details.confidence=0}
@@ -2148,7 +2173,7 @@ $.pwrvid.e.on('click','[preview]',function(e){
                 $.pwrvid.mL.find('canvas').click(function(f) {
                     var target = $.pwrvid.miniChart.getElementsAtEvent(f)[0];
                     if(!target){return false}
-                    var video = $.pwrvid.currentVideosObject[e.filename];
+                    var video = $.pwrvid.currentDataObject[e.filename];
                     var event = video.motion[target._index];
                     var video1 = $('#video_preview video')[0];
                     video1.currentTime=moment(event.time).diff(moment(video.row.time),'seconds')
@@ -2176,7 +2201,7 @@ $.pwrvid.e.on('click','[preview]',function(e){
                 .off("pause").on("pause",$.pwrvid.vpOnPlayPause)
                 .off("play").on("play",$.pwrvid.vpOnPlayPause)
                 .off("timeupdate").on("timeupdate",function(){
-                    var video = $.pwrvid.currentVideosObject[e.filename];
+                    var video = $.pwrvid.currentDataObject[e.filename];
                     var video1 = $('#video_preview video');
                     var videoTime=moment(video.row.time).add(parseInt(video1[0].currentTime),'seconds').format('MM/DD/YYYY HH:mm:ss');
                     var event = eventsLabeledByTime[videoTime];
@@ -2198,8 +2223,9 @@ $.pwrvid.e.on('click','[preview]',function(e){
         break;
     }
 })
-$.pwrvid.drawTimeline=function(){
-  var e={};
+$.pwrvid.drawTimeline=function(getData){
+    var e={};
+    if(getData===undefined){getData=true}
     var mid=$.pwrvid.m.val();
     e.live_header=$.pwrvid.lv.find('h3 span');
     e.live=$.pwrvid.lv.find('iframe');
@@ -2213,103 +2239,113 @@ $.pwrvid.drawTimeline=function(){
     e.eventURL+='/'+e.eventLimit+'/'+$.ccio.init('th',e.dateRange.startDate)+'/'+$.ccio.init('th',e.dateRange.endDate);
     e.live_header.text($.ccio.mon[mid].name)
     e.live.attr('src','/'+$user.auth_token+'/embed/'+$user.ke+'/'+mid+'/fullscreen|jquery')
-    $.getJSON(e.eventURL,function(events){
-        $.getJSON(e.videoURL,function(videos){
-            if($.pwrvid.t&&$.pwrvid.t.destroy){$.pwrvid.t.destroy()}
-            data={};
-            $.each(videos.videos,function(n,v){
-                v.mon=$.ccio.mon[v.mid];
-                v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
-                if(v.status>0){
-//                    data.push({src:v,x:v.time,y:moment(v.time).diff(moment(v.end),'minutes')/-1})
-                    data[v.filename]={filename:v.filename,time:v.time,timeFormatted:moment(v.time).format('MM/DD/YYYY HH:mm'),endTime:v.end,close:moment(v.time).diff(moment(v.end),'minutes')/-1,motion:[],row:v}
-                }
-            });
-            $.each(events,function(n,v){
-                $.each(data,function(m,b){
-                    if (moment(v.time).isBetween(moment(b.time).format(),moment(b.endTime).format())) {
-                        data[m].motion.push(v)
-                    }
-                })
-            });
-            $.pwrvid.currentVideosObject=data;
-            e.n=$.pwrvid.e.find('.nodata').hide()
-            if($.pwrvid.chart){
-                $.pwrvid.d.empty()
-                delete($.pwrvid.chart)
+    
+    e.next=function(videos,events){
+        if($.pwrvid.t&&$.pwrvid.t.destroy){$.pwrvid.t.destroy()}
+        data={};
+        $.each(videos.videos,function(n,v){
+            v.mon=$.ccio.mon[v.mid];
+            v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
+            if(v.status>0){
+    //                    data.push({src:v,x:v.time,y:moment(v.time).diff(moment(v.end),'minutes')/-1})
+                data[v.filename]={filename:v.filename,time:v.time,timeFormatted:moment(v.time).format('MM/DD/YYYY HH:mm'),endTime:v.end,close:moment(v.time).diff(moment(v.end),'minutes')/-1,motion:[],row:v,position:n}
             }
-            $.pwrvid.currentVideos=Object.values(data);
-            if($.pwrvid.currentVideos.length>0){
-                var labels=[]
-                var Dataset1=[]
-                var Dataset2=[]
-                $.each(data,function(n,v){
-                    labels.push(v.timeFormatted)
-                    Dataset1.push(v.close)
-                    Dataset2.push(v.motion.length)
-                })
-                $.pwrvid.d.html("<canvas></canvas>")
-		var timeFormat = 'MM/DD/YYYY HH:mm';
-		var color = Chart.helpers.color;
-        Chart.defaults.global.defaultFontColor = '#fff';
-		var config = {
-			type: 'bar',
-			data: {
-				labels: labels,
-				datasets: [{
-					type: 'line',
-					label: 'Video and Time Span (Minutes)',
-					backgroundColor: color(window.chartColors.blue).alpha(0.2).rgbString(),
-					borderColor: window.chartColors.blue,
-					data: Dataset1,
-				}, {
-					type: 'bar',
-                    showTooltip: false,
-					label: 'Counts of Motion',
-					backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
-					borderColor: window.chartColors.red,
-					data:Dataset2,
-				}, ]
-			},
-			options: {
-                 maintainAspectRatio: false,
-                title: {
-                    fontColor: "white",
-                    text:"Video Length (minutes) and Motion Count per video"
+        });
+        $.each(events,function(n,v){
+            $.each(data,function(m,b){
+                if (moment(v.time).isBetween(moment(b.time).format(),moment(b.endTime).format())) {
+                    data[m].motion.push(v)
+                }
+            })
+        });
+        $.pwrvid.currentDataObject=data;
+        e.n=$.pwrvid.e.find('.nodata').hide()
+        if($.pwrvid.chart){
+            $.pwrvid.d.empty()
+            delete($.pwrvid.chart)
+        }
+        $.pwrvid.currentData=Object.values(data);
+        if($.pwrvid.currentData.length>0){
+            var labels=[]
+            var Dataset1=[]
+            var Dataset2=[]
+            $.each(data,function(n,v){
+                labels.push(v.timeFormatted)
+                Dataset1.push(v.close)
+                Dataset2.push(v.motion.length)
+            })
+            $.pwrvid.d.html("<canvas></canvas>")
+            var timeFormat = 'MM/DD/YYYY HH:mm';
+            var color = Chart.helpers.color;
+            Chart.defaults.global.defaultFontColor = '#fff';
+            var config = {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        type: 'line',
+                        label: 'Video and Time Span (Minutes)',
+                        backgroundColor: color(window.chartColors.blue).alpha(0.2).rgbString(),
+                        borderColor: window.chartColors.blue,
+                        data: Dataset1,
+                    }, {
+                        type: 'bar',
+                        showTooltip: false,
+                        label: 'Counts of Motion',
+                        backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
+                        borderColor: window.chartColors.red,
+                        data:Dataset2,
+                    }, ]
                 },
-                tooltips: {
-                    callbacks: {
-
+                options: {
+                     maintainAspectRatio: false,
+                    title: {
+                        fontColor: "white",
+                        text:"Video Length (minutes) and Motion Count per video"
                     },
-                },
-				scales: {
-					xAxes: [{
-						type: "time",
-						display: true,
-						time: {
-							format: timeFormat,
-							// round: 'day'
-						}
-					}],
-				},
-			}
-		};
+                    tooltips: {
+                        callbacks: {
 
-			var ctx = $.pwrvid.d.find('canvas')[0].getContext("2d");
-			$.pwrvid.chart = new Chart(ctx, config);
+                        },
+                    },
+                    scales: {
+                        xAxes: [{
+                            type: "time",
+                            display: true,
+                            time: {
+                                format: timeFormat,
+                                // round: 'day'
+                            }
+                        }],
+                    },
+                }
+            };
+
+            var ctx = $.pwrvid.d.find('canvas')[0].getContext("2d");
+            $.pwrvid.chart = new Chart(ctx, config);
             $.pwrvid.d.find('canvas').click(function(e) {
                 var target = $.pwrvid.chart.getElementsAtEvent(e)[0];
                 if(!target){return false}
-                target = $.pwrvid.currentVideos[target._index];
+                target = $.pwrvid.currentData[target._index];
                 $.pwrvid.e.find('.temp').html('<li class="glM'+target.row.mid+'" mid="'+target.row.mid+'" ke="'+target.row.ke+'" status="'+target.row.status+'" file="'+target.row.filename+'"><a class="btn btn-sm btn-primary" preview="video" href="'+target.row.href+'"><i class="fa fa-play-circle"></i></a></li>').find('a').click()
             });
-		var colorNames = Object.keys(window.chartColors);
+            var colorNames = Object.keys(window.chartColors);
 
-            }else{
-                e.n.show()
-            }
+        }else{
+            e.n.show()
+        }
+    }
+    if(getData===true){
+        $.getJSON(e.eventURL,function(events){
+            $.getJSON(e.videoURL,function(videos){
+                $.pwrvid.currentVideos=videos
+                $.pwrvid.currentEvents=events
+                e.next(videos,events)
+            })
         })
-    })
+    }else{
+        e.next($.pwrvid.currentVideos,$.pwrvid.currentEvents)
+    }
 }
 $('#vis_monitors,#pvideo_event_limit').change(function(){
     $.pwrvid.f.submit()
@@ -2322,8 +2358,8 @@ $.pwrvid.f.submit(function(e){
 $.pwrvid.e.on('hidden.bs.modal',function(e){
     $(this).find('iframe').attr('src','about:blank')
     $.pwrvid.vp.find('.holder').empty()
-    delete($.pwrvid.currentVideosObject)
-    delete($.pwrvid.currentVideos)
+    delete($.pwrvid.currentDataObject)
+    delete($.pwrvid.currentData)
     $.pwrvid.mL.empty()
     $.pwrvid.d.empty()
 })
@@ -2378,10 +2414,14 @@ $('body')
             });
         break;
         case'delete':
+            e.href=e.p.find('[download]').attr('href')
+            if(!e.href||e.href===''){
+                e.href=e.p.attr('href')
+            }
             $.confirm.e.modal('show');
             $.confirm.title.text('Delete Video : '+e.file)
             e.html='Do you want to delete this video? You cannot recover it.'
-            e.html+='<video class="video_video" autoplay loop controls><source src="'+e.p.find('[download]').attr('href')+'" type="video/'+e.mon.ext+'"></video>';
+            e.html+='<video class="video_video" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"></video>';
             $.confirm.body.html(e.html)
             $.confirm.click({title:'Delete Video',class:'btn-danger'},function(){
                 e.file=e.file.split('.')
