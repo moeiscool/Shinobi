@@ -1958,8 +1958,8 @@ $.timelapse.e.on('click','.timelapse_video',function(){
     $.timelapse.line.find('.timelapse_video').removeClass('active')
     e.videoCurrentNow=$.timelapse.display.find('.videoNow')
     e.e.addClass('active')
-    if ($('#timelapse_video_line:hover').length != 0) {
-        $.timelapse.line.animate({scrollTop:e.e.position().top-e.e.height()},700);
+    if ($('#timelapse_video_line:hover').length === 0) {
+        $.timelapse.line.animate({scrollTop:e.e.position().top-e.e.height()-100},700);
     }
 })
 //POWER videos window
