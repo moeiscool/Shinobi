@@ -2488,6 +2488,9 @@ s.deleteFactorAuth=function(r){
     }
 }
 app.post('/',function (req,res){
+    if(req.query.json=='true'){
+        res.header("Access-Control-Allow-Origin",req.headers.origin);
+    }
     req.renderFunction=function(focus,data){
         if(req.query.json=='true'){
             delete(data.config)
