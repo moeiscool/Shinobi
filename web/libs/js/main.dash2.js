@@ -2016,6 +2016,7 @@ $.timelapse.e.on('click','[timelapse]',function(){
             e.videoNow.onended = function() {
                 $.timelapse.line.find('[file="'+e.video[$.timelapse.playDirection].filename+'"]').click()
             };
+            e.videoNow.removeEventListener('error', e.videoNow.onended, true);
             e.videoNow.addEventListener('error', e.videoNow.onended, true);
             $.ccio.log('$.timelapse',e.video)
             $.timelapse.line.find('.timelapse_video').removeClass('active')
