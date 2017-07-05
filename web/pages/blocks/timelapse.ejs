@@ -11,7 +11,10 @@
         <div class="modal-body text-center">
             <div class="row">
                 <div class="col-md-8">
-                    <div id="timelapse_video_display"></div>
+                    <div class="timelapse_hud">
+                        <div class="timelapse_playRate"></div>
+                        <div id="timelapse_video_display"></div>
+                    </div>
                 </div>
                 <form class="col-md-4">
                     <div class="form-group">
@@ -25,7 +28,7 @@
                     </label>
                     </div>
                     <div class="form-group">
-                        <div class="btn-group"><a timelapse="stepBackBack" class="active btn btn-sm btn-primary"><i class="fa fa-fast-backward"></i></a> <a timelapse="stepBack" class="btn btn-sm btn-primary"><i class="fa fa-backward"></i></a> <a timelapse="play" class="btn btn-sm btn-default"><i class="fa fa-play"></i></a> <a timelapse="mute" class="btn btn-sm btn-default"><i class="fa fa-volume-up"></i></a> <a timelapse="stepFront" class="btn btn-sm btn-primary"><i class="fa fa-fast-forward"></i></a> <a timelapse="stepFrontFront" class="active btn btn-sm btn-primary"><i class="fa fa-forward"></i></a>
+                        <div class="btn-group btn-group-lg"><a timelapse="stepBackBack" class="active btn btn-primary"><i class="fa fa-fast-backward"></i></a> <a timelapse="stepBack" class="btn btn-primary"><i class="fa fa-backward"></i></a> <a timelapse="play" class="btn btn-default"><i class="fa fa-play"></i></a> <a timelapse="mute" class="btn btn-default"><i class="fa fa-volume-up"></i></a> <a timelapse="stepFront" class="btn btn-primary"><i class="fa fa-fast-forward"></i></a> <a timelapse="stepFrontFront" class="active btn btn-primary"><i class="fa fa-forward"></i></a>
                     </div>
                     </div>
                     <div class="form-group">

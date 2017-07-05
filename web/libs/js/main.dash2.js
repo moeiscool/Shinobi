@@ -1895,17 +1895,14 @@ $.timelapse.drawTimeline=function(getData){
     if(getData===undefined){getData=true}
     var mid=$.timelapse.monitors.val();
     e.dateRange=$.timelapse.dr.data('daterangepicker');
-    e.eventLimit=$('#tlapse_event_limit').val();
-    if(e.eventLimit===''){e.eventLimit=500}
     e.dateRange={startDate:e.dateRange.startDate,endDate:e.dateRange.endDate}
     e.videoURL='/'+$user.auth_token+'/videos/'+$user.ke+'/'+mid;
-    e.eventURL='/'+$user.auth_token+'/events/'+$user.ke+'/'+mid;
     e.videoURL+='?limit=100&start='+$.ccio.init('th',e.dateRange.startDate)+'&end='+$.ccio.init('th',e.dateRange.endDate);
-    e.eventURL+='/'+e.eventLimit+'/'+$.ccio.init('th',e.dateRange.startDate)+'/'+$.ccio.init('th',e.dateRange.endDate);
     e.next=function(videos){
         $.timelapse.currentVideos={}
         e.tmp=''
         $.each(videos.videos,function(n,v){
+            if(!v||!v.time){return}
             v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
             v.videoBefore=videos.videos[n-1];
             v.videoAfter=videos.videos[n+1];
@@ -2077,10 +2074,11 @@ $.timelapse.e.on('click','[timelapse]',function(){
             e.videoCurrentNow=$.timelapse.display.find('.videoNow')
             e.e.addClass('active')
             if ($('#timelapse_video_line:hover').length === 0) {
-                $.timelapse.line.scrollTop($.timelapse.line.scrollTop() + e.e.position().top - $.timelapse.line.height()/2 + e.e.height()/2);
+                $.timelapse.line.animate({scrollTop:$.timelapse.line.scrollTop() + e.e.position().top - $.timelapse.line.height()/2 + e.e.height()/2});
             }
         break;
     }
+    $.timelapse.e.find('.timelapse_playRate').text('x'+$.timelapse.playRate)
 })
 $.timelapse.e.on('hidden.bs.modal',function(e){
     delete($.timelapse.currentVideos)
@@ -2299,6 +2297,7 @@ $.pwrvid.drawTimeline=function(getData){
         if($.pwrvid.t&&$.pwrvid.t.destroy){$.pwrvid.t.destroy()}
         data={};
         $.each(videos.videos,function(n,v){
+            if(!v||!v.mid){return}
             v.mon=$.ccio.mon[v.mid];
             v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
             if(v.status>0){
