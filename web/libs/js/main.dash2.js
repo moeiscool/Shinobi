@@ -2014,11 +2014,11 @@ $.timelapse.e.on('click','[timelapse]',function(){
             e.videoIsSame=(e.video.href==e.videoCurrentNow.attr('video'))
             e.videoIsAfter=(e.video.href==e.videoCurrentAfter.attr('video'))
             e.videoIsBefore=(e.video.href==e.videoCurrentBefore.attr('video'))
-            e.videoNow=$.timelapse.display.find('video.videoNow')[0]
             if(e.videoIsSame||e.videoIsAfter||e.videoIsBefore){
                 switch(true){
                     case e.videoIsSame:
                         $.ccio.log('$.timelapse','videoIsSame')
+                        e.videoNow=$.timelapse.display.find('video.videoNow')[0]
                         if(e.videoNow[0].paused===true){
                             e.videoNow[0].play()
                         }else{
@@ -2052,6 +2052,9 @@ $.timelapse.e.on('click','[timelapse]',function(){
                     v.play()
                     if(v.playing){
                        v.pause()
+                    }
+                    if($(v).hasClass('videoAfter')){
+                        v.currentTime=0
                     }
                     $.ccio.snapshotVideo(v,function(url,buffer){
                         $('.timelapse_video[href="'+$(v).attr('video')+'"] .frame').css('background-image','url('+url+')')
