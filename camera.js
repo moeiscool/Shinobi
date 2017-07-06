@@ -2494,6 +2494,7 @@ app.post('/',function (req,res){
     req.renderFunction=function(focus,data){
         if(req.query.json=='true'){
             delete(data.config)
+            res.setHeader('Content-Type', 'application/json');
             res.send(s.s({ok:true,data:data}, null, 3))
         }else{
             res.render(focus,data);
@@ -2501,6 +2502,7 @@ app.post('/',function (req,res){
     }
     req.failed=function(){
         if(req.query.json=='true'){
+            res.setHeader('Content-Type', 'application/json');
             res.send(s.s({ok:false}, null, 3))
         }else{
             res.render("index",{failedLogin:true});
