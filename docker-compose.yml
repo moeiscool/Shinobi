@@ -48,3 +48,20 @@ services:
       - db:db
     volumes:
       - ./videos:/opt/shinobi/videos
+  motion:
+    depends_on:
+      - "db"
+    command: /usr/bin/node /opt/shinobi/plugins/motion/shinobi-motion.js"
+    build:
+      context: .
+    restart: always
+    environment:
+      MYSQL_HOST: db
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TIMEZONE_OFFSET: ${TIMEZONE_OFFSET}
+    links:
+      - db:db
+    volumes:
+      - ./videos:/opt/shinobi/videos
