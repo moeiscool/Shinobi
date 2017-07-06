@@ -1,7 +1,7 @@
 FROM mhart/alpine-node:8
 
 WORKDIR /opt/shinobi
-RUN apk add --update ffmpeg python pkgconfig airo-dev make g++ jpeg-dev && \
+RUN apk add --update ffmpeg python pkgconfig cairo-dev make g++ jpeg-dev && \
     rm -rf /var/cache/apk/*
 
 COPY . /opt/shinobi

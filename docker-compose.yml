@@ -5,7 +5,7 @@ services:
     restart: always
     volumes:
       - ./sql-init:/docker-entrypoint-initdb.d:ro
-      - ${MYSQL_VOLUME_DIR}:/var/lib/mysql
+      - ./dbdata:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_USER: ${MYSQL_USER}
@@ -19,16 +19,16 @@ services:
       context: .
     restart: always
     environment:
-      SHINOBI_ADMIN_PASSWORD: ${SHINOBI_ADMIN_PASSWORD}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       MYSQL_HOST: db
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       TIMEZONE_OFFSET: ${TIMEZONE_OFFSET}
     ports:
-      - "${WEB_PORT}:8080"
+      - 8080:8080
     volumes:
-      - ${VIDEOS_VOLUME_DIR}:/opt/shinobi/videos
+      - ./videos:/opt/shinobi/videos
     links:
       - db:db
   cron:
@@ -47,4 +47,4 @@ services:
     links:
       - db:db
     volumes:
-      - ${VIDEOS_VOLUME_DIR}:/opt/shinobi/videos
+      - ./videos:/opt/shinobi/videos
