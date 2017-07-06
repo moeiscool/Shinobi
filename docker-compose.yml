@@ -20,7 +20,7 @@ services:
     restart: always
     environment:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-      MYSQL_HOST: db
+      MYSQL_HOST: ${MYSQL_HOST}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
@@ -39,7 +39,7 @@ services:
       context: .
     restart: always
     environment:
-      MYSQL_HOST: db
+      MYSQL_HOST: ${MYSQL_HOST}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
@@ -51,12 +51,12 @@ services:
   motion:
     depends_on:
       - "db"
-    command: /usr/bin/node /opt/shinobi/plugins/motion/shinobi-motion.js"
+    command: /usr/bin/node /opt/shinobi/plugins/motion/shinobi-motion.js
     build:
       context: .
     restart: always
     environment:
-      MYSQL_HOST: db
+      MYSQL_HOST: ${MYSQL_HOST}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
