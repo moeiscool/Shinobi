@@ -1866,6 +1866,8 @@ $.timelapse.f=$.timelapse.e.find('form'),
 $.timelapse.meter=$.timelapse.e.find('.motion-meter'),
 $.timelapse.line=$('#timelapse_video_line'),
 $.timelapse.display=$('#timelapse_video_display'),
+$.timelapse.seekBar=$('#timelapse_seekBar'),
+$.timelapse.seekBarProgess=$.timelapse.seekBar.find('.progress-bar'),
 $.timelapse.dr=$('#timelapse_daterange'),
 $.timelapse.mL=$.timelapse.e.find('.motion_list'),
 $.timelapse.monitors=$.timelapse.e.find('.monitors_list');
@@ -1895,17 +1897,14 @@ $.timelapse.drawTimeline=function(getData){
     if(getData===undefined){getData=true}
     var mid=$.timelapse.monitors.val();
     e.dateRange=$.timelapse.dr.data('daterangepicker');
-    e.eventLimit=$('#tlapse_event_limit').val();
-    if(e.eventLimit===''){e.eventLimit=500}
     e.dateRange={startDate:e.dateRange.startDate,endDate:e.dateRange.endDate}
     e.videoURL='/'+$user.auth_token+'/videos/'+$user.ke+'/'+mid;
-    e.eventURL='/'+$user.auth_token+'/events/'+$user.ke+'/'+mid;
     e.videoURL+='?limit=100&start='+$.ccio.init('th',e.dateRange.startDate)+'&end='+$.ccio.init('th',e.dateRange.endDate);
-    e.eventURL+='/'+e.eventLimit+'/'+$.ccio.init('th',e.dateRange.startDate)+'/'+$.ccio.init('th',e.dateRange.endDate);
     e.next=function(videos){
         $.timelapse.currentVideos={}
         e.tmp=''
         $.each(videos.videos,function(n,v){
+            if(!v||!v.time){return}
             v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
             v.videoBefore=videos.videos[n-1];
             v.videoAfter=videos.videos[n+1];
@@ -1913,9 +1912,14 @@ $.timelapse.drawTimeline=function(getData){
             v.position=n;
             $.timelapse.currentVideos[v.filename]=v;
             e.tmp+='<li class="glM'+v.mid+' list-group-item timelapse_video flex-block" timelapse="video" file="'+v.filename+'" href="'+v.href+'" mid="'+v.mid+'" ke="'+v.ke+'">'
-            e.tmp+='<div><div class="frame" style="background-image:url('+placeholder.getData(placeholder.plcimg({bgcolor:'#b57d00',text:'...'}))+')"></div></div>'
-            e.tmp+='<div><div><span title="'+v.time+'" class="livestamp"></span></div><div>'+v.filename+'</div></div>'
-            e.tmp+='<div class="text-right"><a class="btn btn-xs btn-danger" video="delete"><i class="fa fa-trash-o"></i></a></div>'
+            e.tmp+='<div class="flex-block">'
+            e.tmp+='<div class="flex-unit-3"><div class="frame" style="background-image:url('+placeholder.getData(placeholder.plcimg({bgcolor:'#b57d00',text:'...'}))+')"></div></div>'
+            e.tmp+='<div class="flex-unit-3"><div><span title="'+v.time+'" class="livestamp"></span></div><div>'+v.filename+'</div></div>'
+            e.tmp+='<div class="flex-unit-3 text-right"><a class="btn btn-xs btn-danger" video="delete"><i class="fa fa-trash-o"></i></a></div>'
+            e.tmp+='</div>'
+            e.tmp+='<div class="flex-block">'
+            e.tmp+='<div class="flex-unit-3"><div class="progress"><div class="progress-bar progress-bar-primary" role="progressbar" style="width:0%"></div></div></div>'
+            e.tmp+='</div>'
             e.tmp+='</li>'
         })
         $.timelapse.line.html(e.tmp)
@@ -1957,7 +1961,7 @@ $.timelapse.e.on('click','[timelapse]',function(){
             e.e.toggleClass('btn-danger')
         break;
         case'play':
-            $.timelapse.playRate =1
+            $.timelapse.playRate =5
             e.videoCurrentNow[0].playbackRate = $.timelapse.playRate;
             $.timelapse.onPlayPause(1)
         break;
@@ -1972,7 +1976,7 @@ $.timelapse.e.on('click','[timelapse]',function(){
         break;
         case'stepBackBack':
            $.timelapse.videoInterval = setInterval(function(){
-               $.timelapse.playRate = 1
+               $.timelapse.playRate = 5
                e.videoCurrentNow[0].playbackRate = $.timelapse.playRate;
                if(e.videoCurrentNow[0].currentTime == 0){
                    clearInterval($.timelapse.videoInterval);
@@ -1988,6 +1992,9 @@ $.timelapse.e.on('click','[timelapse]',function(){
             e.videoCurrentNow[0].pause()
         break;
         case'video':
+            $.timelapse.e.find('video').each(function(n,v){
+                v.pause()
+            })
             e.playButtonIcon=$.timelapse.e.find('[timelapse="play"]').find('i')
             e.drawVideoHTML=function(position){
                 var video
@@ -1999,7 +2006,7 @@ $.timelapse.e.on('click','[timelapse]',function(){
                     video=e.video
                 }
                 if(video){
-                   $.timelapse.display.append('<video class="video_video '+position+'" video="'+video.href+'" preload controls><source src="'+video.href+'" type="video/'+video.ext+'"></video>')
+                   $.timelapse.display.append('<video class="video_video '+position+'" video="'+video.href+'" preload><source src="'+video.href+'" type="video/'+video.ext+'"></video>')
                 }
             }
             e.filename=e.e.attr('file')
@@ -2007,10 +2014,16 @@ $.timelapse.e.on('click','[timelapse]',function(){
             e.videoIsSame=(e.video.href==e.videoCurrentNow.attr('video'))
             e.videoIsAfter=(e.video.href==e.videoCurrentAfter.attr('video'))
             e.videoIsBefore=(e.video.href==e.videoCurrentBefore.attr('video'))
+            e.videoNow=$.timelapse.display.find('video.videoNow')[0]
             if(e.videoIsSame||e.videoIsAfter||e.videoIsBefore){
                 switch(true){
                     case e.videoIsSame:
                         $.ccio.log('$.timelapse','videoIsSame')
+                        if(e.videoNow[0].paused===true){
+                            e.videoNow[0].play()
+                        }else{
+                            e.videoNow[0].pause()
+                        }
                         return
                     break;
                     case e.videoIsAfter:
@@ -2038,7 +2051,7 @@ $.timelapse.e.on('click','[timelapse]',function(){
                 v.addEventListener('loadeddata', function() {
                     v.play()
                     if(v.playing){
-                       v.paused()
+                       v.pause()
                     }
                     $.ccio.snapshotVideo(v,function(url,buffer){
                         $('.timelapse_video[href="'+$(v).attr('video')+'"] .frame').css('background-image','url('+url+')')
@@ -2047,9 +2060,6 @@ $.timelapse.e.on('click','[timelapse]',function(){
             })
             e.videoNow=$.timelapse.display.find('video.videoNow')[0]
             e.videoNow.playbackRate = $.timelapse.playRate
-            if(e.videoNow.playing){
-                e.videoNow.pause()
-            }
             e.videoNow.play()
             e.playButtonIcon.removeClass('fa-pause').addClass('fa-play')
             $.timelapse.onended = function() {
@@ -2068,19 +2078,32 @@ $.timelapse.e.on('click','[timelapse]',function(){
                 }
             }
             $(e.videoNow)
-                .off("pause").on("pause",$.timelapse.onPlayPause)
-                .off("play").on("play",$.timelapse.onPlayPause)
-            
+            .off('play').on('play',$.timelapse.onPlayPause)
+            .off('pause').on('pause',$.timelapse.onPlayPause)
+            .off('timeupdate').on('timeupdate',function(){
+                var value= (( e.videoNow.currentTime / e.videoNow.duration ) * 100)+"%"
+                $.timelapse.seekBarProgess.css("width",value);
+                $.timelapse.e.find('.timelapse_video[file="'+e.filename+'"] .progress-bar').css("width",value);
+            })
+            $.timelapse.seekBar.off("click").on("click", function(seek){
+                var offset = $(this).offset();
+                var left = (seek.pageX - offset.left);
+                var totalWidth = $.timelapse.seekBar.width();
+                var percentage = ( left / totalWidth );
+                var vidTime = e.videoNow.duration * percentage;
+                e.videoNow.currentTime = vidTime;
+            });
             
             $.ccio.log('$.timelapse',e.video)
             $.timelapse.line.find('.timelapse_video').removeClass('active')
             e.videoCurrentNow=$.timelapse.display.find('.videoNow')
             e.e.addClass('active')
             if ($('#timelapse_video_line:hover').length === 0) {
-                $.timelapse.line.scrollTop($.timelapse.line.scrollTop() + e.e.position().top - $.timelapse.line.height()/2 + e.e.height()/2);
+                $.timelapse.line.animate({scrollTop:$.timelapse.line.scrollTop() + e.e.position().top - $.timelapse.line.height()/2 + e.e.height()/2 - 40});
             }
         break;
     }
+    $.timelapse.e.find('.timelapse_playRate').text('x'+$.timelapse.playRate)
 })
 $.timelapse.e.on('hidden.bs.modal',function(e){
     delete($.timelapse.currentVideos)
@@ -2299,6 +2322,7 @@ $.pwrvid.drawTimeline=function(getData){
         if($.pwrvid.t&&$.pwrvid.t.destroy){$.pwrvid.t.destroy()}
         data={};
         $.each(videos.videos,function(n,v){
+            if(!v||!v.mid){return}
             v.mon=$.ccio.mon[v.mid];
             v.filename=$.ccio.init('tf',v.time)+'.'+v.ext;
             if(v.status>0){
