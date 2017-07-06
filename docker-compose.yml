@@ -1,20 +1,67 @@
 version: '2'
 services:
-  shinobi:
-    container_name: shinobi
+  db:
+    image: mysql:5.6
+    restart: always
+    volumes:
+      - ./sql-init:/docker-entrypoint-initdb.d:ro
+      - ./dbdata:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+  camera:
+    depends_on:
+      - "db"
+    command: /usr/bin/node /opt/shinobi/camera.js
     build:
       context: .
     restart: always
     environment:
-      - MYSQL_HOST=127.0.0.1
-      - MYSQL_DATABASE=shinobi
-      - MYSQL_USER=ccio
-      - MYSQL_PASSWORD=shinobi
-      - MYSQL_ROOT_PASSWORD=rootpass
-## Timezone - eg Europe/London
-      - TIMEZONE=UTC
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TIMEZONE_OFFSET: ${TIMEZONE_OFFSET}
     ports:
-      - "8080:8080"
+      - 8080:8080
     volumes:
       - ./videos:/opt/shinobi/videos
-      - ./dbdata:/var/lib/mysql
+    links:
+      - db:db
+  cron:
+    depends_on:
+      - "db"
+    command: /usr/bin/node /opt/shinobi/cron.js
+    build:
+      context: .
+    restart: always
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TIMEZONE_OFFSET: ${TIMEZONE_OFFSET}
+    links:
+      - db:db
+    volumes:
+      - ./videos:/opt/shinobi/videos
+  motion:
+    depends_on:
+      - "db"
+    command: /usr/bin/node /opt/shinobi/plugins/motion/shinobi-motion.js
+    build:
+      context: .
+    restart: always
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TIMEZONE_OFFSET: ${TIMEZONE_OFFSET}
+    links:
+      - db:db
+    volumes:
+      - ./videos:/opt/shinobi/videos
