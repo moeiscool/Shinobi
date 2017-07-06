@@ -2,12 +2,13 @@
 
 Shinobi is the Open Source CCTV Solution written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. Shinobi can record IP Cameras and Local Cameras.
 
-<img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.jpg?raw=true">
+<a href="http://shinobi.video/gallery"><img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.jpg?raw=true"></a>
 
 # Key Aspects
 
 For an updated list of features visit the official website. http://shinobi.video/features
 
+- Time-lapse Viewer (Watch a hours worth of footage in a few minutes)
 - 2-Factor Authentication
 - Defeats stream limit imposed by browsers
   - With Base64 (Stream Type) and JPEG Mode (Option)
