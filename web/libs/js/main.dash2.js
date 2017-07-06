@@ -2014,10 +2014,16 @@ $.timelapse.e.on('click','[timelapse]',function(){
             e.videoIsSame=(e.video.href==e.videoCurrentNow.attr('video'))
             e.videoIsAfter=(e.video.href==e.videoCurrentAfter.attr('video'))
             e.videoIsBefore=(e.video.href==e.videoCurrentBefore.attr('video'))
+            e.videoNow=$.timelapse.display.find('video.videoNow')[0]
             if(e.videoIsSame||e.videoIsAfter||e.videoIsBefore){
                 switch(true){
                     case e.videoIsSame:
                         $.ccio.log('$.timelapse','videoIsSame')
+                        if(e.videoNow[0].paused===true){
+                            e.videoNow[0].play()
+                        }else{
+                            e.videoNow[0].pause()
+                        }
                         return
                     break;
                     case e.videoIsAfter:
@@ -2045,7 +2051,7 @@ $.timelapse.e.on('click','[timelapse]',function(){
                 v.addEventListener('loadeddata', function() {
                     v.play()
                     if(v.playing){
-                       v.paused()
+                       v.pause()
                     }
                     $.ccio.snapshotVideo(v,function(url,buffer){
                         $('.timelapse_video[href="'+$(v).attr('video')+'"] .frame').css('background-image','url('+url+')')
@@ -2054,9 +2060,6 @@ $.timelapse.e.on('click','[timelapse]',function(){
             })
             e.videoNow=$.timelapse.display.find('video.videoNow')[0]
             e.videoNow.playbackRate = $.timelapse.playRate
-            if(e.videoNow.playing){
-                e.videoNow.pause()
-            }
             e.videoNow.play()
             e.playButtonIcon.removeClass('fa-pause').addClass('fa-play')
             $.timelapse.onended = function() {

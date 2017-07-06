@@ -267,8 +267,8 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .timelapse_video.list-group-item{padding:10px}
 .timelapse_hud{position: relative;background:#000}
 .timelapse_hud .timelapse_playRate{position: absolute;font-family: monospace;top:10px;right:0;left:0;margin:auto;font-size:23px}
-#timelapse.progress-bar{transition:none}
-.timelapse_hud .controlBar{position: absolute;background:#222;width:100%;left:0;bottom:0;}
+#timelapse .progress-bar{transition:0.5s!important}
+.timelapse_hud .controlBar{position: absolute;background:rgba(22,22,22,0.8);width:100%;left:0;bottom:0;}
 .timelapse_hud .hover-hide{opacity:0}
 .timelapse_hud:hover .hover-hide{opacity:1;z-index:5}
 
