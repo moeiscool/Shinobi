@@ -4,8 +4,8 @@
   "description": "CCTV and NVR for Node.js",
   "main": "camera.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node camera.js"
+    "test": "chmod +x INSTALL/now.sh&&INSTALL/now.sh",
+    "start": "pm2 start camera.js&&pm2 start cron.js&&pm2 logs"
   },
   "repository": {
     "type": "git",
