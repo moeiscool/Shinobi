@@ -64,6 +64,7 @@ if [ ! -e "./super.json" ]; then
     cp super.sample.json super.json
 fi
 echo "Shinobi - Finished"
+touch INSTALL/installed.txt
 echo "Shinobi - Start Shinobi?"
 echo "(y)es or (N)o"
 read startShinobi

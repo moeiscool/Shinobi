@@ -96,9 +96,8 @@ mkdir Shinobi
 cd Shinobi
 npm install shinobi
 mv node_modules/shinobi/* .
-npm test
+npm start
 ```
-- `npm test`, normally, is a command used to for test files but it is being used to jump start the install process.
 
 #### Elaborate Installs
 

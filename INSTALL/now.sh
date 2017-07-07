@@ -5,7 +5,7 @@ echo "Select your OS"
 echo "If your OS is not on the list please refer to the docs."
 echo "========"
 echo "1. Ubuntu / Debian"
-echo "2. CentOS"
+echo "2. CentOS / RHEL / Fedora"
 #echo "3. MacOS"
 echo "========"
 read oschoicee
