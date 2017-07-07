@@ -2494,8 +2494,9 @@ app.post('/',function (req,res){
     req.renderFunction=function(focus,data){
         if(req.query.json=='true'){
             delete(data.config)
+            data.ok=true;
             res.setHeader('Content-Type', 'application/json');
-            res.send(s.s({ok:true,data:data}, null, 3))
+            res.send(s.s(data, null, 3))
         }else{
             res.render(focus,data);
         }
@@ -2644,6 +2645,7 @@ app.post('/',function (req,res){
 });
 // Get HLS stream (m3u8)
 app.get('/:auth/hls/:ke/:id/:file', function (req,res){
+    res.header("Access-Control-Allow-Origin",req.headers.origin);
     req.fn=function(user){
         req.dir=s.dir.streams+req.params.ke+'/'+req.params.id+'/'+req.params.file;
         res.on('finish',function(){res.end();});
@@ -2657,6 +2659,7 @@ app.get('/:auth/hls/:ke/:id/:file', function (req,res){
 });
 //Get JPEG snap
 app.get('/:auth/jpeg/:ke/:id/s.jpg', function(req,res){
+    res.header("Access-Control-Allow-Origin",req.headers.origin);
     s.auth(req.params,function(user){
         if(user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
             res.end('Not Permitted')

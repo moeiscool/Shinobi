@@ -1,18 +1,18 @@
 {
   "name": "shinobi",
-  "version": "1.0.0",
+  "version": "1.0.6",
   "description": "CCTV and NVR for Node.js",
   "main": "camera.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node camera.js"
+    "start": "chmod +x INSTALL/start.sh && INSTALL/start.sh"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/moeiscool/Shinobi.git"
   },
   "author": "Moe Alam",
-  "license": "ISC",
+  "license": "GPLv3",
   "bugs": {
     "url": "https://github.com/moeiscool/Shinobi/issues"
   },

@@ -84,6 +84,23 @@ http://shinobi.video/why
 
 # How to Install and Run
 
+#### Fast Install
+
+Currently Fast Install is supported on the following :
+
+- Ubuntu / Debian
+- CentOS / RHEL / Fedora
+
+```
+mkdir Shinobi
+cd Shinobi
+npm install shinobi
+mv node_modules/shinobi/* .
+npm start
+```
+
+#### Elaborate Installs
+
 Installation Tutorials - http://shinobi.video/docs/start
 
 Troubleshooting Guide - http://shinobi.video/docs/start#trouble-section
