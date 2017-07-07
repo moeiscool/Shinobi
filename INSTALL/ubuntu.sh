@@ -15,6 +15,9 @@ if [ "$mysqlagree" = "y" ]; then
     echo "mariadb-server mariadb-server/root_password password $sqlpass" | debconf-set-selections
     echo "mariadb-server mariadb-server/root_password_again password $sqlpass" | debconf-set-selections
     apt install mariadb-server -y
+    #Start mysql and enable on boot
+    service mysql start
+    update-rc.d mysql enable
 fi
 sudo apt install nodejs npm -y
 sudo npm cache clean -f
