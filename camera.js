@@ -701,6 +701,10 @@ s.ffmpeg=function(e,x){
         }
         x.record_video_filters.push('movie='+e.details.watermark_location+'[watermark],[in][watermark]overlay='+x.watermark_position+'[out]');
     }
+    //record - rotation
+    if(e.details.rotate_record&&e.details.rotate_record!==""&&e.details.rotate_record!=="no"){
+        x.record_video_filters.push('transpose='+e.details.rotate_record);
+    }
     //check custom record filters for -vf
     if(e.details.vf&&e.details.vf!==''){
         x.record_video_filters.push(e.details.vf)
@@ -745,6 +749,10 @@ s.ffmpeg=function(e,x){
             break;
         }
         x.stream_video_filters.push('movie='+e.details.stream_watermark_location+'[watermark],[in][watermark]overlay='+x.stream_watermark_position+'[out]');
+    }
+    //stream - rotation
+    if(e.details.rotate_stream&&e.details.rotate_stream!==""&&e.details.rotate_stream!=="no"){
+        x.stream_video_filters.push('transpose='+e.details.rotate_stream);
     }
     //stream - video filter
     if(e.details.svf&&e.details.svf!==''){
