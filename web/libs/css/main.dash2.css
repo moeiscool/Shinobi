@@ -36,7 +36,15 @@
       max-width: 20%;
    } 
 }
-
+::-webkit-scrollbar-thumb:hover {
+    background-color:#bd9565;
+}
+::-webkit-scrollbar-thumb {
+    background-color:#bd9565;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    background-clip: padding-box;
+}
 /**/
 .flex-block{display:inline-flex;width:100%;flex-flow: row wrap;}
 .flex-unit-3{flex:3}
