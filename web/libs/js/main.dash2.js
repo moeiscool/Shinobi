@@ -2022,7 +2022,7 @@ $.timelapse.e.on('click','[timelapse]',function(){
                 switch(true){
                     case e.videoIsSame:
                         $.ccio.log('$.timelapse','videoIsSame')
-                        e.videoNow=$.timelapse.display.find('video.videoNow')[0]
+                        e.videoNow=$.timelapse.display.find('video.videoNow')
                         if(e.videoNow[0].paused===true){
                             e.videoNow[0].play()
                         }else{
@@ -2054,19 +2054,22 @@ $.timelapse.e.on('click','[timelapse]',function(){
             }
             $.timelapse.display.find('video').each(function(n,v){
                 v.addEventListener('loadeddata', function() {
+                    v.removeEventListener('loadeddata')
                     e.videoCurrentAfterPreview=$('.timelapse_video[href="'+$(v).attr('video')+'"] .frame')
                     if(e.videoCurrentAfterPreview.attr('set')!=='1'){
                         v.play()
-                        v.currentTime=100
-                        $.ccio.snapshotVideo(v,function(url,buffer){
-                            e.videoCurrentAfterPreview.attr('set','1').css('background-image','url('+url+')')
-                            if(v.paused!==true){
-                               v.pause()
-                            }
-                            if(!$(v).hasClass('videoAfter')){
-                                v.currentTime=0
-                            }
-                        })
+                        if(v.paused!==true){
+                           v.pause()
+                        }
+                        v.currentTime=10
+                        setTimeout(function(){
+                            $.ccio.snapshotVideo(v,function(url,buffer){
+                                e.videoCurrentAfterPreview.attr('set','1').css('background-image','url('+url+')')
+                                if(!$(v).hasClass('videoAfter')){
+                                    v.currentTime=0
+                                }
+                            })
+                        },3000)
                     }
                 }, false);
             })
