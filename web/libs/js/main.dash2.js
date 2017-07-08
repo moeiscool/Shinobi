@@ -1873,6 +1873,7 @@ $.timelapse.mL=$.timelapse.e.find('.motion_list'),
 $.timelapse.monitors=$.timelapse.e.find('.monitors_list');
 $.timelapse.playDirection='videoAfter'
 $.timelapse.playRate=15
+$.timelapse.placeholder=placeholder.getData(placeholder.plcimg({bgcolor:'#b57d00',text:'...'}))
 $.timelapse.dr.daterangepicker({
     startDate:moment().subtract(moment.duration("24:00:00")),
     endDate:moment().add(moment.duration("24:00:00")),
@@ -1913,9 +1914,9 @@ $.timelapse.drawTimeline=function(getData){
             $.timelapse.currentVideos[v.filename]=v;
             e.tmp+='<li class="glM'+v.mid+' list-group-item timelapse_video flex-block" timelapse="video" file="'+v.filename+'" href="'+v.href+'" mid="'+v.mid+'" ke="'+v.ke+'">'
             e.tmp+='<div class="flex-block">'
-            e.tmp+='<div class="flex-unit-3"><div class="frame" style="background-image:url('+placeholder.getData(placeholder.plcimg({bgcolor:'#b57d00',text:'...'}))+')"></div></div>'
+            e.tmp+='<div class="flex-unit-3"><div class="frame" style="background-image:url('+$.timelapse.placeholder+')"></div></div>'
             e.tmp+='<div class="flex-unit-3"><div><span title="'+v.time+'" class="livestamp"></span></div><div>'+v.filename+'</div></div>'
-            e.tmp+='<div class="flex-unit-3 text-right"><a class="btn btn-xs btn-danger" video="delete"><i class="fa fa-trash-o"></i></a></div>'
+            e.tmp+='<div class="flex-unit-3 text-right"><a class="btn btn-default" download="'+v.mid+'-'+v.filename+'" href="'+v.href+'?downloadName='+v.mid+'-'+v.filename+'">&nbsp;<i class="fa fa-download"></i>&nbsp;</a> <a class="btn btn-danger" video="delete">&nbsp;<i class="fa fa-trash-o"></i>&nbsp;</a></div>'
             e.tmp+='</div>'
             e.tmp+='<div class="flex-block">'
             e.tmp+='<div class="flex-unit-3"><div class="progress"><div class="progress-bar progress-bar-primary" role="progressbar" style="width:0%"></div></div></div>'
@@ -1955,6 +1956,9 @@ $.timelapse.e.on('click','[timelapse]',function(){
         clearInterval($.timelapse.videoInterval);
     }
     switch(e.e.attr('timelapse')){
+        case'download':
+            $.timelapse.line.find('.active [download]').click()
+        break;
         case'mute':
             e.videoCurrentNow[0].muted = !e.videoCurrentNow[0].muted
             e.e.find('i').toggleClass('fa-volume-off fa-volume-up')
@@ -2018,7 +2022,7 @@ $.timelapse.e.on('click','[timelapse]',function(){
                 switch(true){
                     case e.videoIsSame:
                         $.ccio.log('$.timelapse','videoIsSame')
-                        e.videoNow=$.timelapse.display.find('video.videoNow')[0]
+                        e.videoNow=$.timelapse.display.find('video.videoNow')
                         if(e.videoNow[0].paused===true){
                             e.videoNow[0].play()
                         }else{
@@ -2042,6 +2046,7 @@ $.timelapse.e.on('click','[timelapse]',function(){
                     break;
                 }
             }else{
+                $.ccio.log('$.timelapse','newSetOf3')
                 $.timelapse.display.empty()
                 e.drawVideoHTML()//videoNow
                 e.drawVideoHTML('videoBefore')
@@ -2049,16 +2054,16 @@ $.timelapse.e.on('click','[timelapse]',function(){
             }
             $.timelapse.display.find('video').each(function(n,v){
                 v.addEventListener('loadeddata', function() {
-                    v.play()
-                    if(v.playing){
-                       v.pause()
+                    e.videoCurrentAfterPreview=$('.timelapse_video[href="'+$(v).attr('video')+'"] .frame')
+                    if(e.videoCurrentAfterPreview.attr('set')!=='1'){
+                        $.ccio.snapshotVideo(v,function(url,buffer){
+                            e.videoCurrentAfterPreview.attr('set','1').css('background-image','url('+url+')')
+                            if($(v).hasClass('videoAfter')){
+                                v.currentTime=0
+                                v.pause()
+                            }
+                        })
                     }
-                    if($(v).hasClass('videoAfter')){
-                        v.currentTime=0
-                    }
-                    $.ccio.snapshotVideo(v,function(url,buffer){
-                        $('.timelapse_video[href="'+$(v).attr('video')+'"] .frame').css('background-image','url('+url+')')
-                    })
                 }, false);
             })
             e.videoNow=$.timelapse.display.find('video.videoNow')[0]
@@ -2913,6 +2918,7 @@ $('body')
         case'edit':
             e.p=$('#add_monitor'),e.mt=e.p.attr('mid',e.mid).attr('ke',e.ke).find('.modal-title')
             e.p.find('.am_notice').hide()
+            e.p.find('[detailcontainer="detector_cascades"]').prop('checked',false).parents('.mdl-js-switch').removeClass('is-checked')
             if(!$.ccio.mon[e.mid]){
                 e.p.find('.am_notice_new').show()
                 //new monitor
