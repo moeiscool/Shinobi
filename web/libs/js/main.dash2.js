@@ -2054,22 +2054,15 @@ $.timelapse.e.on('click','[timelapse]',function(){
             }
             $.timelapse.display.find('video').each(function(n,v){
                 v.addEventListener('loadeddata', function() {
-                    v.removeEventListener('loadeddata')
                     e.videoCurrentAfterPreview=$('.timelapse_video[href="'+$(v).attr('video')+'"] .frame')
                     if(e.videoCurrentAfterPreview.attr('set')!=='1'){
-                        v.play()
-                        if(v.paused!==true){
-                           v.pause()
-                        }
-                        v.currentTime=10
-                        setTimeout(function(){
-                            $.ccio.snapshotVideo(v,function(url,buffer){
-                                e.videoCurrentAfterPreview.attr('set','1').css('background-image','url('+url+')')
-                                if(!$(v).hasClass('videoAfter')){
-                                    v.currentTime=0
-                                }
-                            })
-                        },3000)
+                        $.ccio.snapshotVideo(v,function(url,buffer){
+                            e.videoCurrentAfterPreview.attr('set','1').css('background-image','url('+url+')')
+                            if($(v).hasClass('videoAfter')){
+                                v.currentTime=0
+                                v.pause()
+                            }
+                        })
                     }
                 }, false);
             })
