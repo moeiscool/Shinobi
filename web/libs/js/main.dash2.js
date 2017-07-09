@@ -2078,7 +2078,7 @@ $.timelapse.e.on('click','[timelapse]',function(){
                 $.timelapse.line.find('[file="'+e.video[$.timelapse.playDirection].filename+'"]').click()
             };
             e.videoNow.onended = $.timelapse.onended
-            e.videoNow.oneerror = $.timelapse.onended
+            e.videoNow.onerror = $.timelapse.onended
             $.timelapse.onPlayPause=function(x){
                 if(e.videoNow.paused===true){
                     e.playButtonIcon.removeClass('fa-pause').addClass('fa-play')
