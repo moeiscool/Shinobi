@@ -1961,6 +1961,7 @@ $.timelapse.e.on('click','[timelapse]',function(){
         break;
         case'mute':
             e.videoCurrentNow[0].muted = !e.videoCurrentNow[0].muted
+            $.timelapse.videoNowIsMuted = e.videoCurrentNow[0].muted
             e.e.find('i').toggleClass('fa-volume-off fa-volume-up')
             e.e.toggleClass('btn-danger')
         break;
@@ -2067,6 +2068,9 @@ $.timelapse.e.on('click','[timelapse]',function(){
                 }, false);
             })
             e.videoNow=$.timelapse.display.find('video.videoNow')[0]
+            if($.timelapse.videoNowIsMuted){
+                e.videoNow.muted=true
+            }
             e.videoNow.playbackRate = $.timelapse.playRate
             e.videoNow.play()
             e.playButtonIcon.removeClass('fa-pause').addClass('fa-play')
@@ -2074,8 +2078,7 @@ $.timelapse.e.on('click','[timelapse]',function(){
                 $.timelapse.line.find('[file="'+e.video[$.timelapse.playDirection].filename+'"]').click()
             };
             e.videoNow.onended = $.timelapse.onended
-            e.videoNow.removeEventListener('error', $.timelapse.onended, true);
-            e.videoNow.addEventListener('error',$.timelapse.onended, true);
+            e.videoNow.onerror = $.timelapse.onended
             $.timelapse.onPlayPause=function(x){
                 if(e.videoNow.paused===true){
                     e.playButtonIcon.removeClass('fa-pause').addClass('fa-play')
@@ -2324,7 +2327,7 @@ $.pwrvid.drawTimeline=function(getData){
     e.videoURL+='?limit=100&start='+$.ccio.init('th',e.dateRange.startDate)+'&end='+$.ccio.init('th',e.dateRange.endDate);
     e.eventURL+='/'+e.eventLimit+'/'+$.ccio.init('th',e.dateRange.startDate)+'/'+$.ccio.init('th',e.dateRange.endDate);
     e.live_header.text($.ccio.mon[mid].name)
-    e.live.attr('src','/'+$user.auth_token+'/embed/'+$user.ke+'/'+mid+'/fullscreen|jquery')
+    e.live.attr('src','/'+$user.auth_token+'/embed/'+$user.ke+'/'+mid+'/fullscreen|jquery|relative')
     
     e.next=function(videos,events){
         if($.pwrvid.t&&$.pwrvid.t.destroy){$.pwrvid.t.destroy()}

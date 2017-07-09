@@ -55,8 +55,9 @@
               <blockquote class="global_tip">
                   <p>This section tells Shinobi how to consume a stream. For optimal performance try tuning your camera's internal settings. Find the following options and set them as shown. To find your camera you can use the <b>built in ONVIF Scanner</b> of Shinobi. Some ONVIF cameras require the use of a management tool to modify their internal settings. If you can't find your cameras you can try <a href="https://s3.amazonaws.com/cloudcamio/odm-v2.2.250.msi">ONVIF Device Manager for Windows</a>.</p>
                   <ul>
+                      <li><b>Framerate (FPS) :</b> High : 10 - 15 FPS, Low : 2-5 FPS</li>
                       <li><b>I-frame interval :</b> 80</li>
-                      <li><b>Bit Rate Control :</b> CBR</li>
+                      <li><b>Bit Rate Type :</b> CBR (Controlled Bit Rate)</li>
                       <li><b>Bit Rate :</b> between 256kbps - 500kbps</li>
                   </ul>
                   <p>If you need help figuring out what input type your camera is you can take a look in the <a href="http://shinobi.video/docs/cameras" target="_blank">Camera URLs List</a> on the Shinobi website.</p>                  
@@ -177,7 +178,7 @@
                   <div class="row">
                       <div class="form-group col-md-12">
                         <label><div><span>HLS Video Encoder</span></div>
-                            <div><select class="form-control" detail="stream_vcodec">
+                            <div><select class="form-control" detail="stream_vcodec" selector="h_hls_v">
                                 <option value="no" selected>Auto</option>
                                 <option value="libx264" selected>libx264</option>
                                 <option value="libx265">libx265</option>
@@ -229,7 +230,7 @@
                       </label>
                   </div>
               </div>
-              <div class=" h_st_input h_st_mjpeg h_st_b64 h_st_hls">
+              <div class=" h_st_input h_st_mjpeg h_st_b64 h_st_hls h_hls_v_input h_hls_v_libx264 h_hls_v_libx265 h_hls_v_no">
                   <div class="row">
                       <div class="form-group col-md-12">
                         <label><div><span>Quality <small>1 is High, 23 is Low</small></span></div>
@@ -253,6 +254,18 @@
                         <div><input class="form-control" type="number" min="1" detail="stream_scale_y" placeholder="480"></div>
                         </label>
                       </div>
+                  </div>
+                  <div class="form-group">
+                    <label><div><span>Rotate</span></div>
+                            <div><select class="form-control" detail="rotate_stream">
+                                <option value="no" selected>No Rotation</option>
+                                <option value="2,transpose=2">180 Degrees</option>
+                                <option value="0">90 Counter Clockwise and Vertical Flip (default)</option>
+                                <option value="1">90 Clockwise</option>
+                                <option value="2">90 Clockwise and Vertical Flip</option>
+                                <option value="3">90 Clockwise and Vertical Flip</option>
+                            </select></div>
+                      </label>
                   </div>
                   <div class="form-group">
                     <label><div><span>Video Filter</span></div>
@@ -522,6 +535,18 @@
                 </label>
               </div>
               <div class="h_vc_input h_vc_libvpx h_vc_libvpx-vp9 h_vc_libx264 h_vc_libx265 h_vc_default h_vc_none">
+                  <div class="form-group">
+                    <label><div><span>Rotate</span></div>
+                            <div><select class="form-control" detail="rotate_record">
+                                <option value="no" selected>No Rotation</option>
+                                <option value="2,transpose=2">180 Degrees</option>
+                                <option value="0">90 Counter Clockwise and Vertical Flip (default)</option>
+                                <option value="1">90 Clockwise</option>
+                                <option value="2">90 Clockwise and Vertical Flip</option>
+                                <option value="3">90 Clockwise and Vertical Flip</option>
+                            </select></div>
+                      </label>
+                  </div>
                   <div class="form-group">
                     <label><div><span>Record Video Filter</span></div>
                     <div><input class="form-control" detail="vf"></div>

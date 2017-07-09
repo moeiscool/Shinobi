@@ -351,7 +351,7 @@ io.on('f',function(d){
                         try{
                             d.mon.cords=JSON.parse(d.mon.cords)
                         }catch(err){
-
+                            d.mon.cords=[]
                         }
                         s.group[d.ke][d.id].cords=Object.values(d.mon.cords);
                         d.mon.cords=d.mon.cords;
