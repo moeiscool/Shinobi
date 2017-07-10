@@ -72,6 +72,7 @@
                             <option value="hls">HLS (.m3u8)</option>
                             <option value="mp4">MPEG-4 (.mp4 / .ts)</option>
                             <option value="socket">Shinobi Streamer</option>
+                            <option value="dashcam">Dashcam (Streamer v2)</option>
                             <option value="local">Local</option>
                         </select></div>
                     </label>
@@ -826,6 +827,16 @@
                             </label>
                           </div>
                       </div>
+                      </div>
+                  </div>
+                  <div class="shinobi-detector-motion shinobi-detector_plug" style="display:none">
+                      <div class="form-group">
+                        <label><div><span>Precise Detection (Motion)</span></div>
+                            <div><select class="form-control" detail="detector_motion_precision">
+                                <option value="0" selected>No</option>
+                                <option value="1">Yes</option>
+                            </select></div>
+                        </label>
                       </div>
                   </div>
                   <div class="shinobi-detector-opencv shinobi-detector_plug" style="display:none">

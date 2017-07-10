@@ -214,7 +214,7 @@ s.kill=function(x,e,p){
         }else{
             if(!x||x===1){return};
             p=x.pid;
-            if(s.group[e.ke].mon_conf[e.id].type===('socket'||'jpeg'||'pipe')){
+            if(s.group[e.ke].mon_conf[e.id].type===('dashcam'||'socket'||'jpeg'||'pipe')){
                 x.stdin.pause();setTimeout(function(){x.kill('SIGTERM');delete(x);},500)
             }else{
                 try{
@@ -510,7 +510,7 @@ s.video=function(x,e){
                         e.filesize=k.stat.size;
                         e.filesizeMB=parseFloat((e.filesize/1000000).toFixed(2));
                         e.end_time=s.moment(k.stat.mtime,'YYYY-MM-DD HH:mm:ss');
-                        if(config.deleteCorruptFiles===true&&e.filesizeMB<0.25){
+                        if(config.deleteCorruptFiles===true&&e.filesizeMB<0.05){
                             s.video('delete',e);
                             s.log(e,{type:'File Corrupt',msg:{ffmpeg:s.group[e.ke].mon[e.mid].ffmpeg,filesize:e.filesizeMB}})
                         }else{
@@ -849,6 +849,10 @@ s.ffmpeg=function(e,x){
     }
     //build final string based on the input type.
     switch(e.type){
+        case'dashcam':
+            if(e.mode==='record'){x.record_string+=x.vcodec+x.framerate+x.record_video_filters+x.record_dimensions+x.segment;}
+            x.tmp=x.loglevel+' -i -'+x.record_string+x.pipe;
+        break;
         case'socket':case'jpeg':case'pipe':
             if(e.mode==='record'){x.record_string+=x.vcodec+x.framerate+x.record_video_filters+x.record_dimensions+x.segment;}
             x.tmp=x.loglevel+' -pattern_type glob -f image2pipe'+x.framerate+' -vcodec mjpeg'+x.cust_input+' -i -'+x.record_string+x.pipe;
@@ -1370,7 +1374,7 @@ s.camera=function(x,e,cn,tx){
                             s.log(e,{type:"Can't Connect",msg:'Retrying...'});e.error_fatal();return;
                         }
                     }
-                    if(e.type!=='socket'&&e.protocol!=='udp'&&e.type!=='local'){
+                    if(e.type!=='socket'&&e.type!=='dashcam'&&e.protocol!=='udp'&&e.type!=='local'){
                         connectionTester.test(e.hosty,e.port,2000,e.draw);
                     }else{
                         e.draw(null,{success:true})
@@ -2231,13 +2235,16 @@ var tx;
             })
         }else{
             switch(d.f){
+                case'monitor_chunk':
+                    if(!s.group[d.ke]||!s.group[d.ke].mon[d.mid]){return}
+                    if(s.group[d.ke].mon[d.mid].started!==1){s.tx({error:'Not Started'},cn.id);return false};
+                    if(s.group[d.ke].mon[d.mid].record.yes===1){
+                        s.group[d.ke].mon[d.mid].spawn.stdin.write(new Buffer(d.chunk, "binary"));
+                    }
+                break;
                 case'monitor_frame':
                     if(!s.group[d.ke]||!s.group[d.ke].mon[d.mid]){return}
                     if(s.group[d.ke].mon[d.mid].started!==1){s.tx({error:'Not Started'},cn.id);return false};
-                    if(s.group[d.ke]&&s.group[d.ke].mon[d.mid]&&s.group[d.ke].mon[d.mid].watch&&Object.keys(s.group[d.ke].mon[d.mid].watch).length>0){
-                            s.tx({f:'monitor_frame',ke:d.ke,id:d.mid,time:s.moment(),frame:d.frame.toString('base64')},'MON_STREAM_'+d.mid);
-
-                        }
                     if(s.group[d.ke].mon[d.mid].record.yes===1){
                         s.group[d.ke].mon[d.mid].spawn.stdin.write(d.frame);
                     }
@@ -2520,6 +2527,12 @@ app.post('/',function (req,res){
     }
     req.fn=function(r){
         switch(req.body.function){
+            case'cam':
+                sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"dashcam"],function(err,rr){
+                    req.resp.mons=rr;
+                    req.renderFunction("dashcam",{$user:req.resp});
+                })
+            break;
             case'streamer':
                 sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
                     req.resp.mons=rr;
