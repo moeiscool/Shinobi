@@ -102,8 +102,8 @@ CREATE TABLE IF NOT EXISTS `Videos` (
   `duration` float DEFAULT NULL,
   `size` float DEFAULT NULL,
   `frames` int(11) DEFAULT NULL,
-  `end` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `status` int(1) DEFAULT '0' COMMENT '0:Open,1:Complete,2:Error,3:Unknown'
+  `end` timestamp NULL DEFAULT NULL,
+  `status` int(1) DEFAULT '0' COMMENT '0:Building,1:Complete,2:Read,3:Archive'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Data exporting was unselected.
