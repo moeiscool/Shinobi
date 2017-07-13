@@ -200,10 +200,13 @@ io.on('f',function(d){
                         },d.mon.detector_lock_timeout)
                     }
                     s.group[d.ke][d.id].buffer=Buffer.concat(s.group[d.ke][d.id].buffer);
-                    try{
-                        d.mon.cords=JSON.parse(d.mon.cords)
-                    }catch(err){
+                    if((typeof d.mon.cords ==='string')&&d.mon.cords.trim()===''){
                         d.mon.cords=[]
+                    }else{
+                        try{
+                            d.mon.cords=JSON.parse(d.mon.cords)
+                        }catch(err){
+                        }
                     }
                     s.group[d.ke][d.id].cords=Object.values(d.mon.cords);
                     d.mon.cords=d.mon.cords;

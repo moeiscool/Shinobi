@@ -1,0 +1,5 @@
+version: "2"
+services:
+  db:
+    command: "/bin/true"
+    restart: "no"

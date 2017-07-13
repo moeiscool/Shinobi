@@ -1273,7 +1273,7 @@ $.zO.initLiveStream=function(e){
     }
     e.src='/'+$user.auth_token+'/'+e.choice+'/'+$user.ke+'/'+$.aM.selected
     if(e.choice=='embed'){
-        e.src+='/fullscreen|jquery'
+        e.src+='/fullscreen|jquery|relative'
     }else{
          e.src+='/s.jpg'
     }

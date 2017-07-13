@@ -348,10 +348,13 @@ io.on('f',function(d){
                         
                     }
                     if(d.mon.detector_use_motion==="1"||d.mon.detector_use_detect_object!=="1"){
-                        try{
-                            d.mon.cords=JSON.parse(d.mon.cords)
-                        }catch(err){
+                        if((typeof d.mon.cords ==='string')&&d.mon.cords.trim()===''){
                             d.mon.cords=[]
+                        }else{
+                            try{
+                                d.mon.cords=JSON.parse(d.mon.cords)
+                            }catch(err){
+                            }
                         }
                         s.group[d.ke][d.id].cords=Object.values(d.mon.cords);
                         d.mon.cords=d.mon.cords;
