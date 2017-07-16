@@ -1971,7 +1971,9 @@ $.timelapse.e.on('click','[timelapse]',function(){
             $.timelapse.onPlayPause(1)
         break;
         case'stepFrontFront':
-            $.timelapse.playRate += 5
+            e.stepFrontFront=parseInt(e.e.attr('stepFrontFront'))
+            if(!e.stepFrontFront||isNaN(e.stepFrontFront)){e.stepFrontFront = 5}
+            $.timelapse.playRate += e.stepFrontFront
             e.videoCurrentNow[0].playbackRate = $.timelapse.playRate;
             e.videoCurrentNow[0].play()
         break;
