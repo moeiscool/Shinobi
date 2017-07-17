@@ -216,7 +216,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 return $.ccio.init('tf',d.time)+'.'+d.ext
             break;
             case'filters':
-                k.tmp='<option value="" selected>Add New</option>';
+                k.tmp='<option value="" selected><%-lang['Add New']%></option>';
                 $.each($user.filters,function(n,v){
                     k.tmp+='<option value="'+v.id+'">'+v.name+'</option>'
                 });
@@ -286,7 +286,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                         case'hls':
                             if(d.p.find('video')[0].paused){
                                 if(d.d.signal_check_log==1){
-                                    d.log={type:'Stream Check',msg:'Client side ctream check failed, attempting reconnect.'}
+                                    d.log={type:'Stream Check',msg:'<%-lang.clientStreamFailedattemptingReconnect%>'}
                                     $.ccio.tm(4,d,'#logs,.monitor_item[mid="'+d.id+'"][ke="'+d.ke+'"] .logs')
                                 }
                                 $.ccio.cx({f:'monitor',ff:'watch_on',id:d.id});
@@ -441,41 +441,42 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 d.hr=parseInt(d.mom.format('HH')),
                 d.per=parseInt(d.hr/24*100);
                 d.href='href="'+d.href+'?downloadName='+d.mid+'-'+d.filename+'"';
-                tmp+='<li class="glM'+d.mid+'" mid="'+d.mid+'" ke="'+d.ke+'" status="'+d.status+'" file="'+d.filename+'"><div title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'" '+d.href+' video="launch" class="progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div><div><span title="'+d.end+'" class="livestamp"></span></div><div><div class="small"><b>Start</b> : '+moment(d.time).format('h:mm:ss , MMMM Do YYYY')+'</div><div class="small"><b>End</b> : '+moment(d.end).format('h:mm:ss , MMMM Do YYYY')+'</div></div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls btn-group"><a class="btn btn-sm btn-primary" video="launch" '+d.href+'><i class="fa fa-play-circle"></i></a> <a download="'+d.dlname+'" '+d.href+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a>'
+                d.circle='<div title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'" '+d.href+' video="launch" class="progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div>'
+                tmp+='<li class="glM'+d.mid+'" mid="'+d.mid+'" ke="'+d.ke+'" status="'+d.status+'" file="'+d.filename+'">'+d.circle+'<div><span title="'+d.end+'" class="livestamp"></span></div><div><div class="small"><b><%-lang.Start%></b> : '+moment(d.time).format('h:mm:ss , MMMM Do YYYY')+'</div><div class="small"><b><%-lang.End%></b> : '+moment(d.end).format('h:mm:ss , MMMM Do YYYY')+'</div></div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls btn-group"><a class="btn btn-sm btn-primary" video="launch" '+d.href+'><i class="fa fa-play-circle"></i></a> <a download="'+d.dlname+'" '+d.href+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a>'
                 <% if(config.DropboxAppKey){ %> tmp+='<a video="download" host="dropbox" download="'+d.dlname+'" '+d.href+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a>' <% } %>
-                tmp+='<a title="Delete Video" video="delete" class="btn btn-sm btn-danger permission_video_delete"><i class="fa fa-trash"></i></a></div></div></li>';
+                tmp+='<a title="<%-lang['Delete Video']%>" video="delete" class="btn btn-sm btn-danger permission_video_delete"><i class="fa fa-trash"></i></a></div></div></li>';
             break;
             case 1://monitor icon
                 d.src=placeholder.getData(placeholder.plcimg({bgcolor:'#b57d00',text:'...'}));
-                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" title="'+d.mid+' : '+d.name+'" class="monitor_block glM'+d.mid+' col-md-4"><img monitor="watch" class="snapshot" src="'+d.src+'"><div class="box"><div class="title monitor_name truncate">'+d.name+'</div><div class="list-data"><div class="monitor_mid">'+d.mid+'</div><div><b>Save as :</b> <span class="monitor_ext">'+d.ext+'</span></div><div><b>Mode :</b> <span class="monitor_mode">'+d.mode+'</span></div></div><div class="icons btn-group"><a class="btn btn-xs btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a monitor="calendar" class="btn btn-xs btn-default"><i class="fa fa-calendar"></i></a> <a monitor="videos_table" class="btn btn-xs btn-default"><i class="fa fa-film"></i></a></div></div></div>';
+                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" title="'+d.mid+' : '+d.name+'" class="monitor_block glM'+d.mid+' col-md-4"><img monitor="watch" class="snapshot" src="'+d.src+'"><div class="box"><div class="title monitor_name truncate">'+d.name+'</div><div class="list-data"><div class="monitor_mid">'+d.mid+'</div><div><b><%-lang['Save as']%> :</b> <span class="monitor_ext">'+d.ext+'</span></div><div><b>Mode :</b> <span class="monitor_mode">'+d.mode+'</span></div></div><div class="icons btn-group"><a class="btn btn-xs btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a monitor="calendar" class="btn btn-xs btn-default"><i class="fa fa-calendar"></i></a> <a monitor="videos_table" class="btn btn-xs btn-default"><i class="fa fa-film"></i></a></div></div></div>';
                 delete(d.src);
             break;
             case 2://monitor stream
                 try{k.d=JSON.parse(d.details);}catch(er){k.d=d.details;}
                 switch(d.mode){
                     case'idle':
-                        k.mode='Idle'
+                        k.mode='<%-lang['Idle']%>'
                     break;
                     case'stop':
-                        k.mode='Disabled'
+                        k.mode='<%-lang['Disabled']%>'
                     break;
                     case'record':
-                        k.mode='Record'
+                        k.mode='<%-lang['Record']%>'
                     break;
                     case'start':
-                        k.mode='Watch Only'
+                        k.mode='<%-lang['Watch Only']%>'
                     break;
                 }
                 tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" mode="'+k.mode+'" class="monitor_item glM'+d.mid+' mdl-grid col-md-6">';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col">';
                 tmp+='<div class="stream-block no-padding mdl-card__media mdl-color-text--grey-50">';
                 tmp+='<div class="stream-objects"></div>';
-                tmp+='<div class="stream-hud"><div class="lamp" title="'+k.mode+'"><i class="fa fa-eercast"></i></div><div class="controls"><span title="Currently vieweing" class="label label-default"><span class="viewers"></span></span> <a class="btn-xs btn-danger btn" monitor="mode" mode="record"><i class="fa fa-circle"></i> Start Recording</a> <a class="btn-xs btn-primary btn" monitor="mode" mode="start"><i class="fa fa-eye"></i> Set to Watch Only</a></div></div>';
+                tmp+='<div class="stream-hud"><div class="lamp" title="'+k.mode+'"><i class="fa fa-eercast"></i></div><div class="controls"><span title="<%-lang['Currently viewing']%>" class="label label-default"><span class="viewers"></span></span> <a class="btn-xs btn-danger btn" monitor="mode" mode="record"><i class="fa fa-circle"></i> <%-lang['Start Recording']%></a> <a class="btn-xs btn-primary btn" monitor="mode" mode="start"><i class="fa fa-eye"></i> <%-lang['Set to Watch Only']%></a></div></div>';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card__supporting-text text-center">';
                 tmp+='<div class="indifference"><div class="progress"><div class="progress-bar progress-bar-danger" role="progressbar"><span>70%</span></div></div></div>';
                 tmp+='<div class="monitor_name">'+d.name+'</div>';
-                tmp+='<div class="btn-group btn-group-lg"><a title="Snapshot" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="Show Logs" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="Control" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="Status Indicator, Click to Recconnect" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-plug"></i></a> <a title="Calendar" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="Power View" class="btn btn-default" monitor="powerview"><i class="fa fa-map-marker"></i></a> <a title="Timelapse" class="btn btn-default" monitor="timelapse"><i class="fa fa-angle-double-right"></i></a> <a title="Videos List" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a title="Monitor Settings" class="btn btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="Enlarge" monitor="bigify" class="hidden btn btn-default"><i class="fa fa-expand"></i></a> <a title="Fullscreen" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="Close Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
+                tmp+='<div class="btn-group btn-group-lg"><a title="<%-lang.Snapshot%>" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="<%-lang['Show Logs']%>" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="<%-lang.Control%>" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="<%-lang['Status Indicator']%>" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-plug"></i></a> <a title="<%-lang.Calendar%>" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="<%-lang['Power Viewer']%>" class="btn btn-default" monitor="powerview"><i class="fa fa-map-marker"></i></a> <a title="<%-lang['Time-lapse']%>" class="btn btn-default" monitor="timelapse"><i class="fa fa-angle-double-right"></i></a> <a title="<%-lang['Videos List']%>" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a title="<%-lang['Monitor Settings']%>" class="btn btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="<%-lang.Enlarge%>" monitor="bigify" class="hidden btn btn-default"><i class="fa fa-expand"></i></a> <a title="<%-lang.Fullscreen%>" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="<%-lang.Close%> Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
                 tmp+='</div>';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col mdl-cell--4-col-desktop">';
@@ -576,35 +577,35 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 tmp+='   <div class="form-group col-md-4">';
                 tmp+='       <label>';
                 tmp+='           <select class="form-control" where="p1">';
-                tmp+='               <option value="mid" selected>Monitor ID</option>';
-                tmp+='               <option value="ext">File Type</option>';
-                tmp+='               <option value="time">Start Time</option>';
-                tmp+='               <option value="end">End Time</option>';
-                tmp+='               <option value="size">Filesize</option>';
-                tmp+='               <option value="status">Video Status</option>';
+                tmp+='               <option value="mid" selected><%-lang['Monitor ID']%></option>';
+                tmp+='               <option value="ext"><%-lang['File Type']%></option>';
+                tmp+='               <option value="time"><%-lang['Start Time']%></option>';
+                tmp+='               <option value="end"><%-lang['End Time']%></option>';
+                tmp+='               <option value="size"><%-lang['Filesize']%></option>';
+                tmp+='               <option value="status"><%-lang['Video Status']%></option>';
                 tmp+='           </select>';
                 tmp+='       </label>';
                 tmp+='   </div>';
                 tmp+='   <div class="form-group col-md-4">';
                 tmp+='       <label>';
                 tmp+='           <select class="form-control" where="p2">';
-                tmp+='               <option value="=" selected>Equal to</option>';
-                tmp+='               <option value="!=">Not Equal to</option>';
-                tmp+='               <option value=">=">Greater Than or Equal to</option>';
-                tmp+='               <option value=">">Greater Than</option>';
-                tmp+='               <option value="<">Less Than</option>';
-                tmp+='               <option value="<=">Less Than or Equal to</option>';
-                tmp+='               <option value="LIKE">Like</option>';
-                tmp+='               <option value="=~">Matches</option>';
-                tmp+='               <option value="!~">Not Matches</option>';
-                tmp+='               <option value="=[]">In</option>';
-                tmp+='               <option value="![]">Not In</option>';
+                tmp+='               <option value="=" selected><%-lang['Equal to']%></option>';
+                tmp+='               <option value="!="><%-lang['Not Equal to']%></option>';
+                tmp+='               <option value=">="><%-lang['Greater Than or Equal to']%></option>';
+                tmp+='               <option value=">"><%-lang['Greater Than']%></option>';
+                tmp+='               <option value="<"><%-lang['Less Than']%></option>';
+                tmp+='               <option value="<="><%-lang['Less Than or Equal to']%></option>';
+                tmp+='               <option value="LIKE"><%-lang['Like']%></option>';
+                tmp+='               <option value="=~"><%-lang['Matches']%></option>';
+                tmp+='               <option value="!~"><%-lang['Not Matches']%></option>';
+                tmp+='               <option value="=[]"><%-lang['In']%></option>';
+                tmp+='               <option value="![]"><%-lang['Not In']%></option>';
                 tmp+='           </select>';
                 tmp+='       </label>';
                 tmp+='   </div>';
                 tmp+='   <div class="form-group col-md-4">';
                 tmp+='       <label>';
-                tmp+='           <input class="form-control" placeholder="Value" title="Value" where="p3">';
+                tmp+='           <input class="form-control" placeholder="Value" title="<%-lang.Value%>" where="p3">';
                 tmp+='       </label>';
                 tmp+='   </div>';
                 tmp+='</div>';
@@ -718,20 +719,20 @@ $.ccio.ws.on('f',function (d){
     }
     switch(d.f){
         case'api_key_deleted':
-            $.ccio.init('note',{title:'API Key Deleted',text:'Key has been deleted. It will no longer work.',type:'notice'});
+            $.ccio.init('note',{title:'<%-lang['API Key Deleted']%>',text:'<%-lang.APIKeyDeletedText%>',type:'notice'});
             $('[api_key="'+d.form.code+'"]').remove();
         break;
         case'api_key_added':
-            $.ccio.init('note',{title:'API Key Added',text:'You may use this key now.',type:'success'});
+            $.ccio.init('note',{title:'<%-lang['API Key Added']%>',text:'<%-lang.FiltersUpdatedText%>',type:'success'});
             $.ccio.tm(3,d.form,'#api_list')
         break;
         case'filters_change':
-            $.ccio.init('note',{title:'Filters Updated',text:'Your changes have been saved and applied.',type:'success'});
+            $.ccio.init('note',{title:'<%-lang['Filters Updated']%>',text:'<%-lang.FiltersUpdatedText%>',type:'success'});
             $user.filters=d.filters;
             $.ccio.init('filters');
         break;
         case'user_settings_change':
-            $.ccio.init('note',{title:'Settings Changed',text:'Your settings have been saved and applied.',type:'success'});
+            $.ccio.init('note',{title:'<%-lang['Settings Changed']%>',text:'<%-lang.SettingsChangedText%>',type:'success'});
             $.ccio.init('id',d.form);
             $('#custom_css').append(d.form.details.css)
         break;
@@ -760,11 +761,6 @@ $.ccio.ws.on('f',function (d){
         case'ffprobe_data':
             $.pB.results=JSON.parse(d.data)
             $.pB.o.append($.ccio.init('jsontoblock',$.pB.results))
-        break;
-        case'detector_record_timeout_start':
-            d.note={type:'Detector',msg:'Record Timeout Start',class:'detector_record_timeout_start'}
-            d.e=$('#notifications .note-item.detector_record_timeout_start[ke="'+d.ke+'"][mid="'+d.id+'"]')
-            $.ccio.tm(6,d,'#notifications')
         break;
         case'detector_trigger':
             d.e=$('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]')
@@ -957,7 +953,7 @@ $.ccio.ws.on('f',function (d){
             d.pnote={title:'Monitor Not Saved',text:'<b>'+d.mon.name+'</b> <small>'+d.mon.mid+'</small> has not been saved.',type:'error'}
             switch(d.ff){
                 case'max_reached':
-                    d.pnote.text+=' Your account has reached the maximum number of cameras that can be created. Speak to an administrator if you would like this changed.'
+                    d.pnote.text+=' <%-lang.monitorEditFailedMaxReached%>'
                 break;
             }
             $.ccio.init('note',d.pnote);
@@ -1588,8 +1584,8 @@ $.aM.e.find('.probe_config').click(function(){
 $.aM.e.find('.import_config').click(function(e){
   var e={};e.e=$(this);e.mid=e.e.parents('[mid]').attr('mid');
     $.confirm.e.modal('show');
-    $.confirm.title.text('Import Monitor Configuration')
-    e.html='Doing this will overrwrite any changes currently not saved. Imported changes will only be applied when you press <b>Save</b>.<div style="margin-top:15px"><div class="form-group"><textarea placeholder="Paste JSON here." class="form-control"></textarea></div><label class="upload_file btn btn-primary btn-block"> Upload File <input class="upload" type=file name="files[]"></label></div>';
+    $.confirm.title.text('<%-lang['Import Monitor Configuration']%>')
+    e.html='<%-lang.ImportMonitorConfigurationText%><div style="margin-top:15px"><div class="form-group"><textarea placeholder="<%-lang['Paste JSON here.']%>" class="form-control"></textarea></div><label class="upload_file btn btn-primary btn-block"> Upload File <input class="upload" type=file name="files[]"></label></div>';
     $.confirm.body.html(e.html)
     $.confirm.e.find('.upload').change(function(e){
         var files = e.target.files; // FileList object
@@ -1607,7 +1603,7 @@ $.aM.e.find('.import_config').click(function(e){
             $.aM.e.modal('show')
         }catch(err){
             $.ccio.log(err)
-            $.ccio.init('note',{title:'Invalid JSON',text:'Please ensure this is a valid JSON string for Shinobi monitor configuration.',type:'error'})
+            $.ccio.init('note',{title:'<%-lang['Invalid JSON']%>',text:'<%-lang.InvalidJSONText%>',type:'error'})
         }
     });
 });
@@ -1704,7 +1700,7 @@ $('#saved_filters').change(function(e){
             $.fI.f.find('[name="'+n+'"]').val(v);
         });
     }else{
-        e.name='Add New';
+        e.name='<%-lang['Add New']%>';
         $.fI.f.find('[name="id"]').val($.ccio.gid(5));
         $.ccio.tm('filters-where');
     }
@@ -1713,10 +1709,10 @@ $('#saved_filters').change(function(e){
 $.fI.f.find('.delete').click(function(e){
     e.s=$.fI.f.serializeObject();
     $.confirm.e.modal('show');
-    $.confirm.title.text('Delete Filter');
-    e.html='Do you want to delete this filter? You cannot recover it.';
+    $.confirm.title.text('<%-lang['Delete Filter']%>');
+    e.html='<%-lang.confirmDeleteFilter%>';
     $.confirm.body.html(e.html);
-    $.confirm.click({title:'Delete Filter',class:'btn-danger'},function(){
+    $.confirm.click({title:'<%-lang['Delete Filter']%>',class:'btn-danger'},function(){
         $.ccio.cx({f:'settings',ff:'filters',fff:'delete',form:e.s})
     });
 })
@@ -1752,7 +1748,7 @@ $.sM.reDrawMonGroups=function(){
 $.sM.f.submit(function(e){
     e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
     e.er=[];
-    if(e.s.pass!==''&&e.password_again===e.s.pass){e.er.push('Passwords don\'t match')};
+    if(e.s.pass!==''&&e.password_again===e.s.pass){e.er.push("<%-lang["Passwords don't match"]%>")};
     if(e.er.length>0){$.sM.e.find('.msg').html(e.er.join('<br>'));return;}
     $.each(e.s,function(n,v){e.s[n]=v.trim()})
     $.ccio.cx({f:'settings',ff:'edit',form:e.s})
@@ -1832,8 +1828,8 @@ $.vidview.e.find('form').submit(function(e){
 $.vidview.e.find('.delete_selected').click(function(e){
     e.s=$.vidview.f.serializeObject();
     $.confirm.e.modal('show');
-    $.confirm.title.text('Delete Selected Videos')
-    e.html='Do you want to delete these videos? You cannot recover them.<div style="margin-bottom:15px"></div>'
+    $.confirm.title.text('<%-lang['Delete Selected Videos']%>')
+    e.html='<%-lang.DeleteSelectedVideosMsg%><div style="margin-bottom:15px"></div>'
     $.each(e.s,function(n,v){
         e.html+=n+'<br>';
     })
@@ -2273,7 +2269,7 @@ $.pwrvid.e.on('click','[preview]',function(e){
                 var colorNames = Object.keys(window.chartColors);
 
             }else{
-                $.pwrvid.mL.html('<div class="super-center text-center" style="width:auto">No Events found for this video</div>')
+                $.pwrvid.mL.html('<div class="super-center text-center" style="width:auto"><%-lang['No Events found for this video']%></div>')
             }
             $.pwrvid.video={filename:e.filename,href:e.href,mid:e.mon.mid,ke:e.mon.ke}
             $.pwrvid.vpOnPlayPause=function(x,e){
@@ -2376,14 +2372,14 @@ $.pwrvid.drawTimeline=function(getData){
                     labels: labels,
                     datasets: [{
                         type: 'line',
-                        label: 'Video and Time Span (Minutes)',
+                        label: '<%-lang['Video and Time Span (Minutes)']%>',
                         backgroundColor: color(window.chartColors.blue).alpha(0.2).rgbString(),
                         borderColor: window.chartColors.blue,
                         data: Dataset1,
                     }, {
                         type: 'bar',
                         showTooltip: false,
-                        label: 'Counts of Motion',
+                        label: '<%-lang['Counts of Motion']%>',
                         backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
                         borderColor: window.chartColors.red,
                         data:Dataset2,
@@ -2393,7 +2389,7 @@ $.pwrvid.drawTimeline=function(getData){
                      maintainAspectRatio: false,
                     title: {
                         fontColor: "white",
-                        text:"Video Length (minutes) and Motion Count per video"
+                        text:"<%-lang['Video Length (minutes) and Motion Count per video']%>"
                     },
                     tooltips: {
                         callbacks: {
@@ -2496,8 +2492,8 @@ $('body')
         break;
         case'fix':
             $.confirm.e.modal('show');
-            $.confirm.title.text('Fix Video : '+e.file)
-            e.html='Do you want to fix this video? You cannot undo this action.'
+            $.confirm.title.text('<%-lang['Fix Video']%> : '+e.file)
+            e.html='<%-lang.FixVideoMsg%>'
             e.html+='<video class="video_video" autoplay loop controls><source src="'+e.p.find('[download]').attr('href')+'" type="video/'+e.mon.ext+'"></video>';
             $.confirm.body.html(e.html)
             $.confirm.click({title:'Fix Video',class:'btn-warning'},function(){
@@ -2511,8 +2507,8 @@ $('body')
                 e.href=e.p.attr('href')
             }
             $.confirm.e.modal('show');
-            $.confirm.title.text('Delete Video : '+e.file)
-            e.html='Do you want to delete this video? You cannot recover it.'
+            $.confirm.title.text('<%-lang['Delete Video']%> : '+e.file)
+            e.html='<%-lang.DeleteVideoMsg%>'
             e.html+='<video class="video_video" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"></video>';
             $.confirm.body.html(e.html)
             $.confirm.click({title:'Delete Video',class:'btn-danger'},function(){
@@ -2526,7 +2522,7 @@ $('body')
                     <% if(config.DropboxAppKey){ %>
                 case'dropbox':
                     Dropbox.save(e.e.attr('href'),e.e.attr('download'),{progress: function (progress) {$.ccio.log(progress)},success: function () {
-                        $.ccio.log("Success! Files saved to your Dropbox.");
+                        $.ccio.log("<%-lang.dropBoxSuccess%>");
                     }});
                 break;
                     <% } %>
@@ -2688,7 +2684,7 @@ $('body')
         break;
         case'region':
             if(!e.mon){
-                $.ccio.init('note',{title:'Unable to Launch',text:'Please save new monitor first. Then attempt to launch the region editor.',type:'error'});
+                $.ccio.init('note',{title:'<%-lang['Unable to Launch']%>',text:'<%-lang.UnabletoLaunchText%>',type:'error'});
                 return;
             }
             e.d=JSON.parse(e.mon.details);
@@ -2798,7 +2794,7 @@ $('body')
                             });
                             setTimeout(function(){e.b.fullCalendar('changeView','month');e.b.find('.fc-scroller').css('height','auto')},500)
                         }else{
-                            e.b.html('<div class="text-center">No Videos found in this date range. Try setting the start date further back.</div>')
+                            e.b.html('<div class="text-center"><%-lang.NoVideosFoundForDateRange%></div>')
                         }
                     break;
                     case'videos_table':
@@ -2807,16 +2803,16 @@ $('body')
                         e.tmp+='<thead>';
                         e.tmp+='<tr>';
                         e.tmp+='<th><div class="checkbox"><input id="videos_select_all" type="checkbox"><label for="videos_select_all"></label></div></th>';
-                        e.tmp+='<th data-field="Closed" data-sortable="true">Closed</th>';
-                        e.tmp+='<th data-field="Ended" data-sortable="true">Ended</th>';
-                        e.tmp+='<th data-field="Started" data-sortable="true">Started</th>';
-                        e.tmp+='<th data-field="Monitor" data-sortable="true">Monitor</th>';
-                        e.tmp+='<th data-field="Filename" data-sortable="true">Filename</th>';
-                        e.tmp+='<th data-field="Size" data-sortable="true">Size (mb)</th>';
-                        e.tmp+='<th data-field="Watch" data-sortable="true">Watch</th>';
-                        e.tmp+='<th data-field="Download" data-sortable="true">Download</th>';
-                        e.tmp+='<th class="permission_video_delete" data-field="Delete" data-sortable="true">Delete</th>';
-                        e.tmp+='<th class="permission_video_delete" data-field="Fix" data-sortable="true">Fix</th>';
+                        e.tmp+='<th data-field="Closed" data-sortable="true"><%-lang.Closed%></th>';
+                        e.tmp+='<th data-field="Ended" data-sortable="true"><%-lang.Ended%></th>';
+                        e.tmp+='<th data-field="Started" data-sortable="true"><%-lang.Started%></th>';
+                        e.tmp+='<th data-field="Monitor" data-sortable="true"><%-lang.Monitor%></th>';
+                        e.tmp+='<th data-field="Filename" data-sortable="true"><%-lang.Filename%></th>';
+                        e.tmp+='<th data-field="Size" data-sortable="true"><%-lang['Size (mb)']%></th>';
+                        e.tmp+='<th data-field="Watch" data-sortable="true"><%-lang.Watch%></th>';
+                        e.tmp+='<th data-field="Download" data-sortable="true"><%-lang.Download%></th>';
+                        e.tmp+='<th class="permission_video_delete" data-field="Delete" data-sortable="true"><%-lang.Delete%></th>';
+                        e.tmp+='<th class="permission_video_delete" data-field="Fix" data-sortable="true"><%-lang.Fix%></th>';
                         e.tmp+='</tr>';
                         e.tmp+='</thead>';
                         e.tmp+='<tbody>';
@@ -2890,7 +2886,7 @@ $('body')
         break;
         case'control_toggle':
             e.e=e.p.find('.PTZ_controls');
-            if(e.e.length>0){e.e.remove()}else{e.p.append('<div class="PTZ_controls"><div class="pad"><div class="control top" monitor="control" control="up"></div><div class="control left" monitor="control" control="left"></div><div class="control right" monitor="control" control="right"></div><div class="control bottom" monitor="control" control="down"></div><div class="control middle" monitor="control" control="center"></div></div><div class="btn-group btn-group-sm btn-group-justified"><a title="Zoom In" class="zoom_in btn btn-default" monitor="control" control="zoom_in"><i class="fa fa-search-plus"></i></a><a title="Zoom Out" class="zoom_out btn btn-default" monitor="control" control="zoom_out"><i class="fa fa-search-minus"></i></a></div><div class="btn-group btn-group-sm btn-group-justified"><a title="Enable Nightvision" class="nv_enable btn btn-default" monitor="control" control="enable_nv"><i class="fa fa-moon-o"></i></a><a title="Disable Nightvision" class="nv_disable btn btn-default" monitor="control" control="disable_nv"><i class="fa fa-sun-o"></i></a></div></div>')}
+            if(e.e.length>0){e.e.remove()}else{e.p.append('<div class="PTZ_controls"><div class="pad"><div class="control top" monitor="control" control="up"></div><div class="control left" monitor="control" control="left"></div><div class="control right" monitor="control" control="right"></div><div class="control bottom" monitor="control" control="down"></div><div class="control middle" monitor="control" control="center"></div></div><div class="btn-group btn-group-sm btn-group-justified"><a title="<%-lang['Zoom In']%>" class="zoom_in btn btn-default" monitor="control" control="zoom_in"><i class="fa fa-search-plus"></i></a><a title="<%-lang['Zoom Out']%>" class="zoom_out btn btn-default" monitor="control" control="zoom_out"><i class="fa fa-search-minus"></i></a></div><div class="btn-group btn-group-sm btn-group-justified"><a title="<%-lang['Enable Nightvision']%>" class="nv_enable btn btn-default" monitor="control" control="enable_nv"><i class="fa fa-moon-o"></i></a><a title="<%-lang['Disable Nightvision']%>" class="nv_disable btn btn-default" monitor="control" control="disable_nv"><i class="fa fa-sun-o"></i></a></div></div>')}
         break;
         case'watch':
             if($("#monitor_live_"+e.mid).length===0||$.ccio.mon[e.mid].watch!==1){
@@ -2904,8 +2900,8 @@ $('body')
         break;
         case'delete':
             e.m=$('#confirm_window').modal('show');e.f=e.e.attr('file');
-            $.confirm.title.text('Delete Monitor : '+e.mon.name)
-            e.html='Do you want to delete this monitor? You cannot recover it. The files for this ID will remain in the filesystem. If you choose to recreate a monitor with the same ID the videos and events will become visible in the dashboard.'
+            $.confirm.title.text('<%-lang['Delete Monitor']%> : '+e.mon.name)
+            e.html='<%-lang.DeleteMonitorText%>'
             e.html+='<table class="info-table"><tr>';
             $.each(e.mon,function(n,v,g){
                 if(n==='host'&&v.indexOf('@')>-1){g=v.split('@')[1]}else{g=v};

@@ -305,7 +305,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 .dark .table>tbody>tr.active>td{background:inherit;border:0}
 .dark code{color: #c49a68;background-color: #36333d;}
 .dark a:not(.btn){color: #c49a68;}
-.os_bars{width:500px;display:inline-block;padding:5px 0 0 10px}
+.os_bars{width:600px;display:inline-block;padding:5px 0 0 10px}
 @media screen and (max-width: 600px){
     .os_bars{width:200px;}
     .os_bars label{padding:2.5px 0;margin:0;font-size:8pt}

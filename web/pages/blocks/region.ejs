@@ -6,7 +6,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-        <h4 class="modal-title" id="region_editorLabel"><i class="fa fa-grav"></i> &nbsp; Region Editor</h4>
+        <h4 class="modal-title" id="region_editorLabel"><i class="fa fa-grav"></i> &nbsp; <%-lang['Region Editor']%></h4>
       </div>
       <div class="modal-body">
       <div class="row">
@@ -20,32 +20,32 @@
                   </h4>
                 <div class="form-group">
                     <label>
-                        <div><span>Regions</span></div>
+                        <div><span><%-lang.Regions%></span></div>
                         <div><select id="regions_list" class="form-control"></select></div>
                     </label>
                 </div>
                 <div class="row">
                     <div class="form-group col-md-12">
                         <label>
-                            <div><span>Region Name</span></div>
+                            <div><span><%-lang['Region Name']%></span></div>
                             <div><input class="form-control" name="name"></div>
                         </label>
                     </div>
                     <div class="form-group col-md-12">
                         <label>
-                            <div><span>Indifference</span></div>
+                            <div><span><%-lang.Indifference%></span></div>
                             <div><input class="form-control" name="indifference"></div>
                         </label>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label><div><span>Points <small>When adding points click on the edge of the polygon.</small></span></div></label>
+                    <label><div><span><%-lang.Points%></span></div></label>
                         <table class="table table-striped" id="regions_points"><tbody></tbody></table>
                 </div>
               </div>
           </div>
           <div class="col-md-6">
-              <p>Points are only saved when you press <b>Save</b> on the <b>Monitor Settings</b> window.</p>
+              <p><%-lang.RegionNote%></p>
               <div class="canvas_holder">
                   <div id="region_editor_live"><iframe></iframe><img></div>
                   <textarea id="regions_canvas" rows=3 class="hidden canvas-area input-xxlarge" disabled></textarea>
@@ -55,12 +55,12 @@
       </div>
       <div class="modal-footer">
           <div class="pull-left">
-            <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="region_still_image" title="Switch on for Still Image">
+            <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="region_still_image" title="<%-lang['Switch on for Still Image']%>">
               <input type="checkbox" id="region_still_image" value="1" name="remember" class="mdl-switch__input">
-                <span class="monospace mdl-switch__label">Live Stream Toggle</span>
+                <span class="monospace mdl-switch__label"><%-lang['Live Stream Toggle']%></span>
             </label>
           </div>
-        <button type="button" class="btn btn-default pull-right" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+        <button type="button" class="btn btn-default pull-right" data-dismiss="modal"><i class="fa fa-times"></i> <%-lang.Close%></button>
       </div>
     </form>
   </div>

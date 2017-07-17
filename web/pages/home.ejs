@@ -56,14 +56,14 @@
                 <div class="display-table">
                     <div class="cpu_load display-table-cell">
                         <span class="pull-right percent"></span>
-                        <label><span class="os_cpuCount"></span> CPU<span class="os_cpuCount_trailer"></span> on <span class="os_platform" style="text-transform:capitalize"></span></label>
+                        <label><span class="os_cpuCount"></span> <%-lang.CPU%><span class="os_cpuCount_trailer"></span> <%-lang.on%> <span class="os_platform" style="text-transform:capitalize"></span></label>
                       <div class="progress">
                         <div class="progress-bar progress-bar-warning" role="progressbar" style="width:0%"></div>
                       </div>
                     </div>
                     <div class="ram_load display-table-cell">
                         <span class="pull-right percent"></span>
-                       <label><span class="os_totalmem" style="letter-spacing:2px;font-weight:100"></span> MB RAM</label>
+                       <label><span class="os_totalmem" style="letter-spacing:2px;font-weight:100"></span> <%-lang.MB%> <%-lang.RAM%></label>
                       <div class="progress">
                         <div class="progress-bar progress-bar-warning" role="progressbar" style="width:0%"></div>
                       </div>
@@ -115,7 +115,7 @@
           <div class="demo-avatar-dropdown">
             <button id="accbtn" style="color:#fff" class="usermail mdl-button mdl-js-button mdl-js-ripple-effect"></button>
             <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="accbtn">
-                <li class="mdl-menu__item" mid="" ke=""><span monitor="powerview"><i class="fa fa-map-marker"></i>&nbsp; <%- lang['Power View'] %></span></li>
+                <li class="mdl-menu__item" mid="" ke=""><span monitor="powerview"><i class="fa fa-map-marker"></i>&nbsp; <%- lang['Power Viewer'] %></span></li>
                 <li class="mdl-menu__item" mid="" ke=""><span monitor="timelapse"><i class="fa fa-angle-double-right"></i>&nbsp; <%- lang['Time-lapse'] %></span></li>
                 <li class="mdl-menu__item" system="montage"><i class="fa fa-th"></i>&nbsp; <%- lang.Montage %></li>
                 <li class="mdl-menu__item" data-toggle="modal" data-target="#settings"><i class="fa fa-gears"></i> &nbsp; <%- lang.Settings %></li>
@@ -170,20 +170,20 @@
 <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="<%= config.DropboxAppKey %>"></script>
 <!--Dropbox End-->
 <% } %>
-<script src="/libs/js/material.min.js"></script>
-<script src="/libs/js/pnotify.custom.min.js"></script>
-<script src="/libs/js/moment.js"></script>
-<script src="/libs/js/livestamp.min.js"></script>
-<script src="/libs/js/placeholder.js"></script>
-<script src="/libs/js/bootstrap.min.js"></script>
-<script src="/libs/js/bootstrap-table.min.js"></script>
-<script src="/libs/js/socket.io.js"></script>
-<script src="/libs/js/fullcalendar.min.js"></script>
-<script src="/libs/js/hls.min.js"></script>
-<script src="/libs/js/menu.js"></script>
-<script src="/libs/js/clock.js"></script>
-<script src="/libs/js/Chart.js"></script>
-<script src="/libs/js/daterangepicker.js"></script>
-<script src="/libs/js/jquery.canvasAreaDraw.js"></script>
+<script><% include ../libs/js/material.min.js %></script>
+<script><% include ../libs/js/pnotify.custom.min.js %></script>
+<script><% include ../libs/js/moment.js %></script>
+<script><% include ../libs/js/livestamp.min.js %></script>
+<script><% include ../libs/js/placeholder.js %></script>
+<script><% include ../libs/js/bootstrap.min.js %></script>
+<script><% include ../libs/js/bootstrap-table.min.js %></script>
+<script><% include ../libs/js/socket.io.js %></script>
+<script><% include ../libs/js/fullcalendar.min.js %></script>
+<script><% include ../libs/js/hls.min.js %></script>
+<script><% include ../libs/js/menu.js %></script>
+<script><% include ../libs/js/clock.js %></script>
+<script><% include ../libs/js/Chart.js %></script>
+<script><% include ../libs/js/daterangepicker.js %></script>
+<script><% include ../libs/js/jquery.canvasAreaDraw.js %></script>
 <script><% include ../libs/js/main.dash2.js %></script>
 <% include blocks/help.ejs %>
