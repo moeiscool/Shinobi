@@ -50,7 +50,14 @@ var config = require('./conf.json');
 if(!config.language){
     config.language='en_CA'
 }
-var lang = require('./languages/'+config.language+'.json');
+if(config.language.split('_')[0]==='he'){config.language=='ar'}
+try{
+    var lang = require('./languages/'+config.language+'.json');
+}catch(er){
+    console.error(er)
+    console.log('There was an error loading your language file.')
+    var lang = require('./languages/en_CA.json');
+}
 process.send = process.send || function () {};
 if(config.mail){
     var nodemailer = require('nodemailer').createTransport(config.mail);

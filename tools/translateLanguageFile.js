@@ -16,6 +16,7 @@ var list = Object.keys(source)
 console.log(list.length)
 var newList={}
 var newListAlphabetical={}
+if(process.argv[4]==='he'){process.argv[4]=='ar'}
 list.forEach(function(v,n){
     var url = 'https://translate.yandex.net/api/v1.5/tr.json/translate?key=trnsl.1.1.20160311T042953Z.341f2f63f38bdac6.c7e5c01fff7f57160141021ca61b60e36ff4d379&format=html&lang='+process.argv[3]+'-'+process.argv[4]+'&text='+source[v]
     https.request(url, function(data) {

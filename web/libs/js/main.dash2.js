@@ -1,3 +1,13 @@
+switch("<%-config.language%>"){
+    case'ar'://Arabic
+    case'bn'://Bengali
+        $('body').addClass('right-to-left')
+        $('.mdl-menu__item').each(function(n,v){
+            v=$(v).find('i')
+            v.appendTo(v.parent())
+        })
+    break;
+}
 window.chartColors = {
     red: 'rgb(255, 99, 132)',
     orange: 'rgb(255, 159, 64)',
