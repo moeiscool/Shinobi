@@ -17,7 +17,7 @@ console.log(list.length)
 var newList={}
 var newListAlphabetical={}
 list.forEach(function(v,n){
-    var url = 'https://translate.yandex.net/api/v1.5/tr.json/translate?key=trnsl.1.1.20160311T042953Z.341f2f63f38bdac6.c7e5c01fff7f57160141021ca61b60e36ff4d379&lang='+process.argv[3]+'-'+process.argv[4]+'&text='+source[v]
+    var url = 'https://translate.yandex.net/api/v1.5/tr.json/translate?key=trnsl.1.1.20160311T042953Z.341f2f63f38bdac6.c7e5c01fff7f57160141021ca61b60e36ff4d379&format=html&lang='+process.argv[3]+'-'+process.argv[4]+'&text='+source[v]
     https.request(url, function(data) {
         data.setEncoding('utf8');
         var chunks='';
@@ -37,7 +37,6 @@ list.forEach(function(v,n){
                 Object.keys(newList).sort().forEach(function(y,t){
                     newListAlphabetical[y]=newList[y]
                 })
-                console.log(fs.statSync(langDir+process.argv[4]+'.json'))
                 jsonfile.writeFile(langDir+process.argv[4]+'.json',newListAlphabetical,{spaces: 2},function(){
 
                 })
