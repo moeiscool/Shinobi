@@ -85,10 +85,10 @@ img{max-width:100%}
 .monitor_item .mdl-card__media{position:relative;padding:0!important;display:block!important;background:#000;min-height:250px;}
 .monitor_item.selected .stream-element{height:600px}
 .monitor_item.selected .fa-expand:before{content:"\f066"}
-.monitor_item .mdl-card__supporting-text{background:#222;color:#fff!important;display:block}
+.monitor_item .mdl-card__supporting-text{background:#222;color:#fff!important;display:block;min-height:auto}
 .monitor_item.detector_triggered .indifference{opacity:1}
 .monitor_item .indifference{opacity:0}
-.monitor_item .indifference{position:absolute;width:100%;left:0;top:0;transition:0.2s;}
+.monitor_item .indifference{position:absolute;width:100%;left:0;top:-5px;transition:0.2s;}
 .monitor_item .indifference .progress{width:100%;background:#333;box-shadow:0;}
 .monitor_item .indifference:hover .progress{height:20px;transition:0.2s}
 .hide_indifference .indifference{display:none!important}
@@ -103,7 +103,7 @@ img{max-width:100%}
 #region_editor_live iframe,.canvas_holder canvas{border:0;position:absolute;left:0;top:0}
 .canvas_holder canvas{z-index:11}
 
-.demo-blog .mdl-card__media ~ .mdl-card__supporting-text{position:relative;overflow:hidden;cursor:move}
+.demo-blog .mdl-card__media ~ .mdl-card__supporting-text{position:relative;cursor:move}
 .demo-blog .mdl-card__media ~ .mdl-card__supporting-text .btn-group{cursor: default}
 
 .demo-blog .demo-blog__posts.montage{max-width:100%}
@@ -591,6 +591,8 @@ ul.msg_list li .message {
 .mdl-menu__item>div>i{margin-right:5px}
 /*For languages that are right to left*/
 .right-to-left {text-align:right}
+.right-to-left .form-group label span{padding-right:10px}
+.right-to-left .modal-footer{text-align:left}
 .right-to-left .mdl-menu__item>div>*{flex:1}
 .right-to-left .mdl-menu__item>div>i{margin-right:0;margin-left:5px}
 .right-to-left .mdl-menu__item{text-align:right}
