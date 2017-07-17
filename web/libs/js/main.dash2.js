@@ -486,7 +486,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 tmp+='<div class="mdl-card__supporting-text text-center">';
                 tmp+='<div class="indifference"><div class="progress"><div class="progress-bar progress-bar-danger" role="progressbar"><span>70%</span></div></div></div>';
                 tmp+='<div class="monitor_name">'+d.name+'</div>';
-                tmp+='<div class="btn-group btn-group-lg"><a title="<%-lang.Snapshot%>" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="<%-lang['Show Logs']%>" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="<%-lang.Control%>" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="<%-lang['Status Indicator']%>" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-plug"></i></a> <a title="<%-lang.Calendar%>" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="<%-lang['Power Viewer']%>" class="btn btn-default" monitor="powerview"><i class="fa fa-map-marker"></i></a> <a title="<%-lang['Time-lapse']%>" class="btn btn-default" monitor="timelapse"><i class="fa fa-angle-double-right"></i></a> <a title="<%-lang['Videos List']%>" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a title="<%-lang['Monitor Settings']%>" class="btn btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="<%-lang.Enlarge%>" monitor="bigify" class="hidden btn btn-default"><i class="fa fa-expand"></i></a> <a title="<%-lang.Fullscreen%>" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="<%-lang.Close%> Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
+                tmp+='<div class="btn-group"><a title="<%-lang.Snapshot%>" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="<%-lang['Show Logs']%>" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="<%-lang.Control%>" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="<%-lang['Status Indicator']%>" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-plug"></i></a> <a title="<%-lang.Calendar%>" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="<%-lang['Power Viewer']%>" class="btn btn-default" monitor="powerview"><i class="fa fa-map-marker"></i></a> <a title="<%-lang['Time-lapse']%>" class="btn btn-default" monitor="timelapse"><i class="fa fa-angle-double-right"></i></a> <a title="<%-lang['Videos List']%>" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a title="<%-lang['Monitor Settings']%>" class="btn btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="<%-lang.Enlarge%>" monitor="bigify" class="hidden btn btn-default"><i class="fa fa-expand"></i></a> <a title="<%-lang.Fullscreen%>" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="<%-lang.Close%> Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
                 tmp+='</div>';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col mdl-cell--4-col-desktop">';
@@ -1977,9 +1977,14 @@ $.timelapse.e.on('click','[timelapse]',function(){
             $.timelapse.onPlayPause(1)
         break;
         case'stepFrontFront':
+            e.add=e.e.attr('add')
             e.stepFrontFront=parseInt(e.e.attr('stepFrontFront'))
             if(!e.stepFrontFront||isNaN(e.stepFrontFront)){e.stepFrontFront = 5}
-            $.timelapse.playRate += e.stepFrontFront
+            if(e.add==="0"){
+                $.timelapse.playRate = e.stepFrontFront
+            }else{
+                $.timelapse.playRate += e.stepFrontFront
+            }
             e.videoCurrentNow[0].playbackRate = $.timelapse.playRate;
             e.videoCurrentNow[0].play()
         break;
