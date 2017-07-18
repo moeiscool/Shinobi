@@ -85,8 +85,8 @@ s.systemLog=function(q,w,e){
 }
 s.disc=function(){
     sql = mysql.createConnection(config.db);
-    sql.connect(function(err){if(err){s.systemLog('Error Connecting : DB',err);setTimeout(s.disc, 2000);}});
-    sql.on('error',function(err) {s.systemLog('DB Lost.. Retrying..');s.systemLog(err);s.disc();return;});
+    sql.connect(function(err){if(err){s.systemLog(lang['Error Connecting']+' : DB',err);setTimeout(s.disc, 2000);}});
+    sql.on('error',function(err) {s.systemLog(lang['DB Lost.. Retrying..']);s.systemLog(err);s.disc();return;});
 }
 s.disc();
 //kill any ffmpeg running
@@ -261,13 +261,13 @@ if(config.ssl&&config.ssl.key&&config.ssl.cert){
     }
     var serverHTTPS = https.createServer(config.ssl,app);
     serverHTTPS.listen(config.ssl.port,config.bindip,function(){
-        console.log('SSL Shinobi - SSL PORT : '+config.ssl.port);
+        console.log('SSL '+lang.Shinobi+' - SSL PORT : '+config.ssl.port);
     });
     io.attach(serverHTTPS);
 }
 //start HTTP
 server.listen(config.port,config.bindip,function(){
-    console.log('Shinobi - PORT : '+config.port);
+    console.log(lang.Shinobi+' - PORT : '+config.port);
 });
 io.attach(server);
 console.log('NODE.JS : '+execSync("node -v"))
@@ -414,17 +414,17 @@ s.filter=function(x,d){
                 d.mailOptions = {
                     from: '"ShinobiCCTV" <no-reply@shinobi.video>', // sender address
                     to: d.mail, // list of receivers
-                    subject: 'Filter Matches : '+d.name, // Subject line
-                    html: 'This filter has met conditions. '+d.videos.length+' videos found.',
+                    subject: lang['Filter Matches']+' : '+d.name, // Subject line
+                    html: lang.FilterMatchesText1+' '+d.videos.length+' '+lang.FilterMatchesText2,
                 };
                 if(d.execute&&d.execute!==''){
-                    d.mailOptions.html+='<div><b>Executed :</b> '+d.execute+'</div>'
+                    d.mailOptions.html+='<div><b>'+lang.Executed+' :</b> '+d.execute+'</div>'
                 }
                 if(d.delete==='1'){
-                    d.mailOptions.html+='<div><b>Deleted :</b> Yes</div>'
+                    d.mailOptions.html+='<div><b>'+lang.Deleted+' :</b> '+lang.Yes+'</div>'
                 }
-                d.mailOptions.html+='<div><b>Query :</b> '+d.query+'</div>'
-                d.mailOptions.html+='<div><b>Filter ID :</b> '+d.id+'</div>'
+                d.mailOptions.html+='<div><b>'+lang.Query+' :</b> '+d.query+'</div>'
+                d.mailOptions.html+='<div><b>'+lang['Filter ID']+' :</b> '+d.id+'</div>'
                 nodemailer.sendMail(d.mailOptions, (error, info) => {
                     if (error) {
                         s.tx({f:'error',ff:'filter_mail',ke:d.ke,error:error},'GRP_'+d.ke);
@@ -536,7 +536,7 @@ s.video=function(x,e){
                                fs.readFile(e.dir+e.filename+'.'+e.ext,function(err,data){
                                    s.group[e.ke].webdav.putFileContents(s.group[e.ke].init.webdav_dir+e.ke+'/'+e.mid+'/'+e.filename+'.'+e.ext,"binary",data)
                                 .catch(function(err) {
-                                       s.log(e,{type:'Webdav Error',msg:{msg:'Cannot save. Did you make the folders <b>/'+e.ke+'/'+e.id+'</b> inside your chosen save directory?',info:err},ffmpeg:s.group[e.ke].mon[e.id].ffmpeg})
+                                       s.log(e,{type:lang['Webdav Error'],msg:{msg:lang.WebdavErrorText+' <b>/'+e.ke+'/'+e.id+'</b>',info:err},ffmpeg:s.group[e.ke].mon[e.id].ffmpeg})
                                     console.error(err);
                                    });
                                 });
@@ -579,10 +579,10 @@ s.video=function(x,e){
                         }
                     }else{
                         s.video('delete',e);
-                        s.log(e,{type:'File Not Exist',msg:'Cannot save non existant file. Something went wrong.',ffmpeg:s.group[e.ke].mon[e.id].ffmpeg})
+                        s.log(e,{type:lang['File Not Exist'],msg:lang.FileNotExistText,ffmpeg:s.group[e.ke].mon[e.id].ffmpeg})
                         if(e.mode&&config.restart.onVideoNotExist===true&&e.fn){
                             delete(s.group[e.ke].mon[e.id].open);
-                            s.log(e,{type:'FFMPEG Not Recording',msg:{msg:'Settings may be incompatible. Check encoders. Restarting...'}});
+                            s.log(e,{type:lang['Camera is not recording'],msg:{msg:lang.CameraNotRecordingText}});
                             if(s.group[e.ke].mon[e.id].started===1){
                                 s.camera('restart',e)
                             }
@@ -1032,7 +1032,7 @@ s.camera=function(x,e,cn,tx){
             s.tx({f:'monitor_stopping',mid:e.id,ke:e.ke,time:s.moment()},'GRP_'+e.ke);
             s.camera('snapshot',{mid:e.id,ke:e.ke,mon:e})
             if(x==='stop'){
-                    s.log(e,{type:'Monitor Stopped',msg:'Monitor session has been ordered to stop.'});
+                    s.log(e,{type:lang['Monitor Stopped'],msg:lang.MonitorStoppedText});
                     clearTimeout(s.group[e.ke].mon[e.id].delete)
                 if(e.delete===1){
                     s.group[e.ke].mon[e.id].delete=setTimeout(function(){
@@ -1042,7 +1042,7 @@ s.camera=function(x,e,cn,tx){
                 }
             }else{
                 s.tx({f:'monitor_idle',mid:e.id,ke:e.ke,time:s.moment()},'GRP_'+e.ke);
-                s.log(e,{type:'Monitor Idling',msg:'Monitor session has been ordered to idle.'});
+                s.log(e,{type:lang['Monitor Idling'],msg:lang.MonitorIdlingText});
             }
         break;
         case'start':case'record'://watch or record monitor url
@@ -1095,11 +1095,11 @@ s.camera=function(x,e,cn,tx){
                             e.mailOptions = {
                                 from: '"ShinobiCCTV" <no-reply@shinobi.video>', // sender address
                                 to: r.mail, // list of receivers
-                                subject: 'No Motion for '+e.name+' ('+e.id+')', // Subject line
-                                html: '<i>There hasn\'t been any motion detected for '+e.details.detector_notrigger_timeout+' minutes on camera.</i>',
+                                subject: lang.NoMotionEmailText1+' '+e.name+' ('+e.id+')', // Subject line
+                                html: '<i>'+lang.NoMotionEmailText2+' '+e.details.detector_notrigger_timeout+' '+lang.minutes+'.</i>',
                             };
-                            e.mailOptions.html+='<div><b>Monitor Name </b> : '+e.name+'</div>'
-                            e.mailOptions.html+='<div><b>Monitor ID </b> : '+e.id+'</div>'
+                            e.mailOptions.html+='<div><b>'+lang['Monitor Name']+' </b> : '+e.name+'</div>'
+                            e.mailOptions.html+='<div><b>'+lang['Monitor ID']+' </b> : '+e.id+'</div>'
                             nodemailer.sendMail(e.mailOptions, (error, info) => {
                                 if (error) {
                                    s.systemLog('detector:notrigger:sendMail',s.moment(),error)
@@ -1126,7 +1126,7 @@ s.camera=function(x,e,cn,tx){
                             s.group[e.ke].mon[e.id].checker=setTimeout(function(){
                                 if(s.group[e.ke].mon[e.id].started===1){
                                     e.fn();
-                                    s.log(e,{type:'FFMPEG Not Recording',msg:{msg:'Restarting Process'}});
+                                    s.log(e,{type:lang['Camera is not recording'],msg:{msg:lang['Restarting Process']}});
                                 }
                             },60000*2);
                         break;
@@ -1189,7 +1189,7 @@ s.camera=function(x,e,cn,tx){
                             s.group[e.ke].mon[e.id].spawn_exit=function(){
                                 if(s.group[e.ke].mon[e.id].started===1){
                                     if(e.details.loglevel!=='quiet'){
-                                        s.log(e,{type:'FFMPEG Unexpected Exit',msg:{msg:'Process Crashed for Monitor : '+e.id,cmd:s.group[e.ke].mon[e.id].ffmpeg}});
+                                        s.log(e,{type:lang['Process Unexpected Exit'],msg:{msg:lang['Process Crashed for Monitor']+' : '+e.id,cmd:s.group[e.ke].mon[e.id].ffmpeg}});
                                     }
                                     e.error_fatal();
                                 }
@@ -1215,14 +1215,13 @@ s.camera=function(x,e,cn,tx){
                                     })
                                 }else{
                                     if(x==='record'){
-                                        s.log(e,{type:'FFMPEG START',msg:'The recording engine for this snapshot based camera could not start. There may be something wrong with your camera configuration. If there are any logs other than this one please post them in the <b>Issues</b> on Github.'});
+                                        s.log(e,{type:lang.FFmpegCantStart,msg:lang.FFmpegCantStartText});
                                         return
                                     }
                                 }
                                 e.captureOne=function(f){
                                     s.group[e.ke].mon[e.id].record.request=request({url:e.url,method:'GET',encoding: null,timeout:3000},function(err,data){
                                         if(err){
-
                                             return;
                                         }
                                     }).on('data',function(d){
@@ -1252,16 +1251,16 @@ s.camera=function(x,e,cn,tx){
                                         ++e.error_count;
                                         clearTimeout(e.timeOut);delete(e.timeOut);
                                         if(e.details.loglevel!=='quiet'){
-                                            s.log(e,{type:'JPEG Error',msg:{msg:'There was an issue getting data from your camera.',info:err}});
+                                            s.log(e,{type:lang['JPEG Error'],msg:{msg:lang.JPEGErrorText,info:err}});
                                             switch(err.code){
                                                 case'ESOCKETTIMEDOUT':
                                                 case'ETIMEDOUT':
                                                     ++s.group[e.ke].mon[e.id].error_socket_timeout_count
                                                     if(s.group[e.ke].mon[e.id].error_socket_timeout_count>e.details.fatal_max){
-                                                        s.log(e,{type:'Fatal Maximum Reached, Stopping Camera restart commands.',msg:{code:'ESOCKETTIMEDOUT',msg:'JPEG Error was fatal.'}});
+                                                        s.log(e,{type:lang['Fatal Maximum Reached'],msg:{code:'ESOCKETTIMEDOUT',msg:lang.FatalMaximumReachedText}});
                                                         s.camera('stop',e)
                                                     }else{
-                                                        s.log(e,{type:'FFMPEG Restarting',msg:{code:'ESOCKETTIMEDOUT',msg:'JPEG Error was fatal.'}});
+                                                        s.log(e,{type:lang['Restarting Process'],msg:{code:'ESOCKETTIMEDOUT',msg:lang.FatalMaximumReachedText}});
                                                         s.camera('restart',e)
                                                     }
                                                     return;
@@ -1342,7 +1341,7 @@ s.camera=function(x,e,cn,tx){
 //                                                e.details.stream_acodec='no'
 //                                            }
 //                                            s.camera('restart',e)
-                                            return s.log(e,{type:"Incorrect Settings Chosen",msg:{msg:d}})
+                                            return s.log(e,{type:lang['Incorrect Settings Chosen'],msg:{msg:d}})
                                         break;
                                         case e.chk('NULL @'):
                                         case e.chk('RTP: missed'):
@@ -1353,36 +1352,33 @@ s.camera=function(x,e,cn,tx){
                                         case e.chk('Connection refused'):
                                         case e.chk('Connection timed out'):
                                             //restart
-                                            setTimeout(function(){s.log(e,{type:"Can't Connect",msg:'Retrying...'});e.error_fatal();},1000)
+                                            setTimeout(function(){s.log(e,{type:lang["Can't Connect"],msg:lang['Retrying...']});e.error_fatal();},1000)
                                         break;
-                                        case e.chk('No pixel format specified'):
-                                            s.log(e,{type:"FFMPEG STDERR",msg:{ffmpeg:s.group[e.ke].mon[e.id].ffmpeg,msg:d}})
-                                        break;
-                                        case e.chk('No such file or directory'):
-                                        case e.chk('Unable to open RTSP for listening'):
-                                        case e.chk('timed out'):
-                                        case e.chk('Invalid data found when processing input'):
-                                        case e.chk('Immediate exit requested'):
-                                        case e.chk('reset by peer'):
-                                           if(e.frames===0&&x==='record'){s.video('delete',e)};
-                                            setTimeout(function(){
-                                                if(!s.group[e.ke].mon[e.id].spawn){e.fn()}
-                                            },2000)
-                                        break;
+//                                        case e.chk('No such file or directory'):
+//                                        case e.chk('Unable to open RTSP for listening'):
+//                                        case e.chk('timed out'):
+//                                        case e.chk('Invalid data found when processing input'):
+//                                        case e.chk('Immediate exit requested'):
+//                                        case e.chk('reset by peer'):
+//                                           if(e.frames===0&&x==='record'){s.video('delete',e)};
+//                                            setTimeout(function(){
+//                                                if(!s.group[e.ke].mon[e.id].spawn){e.fn()}
+//                                            },2000)
+//                                        break;
                                         case e.chk('mjpeg_decode_dc'):
                                         case e.chk('bad vlc'):
                                         case e.chk('error dc'):
                                             e.fn()
                                         break;
                                         case /T[0-9][0-9]-[0-9][0-9]-[0-9][0-9]./.test(d):
-                                            return s.log(e,{type:"Video Finished",msg:{filename:d}})
+                                            return s.log(e,{type:lang['Video Finished'],msg:{filename:d}})
                                         break;
                                     }
                                     s.log(e,{type:"FFMPEG STDERR",msg:d})
                                 });
                             }
                           }else{
-                            s.log(e,{type:"Can't Connect",msg:'Retrying...'});e.error_fatal();return;
+                            s.log(e,{type:lang["Can't Connect"],msg:lang['Retrying...']});e.error_fatal();return;
                         }
                     }
                     if(e.type!=='socket'&&e.type!=='dashcam'&&e.protocol!=='udp'&&e.type!=='local'){
@@ -1430,7 +1426,7 @@ s.camera=function(x,e,cn,tx){
         case'motion':
             var d=e;
             if(!s.group[d.ke]||!s.group[d.ke].mon[d.id]){
-                return s.systemLog('No Monitor Found, Ignoring Request')
+                return s.systemLog(lang['No Monitor Found, Ignoring Request'])
             }
             d.mon=s.group[d.ke].mon_conf[d.id];
             if(!s.group[d.ke].mon[d.id].detector_motion_count){
@@ -1518,11 +1514,11 @@ s.camera=function(x,e,cn,tx){
                         d.mailOptions = {
                             from: '"ShinobiCCTV" <no-reply@shinobi.video>', // sender address
                             to: r.mail, // list of receivers
-                            subject: 'Motion Event - '+d.frame_filename, // Subject line
-                            html: '<i>Triggered a motion event at '+moment(new Date).format()+'.</i>',
+                            subject: lang.Event+' - '+d.frame_filename, // Subject line
+                            html: '<i>'+lang.EventText1+' '+moment(new Date).format()+'.</i>',
                         };
                         if(err){
-                            s.systemLog('Could not email image, file was not accessible '+d.ke+' '+d.id,err)
+                            s.systemLog(lang.EventText2+' '+d.ke+' '+d.id,err)
                         }else{
                             d.mailOptions.attachments=[
                                 {
@@ -1530,14 +1526,14 @@ s.camera=function(x,e,cn,tx){
                                     content: frame
                                 }
                             ]
-                            d.mailOptions.html='<i>The attached frame triggered a motion event.</i>'
+                            d.mailOptions.html='<i>'+lang.EventText3+'</i>'
                         }
                             Object.keys(d.details).forEach(function(v,n){
                             d.mailOptions.html+='<div><b>'+v+'</b> : '+d.details[v]+'</div>'
                         })
                         nodemailer.sendMail(d.mailOptions, (error, info) => {
                             if (error) {
-                                s.systemLog('MAIL ERROR : Could not send email, Check conf.json',error)
+                                s.systemLog(lang.MailError,error)
                                 return ;
                             }
                         });
@@ -1664,13 +1660,13 @@ var tx;
                 break;
                 case'update':
                     if(!config.updateKey){
-                        tx({error:'"updateKey" is missing from "conf.json", cannot do updates this way until you add it.'});
+                        tx({error:lang.updateKeyText1});
                         return;
                     }
                     if(d.key===config.updateKey){
                         exec('chmod +x '+__dirname+'/UPDATE.sh&&'+__dirname+'/./UPDATE.sh',{detached: true})
                     }else{
-                        tx({error:'"updateKey" is incorrect.'});
+                        tx({error:lang.updateKeyText2});
                     }
                 break;
                 case'cron':
@@ -1796,7 +1792,7 @@ var tx;
                         case'control':
                             if(!s.group[d.ke]||!s.group[d.ke].mon[d.mid]){return}
                             d.m=s.group[d.ke].mon_conf[d.mid];
-                            if(d.m.details.control!=="1"){s.log(d,{type:'Control Error',msg:'Control is not enabled'});return}
+                            if(d.m.details.control!=="1"){s.log(d,{type:lang['Control Error'],msg:lang.ControlErrorText1});return}
                             if(!d.m.details.control_base_url||d.m.details.control_base_url===''){
                                 d.base=s.init('url_no_path',d.m);
                             }else{
@@ -2023,7 +2019,7 @@ var tx;
             }
         }catch(er){s.systemLog(er)}
         }else{
-            tx({ok:false,msg:'Not Authorized, Submit init command with "auth","ke", and "uid"'});
+            tx({ok:false,msg:lang.NotAuthorizedText1});
         }
     });
     //functions for receiving detector data
@@ -2132,10 +2128,10 @@ var tx;
                                             }
                                         })
                                     }else{
-                                        d.msg='Passwords Don\'t Match';
+                                        d.msg=lang["Passwords Don't Match"];
                                     }
                                 }else{
-                                    d.msg='Fields cannot be empty';
+                                    d.msg=lang['Fields cannot be empty'];
                                 }
                                 if(d.msg){
                                     s.tx({f:'error',ff:'account_register',msg:d.msg},cn.id)
@@ -2146,7 +2142,7 @@ var tx;
                                    if(d.form.pass===d.form.password_again){
                                        d.form.pass=s.md5(d.form.pass);
                                    }else{
-                                       s.tx({f:'error',ff:'account_edit',msg:'Passwords don\'t match.'},cn.id)
+                                       s.tx({f:'error',ff:'account_edit',msg:lang["Passwords Don't Match"]},cn.id)
                                        return
                                    }
                                 }else{
@@ -2165,7 +2161,7 @@ var tx;
                                 sql.query('UPDATE Users SET '+d.set.join(',')+' WHERE mail=?',d.values,function(err,r) {
                                     if(err){
                                         s.systemLog('UPDATE Users SET '+d.set.join(',')+' WHERE mail=?',d.values,err)
-                                        s.tx({f:'error',ff:'account_edit',msg:'Could not edit. Refresh page if problem continues.'},cn.id)
+                                        s.tx({f:'error',ff:'account_edit',msg:lang.AccountEditText1},cn.id)
                                         return
                                     }
                                     s.tx({f:'edit_account',form:d.form,ke:d.account.ke,uid:d.account.uid},'SUPER');
@@ -2457,14 +2453,14 @@ app.get('/:auth/update/:key', function (req,res){
     res.setHeader('Content-Type', 'application/json');
     req.fn=function(user){
         if(!config.updateKey){
-            req.ret.msg='"updateKey" is missing from "conf.json", cannot do updates this way until you add it.';
+            req.ret.msg=lang.updateKeyText1;
             return;
         }
         if(req.params.key===config.updateKey){
             req.ret.ok=true;
             exec('chmod +x '+__dirname+'/UPDATE.sh&&'+__dirname+'/./UPDATE.sh',{detached: true})
         }else{
-            req.ret.msg='"updateKey" is incorrect.';
+            req.ret.msg=lang.updateKeyText2;
         }
         res.send(s.s(req.ret, null, 3));
     }
@@ -2492,13 +2488,13 @@ app.post('/:auth/register/:ke/:uid',function (req,res){
                             res.send(s.s(req.resp,null,3));
                         })
                     }else{
-                        req.resp.msg='Passwords Don\'t Match';
+                        req.resp.msg=lang['Passwords Don\'t Match'];
                     }
                 }else{
-                    req.resp.msg='Fields cannot be empty';
+                    req.resp.msg=lang['Fields cannot be empty'];
                 }
             }else{
-                req.resp.msg='Not an Administrator Account';
+                req.resp.msg=lang['Not an Administrator Account'];
             }
             if(req.resp.msg){
                 res.send(s.s(req.resp,null,3));
@@ -2571,8 +2567,7 @@ app.post('/',function (req,res){
     if(req.body.mail&&req.body.pass){
         if(req.body.function==='super'){
             if(!fs.existsSync('./super.json')){
-                res.send('"super.json" does not exist. Please rename "super.sample.json" to "super.json".')
-                res.end();
+                res.end(lang.superAdminText)
                 return
             }
             req.ok=s.superAuth({mail:req.body.mail,pass:req.body.pass,users:true,md5:true},function(data){
@@ -2610,12 +2605,12 @@ app.post('/',function (req,res){
                                     r.mailOptions = {
                                         from: '"ShinobiCCTV" <no-reply@shinobi.video>',
                                         to: r.mail,
-                                        subject: '2-Factor Authentication',
-                                        html: 'Enter this code to proceed <b>'+s.factorAuth[r.ke][r.uid].key+'</b>. The code will only be active for 15 minutes. If you login again the timer will be reset to 15 minutes with the same code.',
+                                        subject: lang['2-Factor Authentication'],
+                                        html: lang['Enter this code to proceed']+' <b>'+s.factorAuth[r.ke][r.uid].key+'</b>. '+lang.FactorAuthText1,
                                     };
                                     nodemailer.sendMail(r.mailOptions, (error, info) => {
                                         if (error) {
-                                            s.systemLog('MAIL ERROR : You must set up conf.json with the mail object or this feature will not work. skipping 2-Factor Authentication this time.',error)
+                                            s.systemLog(lang.MailError,error)
                                             req.fn(r)
                                             return
                                         }
@@ -3004,7 +2999,7 @@ app.all(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f']
                     req.monitor=JSON.parse(req.body.data)
                 }
             }catch(er){
-                req.ret.msg='Invalid Data, Check to see this is a valid import string.';
+                req.ret.msg=lang.monitorEditText1;
                 res.end(s.s(req.ret, null, 3))
                 return
             }
@@ -3013,7 +3008,7 @@ app.all(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f']
                         req.set=[],req.ar=[];
                         req.monitor.mid=req.monitor.mid.replace(/[^\w\s]/gi,'').replace(/ /g,'');
                         try{JSON.parse(req.monitor.details)}catch(er){
-                            req.ret.msg='Invalid Details String. Check to see it is a JSON string and not a regular object being passed.';
+                            req.ret.msg=lang.monitorEditText2;
                             res.end(s.s(req.ret, null, 3))
                             return
                         }
@@ -3031,7 +3026,7 @@ app.all(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f']
                                 req.set=req.set.join(',');
                                 req.ar.push(req.monitor.ke),req.ar.push(req.monitor.mid);
                                 s.log(req.monitor,{type:'Monitor Updated',msg:'by user : '+user.uid});
-                                req.ret.msg='Monitor Updated by user : '+user.uid;
+                                req.ret.msg=lang['Monitor Updated by user']+' : '+user.uid;
                                 sql.query('UPDATE Monitors SET '+req.set+' WHERE ke=? AND mid=?',req.ar)
                                 req.finish=1;
                             }else{
@@ -3046,13 +3041,13 @@ app.all(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f']
         //                                        req.set.push('ke'),req.st.push('?'),req.ar.push(req.monitor.ke);
                                     req.set=req.set.join(','),req.st=req.st.join(',');
                                     s.log(req.monitor,{type:'Monitor Added',msg:'by user : '+user.uid});
-                                    req.ret.msg='Monitor Added by user : '+user.uid;
+                                    req.ret.msg=lang['Monitor Added by user']+' : '+user.uid;
                                     sql.query('INSERT INTO Monitors ('+req.set+') VALUES ('+req.st+')',req.ar)
                                     req.finish=1;
                                 }else{
                                     req.tx.f='monitor_edit_failed';
                                     req.tx.ff='max_reached';
-                                    req.ret.msg='Monitor Edit Failed for Group Key '+user.ke+'. Maximum number of monitors reached.';
+                                    req.ret.msg=lang.monitorEditFailedMaxReached;
                                 }
                             }
                             if(req.finish===1){
@@ -3099,7 +3094,7 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
             res.end('Not Permitted')
             return
         }
-        if(req.params.f===''){req.ret.msg='incomplete request, remove last slash in URL or put acceptable value.';res.send(s.s(req.ret, null, 3));return}
+        if(req.params.f===''){req.ret.msg=lang.monitorGetText1;res.send(s.s(req.ret, null, 3));return}
         if(req.params.f!=='stop'&&req.params.f!=='start'&&req.params.f!=='record'){
             req.ret.msg='Mode not recognized.';
             res.end(s.s(req.ret, null, 3));
@@ -3122,9 +3117,9 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
                         if(req.params.f!=='stop'){
                             s.camera(req.params.f,s.init('noReference',r));
                         }
-                        req.ret.msg='Monitor mode changed to : '+req.params.f;
+                        req.ret.msg=lang['Monitor mode changed']+' : '+req.params.f;
                     }else{
-                        req.ret.msg='Reset Timer';
+                        req.ret.msg=lang['Reset Timer'];
                     }
                     req.ret.cmd_at=s.moment(new Date,'YYYY-MM-DD HH:mm:ss');
                     req.ret.ok=true;
@@ -3162,10 +3157,10 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
 //                        req.ret.end_at=s.moment(new Date,'YYYY-MM-DD HH:mm:ss').add(req.timeout,'milliseconds');
                     }
                  }else{
-                    req.ret.msg='Monitor mode is already : '+req.params.f;
+                    req.ret.msg=lang['Monitor mode is already']+' : '+req.params.f;
                 }
             }else{
-                req.ret.msg='Monitor or Key does not exist.';
+                req.ret.msg=lang['Monitor or Key does not exist.'];
             }
             res.end(s.s(req.ret, null, 3));
         })
@@ -3226,11 +3221,11 @@ app.get('/:auth/motion/:ke/:id', function (req,res){
             return;
         }
         if(!d.ke||!d.id||!s.group[d.ke]){
-            res.end('No Group with this key exists');
+            res.end(lang['No Group with this key exists']);
             return;
         }
         s.camera('motion',d,function(){
-            res.end('Trigger Successful')
+            res.end(lang['Trigger Successful'])
         });
 },res,req);
 })
@@ -3268,11 +3263,11 @@ app.get(['/:auth/videos/:ke/:id/:file/:mode','/:auth/videos/:ke/:id/:file/:mode/
                         s.video('delete',r)
                     break;
                     default:
-                        req.ret.msg='Method doesn\'t exist. Check to make sure that the last value of the URL is not blank.';
+                        req.ret.msg=lang.modifyVideoText1;
                     break;
                 }
             }else{
-                req.ret.msg='No such file';
+                req.ret.msg=lang['No such file'];
             }
             res.send(s.s(req.ret, null, 3));
         })
@@ -3334,7 +3329,7 @@ s.ramUsage=function(e){
             })
         })
     },10000);
-}catch(err){s.systemLog('CPU indicator will not work. Continuing...')}
+}catch(err){s.systemLog(lang['CPU indicator will not work. Continuing...'])}
 //check disk space every 20 minutes
 if(config.autoDropCache===true){
     setInterval(function(){
@@ -3362,7 +3357,7 @@ setTimeout(function(){
                             v.size+=b.size
                         })
                     }
-                    s.systemLog(v.mail+' '+rr.length+' : size check for videos',v.size)
+                    s.systemLog(v.mail+' : '+lang.startUpText0+' : '+rr.length,v.size)
                     if(!s.group[v.ke]){
                         s.group[v.ke]={}
                     }
@@ -3376,9 +3371,9 @@ setTimeout(function(){
                     s.group[v.ke].init.used_space=v.size/1000000;
                     //emit the changes to connected users
                     s.init('diskUsed',v)
-                    s.systemLog(v.mail+' : end of size check for videos',countFinished,count)
+                    s.systemLog(v.mail+' : '+lang.startUpText1,countFinished,count)
                     if(countFinished===count){
-                        s.systemLog('all users checked, wait to close open files and remove files over user limit')
+                        s.systemLog(lang.startUpText2)
                         ////close open videos
                         sql.query('SELECT * FROM Videos WHERE status=?',[0],function(err,r){
                             if(r&&r[0]){
@@ -3388,9 +3383,9 @@ setTimeout(function(){
                                     s.video('close',v);
                                 })
                             }
-                            s.systemLog('waiting to give unfinished video check some time. 3 seconds.')
+                            s.systemLog(lang.startUpText3)
                             setTimeout(function(){
-                                s.systemLog('start all monitors set to watch and record')
+                                s.systemLog(lang.startUpText4)
                                 //preliminary monitor start
                                 sql.query('SELECT * FROM Monitors', function(err,r) {
                                     if(err){s.systemLog(err)}
@@ -3411,7 +3406,7 @@ setTimeout(function(){
                                             s.camera(v.mode,r.ar);
                                         });
                                     }
-                                    s.systemLog('Shinobi is ready.')
+                                    s.systemLog(lang.startUpText5)
                                     process.send('ready')
                                 });
                             },3000)
