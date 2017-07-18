@@ -486,5 +486,6 @@
    "startUpText2": "all users checked, wait to close open files and remove files over user limit",
    "startUpText3": "waiting to give unfinished video check some time. 3 seconds.",
    "startUpText4": "starting all monitors set to watch and record",
-   "startUpText5": "Shinobi is ready."
+   "startUpText5": "Shinobi is ready.",
+   "Edit": "Edit"
 }

@@ -3035,7 +3035,7 @@ $('body')
                 //edit monitor
                 e.p.find('[monitor="delete"]').show()
                 e.mt.find('.edit_id').text(e.mid);
-                e.mt.find('span').text('Edit');
+                e.mt.find('span').text('<%-lang.Edit%>');
                 e.mt.find('i').attr('class','fa fa-wrench');
                 e.values=$.ccio.mon[e.mid];
             }
