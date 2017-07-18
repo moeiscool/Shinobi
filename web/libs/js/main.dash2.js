@@ -1807,9 +1807,9 @@ $.sM.f.on('click','.mon_groups .add',function(e){
     $.sM.g.change();
 });
 //videos window
-$.vidview={e:$('#videos_viewer'),pages:$('#videos_viewer_pages'),limit:$('#videos_viewer_limit')};
+$.vidview={e:$('#videos_viewer'),pages:$('#videos_viewer_pages'),limit:$('#videos_viewer_limit'),dr:$('#videos_viewer_daterange')};
 $.vidview.f=$.vidview.e.find('form')
-$('#videos_viewer_daterange').daterangepicker({
+$.vidview.dr.daterangepicker({
     startDate:moment().subtract(moment.duration("24:00:00")),
     endDate:moment().add(moment.duration("24:00:00")),
     timePicker: true,
@@ -1819,6 +1819,7 @@ $('#videos_viewer_daterange').daterangepicker({
     }
 },function(start, end, label){
     $.vidview.launcher.click()
+    $.vidview.dr.focus()
 });
 $.vidview.e.on('change','#videos_select_all',function(e){
     e.e=$(this);
@@ -1890,6 +1891,7 @@ $.timelapse.dr.daterangepicker({
     }
 },function(start, end, label){
     $.timelapse.drawTimeline()
+    $.timelapse.dr.focus()
 });
 $.timelapse.f.find('input,select').change(function(){
     $.timelapse.f.submit()
@@ -2152,6 +2154,7 @@ $.pwrvid.dr.daterangepicker({
     }
 },function(start, end, label){
     $.pwrvid.drawTimeline()
+    $.pwrvid.dr.focus()
 });
 $('#pvideo_show_events').change(function(){
     $.pwrvid.drawTimeline()
