@@ -1,3 +1,7 @@
+// DL44227: hotfix for daterangepicker in modal dialogs
+// see also: https://github.com/dangrossman/bootstrap-daterangepicker/issues/156
+$.fn.modal.Constructor.prototype.enforceFocus = function () {};
+
 window.chartColors = {
     red: 'rgb(255, 99, 132)',
     orange: 'rgb(255, 159, 64)',
