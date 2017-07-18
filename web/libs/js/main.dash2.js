@@ -784,7 +784,9 @@ $.ccio.ws.on('f',function (d){
                     $.ccio.mon[d.id].detector_trigger_timeout=setTimeout(function(){
                         $('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]').removeClass('detector_triggered').find('.stream-detected-object').remove()
                     },5000);
-                    d.e.find('.indifference .progress-bar').css('width',d.details.confidence).find('span').text(d.details.confidence)
+                    d.tt=d.details.confidence;
+                    if (d.tt > 100) { d.tt = 100; }
+                    d.e.find('.indifference .progress-bar').css('width',d.tt + "%").find('span').text(d.details.confidence)
                 }
             }
         break;
