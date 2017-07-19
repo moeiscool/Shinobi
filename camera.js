@@ -1606,6 +1606,7 @@ var tx;
 //                    s.group[d.ke].vid[cn.id]={uid:d.uid};
                     s.group[d.ke].users[d.auth]={cnid:cn.id,uid:r.uid,mail:r.mail,details:JSON.parse(r.details),logged_in_at:moment(new Date).format(),login_type:'Dashboard'}
                     try{s.group[d.ke].users[d.auth].details=JSON.parse(r.details)}catch(er){}
+                    s.group[d.ke].users[d.auth].lang=s.getLanguageFile(s.group[d.ke].users[d.auth].details.lang)
                     if(!s.group[d.ke].mon){
                         s.group[d.ke].mon={}
                         if(!s.group[d.ke].mon){s.group[d.ke].mon={}}
@@ -2385,7 +2386,7 @@ s.auth=function(xx,x,res,req){
         xx.ip=req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         xx.failed=function(){
             if(!req.ret){req.ret={ok:false}}
-            req.ret.msg='Not Authorized';
+            req.ret.msg=lang['Not Authorized'];
             res.send(s.s(req.ret, null, 3));
         }
     }else{
@@ -2701,7 +2702,7 @@ app.get('/:auth/hls/:ke/:id/:file', function (req,res){
         if (fs.existsSync(req.dir)){
             fs.createReadStream(req.dir).pipe(res);
         }else{
-            res.send('File Not Found')
+            res.send(user.lang['File Not Found'])
         }
     }
     s.auth(req.params,req.fn,res,req);
@@ -2711,7 +2712,7 @@ app.get('/:auth/jpeg/:ke/:id/s.jpg', function(req,res){
     res.header("Access-Control-Allow-Origin",req.headers.origin);
     s.auth(req.params,function(user){
         if(user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
-            res.end('Not Permitted')
+            res.end(user.lang['Not Permitted'])
             return
         }
         req.dir=s.dir.streams+req.params.ke+'/'+req.params.id+'/s.jpg';
@@ -2735,7 +2736,7 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
     }else{
         s.auth(req.params,function(user){
             if(user.permissions.watch_stream==="0"||user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
-                res.end('Not Permitted')
+                res.end(user.lang['Not Permitted'])
                 return
             }
             res.writeHead(200, {
@@ -2771,7 +2772,7 @@ app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,re
     req.params.protocol=req.protocol;
     s.auth(req.params,function(user){
         if(user.permissions.watch_stream==="0"||user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
-            res.end('Not Permitted')
+            res.end(user.lang['Not Permitted'])
             return
         }
         if(s.group[req.params.ke]&&s.group[req.params.ke].mon[req.params.id]){
@@ -3021,7 +3022,7 @@ app.all(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f']
                     req.monitor=JSON.parse(req.body.data)
                 }
             }catch(er){
-                req.ret.msg=lang.monitorEditText1;
+                req.ret.msg=user.lang.monitorEditText1;
                 res.end(s.s(req.ret, null, 3))
                 return
             }
@@ -3030,7 +3031,7 @@ app.all(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f']
                         req.set=[],req.ar=[];
                         req.monitor.mid=req.monitor.mid.replace(/[^\w\s]/gi,'').replace(/ /g,'');
                         try{JSON.parse(req.monitor.details)}catch(er){
-                            req.ret.msg=lang.monitorEditText2;
+                            req.ret.msg=user.lang.monitorEditText2;
                             res.end(s.s(req.ret, null, 3))
                             return
                         }
@@ -3048,7 +3049,7 @@ app.all(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f']
                                 req.set=req.set.join(',');
                                 req.ar.push(req.monitor.ke),req.ar.push(req.monitor.mid);
                                 s.log(req.monitor,{type:'Monitor Updated',msg:'by user : '+user.uid});
-                                req.ret.msg=lang['Monitor Updated by user']+' : '+user.uid;
+                                req.ret.msg=user.lang['Monitor Updated by user']+' : '+user.uid;
                                 sql.query('UPDATE Monitors SET '+req.set+' WHERE ke=? AND mid=?',req.ar)
                                 req.finish=1;
                             }else{
@@ -3063,13 +3064,13 @@ app.all(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f']
         //                                        req.set.push('ke'),req.st.push('?'),req.ar.push(req.monitor.ke);
                                     req.set=req.set.join(','),req.st=req.st.join(',');
                                     s.log(req.monitor,{type:'Monitor Added',msg:'by user : '+user.uid});
-                                    req.ret.msg=lang['Monitor Added by user']+' : '+user.uid;
+                                    req.ret.msg=user.lang['Monitor Added by user']+' : '+user.uid;
                                     sql.query('INSERT INTO Monitors ('+req.set+') VALUES ('+req.st+')',req.ar)
                                     req.finish=1;
                                 }else{
                                     req.tx.f='monitor_edit_failed';
                                     req.tx.ff='max_reached';
-                                    req.ret.msg=lang.monitorEditFailedMaxReached;
+                                    req.ret.msg=user.lang.monitorEditFailedMaxReached;
                                 }
                             }
                             if(req.finish===1){
@@ -3092,7 +3093,7 @@ app.all(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f']
                         res.end(s.s(req.ret, null, 3))
                     }
             }else{
-                    req.ret.msg='Not Permitted';
+                    req.ret.msg=user.lang['Not Permitted'];
                     res.end(s.s(req.ret, null, 3))
             }
         }else{
@@ -3113,10 +3114,10 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
     res.setHeader('Content-Type', 'application/json');
     req.fn=function(user){
         if(user.permissions.control_monitors==="0"||user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitor_edit.indexOf(req.params.id)===-1){
-            res.end('Not Permitted')
+            res.end(user.lang['Not Permitted'])
             return
         }
-        if(req.params.f===''){req.ret.msg=lang.monitorGetText1;res.send(s.s(req.ret, null, 3));return}
+        if(req.params.f===''){req.ret.msg=user.lang.monitorGetText1;res.send(s.s(req.ret, null, 3));return}
         if(req.params.f!=='stop'&&req.params.f!=='start'&&req.params.f!=='record'){
             req.ret.msg='Mode not recognized.';
             res.end(s.s(req.ret, null, 3));
@@ -3139,9 +3140,9 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
                         if(req.params.f!=='stop'){
                             s.camera(req.params.f,s.init('noReference',r));
                         }
-                        req.ret.msg=lang['Monitor mode changed']+' : '+req.params.f;
+                        req.ret.msg=user.lang['Monitor mode changed']+' : '+req.params.f;
                     }else{
-                        req.ret.msg=lang['Reset Timer'];
+                        req.ret.msg=user.lang['Reset Timer'];
                     }
                     req.ret.cmd_at=s.moment(new Date,'YYYY-MM-DD HH:mm:ss');
                     req.ret.ok=true;
@@ -3179,10 +3180,10 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
 //                        req.ret.end_at=s.moment(new Date,'YYYY-MM-DD HH:mm:ss').add(req.timeout,'milliseconds');
                     }
                  }else{
-                    req.ret.msg=lang['Monitor mode is already']+' : '+req.params.f;
+                    req.ret.msg=user.lang['Monitor mode is already']+' : '+req.params.f;
                 }
             }else{
-                req.ret.msg=lang['Monitor or Key does not exist.'];
+                req.ret.msg=user.lang['Monitor or Key does not exist.'];
             }
             res.end(s.s(req.ret, null, 3));
         })
@@ -3194,7 +3195,7 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
 app.get('/:auth/videos/:ke/:id/:file', function (req,res){
     s.auth(req.params,function(user){
         if(user.permissions.watch_videos==="0"||user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
-            res.end('Not Permitted')
+            res.end(user.lang['Not Permitted'])
             return
         }
         req.dir=s.dir.videos+req.params.ke+'/'+req.params.id+'/'+req.params.file;
@@ -3224,13 +3225,13 @@ app.get('/:auth/videos/:ke/:id/:file', function (req,res){
             res.writeHead(req.writeCode,req.headerWrite);
             file.pipe(res);
         }else{
-            res.end('File Not Found')
+            res.end(user.lang['File Not Found'])
         }
     },res,req);
 });
 //motion trigger
 app.get('/:auth/motion/:ke/:id', function (req,res){
-    s.auth(req.params,function(){
+    s.auth(req.params,function(user){
         if(req.query.data){
             try{
                 var d={id:req.params.id,ke:req.params.ke,details:JSON.parse(req.query.data)};
@@ -3243,11 +3244,11 @@ app.get('/:auth/motion/:ke/:id', function (req,res){
             return;
         }
         if(!d.ke||!d.id||!s.group[d.ke]){
-            res.end(lang['No Group with this key exists']);
+            res.end(user.lang['No Group with this key exists']);
             return;
         }
         s.camera('motion',d,function(){
-            res.end(lang['Trigger Successful'])
+            res.end(user.lang['Trigger Successful'])
         });
 },res,req);
 })
@@ -3257,7 +3258,7 @@ app.get(['/:auth/videos/:ke/:id/:file/:mode','/:auth/videos/:ke/:id/:file/:mode/
     res.setHeader('Content-Type', 'application/json');
     s.auth(req.params,function(user){
         if(user.permissions.watch_videos==="0"||user.details.sub&&user.details.allmonitors!=='1'&&user.details.video_delete.indexOf(req.params.id)===-1){
-            res.end('Not Permitted')
+            res.end(user.lang['Not Permitted'])
             return
         }
         req.sql='SELECT * FROM Videos WHERE ke=? AND mid=? AND time=?';
@@ -3285,11 +3286,11 @@ app.get(['/:auth/videos/:ke/:id/:file/:mode','/:auth/videos/:ke/:id/:file/:mode/
                         s.video('delete',r)
                     break;
                     default:
-                        req.ret.msg=lang.modifyVideoText1;
+                        req.ret.msg=user.lang.modifyVideoText1;
                     break;
                 }
             }else{
-                req.ret.msg=lang['No such file'];
+                req.ret.msg=user.lang['No such file'];
             }
             res.send(s.s(req.ret, null, 3));
         })

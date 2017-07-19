@@ -488,5 +488,8 @@
    "startUpText4": "starting all monitors set to watch and record",
    "startUpText5": "Shinobi is ready.",
    "Edit": "Edit",
-   "Dashboard Language": "Dashboard Language"
+   "Dashboard Language": "Dashboard Language",
+   "File Not Found": "File Not Found",
+   "Not Permitted": "Not Permitted",
+   "Not Authorized": "Not Authorized"
 }
