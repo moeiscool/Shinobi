@@ -594,6 +594,8 @@ ul.msg_list li .message {
 .mdl-menu__item>div>i{margin-right:5px}
 /*For languages that are right to left*/
 .right-to-left {text-align:right}
+.right-to-left select{direction: rtl;}
+.right-to-left input,.right-to-left textarea{direction: rtl;text-align:right}
 .right-to-left .form-group label span{padding-right:10px}
 .right-to-left .modal-footer{text-align:left}
 .right-to-left .mdl-menu__item>div>*{flex:1}
