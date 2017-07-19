@@ -490,6 +490,8 @@
    "Edit": "Edit",
    "Dashboard Language": "Dashboard Language",
    "File Not Found": "File Not Found",
+   "No Monitor Exists with this ID.": "No Monitor Exists with this ID.",
+   "Cannot watch a monitor that isn't running.": "Cannot watch a monitor that isn't running.",
    "Not Permitted": "Not Permitted",
    "Not Authorized": "Not Authorized"
 }

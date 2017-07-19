@@ -2475,14 +2475,14 @@ app.get('/:auth/update/:key', function (req,res){
     res.setHeader('Content-Type', 'application/json');
     req.fn=function(user){
         if(!config.updateKey){
-            req.ret.msg=lang.updateKeyText1;
+            req.ret.msg=user.lang.updateKeyText1;
             return;
         }
         if(req.params.key===config.updateKey){
             req.ret.ok=true;
             exec('chmod +x '+__dirname+'/UPDATE.sh&&'+__dirname+'/./UPDATE.sh',{detached: true})
         }else{
-            req.ret.msg=lang.updateKeyText2;
+            req.ret.msg=user.lang.updateKeyText2;
         }
         res.send(s.s(req.ret, null, 3));
     }
@@ -2510,13 +2510,13 @@ app.post('/:auth/register/:ke/:uid',function (req,res){
                             res.send(s.s(req.resp,null,3));
                         })
                     }else{
-                        req.resp.msg=lang['Passwords Don\'t Match'];
+                        req.resp.msg=user.lang['Passwords Don\'t Match'];
                     }
                 }else{
-                    req.resp.msg=lang['Fields cannot be empty'];
+                    req.resp.msg=user.lang['Fields cannot be empty'];
                 }
             }else{
-                req.resp.msg=lang['Not an Administrator Account'];
+                req.resp.msg=user.lang['Not an Administrator Account'];
             }
             if(req.resp.msg){
                 res.send(s.s(req.resp,null,3));
@@ -2779,10 +2779,10 @@ app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,re
             if(s.group[req.params.ke].mon[req.params.id].started===1){
                 res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,config:config,lang:user.lang,mon:CircularJSON.parse(CircularJSON.stringify(s.group[req.params.ke].mon_conf[req.params.id]))});
             }else{
-                res.end('Cannot watch a monitor that isn\'t running.')
+                res.end(user.lang['Cannot watch a monitor that isn\'t running.'])
             }
         }else{
-            res.end('No Monitor Exists with this ID.')
+            res.end(user.lang['No Monitor Exists with this ID.'])
         }
     },res,req);
 });
