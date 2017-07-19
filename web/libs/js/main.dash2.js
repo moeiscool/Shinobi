@@ -1,4 +1,8 @@
-switch("<%-config.language%>"){
+<% cleanLang=function(string){
+    if(!string){string=''}
+    return string.replace(/'/g,"\\'")
+} %>
+switch(JSON.parse($user.details).lang){
     case'ar'://Arabic
     case'bn'://Bengali
         $('body').addClass('right-to-left')
@@ -226,7 +230,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 return $.ccio.init('tf',d.time)+'.'+d.ext
             break;
             case'filters':
-                k.tmp='<option value="" selected><%-lang['Add New']%></option>';
+                k.tmp='<option value="" selected><%-cleanLang(lang['Add New'])%></option>';
                 $.each($user.filters,function(n,v){
                     k.tmp+='<option value="'+v.id+'">'+v.name+'</option>'
                 });
@@ -296,7 +300,7 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                         case'hls':
                             if(d.p.find('video')[0].paused){
                                 if(d.d.signal_check_log==1){
-                                    d.log={type:'Stream Check',msg:'<%-lang.clientStreamFailedattemptingReconnect%>'}
+                                    d.log={type:'Stream Check',msg:'<%-cleanLang(lang.clientStreamFailedattemptingReconnect)%>'}
                                     $.ccio.tm(4,d,'#logs,.monitor_item[mid="'+d.id+'"][ke="'+d.ke+'"] .logs')
                                 }
                                 $.ccio.cx({f:'monitor',ff:'watch_on',id:d.id});
@@ -452,41 +456,41 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 d.per=parseInt(d.hr/24*100);
                 d.href='href="'+d.href+'?downloadName='+d.mid+'-'+d.filename+'"';
                 d.circle='<div title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'" '+d.href+' video="launch" class="progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div>'
-                tmp+='<li class="glM'+d.mid+'" mid="'+d.mid+'" ke="'+d.ke+'" status="'+d.status+'" file="'+d.filename+'">'+d.circle+'<div><span title="'+d.end+'" class="livestamp"></span></div><div><div class="small"><b><%-lang.Start%></b> : '+moment(d.time).format('h:mm:ss , MMMM Do YYYY')+'</div><div class="small"><b><%-lang.End%></b> : '+moment(d.end).format('h:mm:ss , MMMM Do YYYY')+'</div></div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls btn-group"><a class="btn btn-sm btn-primary" video="launch" '+d.href+'><i class="fa fa-play-circle"></i></a> <a download="'+d.dlname+'" '+d.href+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a>'
+                tmp+='<li class="glM'+d.mid+'" mid="'+d.mid+'" ke="'+d.ke+'" status="'+d.status+'" file="'+d.filename+'">'+d.circle+'<div><span title="'+d.end+'" class="livestamp"></span></div><div><div class="small"><b><%-cleanLang(lang.Start)%></b> : '+moment(d.time).format('h:mm:ss , MMMM Do YYYY')+'</div><div class="small"><b><%-cleanLang(lang.End)%></b> : '+moment(d.end).format('h:mm:ss , MMMM Do YYYY')+'</div></div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls btn-group"><a class="btn btn-sm btn-primary" video="launch" '+d.href+'><i class="fa fa-play-circle"></i></a> <a download="'+d.dlname+'" '+d.href+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a>'
                 <% if(config.DropboxAppKey){ %> tmp+='<a video="download" host="dropbox" download="'+d.dlname+'" '+d.href+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a>' <% } %>
-                tmp+='<a title="<%-lang['Delete Video']%>" video="delete" class="btn btn-sm btn-danger permission_video_delete"><i class="fa fa-trash"></i></a></div></div></li>';
+                tmp+='<a title="<%-cleanLang(lang['Delete Video'])%>" video="delete" class="btn btn-sm btn-danger permission_video_delete"><i class="fa fa-trash"></i></a></div></div></li>';
             break;
             case 1://monitor icon
                 d.src=placeholder.getData(placeholder.plcimg({bgcolor:'#b57d00',text:'...'}));
-                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" title="'+d.mid+' : '+d.name+'" class="monitor_block glM'+d.mid+' col-md-4"><img monitor="watch" class="snapshot" src="'+d.src+'"><div class="box"><div class="title monitor_name truncate">'+d.name+'</div><div class="list-data"><div class="monitor_mid">'+d.mid+'</div><div><b><%-lang['Save as']%> :</b> <span class="monitor_ext">'+d.ext+'</span></div><div><b>Mode :</b> <span class="monitor_mode">'+d.mode+'</span></div></div><div class="icons btn-group"><a class="btn btn-xs btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a monitor="calendar" class="btn btn-xs btn-default"><i class="fa fa-calendar"></i></a> <a monitor="videos_table" class="btn btn-xs btn-default"><i class="fa fa-film"></i></a></div></div></div>';
+                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" title="'+d.mid+' : '+d.name+'" class="monitor_block glM'+d.mid+' col-md-4"><img monitor="watch" class="snapshot" src="'+d.src+'"><div class="box"><div class="title monitor_name truncate">'+d.name+'</div><div class="list-data"><div class="monitor_mid">'+d.mid+'</div><div><b><%-cleanLang(lang['Save as'])%> :</b> <span class="monitor_ext">'+d.ext+'</span></div><div><b>Mode :</b> <span class="monitor_mode">'+d.mode+'</span></div></div><div class="icons btn-group"><a class="btn btn-xs btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a monitor="calendar" class="btn btn-xs btn-default"><i class="fa fa-calendar"></i></a> <a monitor="videos_table" class="btn btn-xs btn-default"><i class="fa fa-film"></i></a></div></div></div>';
                 delete(d.src);
             break;
             case 2://monitor stream
                 try{k.d=JSON.parse(d.details);}catch(er){k.d=d.details;}
                 switch(d.mode){
                     case'idle':
-                        k.mode='<%-lang['Idle']%>'
+                        k.mode='<%-cleanLang(lang['Idle'])%>'
                     break;
                     case'stop':
-                        k.mode='<%-lang['Disabled']%>'
+                        k.mode='<%-cleanLang(lang['Disabled'])%>'
                     break;
                     case'record':
-                        k.mode='<%-lang['Record']%>'
+                        k.mode='<%-cleanLang(lang['Record'])%>'
                     break;
                     case'start':
-                        k.mode='<%-lang['Watch Only']%>'
+                        k.mode='<%-cleanLang(lang['Watch Only'])%>'
                     break;
                 }
                 tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" mode="'+k.mode+'" class="monitor_item glM'+d.mid+' mdl-grid col-md-6">';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col">';
                 tmp+='<div class="stream-block no-padding mdl-card__media mdl-color-text--grey-50">';
                 tmp+='<div class="stream-objects"></div>';
-                tmp+='<div class="stream-hud"><div class="lamp" title="'+k.mode+'"><i class="fa fa-eercast"></i></div><div class="controls"><span title="<%-lang['Currently viewing']%>" class="label label-default"><span class="viewers"></span></span> <a class="btn-xs btn-danger btn" monitor="mode" mode="record"><i class="fa fa-circle"></i> <%-lang['Start Recording']%></a> <a class="btn-xs btn-primary btn" monitor="mode" mode="start"><i class="fa fa-eye"></i> <%-lang['Set to Watch Only']%></a></div></div>';
+                tmp+='<div class="stream-hud"><div class="lamp" title="'+k.mode+'"><i class="fa fa-eercast"></i></div><div class="controls"><span title="<%-cleanLang(lang['Currently viewing'])%>" class="label label-default"><span class="viewers"></span></span> <a class="btn-xs btn-danger btn" monitor="mode" mode="record"><i class="fa fa-circle"></i> <%-cleanLang(lang['Start Recording'])%></a> <a class="btn-xs btn-primary btn" monitor="mode" mode="start"><i class="fa fa-eye"></i> <%-cleanLang(lang['Set to Watch Only'])%></a></div></div>';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card__supporting-text text-center">';
                 tmp+='<div class="indifference"><div class="progress"><div class="progress-bar progress-bar-danger" role="progressbar"><span></span></div></div></div>';
                 tmp+='<div class="monitor_name">'+d.name+'</div>';
-                tmp+='<div class="btn-group"><a title="<%-lang.Snapshot%>" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="<%-lang['Show Logs']%>" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="<%-lang.Control%>" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="<%-lang['Status Indicator']%>" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-plug"></i></a> <a title="<%-lang.Calendar%>" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="<%-lang['Power Viewer']%>" class="btn btn-default" monitor="powerview"><i class="fa fa-map-marker"></i></a> <a title="<%-lang['Time-lapse']%>" class="btn btn-default" monitor="timelapse"><i class="fa fa-angle-double-right"></i></a> <a title="<%-lang['Videos List']%>" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a title="<%-lang['Monitor Settings']%>" class="btn btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="<%-lang.Enlarge%>" monitor="bigify" class="hidden btn btn-default"><i class="fa fa-expand"></i></a> <a title="<%-lang.Fullscreen%>" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="<%-lang.Close%> Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
+                tmp+='<div class="btn-group"><a title="<%-cleanLang(lang.Snapshot)%>" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="<%-cleanLang(lang['Show Logs'])%>" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="<%-cleanLang(lang.Control)%>" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="<%-cleanLang(lang['Status Indicator'])%>" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-plug"></i></a> <a title="<%-cleanLang(lang.Calendar)%>" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="<%-cleanLang(lang['Power Viewer'])%>" class="btn btn-default" monitor="powerview"><i class="fa fa-map-marker"></i></a> <a title="<%-cleanLang(lang['Time-lapse'])%>" class="btn btn-default" monitor="timelapse"><i class="fa fa-angle-double-right"></i></a> <a title="<%-cleanLang(lang['Videos List'])%>" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a title="<%-cleanLang(lang['Monitor Settings'])%>" class="btn btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="<%-cleanLang(lang.Enlarge)%>" monitor="bigify" class="hidden btn btn-default"><i class="fa fa-expand"></i></a> <a title="<%-cleanLang(lang.Fullscreen)%>" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="<%-cleanLang(lang.Close)%> Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
                 tmp+='</div>';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col mdl-cell--4-col-desktop">';
@@ -587,35 +591,35 @@ $.ccio={fr:$('#files_recent'),mon:{}};
                 tmp+='   <div class="form-group col-md-4">';
                 tmp+='       <label>';
                 tmp+='           <select class="form-control" where="p1">';
-                tmp+='               <option value="mid" selected><%-lang['Monitor ID']%></option>';
-                tmp+='               <option value="ext"><%-lang['File Type']%></option>';
-                tmp+='               <option value="time"><%-lang['Start Time']%></option>';
-                tmp+='               <option value="end"><%-lang['End Time']%></option>';
-                tmp+='               <option value="size"><%-lang['Filesize']%></option>';
-                tmp+='               <option value="status"><%-lang['Video Status']%></option>';
+                tmp+='               <option value="mid" selected><%-cleanLang(lang['Monitor ID'])%></option>';
+                tmp+='               <option value="ext"><%-cleanLang(lang['File Type'])%></option>';
+                tmp+='               <option value="time"><%-cleanLang(lang['Start Time'])%></option>';
+                tmp+='               <option value="end"><%-cleanLang(lang['End Time'])%></option>';
+                tmp+='               <option value="size"><%-cleanLang(lang['Filesize'])%></option>';
+                tmp+='               <option value="status"><%-cleanLang(lang['Video Status'])%></option>';
                 tmp+='           </select>';
                 tmp+='       </label>';
                 tmp+='   </div>';
                 tmp+='   <div class="form-group col-md-4">';
                 tmp+='       <label>';
                 tmp+='           <select class="form-control" where="p2">';
-                tmp+='               <option value="=" selected><%-lang['Equal to']%></option>';
-                tmp+='               <option value="!="><%-lang['Not Equal to']%></option>';
-                tmp+='               <option value=">="><%-lang['Greater Than or Equal to']%></option>';
-                tmp+='               <option value=">"><%-lang['Greater Than']%></option>';
-                tmp+='               <option value="<"><%-lang['Less Than']%></option>';
-                tmp+='               <option value="<="><%-lang['Less Than or Equal to']%></option>';
-                tmp+='               <option value="LIKE"><%-lang['Like']%></option>';
-                tmp+='               <option value="=~"><%-lang['Matches']%></option>';
-                tmp+='               <option value="!~"><%-lang['Not Matches']%></option>';
-                tmp+='               <option value="=[]"><%-lang['In']%></option>';
-                tmp+='               <option value="![]"><%-lang['Not In']%></option>';
+                tmp+='               <option value="=" selected><%-cleanLang(lang['Equal to'])%></option>';
+                tmp+='               <option value="!="><%-cleanLang(lang['Not Equal to'])%></option>';
+                tmp+='               <option value=">="><%-cleanLang(lang['Greater Than or Equal to'])%></option>';
+                tmp+='               <option value=">"><%-cleanLang(lang['Greater Than'])%></option>';
+                tmp+='               <option value="<"><%-cleanLang(lang['Less Than'])%></option>';
+                tmp+='               <option value="<="><%-cleanLang(lang['Less Than or Equal to'])%></option>';
+                tmp+='               <option value="LIKE"><%-cleanLang(lang['Like'])%></option>';
+                tmp+='               <option value="=~"><%-cleanLang(lang['Matches'])%></option>';
+                tmp+='               <option value="!~"><%-cleanLang(lang['Not Matches'])%></option>';
+                tmp+='               <option value="=[]"><%-cleanLang(lang['In'])%></option>';
+                tmp+='               <option value="![]"><%-cleanLang(lang['Not In'])%></option>';
                 tmp+='           </select>';
                 tmp+='       </label>';
                 tmp+='   </div>';
                 tmp+='   <div class="form-group col-md-4">';
                 tmp+='       <label>';
-                tmp+='           <input class="form-control" placeholder="Value" title="<%-lang.Value%>" where="p3">';
+                tmp+='           <input class="form-control" placeholder="Value" title="<%-cleanLang(lang.Value)%>" where="p3">';
                 tmp+='       </label>';
                 tmp+='   </div>';
                 tmp+='</div>';
@@ -729,20 +733,20 @@ $.ccio.ws.on('f',function (d){
     }
     switch(d.f){
         case'api_key_deleted':
-            $.ccio.init('note',{title:'<%-lang['API Key Deleted']%>',text:'<%-lang.APIKeyDeletedText%>',type:'notice'});
+            $.ccio.init('note',{title:'<%-cleanLang(lang['API Key Deleted'])%>',text:'<%-cleanLang(lang.APIKeyDeletedText)%>',type:'notice'});
             $('[api_key="'+d.form.code+'"]').remove();
         break;
         case'api_key_added':
-            $.ccio.init('note',{title:'<%-lang['API Key Added']%>',text:'<%-lang.FiltersUpdatedText%>',type:'success'});
+            $.ccio.init('note',{title:'<%-cleanLang(lang['API Key Added'])%>',text:'<%-cleanLang(lang.FiltersUpdatedText)%>',type:'success'});
             $.ccio.tm(3,d.form,'#api_list')
         break;
         case'filters_change':
-            $.ccio.init('note',{title:'<%-lang['Filters Updated']%>',text:'<%-lang.FiltersUpdatedText%>',type:'success'});
+            $.ccio.init('note',{title:'<%-cleanLang(lang['Filters Updated'])%>',text:'<%-cleanLang(lang.FiltersUpdatedText)%>',type:'success'});
             $user.filters=d.filters;
             $.ccio.init('filters');
         break;
         case'user_settings_change':
-            $.ccio.init('note',{title:'<%-lang['Settings Changed']%>',text:'<%-lang.SettingsChangedText%>',type:'success'});
+            $.ccio.init('note',{title:'<%-cleanLang(lang['Settings Changed'])%>',text:'<%-cleanLang(lang.SettingsChangedText)%>',type:'success'});
             $.ccio.init('id',d.form);
             $('#custom_css').append(d.form.details.css)
         break;
@@ -963,7 +967,7 @@ $.ccio.ws.on('f',function (d){
             d.pnote={title:'Monitor Not Saved',text:'<b>'+d.mon.name+'</b> <small>'+d.mon.mid+'</small> has not been saved.',type:'error'}
             switch(d.ff){
                 case'max_reached':
-                    d.pnote.text+=' <%-lang.monitorEditFailedMaxReached%>'
+                    d.pnote.text+=' <%-cleanLang(lang.monitorEditFailedMaxReached)%>'
                 break;
             }
             $.ccio.init('note',d.pnote);
@@ -1594,8 +1598,8 @@ $.aM.e.find('.probe_config').click(function(){
 $.aM.e.find('.import_config').click(function(e){
   var e={};e.e=$(this);e.mid=e.e.parents('[mid]').attr('mid');
     $.confirm.e.modal('show');
-    $.confirm.title.text('<%-lang['Import Monitor Configuration']%>')
-    e.html='<%-lang.ImportMonitorConfigurationText%><div style="margin-top:15px"><div class="form-group"><textarea placeholder="<%-lang['Paste JSON here.']%>" class="form-control"></textarea></div><label class="upload_file btn btn-primary btn-block"> Upload File <input class="upload" type=file name="files[]"></label></div>';
+    $.confirm.title.text('<%-cleanLang(lang['Import Monitor Configuration'])%>')
+    e.html='<%-cleanLang(lang.ImportMonitorConfigurationText)%><div style="margin-top:15px"><div class="form-group"><textarea placeholder="<%-cleanLang(lang['Paste JSON here.'])%>" class="form-control"></textarea></div><label class="upload_file btn btn-primary btn-block"> Upload File <input class="upload" type=file name="files[]"></label></div>';
     $.confirm.body.html(e.html)
     $.confirm.e.find('.upload').change(function(e){
         var files = e.target.files; // FileList object
@@ -1613,7 +1617,7 @@ $.aM.e.find('.import_config').click(function(e){
             $.aM.e.modal('show')
         }catch(err){
             $.ccio.log(err)
-            $.ccio.init('note',{title:'<%-lang['Invalid JSON']%>',text:'<%-lang.InvalidJSONText%>',type:'error'})
+            $.ccio.init('note',{title:'<%-cleanLang(lang['Invalid JSON'])%>',text:'<%-cleanLang(lang.InvalidJSONText)%>',type:'error'})
         }
     });
 });
@@ -1710,7 +1714,7 @@ $('#saved_filters').change(function(e){
             $.fI.f.find('[name="'+n+'"]').val(v);
         });
     }else{
-        e.name='<%-lang['Add New']%>';
+        e.name='<%-cleanLang(lang['Add New'])%>';
         $.fI.f.find('[name="id"]').val($.ccio.gid(5));
         $.ccio.tm('filters-where');
     }
@@ -1719,10 +1723,10 @@ $('#saved_filters').change(function(e){
 $.fI.f.find('.delete').click(function(e){
     e.s=$.fI.f.serializeObject();
     $.confirm.e.modal('show');
-    $.confirm.title.text('<%-lang['Delete Filter']%>');
-    e.html='<%-lang.confirmDeleteFilter%>';
+    $.confirm.title.text('<%-cleanLang(lang['Delete Filter'])%>');
+    e.html='<%-cleanLang(lang.confirmDeleteFilter)%>';
     $.confirm.body.html(e.html);
-    $.confirm.click({title:'<%-lang['Delete Filter']%>',class:'btn-danger'},function(){
+    $.confirm.click({title:'<%-cleanLang(lang['Delete Filter'])%>',class:'btn-danger'},function(){
         $.ccio.cx({f:'settings',ff:'filters',fff:'delete',form:e.s})
     });
 })
@@ -1839,8 +1843,8 @@ $.vidview.e.find('form').submit(function(e){
 $.vidview.e.find('.delete_selected').click(function(e){
     e.s=$.vidview.f.serializeObject();
     $.confirm.e.modal('show');
-    $.confirm.title.text('<%-lang['Delete Selected Videos']%>')
-    e.html='<%-lang.DeleteSelectedVideosMsg%><div style="margin-bottom:15px"></div>'
+    $.confirm.title.text('<%-cleanLang(lang['Delete Selected Videos'])%>')
+    e.html='<%-cleanLang(lang.DeleteSelectedVideosMsg)%><div style="margin-bottom:15px"></div>'
     $.each(e.s,function(n,v){
         e.html+=n+'<br>';
     })
@@ -2287,7 +2291,7 @@ $.pwrvid.e.on('click','[preview]',function(e){
                 var colorNames = Object.keys(window.chartColors);
 
             }else{
-                $.pwrvid.mL.html('<div class="super-center text-center" style="width:auto"><%-lang['No Events found for this video']%></div>')
+                $.pwrvid.mL.html('<div class="super-center text-center" style="width:auto"><%-cleanLang(lang['No Events found for this video'])%></div>')
             }
             $.pwrvid.video={filename:e.filename,href:e.href,mid:e.mon.mid,ke:e.mon.ke}
             $.pwrvid.vpOnPlayPause=function(x,e){
@@ -2390,14 +2394,14 @@ $.pwrvid.drawTimeline=function(getData){
                     labels: labels,
                     datasets: [{
                         type: 'line',
-                        label: '<%-lang['Video and Time Span (Minutes)']%>',
+                        label: '<%-cleanLang(lang['Video and Time Span (Minutes)'])%>',
                         backgroundColor: color(window.chartColors.blue).alpha(0.2).rgbString(),
                         borderColor: window.chartColors.blue,
                         data: Dataset1,
                     }, {
                         type: 'bar',
                         showTooltip: false,
-                        label: '<%-lang['Counts of Motion']%>',
+                        label: '<%-cleanLang(lang['Counts of Motion'])%>',
                         backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
                         borderColor: window.chartColors.red,
                         data:Dataset2,
@@ -2510,8 +2514,8 @@ $('body')
         break;
         case'fix':
             $.confirm.e.modal('show');
-            $.confirm.title.text('<%-lang['Fix Video']%> : '+e.file)
-            e.html='<%-lang.FixVideoMsg%>'
+            $.confirm.title.text('<%-cleanLang(lang['Fix Video'])%> : '+e.file)
+            e.html='<%-cleanLang(lang.FixVideoMsg)%>'
             e.html+='<video class="video_video" autoplay loop controls><source src="'+e.p.find('[download]').attr('href')+'" type="video/'+e.mon.ext+'"></video>';
             $.confirm.body.html(e.html)
             $.confirm.click({title:'Fix Video',class:'btn-warning'},function(){
@@ -2525,8 +2529,8 @@ $('body')
                 e.href=e.p.attr('href')
             }
             $.confirm.e.modal('show');
-            $.confirm.title.text('<%-lang['Delete Video']%> : '+e.file)
-            e.html='<%-lang.DeleteVideoMsg%>'
+            $.confirm.title.text('<%-cleanLang(lang['Delete Video'])%> : '+e.file)
+            e.html='<%-cleanLang(lang.DeleteVideoMsg)%>'
             e.html+='<video class="video_video" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"></video>';
             $.confirm.body.html(e.html)
             $.confirm.click({title:'Delete Video',class:'btn-danger'},function(){
@@ -2702,7 +2706,7 @@ $('body')
         break;
         case'region':
             if(!e.mon){
-                $.ccio.init('note',{title:'<%-lang['Unable to Launch']%>',text:'<%-lang.UnabletoLaunchText%>',type:'error'});
+                $.ccio.init('note',{title:'<%-cleanLang(lang['Unable to Launch'])%>',text:'<%-cleanLang(lang.UnabletoLaunchText)%>',type:'error'});
                 return;
             }
             e.d=JSON.parse(e.mon.details);
@@ -2812,7 +2816,7 @@ $('body')
                             });
                             setTimeout(function(){e.b.fullCalendar('changeView','month');e.b.find('.fc-scroller').css('height','auto')},500)
                         }else{
-                            e.b.html('<div class="text-center"><%-lang.NoVideosFoundForDateRange%></div>')
+                            e.b.html('<div class="text-center"><%-cleanLang(lang.NoVideosFoundForDateRange)%></div>')
                         }
                     break;
                     case'videos_table':
@@ -2821,16 +2825,16 @@ $('body')
                         e.tmp+='<thead>';
                         e.tmp+='<tr>';
                         e.tmp+='<th><div class="checkbox"><input id="videos_select_all" type="checkbox"><label for="videos_select_all"></label></div></th>';
-                        e.tmp+='<th data-field="Closed" data-sortable="true"><%-lang.Closed%></th>';
-                        e.tmp+='<th data-field="Ended" data-sortable="true"><%-lang.Ended%></th>';
-                        e.tmp+='<th data-field="Started" data-sortable="true"><%-lang.Started%></th>';
-                        e.tmp+='<th data-field="Monitor" data-sortable="true"><%-lang.Monitor%></th>';
-                        e.tmp+='<th data-field="Filename" data-sortable="true"><%-lang.Filename%></th>';
-                        e.tmp+='<th data-field="Size" data-sortable="true"><%-lang['Size (mb)']%></th>';
-                        e.tmp+='<th data-field="Watch" data-sortable="true"><%-lang.Watch%></th>';
-                        e.tmp+='<th data-field="Download" data-sortable="true"><%-lang.Download%></th>';
-                        e.tmp+='<th class="permission_video_delete" data-field="Delete" data-sortable="true"><%-lang.Delete%></th>';
-                        e.tmp+='<th class="permission_video_delete" data-field="Fix" data-sortable="true"><%-lang.Fix%></th>';
+                        e.tmp+='<th data-field="Closed" data-sortable="true"><%-cleanLang(lang.Closed)%></th>';
+                        e.tmp+='<th data-field="Ended" data-sortable="true"><%-cleanLang(lang.Ended)%></th>';
+                        e.tmp+='<th data-field="Started" data-sortable="true"><%-cleanLang(lang.Started)%></th>';
+                        e.tmp+='<th data-field="Monitor" data-sortable="true"><%-cleanLang(lang.Monitor)%></th>';
+                        e.tmp+='<th data-field="Filename" data-sortable="true"><%-cleanLang(lang.Filename)%></th>';
+                        e.tmp+='<th data-field="Size" data-sortable="true"><%-cleanLang(lang['Size (mb)'])%></th>';
+                        e.tmp+='<th data-field="Watch" data-sortable="true"><%-cleanLang(lang.Watch)%></th>';
+                        e.tmp+='<th data-field="Download" data-sortable="true"><%-cleanLang(lang.Download)%></th>';
+                        e.tmp+='<th class="permission_video_delete" data-field="Delete" data-sortable="true"><%-cleanLang(lang.Delete)%></th>';
+                        e.tmp+='<th class="permission_video_delete" data-field="Fix" data-sortable="true"><%-cleanLang(lang.Fix)%></th>';
                         e.tmp+='</tr>';
                         e.tmp+='</thead>';
                         e.tmp+='<tbody>';
@@ -2904,7 +2908,7 @@ $('body')
         break;
         case'control_toggle':
             e.e=e.p.find('.PTZ_controls');
-            if(e.e.length>0){e.e.remove()}else{e.p.append('<div class="PTZ_controls"><div class="pad"><div class="control top" monitor="control" control="up"></div><div class="control left" monitor="control" control="left"></div><div class="control right" monitor="control" control="right"></div><div class="control bottom" monitor="control" control="down"></div><div class="control middle" monitor="control" control="center"></div></div><div class="btn-group btn-group-sm btn-group-justified"><a title="<%-lang['Zoom In']%>" class="zoom_in btn btn-default" monitor="control" control="zoom_in"><i class="fa fa-search-plus"></i></a><a title="<%-lang['Zoom Out']%>" class="zoom_out btn btn-default" monitor="control" control="zoom_out"><i class="fa fa-search-minus"></i></a></div><div class="btn-group btn-group-sm btn-group-justified"><a title="<%-lang['Enable Nightvision']%>" class="nv_enable btn btn-default" monitor="control" control="enable_nv"><i class="fa fa-moon-o"></i></a><a title="<%-lang['Disable Nightvision']%>" class="nv_disable btn btn-default" monitor="control" control="disable_nv"><i class="fa fa-sun-o"></i></a></div></div>')}
+            if(e.e.length>0){e.e.remove()}else{e.p.append('<div class="PTZ_controls"><div class="pad"><div class="control top" monitor="control" control="up"></div><div class="control left" monitor="control" control="left"></div><div class="control right" monitor="control" control="right"></div><div class="control bottom" monitor="control" control="down"></div><div class="control middle" monitor="control" control="center"></div></div><div class="btn-group btn-group-sm btn-group-justified"><a title="<%-cleanLang(lang['Zoom In'])%>" class="zoom_in btn btn-default" monitor="control" control="zoom_in"><i class="fa fa-search-plus"></i></a><a title="<%-cleanLang(lang['Zoom Out'])%>" class="zoom_out btn btn-default" monitor="control" control="zoom_out"><i class="fa fa-search-minus"></i></a></div><div class="btn-group btn-group-sm btn-group-justified"><a title="<%-cleanLang(lang['Enable Nightvision'])%>" class="nv_enable btn btn-default" monitor="control" control="enable_nv"><i class="fa fa-moon-o"></i></a><a title="<%-cleanLang(lang['Disable Nightvision'])%>" class="nv_disable btn btn-default" monitor="control" control="disable_nv"><i class="fa fa-sun-o"></i></a></div></div>')}
         break;
         case'watch':
             if($("#monitor_live_"+e.mid).length===0||$.ccio.mon[e.mid].watch!==1){
@@ -2918,8 +2922,8 @@ $('body')
         break;
         case'delete':
             e.m=$('#confirm_window').modal('show');e.f=e.e.attr('file');
-            $.confirm.title.text('<%-lang['Delete Monitor']%> : '+e.mon.name)
-            e.html='<%-lang.DeleteMonitorText%>'
+            $.confirm.title.text('<%-cleanLang(lang['Delete Monitor'])%> : '+e.mon.name)
+            e.html='<%-cleanLang(lang.DeleteMonitorText)%>'
             e.html+='<table class="info-table"><tr>';
             $.each(e.mon,function(n,v,g){
                 if(n==='host'&&v.indexOf('@')>-1){g=v.split('@')[1]}else{g=v};
@@ -3035,7 +3039,7 @@ $('body')
                 //edit monitor
                 e.p.find('[monitor="delete"]').show()
                 e.mt.find('.edit_id').text(e.mid);
-                e.mt.find('span').text('<%-lang.Edit%>');
+                e.mt.find('span').text('<%-cleanLang(lang.Edit)%>');
                 e.mt.find('i').attr('class','fa fa-wrench');
                 e.values=$.ccio.mon[e.mid];
             }
