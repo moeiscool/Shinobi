@@ -1238,7 +1238,7 @@ s.camera=function(x,e,cn,tx){
                                     }
                                 }
                                 e.captureOne=function(f){
-                                    s.group[e.ke].mon[e.id].record.request=request({url:e.url,method:'GET',encoding: null,timeout:3000},function(err,data){
+                                    s.group[e.ke].mon[e.id].record.request=request({url:e.url,method:'GET',encoding: null,timeout:15000},function(err,data){
                                         if(err){
                                             return;
                                         }
