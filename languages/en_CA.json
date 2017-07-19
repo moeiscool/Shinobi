@@ -164,7 +164,7 @@
    "Time-lapse Tool": "Time-lapse Tool",
    "total": "total",
    "MB": "MB",
-   "calendar": "calendar",
+   "Calendar": "Calendar",
    "Leave blank for random.": "Leave blank for random.",
    "Currently viewing": "Currently viewing",
    "Status Indicator": "Status Indicator",
@@ -487,5 +487,6 @@
    "startUpText3": "waiting to give unfinished video check some time. 3 seconds.",
    "startUpText4": "starting all monitors set to watch and record",
    "startUpText5": "Shinobi is ready.",
-   "Edit": "Edit"
+   "Edit": "Edit",
+   "Dashboard Language": "Dashboard Language"
 }

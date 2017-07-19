@@ -78,6 +78,19 @@
                 </div>
                 <% } %>
               <% } %>
+            <div class="form-group">
+                <label><div><span><%-lang['Dashboard Language']%></span></div>
+                    <div>
+                        <select class="form-control" detail="lang" placeholder="10">
+                            <option value="" selected>Default</option>
+                            <% fs.readdirSync('./languages').forEach(function(v,n){
+                                    v=v.replace('.json','') %>
+                            <option value="<%-v%>"><%-v%></option>
+                               <% }) %>
+                        </select>
+                    </div>
+                </label>
+            </div>
           </div>
           <% if(!details.sub){ %>
           <div class="form-group-group blue">

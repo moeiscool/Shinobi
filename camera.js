@@ -76,6 +76,24 @@ if(config.cron.deleteOverMax===undefined)config.cron.deleteOverMax=true;
 if(config.cron.deleteOverMaxOffset===undefined)config.cron.deleteOverMaxOffset=0.9;
 if(config.pluginKeys===undefined)config.pluginKeys={};
 s={factorAuth:{},child_help:false,totalmem:os.totalmem(),platform:os.platform(),s:JSON.stringify,isWin:(process.platform==='win32')};
+s.loadedLanguages={}
+s.loadedLanguages[config.language]=lang;
+s.getLanguageFile=function(rule,file){
+    if(rule&&rule!==''){
+        file=s.loadedLanguages[file]
+        if(!file){
+            try{
+                s.loadedLanguages[rule]=require('./languages/'+rule+'.json')
+                file=s.loadedLanguages[rule]
+            }catch(err){
+                file=lang
+            }
+        }
+    }else{
+        file=lang
+    }
+    return file
+}
 s.systemLog=function(q,w,e){
     if(!w){w=''}
     if(!e){e=''}
@@ -297,7 +315,7 @@ if(!config.streamDir){
     }
 }
 if(!config.videosDir){config.videosDir=__dirname+'/videos/'}
-s.dir={videos:config.videosDir,streams:config.streamDir};
+s.dir={videos:config.videosDir,streams:config.streamDir,languages:'./languages/'};
 //streams dir
 if(!fs.existsSync(s.dir.streams)){
     fs.mkdirSync(s.dir.streams);
@@ -2396,7 +2414,10 @@ s.auth=function(xx,x,res,req){
                     sql.query('SELECT details FROM Users WHERE uid=? AND ke=?',[r.uid,r.ke],function(err,rr){
                         if(rr&&rr[0]){
                             rr=rr[0];
-                            try{s.api[xx.auth].details=JSON.parse(rr.details)}catch(er){}
+                            try{
+                                s.api[xx.auth].details=JSON.parse(rr.details)
+                                s.api[xx.auth].lang=s.getLanguageFile(s.api[xx.auth].details.lang)
+                            }catch(er){}
                         }
                         xx.checkIP();
                     })
@@ -2528,7 +2549,7 @@ app.post('/',function (req,res){
             res.setHeader('Content-Type', 'application/json');
             res.send(s.s({ok:false}, null, 3))
         }else{
-            res.render("index",{failedLogin:true});
+            res.render("index",{failedLogin:true,lang:lang});
             res.end();
         }
     }
@@ -2537,29 +2558,29 @@ app.post('/',function (req,res){
             case'cam':
                 sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"dashcam"],function(err,rr){
                     req.resp.mons=rr;
-                    req.renderFunction("dashcam",{$user:req.resp});
+                    req.renderFunction("dashcam",{$user:req.resp,lang:r.lang});
                 })
             break;
             case'streamer':
                 sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
                     req.resp.mons=rr;
-                    req.renderFunction("streamer",{$user:req.resp});
+                    req.renderFunction("streamer",{$user:req.resp,lang:r.lang});
                 })
             break;
             case'admin':
                 if(!r.details.sub){
                     sql.query('SELECT uid,mail,details FROM Users WHERE ke=? AND details LIKE \'%"sub"%\'',[r.ke],function(err,rr) {
                         sql.query('SELECT * FROM Monitors WHERE ke=?',[r.ke],function(err,rrr) {
-                            req.renderFunction("admin",{$user:req.resp,$subs:rr,$mons:rrr});
+                            req.renderFunction("admin",{$user:req.resp,$subs:rr,$mons:rrr,lang:r.lang});
                         })
                     })
                 }else{
                     //not admin user
-                    req.renderFunction("home",{$user:req.resp,config:config,lang:lang});
+                    req.renderFunction("home",{$user:req.resp,config:config,lang:r.lang,fs:fs});
                 }
             break;
             default:
-                req.renderFunction("home",{$user:req.resp,config:config,lang:lang});
+                req.renderFunction("home",{$user:req.resp,config:config,lang:r.lang,fs:fs});
             break;
         }
     //    res.end();
@@ -2584,7 +2605,7 @@ app.post('/',function (req,res){
                     sql.query("UPDATE Users SET auth=? WHERE ke=? AND uid=?",[r.auth,r.ke,r.uid])
                     req.resp={ok:true,auth_token:r.auth,ke:r.ke,uid:r.uid,mail:r.mail,details:r.details};
                     r.details=JSON.parse(r.details);
-                    
+                    r.lang=s.getLanguageFile(r.details.lang)
                     req.factorAuth=function(cb){
                         if(r.details.factorAuth==="1"){
                             if(!r.details.acceptedMachines||!(r.details.acceptedMachines instanceof Object)){
@@ -2597,7 +2618,7 @@ app.post('/',function (req,res){
                                     s.factorAuth[r.ke][r.uid].expireAuth=setTimeout(function(){
                                         s.deleteFactorAuth(r)
                                     },1000*60*15)
-                                    req.renderFunction("factor",{$user:req.resp})
+                                    req.renderFunction("factor",{$user:req.resp,lang:r.lang})
                                 }
                                 if(!s.factorAuth[r.ke]){s.factorAuth[r.ke]={}}
                                 if(!s.factorAuth[r.ke][r.uid]){
@@ -2605,12 +2626,12 @@ app.post('/',function (req,res){
                                     r.mailOptions = {
                                         from: '"ShinobiCCTV" <no-reply@shinobi.video>',
                                         to: r.mail,
-                                        subject: lang['2-Factor Authentication'],
-                                        html: lang['Enter this code to proceed']+' <b>'+s.factorAuth[r.ke][r.uid].key+'</b>. '+lang.FactorAuthText1,
+                                        subject: r.lang['2-Factor Authentication'],
+                                        html: r.lang['Enter this code to proceed']+' <b>'+s.factorAuth[r.ke][r.uid].key+'</b>. '+r.lang.FactorAuthText1,
                                     };
                                     nodemailer.sendMail(r.mailOptions, (error, info) => {
                                         if (error) {
-                                            s.systemLog(lang.MailError,error)
+                                            s.systemLog(r.lang.MailError,error)
                                             req.fn(r)
                                             return
                                         }
@@ -2648,6 +2669,7 @@ app.post('/',function (req,res){
                 if(s.factorAuth[req.body.ke][req.body.id].key===req.body.factorAuthKey){
                     if(req.body.remember==="1"){
                         req.details=JSON.parse(s.factorAuth[req.body.ke][req.body.id].info.details)
+                        req.lang=s.loadedLanguages[req.details.lang]
                         if(!req.details.acceptedMachines||!(req.details.acceptedMachines instanceof Object)){
                             req.details.acceptedMachines={}
                         }
@@ -2659,7 +2681,7 @@ app.post('/',function (req,res){
                     req.resp=s.factorAuth[req.body.ke][req.body.id].info
                     req.fn(s.factorAuth[req.body.ke][req.body.id].user)
                 }else{
-                    req.renderFunction("factor",{$user:s.factorAuth[req.body.ke][req.body.id].info});
+                    req.renderFunction("factor",{$user:s.factorAuth[req.body.ke][req.body.id].info,lang:req.lang});
                     res.end();
                 }
             }else{
@@ -2754,7 +2776,7 @@ app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,re
         }
         if(s.group[req.params.ke]&&s.group[req.params.ke].mon[req.params.id]){
             if(s.group[req.params.ke].mon[req.params.id].started===1){
-                res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,config:config,lang:lang,mon:CircularJSON.parse(CircularJSON.stringify(s.group[req.params.ke].mon_conf[req.params.id]))});
+                res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,config:config,lang:user.lang,mon:CircularJSON.parse(CircularJSON.stringify(s.group[req.params.ke].mon_conf[req.params.id]))});
             }else{
                 res.end('Cannot watch a monitor that isn\'t running.')
             }
