@@ -1274,7 +1274,7 @@ s.camera=function(x,e,cn,tx){
                                                 case'ESOCKETTIMEDOUT':
                                                 case'ETIMEDOUT':
                                                     ++s.group[e.ke].mon[e.id].error_socket_timeout_count
-                                                    if(s.group[e.ke].mon[e.id].error_socket_timeout_count>e.details.fatal_max){
+                                                    if(e.details.fatal_max!==0&&s.group[e.ke].mon[e.id].error_socket_timeout_count>e.details.fatal_max){
                                                         s.log(e,{type:lang['Fatal Maximum Reached'],msg:{code:'ESOCKETTIMEDOUT',msg:lang.FatalMaximumReachedText}});
                                                         s.camera('stop',e)
                                                     }else{
@@ -1285,7 +1285,7 @@ s.camera=function(x,e,cn,tx){
                                                 break;
                                             }
                                         }
-                                        if(e.error_count>e.details.fatal_max){
+                                        if(e.details.fatal_max!==0&&e.error_count>e.details.fatal_max){
                                             clearTimeout(s.group[e.ke].mon[e.id].record.capturing);
                                             e.fn();
                                         }
