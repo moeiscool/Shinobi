@@ -1,17 +1,3 @@
-<% cleanLang=function(string){
-    if(!string){string=''}
-    return string.replace(/'/g,"\\'")
-} %>
-switch(JSON.parse($user.details).lang){
-    case'ar'://Arabic
-    case'bn'://Bengali
-        $('body').addClass('right-to-left')
-        $('.mdl-menu__item').each(function(n,v){
-            v=$(v).find('i')
-            v.appendTo(v.parent())
-        })
-    break;
-}
 window.chartColors = {
     red: 'rgb(255, 99, 132)',
     orange: 'rgb(255, 159, 64)',
@@ -21,7 +7,24 @@ window.chartColors = {
     purple: 'rgb(153, 102, 255)',
     grey: 'rgb(201, 203, 207)'
 };
-$.ccio={fr:$('#files_recent'),mon:{}};
+$.ccio={fr:$('#files_recent'),mon:{},userDetails:JSON.parse($user.details)};
+<% cleanLang=function(string){
+    if(!string){string=''}
+    return string.replace(/'/g,"\\'")
+} %>
+if(!$.ccio.userDetails.lang||$.ccio.userDetails.lang==''){
+    $.ccio.userDetails.lang="<%-config.language%>"
+}
+switch($.ccio.userDetails.lang){
+    case'ar'://Arabic
+    case'bn'://Bengali
+        $('body').addClass('right-to-left')
+        $('.mdl-menu__item').each(function(n,v){
+            v=$(v).find('i')
+            v.appendTo(v.parent())
+        })
+    break;
+}
     $.ccio.log=function(x,y,z){
         if($.ccio.op().browserLog==="1"){
             if(!y){y=''};if(!z){z=''};
