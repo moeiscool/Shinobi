@@ -1134,7 +1134,18 @@ $.ccio.ws.on('f',function (d){
                 var image = new Image();
                 var ctx = $('#monitor_live_'+d.id+' canvas');
                 image.onload = function() {
-                    ctx[0].getContext("2d").drawImage(image,0,0,ctx.width(),ctx.height());
+                    var x = 0;
+                    var y = 0;
+                    var wRatio = ctx.width()/image.width;
+                    var hRatio = ctx.height()/image.height;
+                    var ratio = Math.min(wRatio,hRatio);
+                    var drawWidth = image.width*ratio;
+                    var drawHeight = image.height*ratio;
+                    if( drawWidth < ctx.width() )
+                        x = (ctx.width() / 2) - (drawWidth / 2);
+                    if( drawHeight < ctx.height() )
+                        y = (ctx.height() / 2) - (drawHeight / 2);
+                    ctx[0].getContext("2d").drawImage(image,0,0,image.width,image.height,x,y,drawWidth,drawHeight);
                 };
                 image.src='data:image/jpeg;base64,'+d.frame;
                 $.ccio.mon[d.id].last_frame='data:image/jpeg;base64,'+d.frame;
@@ -2873,6 +2884,10 @@ $('body')
             })
         break;
         case'fullscreen':
+            if( lastFullscreenChangeTimeout != null ) {
+                clearTimeout(lastFullscreenChangeTimeout);
+                lastFullscreenChangeTimeout = null;
+            }
             e.e=e.e.parents('.monitor_item');
             e.e.addClass('fullscreen')
             e.vid=e.e.find('.stream-element')
@@ -3179,12 +3194,14 @@ $('body')
 document.addEventListener("fullscreenchange", onFullScreenChange, false);
 document.addEventListener("webkitfullscreenchange", onFullScreenChange, false);
 document.addEventListener("mozfullscreenchange", onFullScreenChange, false);
+var lastFullscreenChangeTimeout = null;
 function onFullScreenChange() {
     var fullscreenElement = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement;
     if(!fullscreenElement){
         $('.fullscreen').removeClass('fullscreen')
-        setTimeout(function(){
-            $('canvas.stream-element').resize()
+        lastFullscreenChangeTimeout = setTimeout(function(){
+            $('canvas.stream-element').resize();
+            lastFullscreenChangeTimeout = null;
         },2000)
     }
 }
