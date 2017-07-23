@@ -47,6 +47,17 @@ var events = require('events');
 var df = require('node-df');
 var Cam = require('onvif').Cam;
 var config = require('./conf.json');
+if(!config.language){
+    config.language='en_CA'
+}
+if(config.language.split('_')[0]==='he'){config.language=='ar'}
+try{
+    var lang = require('./languages/'+config.language+'.json');
+}catch(er){
+    console.error(er)
+    console.log('There was an error loading your language file.')
+    var lang = require('./languages/en_CA.json');
+}
 process.send = process.send || function () {};
 if(config.mail){
     var nodemailer = require('nodemailer').createTransport(config.mail);
@@ -65,6 +76,24 @@ if(config.cron.deleteOverMax===undefined)config.cron.deleteOverMax=true;
 if(config.cron.deleteOverMaxOffset===undefined)config.cron.deleteOverMaxOffset=0.9;
 if(config.pluginKeys===undefined)config.pluginKeys={};
 s={factorAuth:{},child_help:false,totalmem:os.totalmem(),platform:os.platform(),s:JSON.stringify,isWin:(process.platform==='win32')};
+s.loadedLanguages={}
+s.loadedLanguages[config.language]=lang;
+s.getLanguageFile=function(rule,file){
+    if(rule&&rule!==''){
+        file=s.loadedLanguages[file]
+        if(!file){
+            try{
+                s.loadedLanguages[rule]=require('./languages/'+rule+'.json')
+                file=s.loadedLanguages[rule]
+            }catch(err){
+                file=lang
+            }
+        }
+    }else{
+        file=lang
+    }
+    return file
+}
 s.systemLog=function(q,w,e){
     if(!w){w=''}
     if(!e){e=''}
@@ -74,8 +103,8 @@ s.systemLog=function(q,w,e){
 }
 s.disc=function(){
     sql = mysql.createConnection(config.db);
-    sql.connect(function(err){if(err){s.systemLog('Error Connecting : DB',err);setTimeout(s.disc, 2000);}});
-    sql.on('error',function(err) {s.systemLog('DB Lost.. Retrying..');s.systemLog(err);s.disc();return;});
+    sql.connect(function(err){if(err){s.systemLog(lang['Error Connecting']+' : DB',err);setTimeout(s.disc, 2000);}});
+    sql.on('error',function(err) {s.systemLog(lang['DB Lost.. Retrying..']);s.systemLog(err);s.disc();return;});
 }
 s.disc();
 //kill any ffmpeg running
@@ -250,13 +279,13 @@ if(config.ssl&&config.ssl.key&&config.ssl.cert){
     }
     var serverHTTPS = https.createServer(config.ssl,app);
     serverHTTPS.listen(config.ssl.port,config.bindip,function(){
-        console.log('SSL Shinobi - SSL PORT : '+config.ssl.port);
+        console.log('SSL '+lang.Shinobi+' - SSL PORT : '+config.ssl.port);
     });
     io.attach(serverHTTPS);
 }
 //start HTTP
 server.listen(config.port,config.bindip,function(){
-    console.log('Shinobi - PORT : '+config.port);
+    console.log(lang.Shinobi+' - PORT : '+config.port);
 });
 io.attach(server);
 console.log('NODE.JS : '+execSync("node -v"))
@@ -286,7 +315,7 @@ if(!config.streamDir){
     }
 }
 if(!config.videosDir){config.videosDir=__dirname+'/videos/'}
-s.dir={videos:config.videosDir,streams:config.streamDir};
+s.dir={videos:config.videosDir,streams:config.streamDir,languages:'./languages/'};
 //streams dir
 if(!fs.existsSync(s.dir.streams)){
     fs.mkdirSync(s.dir.streams);
@@ -403,17 +432,17 @@ s.filter=function(x,d){
                 d.mailOptions = {
                     from: '"ShinobiCCTV" <no-reply@shinobi.video>', // sender address
                     to: d.mail, // list of receivers
-                    subject: 'Filter Matches : '+d.name, // Subject line
-                    html: 'This filter has met conditions. '+d.videos.length+' videos found.',
+                    subject: lang['Filter Matches']+' : '+d.name, // Subject line
+                    html: lang.FilterMatchesText1+' '+d.videos.length+' '+lang.FilterMatchesText2,
                 };
                 if(d.execute&&d.execute!==''){
-                    d.mailOptions.html+='<div><b>Executed :</b> '+d.execute+'</div>'
+                    d.mailOptions.html+='<div><b>'+lang.Executed+' :</b> '+d.execute+'</div>'
                 }
                 if(d.delete==='1'){
-                    d.mailOptions.html+='<div><b>Deleted :</b> Yes</div>'
+                    d.mailOptions.html+='<div><b>'+lang.Deleted+' :</b> '+lang.Yes+'</div>'
                 }
-                d.mailOptions.html+='<div><b>Query :</b> '+d.query+'</div>'
-                d.mailOptions.html+='<div><b>Filter ID :</b> '+d.id+'</div>'
+                d.mailOptions.html+='<div><b>'+lang.Query+' :</b> '+d.query+'</div>'
+                d.mailOptions.html+='<div><b>'+lang['Filter ID']+' :</b> '+d.id+'</div>'
                 nodemailer.sendMail(d.mailOptions, (error, info) => {
                     if (error) {
                         s.tx({f:'error',ff:'filter_mail',ke:d.ke,error:error},'GRP_'+d.ke);
@@ -525,7 +554,7 @@ s.video=function(x,e){
                                fs.readFile(e.dir+e.filename+'.'+e.ext,function(err,data){
                                    s.group[e.ke].webdav.putFileContents(s.group[e.ke].init.webdav_dir+e.ke+'/'+e.mid+'/'+e.filename+'.'+e.ext,"binary",data)
                                 .catch(function(err) {
-                                       s.log(e,{type:'Webdav Error',msg:{msg:'Cannot save. Did you make the folders <b>/'+e.ke+'/'+e.id+'</b> inside your chosen save directory?',info:err},ffmpeg:s.group[e.ke].mon[e.id].ffmpeg})
+                                       s.log(e,{type:lang['Webdav Error'],msg:{msg:lang.WebdavErrorText+' <b>/'+e.ke+'/'+e.id+'</b>',info:err},ffmpeg:s.group[e.ke].mon[e.id].ffmpeg})
                                     console.error(err);
                                    });
                                 });
@@ -568,10 +597,10 @@ s.video=function(x,e){
                         }
                     }else{
                         s.video('delete',e);
-                        s.log(e,{type:'File Not Exist',msg:'Cannot save non existant file. Something went wrong.',ffmpeg:s.group[e.ke].mon[e.id].ffmpeg})
+                        s.log(e,{type:lang['File Not Exist'],msg:lang.FileNotExistText,ffmpeg:s.group[e.ke].mon[e.id].ffmpeg})
                         if(e.mode&&config.restart.onVideoNotExist===true&&e.fn){
                             delete(s.group[e.ke].mon[e.id].open);
-                            s.log(e,{type:'FFMPEG Not Recording',msg:{msg:'Settings may be incompatible. Check encoders. Restarting...'}});
+                            s.log(e,{type:lang['Camera is not recording'],msg:{msg:lang.CameraNotRecordingText}});
                             if(s.group[e.ke].mon[e.id].started===1){
                                 s.camera('restart',e)
                             }
@@ -895,6 +924,30 @@ s.file=function(x,e){
         break;
     }
 }
+s.genSrt=function(fileName,path) {
+    var srtFileName = path+fileName+'.srt';
+    var fd = fs.openSync(srtFileName, 'w');
+    var start = moment(s.nameToTime(fileName))
+    var end = moment(new Date);
+    end.add(1,'seconds');
+    var timecode = moment(new Date(1,1,1,0,0,0));
+    var count = 1;
+    while( start.isBefore(end) ) {
+        fs.writeSync(fd,count);
+        fs.writeSync(fd,'\r\n');
+        fs.writeSync(fd,timecode.format('HH:mm:ss'));
+        fs.writeSync(fd,',000 --> ');
+        timecode.add(1, 'seconds');
+        fs.writeSync(fd,timecode.format('HH:mm:ss'));
+        fs.writeSync(fd,',000\r\n');
+        fs.writeSync(fd,start.format('YYYY-MM-DD HH:mm:ss'));
+        fs.writeSync(fd,'\r\n\r\n');
+        start.add(1, 'seconds');
+        count++;
+    }
+    fs.closeSync(fd);
+    return srtFileName;
+}
 s.camera=function(x,e,cn,tx){
     if(x!=='motion'){
         var ee=s.init('noReference',e);
@@ -1021,7 +1074,7 @@ s.camera=function(x,e,cn,tx){
             s.tx({f:'monitor_stopping',mid:e.id,ke:e.ke,time:s.moment()},'GRP_'+e.ke);
             s.camera('snapshot',{mid:e.id,ke:e.ke,mon:e})
             if(x==='stop'){
-                    s.log(e,{type:'Monitor Stopped',msg:'Monitor session has been ordered to stop.'});
+                    s.log(e,{type:lang['Monitor Stopped'],msg:lang.MonitorStoppedText});
                     clearTimeout(s.group[e.ke].mon[e.id].delete)
                 if(e.delete===1){
                     s.group[e.ke].mon[e.id].delete=setTimeout(function(){
@@ -1031,7 +1084,7 @@ s.camera=function(x,e,cn,tx){
                 }
             }else{
                 s.tx({f:'monitor_idle',mid:e.id,ke:e.ke,time:s.moment()},'GRP_'+e.ke);
-                s.log(e,{type:'Monitor Idling',msg:'Monitor session has been ordered to idle.'});
+                s.log(e,{type:lang['Monitor Idling'],msg:lang.MonitorIdlingText});
             }
         break;
         case'start':case'record'://watch or record monitor url
@@ -1084,11 +1137,11 @@ s.camera=function(x,e,cn,tx){
                             e.mailOptions = {
                                 from: '"ShinobiCCTV" <no-reply@shinobi.video>', // sender address
                                 to: r.mail, // list of receivers
-                                subject: 'No Motion for '+e.name+' ('+e.id+')', // Subject line
-                                html: '<i>There hasn\'t been any motion detected for '+e.details.detector_notrigger_timeout+' minutes on camera.</i>',
+                                subject: lang.NoMotionEmailText1+' '+e.name+' ('+e.id+')', // Subject line
+                                html: '<i>'+lang.NoMotionEmailText2+' '+e.details.detector_notrigger_timeout+' '+lang.minutes+'.</i>',
                             };
-                            e.mailOptions.html+='<div><b>Monitor Name </b> : '+e.name+'</div>'
-                            e.mailOptions.html+='<div><b>Monitor ID </b> : '+e.id+'</div>'
+                            e.mailOptions.html+='<div><b>'+lang['Monitor Name']+' </b> : '+e.name+'</div>'
+                            e.mailOptions.html+='<div><b>'+lang['Monitor ID']+' </b> : '+e.id+'</div>'
                             nodemailer.sendMail(e.mailOptions, (error, info) => {
                                 if (error) {
                                    s.systemLog('detector:notrigger:sendMail',s.moment(),error)
@@ -1115,7 +1168,7 @@ s.camera=function(x,e,cn,tx){
                             s.group[e.ke].mon[e.id].checker=setTimeout(function(){
                                 if(s.group[e.ke].mon[e.id].started===1){
                                     e.fn();
-                                    s.log(e,{type:'FFMPEG Not Recording',msg:{msg:'Restarting Process'}});
+                                    s.log(e,{type:lang['Camera is not recording'],msg:{msg:lang['Restarting Process']}});
                                 }
                             },60000*2);
                         break;
@@ -1178,7 +1231,7 @@ s.camera=function(x,e,cn,tx){
                             s.group[e.ke].mon[e.id].spawn_exit=function(){
                                 if(s.group[e.ke].mon[e.id].started===1){
                                     if(e.details.loglevel!=='quiet'){
-                                        s.log(e,{type:'FFMPEG Unexpected Exit',msg:{msg:'Process Crashed for Monitor : '+e.id,cmd:s.group[e.ke].mon[e.id].ffmpeg}});
+                                        s.log(e,{type:lang['Process Unexpected Exit'],msg:{msg:lang['Process Crashed for Monitor']+' : '+e.id,cmd:s.group[e.ke].mon[e.id].ffmpeg}});
                                     }
                                     e.error_fatal();
                                 }
@@ -1204,14 +1257,13 @@ s.camera=function(x,e,cn,tx){
                                     })
                                 }else{
                                     if(x==='record'){
-                                        s.log(e,{type:'FFMPEG START',msg:'The recording engine for this snapshot based camera could not start. There may be something wrong with your camera configuration. If there are any logs other than this one please post them in the <b>Issues</b> on Github.'});
+                                        s.log(e,{type:lang.FFmpegCantStart,msg:lang.FFmpegCantStartText});
                                         return
                                     }
                                 }
                                 e.captureOne=function(f){
-                                    s.group[e.ke].mon[e.id].record.request=request({url:e.url,method:'GET',encoding: null,timeout:3000},function(err,data){
+                                    s.group[e.ke].mon[e.id].record.request=request({url:e.url,method:'GET',encoding: null,timeout:15000},function(err,data){
                                         if(err){
-
                                             return;
                                         }
                                     }).on('data',function(d){
@@ -1241,23 +1293,23 @@ s.camera=function(x,e,cn,tx){
                                         ++e.error_count;
                                         clearTimeout(e.timeOut);delete(e.timeOut);
                                         if(e.details.loglevel!=='quiet'){
-                                            s.log(e,{type:'JPEG Error',msg:{msg:'There was an issue getting data from your camera.',info:err}});
+                                            s.log(e,{type:lang['JPEG Error'],msg:{msg:lang.JPEGErrorText,info:err}});
                                             switch(err.code){
                                                 case'ESOCKETTIMEDOUT':
                                                 case'ETIMEDOUT':
                                                     ++s.group[e.ke].mon[e.id].error_socket_timeout_count
-                                                    if(s.group[e.ke].mon[e.id].error_socket_timeout_count>e.details.fatal_max){
-                                                        s.log(e,{type:'Fatal Maximum Reached, Stopping Camera restart commands.',msg:{code:'ESOCKETTIMEDOUT',msg:'JPEG Error was fatal.'}});
+                                                    if(e.details.fatal_max!==0&&s.group[e.ke].mon[e.id].error_socket_timeout_count>e.details.fatal_max){
+                                                        s.log(e,{type:lang['Fatal Maximum Reached'],msg:{code:'ESOCKETTIMEDOUT',msg:lang.FatalMaximumReachedText}});
                                                         s.camera('stop',e)
                                                     }else{
-                                                        s.log(e,{type:'FFMPEG Restarting',msg:{code:'ESOCKETTIMEDOUT',msg:'JPEG Error was fatal.'}});
+                                                        s.log(e,{type:lang['Restarting Process'],msg:{code:'ESOCKETTIMEDOUT',msg:lang.FatalMaximumReachedText}});
                                                         s.camera('restart',e)
                                                     }
                                                     return;
                                                 break;
                                             }
                                         }
-                                        if(e.error_count>e.details.fatal_max){
+                                        if(e.details.fatal_max!==0&&e.error_count>e.details.fatal_max){
                                             clearTimeout(s.group[e.ke].mon[e.id].record.capturing);
                                             e.fn();
                                         }
@@ -1331,7 +1383,7 @@ s.camera=function(x,e,cn,tx){
 //                                                e.details.stream_acodec='no'
 //                                            }
 //                                            s.camera('restart',e)
-                                            return s.log(e,{type:"Incorrect Settings Chosen",msg:{msg:d}})
+                                            return s.log(e,{type:lang['Incorrect Settings Chosen'],msg:{msg:d}})
                                         break;
                                         case e.chk('NULL @'):
                                         case e.chk('RTP: missed'):
@@ -1342,36 +1394,42 @@ s.camera=function(x,e,cn,tx){
                                         case e.chk('Connection refused'):
                                         case e.chk('Connection timed out'):
                                             //restart
-                                            setTimeout(function(){s.log(e,{type:"Can't Connect",msg:'Retrying...'});e.error_fatal();},1000)
+                                            setTimeout(function(){s.log(e,{type:lang["Can't Connect"],msg:lang['Retrying...']});e.error_fatal();},1000)
                                         break;
-                                        case e.chk('No pixel format specified'):
-                                            s.log(e,{type:"FFMPEG STDERR",msg:{ffmpeg:s.group[e.ke].mon[e.id].ffmpeg,msg:d}})
-                                        break;
-                                        case e.chk('No such file or directory'):
-                                        case e.chk('Unable to open RTSP for listening'):
-                                        case e.chk('timed out'):
-                                        case e.chk('Invalid data found when processing input'):
-                                        case e.chk('Immediate exit requested'):
-                                        case e.chk('reset by peer'):
-                                           if(e.frames===0&&x==='record'){s.video('delete',e)};
-                                            setTimeout(function(){
-                                                if(!s.group[e.ke].mon[e.id].spawn){e.fn()}
-                                            },2000)
-                                        break;
+//                                        case e.chk('No such file or directory'):
+//                                        case e.chk('Unable to open RTSP for listening'):
+//                                        case e.chk('timed out'):
+//                                        case e.chk('Invalid data found when processing input'):
+//                                        case e.chk('Immediate exit requested'):
+//                                        case e.chk('reset by peer'):
+//                                           if(e.frames===0&&x==='record'){s.video('delete',e)};
+//                                            setTimeout(function(){
+//                                                if(!s.group[e.ke].mon[e.id].spawn){e.fn()}
+//                                            },2000)
+//                                        break;
                                         case e.chk('mjpeg_decode_dc'):
                                         case e.chk('bad vlc'):
                                         case e.chk('error dc'):
                                             e.fn()
                                         break;
                                         case /T[0-9][0-9]-[0-9][0-9]-[0-9][0-9]./.test(d):
-                                            return s.log(e,{type:"Video Finished",msg:{filename:d}})
+                                            if( e.details.vcodec=='copy' ) {
+                                                var fileName = d.trim();
+                                                var srtFileName = s.genSrt(fileName,s.dir.videos+e.ke+'/'+e.id+'/');                                            
+                                                var args = '-i '+s.dir.videos+e.ke+'/'+e.id+'/'+fileName+' -i ' + srtFileName + ' -c copy -c:s mov_text ' + s.dir.videos+e.ke+'/'+e.id+'/'+fileName+'.new.mp4';
+                                                execSync('ffmpeg ' + args, {detached:true});
+                                                fs.unlinkSync(srtFileName);
+                                                fs.unlinkSync(s.dir.videos+e.ke+'/'+e.id+'/'+fileName);
+                                                fs.renameSync(s.dir.videos+e.ke+'/'+e.id+'/'+fileName+'.new.mp4',s.dir.videos+e.ke+'/'+e.id+'/'+fileName);
+                                            }
+                                            return s.log(e,{type:lang['Video Finished'],msg:{filename:d}});
                                         break;
                                     }
                                     s.log(e,{type:"FFMPEG STDERR",msg:d})
                                 });
                             }
                           }else{
-                            s.log(e,{type:"Can't Connect",msg:'Retrying...'});e.error_fatal();return;
+                            s.log(e,{type:lang["Can't Connect"],msg:lang['Retrying...']});e.error_fatal();return;
                         }
                     }
                     if(e.type!=='socket'&&e.type!=='dashcam'&&e.protocol!=='udp'&&e.type!=='local'){
@@ -1419,7 +1477,7 @@ s.camera=function(x,e,cn,tx){
         case'motion':
             var d=e;
             if(!s.group[d.ke]||!s.group[d.ke].mon[d.id]){
-                return s.systemLog('No Monitor Found, Ignoring Request')
+                return s.systemLog(lang['No Monitor Found, Ignoring Request'])
             }
             d.mon=s.group[d.ke].mon_conf[d.id];
             if(!s.group[d.ke].mon[d.id].detector_motion_count){
@@ -1507,11 +1565,11 @@ s.camera=function(x,e,cn,tx){
                         d.mailOptions = {
                             from: '"ShinobiCCTV" <no-reply@shinobi.video>', // sender address
                             to: r.mail, // list of receivers
-                            subject: 'Motion Event - '+d.frame_filename, // Subject line
-                            html: '<i>Triggered a motion event at '+moment(new Date).format()+'.</i>',
+                            subject: lang.Event+' - '+d.frame_filename, // Subject line
+                            html: '<i>'+lang.EventText1+' '+moment(new Date).format()+'.</i>',
                         };
                         if(err){
-                            s.systemLog('Could not email image, file was not accessible '+d.ke+' '+d.id,err)
+                            s.systemLog(lang.EventText2+' '+d.ke+' '+d.id,err)
                         }else{
                             d.mailOptions.attachments=[
                                 {
@@ -1519,14 +1577,14 @@ s.camera=function(x,e,cn,tx){
                                     content: frame
                                 }
                             ]
-                            d.mailOptions.html='<i>The attached frame triggered a motion event.</i>'
+                            d.mailOptions.html='<i>'+lang.EventText3+'</i>'
                         }
                             Object.keys(d.details).forEach(function(v,n){
                             d.mailOptions.html+='<div><b>'+v+'</b> : '+d.details[v]+'</div>'
                         })
                         nodemailer.sendMail(d.mailOptions, (error, info) => {
                             if (error) {
-                                s.systemLog('MAIL ERROR : Could not send email, Check conf.json',error)
+                                s.systemLog(lang.MailError,error)
                                 return ;
                             }
                         });
@@ -1581,6 +1639,7 @@ var tx;
 //                    s.group[d.ke].vid[cn.id]={uid:d.uid};
                     s.group[d.ke].users[d.auth]={cnid:cn.id,uid:r.uid,mail:r.mail,details:JSON.parse(r.details),logged_in_at:moment(new Date).format(),login_type:'Dashboard'}
                     try{s.group[d.ke].users[d.auth].details=JSON.parse(r.details)}catch(er){}
+                    s.group[d.ke].users[d.auth].lang=s.getLanguageFile(s.group[d.ke].users[d.auth].details.lang)
                     if(!s.group[d.ke].mon){
                         s.group[d.ke].mon={}
                         if(!s.group[d.ke].mon){s.group[d.ke].mon={}}
@@ -1653,13 +1712,13 @@ var tx;
                 break;
                 case'update':
                     if(!config.updateKey){
-                        tx({error:'"updateKey" is missing from "conf.json", cannot do updates this way until you add it.'});
+                        tx({error:lang.updateKeyText1});
                         return;
                     }
                     if(d.key===config.updateKey){
                         exec('chmod +x '+__dirname+'/UPDATE.sh&&'+__dirname+'/./UPDATE.sh',{detached: true})
                     }else{
-                        tx({error:'"updateKey" is incorrect.'});
+                        tx({error:lang.updateKeyText2});
                     }
                 break;
                 case'cron':
@@ -1785,7 +1844,7 @@ var tx;
                         case'control':
                             if(!s.group[d.ke]||!s.group[d.ke].mon[d.mid]){return}
                             d.m=s.group[d.ke].mon_conf[d.mid];
-                            if(d.m.details.control!=="1"){s.log(d,{type:'Control Error',msg:'Control is not enabled'});return}
+                            if(d.m.details.control!=="1"){s.log(d,{type:lang['Control Error'],msg:lang.ControlErrorText1});return}
                             if(!d.m.details.control_base_url||d.m.details.control_base_url===''){
                                 d.base=s.init('url_no_path',d.m);
                             }else{
@@ -2012,7 +2071,7 @@ var tx;
             }
         }catch(er){s.systemLog(er)}
         }else{
-            tx({ok:false,msg:'Not Authorized, Submit init command with "auth","ke", and "uid"'});
+            tx({ok:false,msg:lang.NotAuthorizedText1});
         }
     });
     //functions for receiving detector data
@@ -2121,10 +2180,10 @@ var tx;
                                             }
                                         })
                                     }else{
-                                        d.msg='Passwords Don\'t Match';
+                                        d.msg=lang["Passwords Don't Match"];
                                     }
                                 }else{
-                                    d.msg='Fields cannot be empty';
+                                    d.msg=lang['Fields cannot be empty'];
                                 }
                                 if(d.msg){
                                     s.tx({f:'error',ff:'account_register',msg:d.msg},cn.id)
@@ -2135,7 +2194,7 @@ var tx;
                                    if(d.form.pass===d.form.password_again){
                                        d.form.pass=s.md5(d.form.pass);
                                    }else{
-                                       s.tx({f:'error',ff:'account_edit',msg:'Passwords don\'t match.'},cn.id)
+                                       s.tx({f:'error',ff:'account_edit',msg:lang["Passwords Don't Match"]},cn.id)
                                        return
                                    }
                                 }else{
@@ -2154,7 +2213,7 @@ var tx;
                                 sql.query('UPDATE Users SET '+d.set.join(',')+' WHERE mail=?',d.values,function(err,r) {
                                     if(err){
                                         s.systemLog('UPDATE Users SET '+d.set.join(',')+' WHERE mail=?',d.values,err)
-                                        s.tx({f:'error',ff:'account_edit',msg:'Could not edit. Refresh page if problem continues.'},cn.id)
+                                        s.tx({f:'error',ff:'account_edit',msg:lang.AccountEditText1},cn.id)
                                         return
                                     }
                                     s.tx({f:'edit_account',form:d.form,ke:d.account.ke,uid:d.account.uid},'SUPER');
@@ -2360,7 +2419,7 @@ s.auth=function(xx,x,res,req){
         xx.ip=req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         xx.failed=function(){
             if(!req.ret){req.ret={ok:false}}
-            req.ret.msg='Not Authorized';
+            req.ret.msg=lang['Not Authorized'];
             res.send(s.s(req.ret, null, 3));
         }
     }else{
@@ -2389,7 +2448,10 @@ s.auth=function(xx,x,res,req){
                     sql.query('SELECT details FROM Users WHERE uid=? AND ke=?',[r.uid,r.ke],function(err,rr){
                         if(rr&&rr[0]){
                             rr=rr[0];
-                            try{s.api[xx.auth].details=JSON.parse(rr.details)}catch(er){}
+                            try{
+                                s.api[xx.auth].details=JSON.parse(rr.details)
+                                s.api[xx.auth].lang=s.getLanguageFile(s.api[xx.auth].details.lang)
+                            }catch(er){}
                         }
                         xx.checkIP();
                     })
@@ -2411,10 +2473,10 @@ s.superAuth=function(x,callback){
             req.found=1;
             if(x.users===true){
                 sql.query('SELECT * FROM Users WHERE details NOT LIKE ?',['%"sub"%'],function(err,r) {
-                    callback({$user:v,users:r,config:config})
+                    callback({$user:v,users:r,config:config,lang:lang})
                 })
             }else{
-                callback({$user:v,config:config})
+                callback({$user:v,config:config,lang:lang})
             }
         }
     })
@@ -2438,7 +2500,7 @@ app.get('/info', function (req,res){
 });
 //main page
 app.get('/', function (req,res){
-    res.render('index');
+    res.render('index',{lang:lang});
 });
 //update server
 app.get('/:auth/update/:key', function (req,res){
@@ -2446,14 +2508,14 @@ app.get('/:auth/update/:key', function (req,res){
     res.setHeader('Content-Type', 'application/json');
     req.fn=function(user){
         if(!config.updateKey){
-            req.ret.msg='"updateKey" is missing from "conf.json", cannot do updates this way until you add it.';
+            req.ret.msg=user.lang.updateKeyText1;
             return;
         }
         if(req.params.key===config.updateKey){
             req.ret.ok=true;
             exec('chmod +x '+__dirname+'/UPDATE.sh&&'+__dirname+'/./UPDATE.sh',{detached: true})
         }else{
-            req.ret.msg='"updateKey" is incorrect.';
+            req.ret.msg=user.lang.updateKeyText2;
         }
         res.send(s.s(req.ret, null, 3));
     }
@@ -2481,13 +2543,13 @@ app.post('/:auth/register/:ke/:uid',function (req,res){
                             res.send(s.s(req.resp,null,3));
                         })
                     }else{
-                        req.resp.msg='Passwords Don\'t Match';
+                        req.resp.msg=user.lang['Passwords Don\'t Match'];
                     }
                 }else{
-                    req.resp.msg='Fields cannot be empty';
+                    req.resp.msg=user.lang['Fields cannot be empty'];
                 }
             }else{
-                req.resp.msg='Not an Administrator Account';
+                req.resp.msg=user.lang['Not an Administrator Account'];
             }
             if(req.resp.msg){
                 res.send(s.s(req.resp,null,3));
@@ -2521,7 +2583,7 @@ app.post('/',function (req,res){
             res.setHeader('Content-Type', 'application/json');
             res.send(s.s({ok:false}, null, 3))
         }else{
-            res.render("index",{failedLogin:true});
+            res.render("index",{failedLogin:true,lang:lang});
             res.end();
         }
     }
@@ -2530,29 +2592,29 @@ app.post('/',function (req,res){
             case'cam':
                 sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"dashcam"],function(err,rr){
                     req.resp.mons=rr;
-                    req.renderFunction("dashcam",{$user:req.resp});
+                    req.renderFunction("dashcam",{$user:req.resp,lang:r.lang});
                 })
             break;
             case'streamer':
                 sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
                     req.resp.mons=rr;
-                    req.renderFunction("streamer",{$user:req.resp});
+                    req.renderFunction("streamer",{$user:req.resp,lang:r.lang});
                 })
             break;
             case'admin':
                 if(!r.details.sub){
                     sql.query('SELECT uid,mail,details FROM Users WHERE ke=? AND details LIKE \'%"sub"%\'',[r.ke],function(err,rr) {
                         sql.query('SELECT * FROM Monitors WHERE ke=?',[r.ke],function(err,rrr) {
-                            req.renderFunction("admin",{$user:req.resp,$subs:rr,$mons:rrr});
+                            req.renderFunction("admin",{$user:req.resp,$subs:rr,$mons:rrr,lang:r.lang});
                         })
                     })
                 }else{
                     //not admin user
-                    req.renderFunction("home",{$user:req.resp,config:config});
+                    req.renderFunction("home",{$user:req.resp,config:config,lang:r.lang,fs:fs});
                 }
             break;
             default:
-                req.renderFunction("home",{$user:req.resp,config:config});
+                req.renderFunction("home",{$user:req.resp,config:config,lang:r.lang,fs:fs});
             break;
         }
     //    res.end();
@@ -2560,8 +2622,7 @@ app.post('/',function (req,res){
     if(req.body.mail&&req.body.pass){
         if(req.body.function==='super'){
             if(!fs.existsSync('./super.json')){
-                res.send('"super.json" does not exist. Please rename "super.sample.json" to "super.json".')
-                res.end();
+                res.end(lang.superAdminText)
                 return
             }
             req.ok=s.superAuth({mail:req.body.mail,pass:req.body.pass,users:true,md5:true},function(data){
@@ -2578,7 +2639,7 @@ app.post('/',function (req,res){
                     sql.query("UPDATE Users SET auth=? WHERE ke=? AND uid=?",[r.auth,r.ke,r.uid])
                     req.resp={ok:true,auth_token:r.auth,ke:r.ke,uid:r.uid,mail:r.mail,details:r.details};
                     r.details=JSON.parse(r.details);
-                    
+                    r.lang=s.getLanguageFile(r.details.lang)
                     req.factorAuth=function(cb){
                         if(r.details.factorAuth==="1"){
                             if(!r.details.acceptedMachines||!(r.details.acceptedMachines instanceof Object)){
@@ -2591,7 +2652,7 @@ app.post('/',function (req,res){
                                     s.factorAuth[r.ke][r.uid].expireAuth=setTimeout(function(){
                                         s.deleteFactorAuth(r)
                                     },1000*60*15)
-                                    req.renderFunction("factor",{$user:req.resp})
+                                    req.renderFunction("factor",{$user:req.resp,lang:r.lang})
                                 }
                                 if(!s.factorAuth[r.ke]){s.factorAuth[r.ke]={}}
                                 if(!s.factorAuth[r.ke][r.uid]){
@@ -2599,12 +2660,12 @@ app.post('/',function (req,res){
                                     r.mailOptions = {
                                         from: '"ShinobiCCTV" <no-reply@shinobi.video>',
                                         to: r.mail,
-                                        subject: '2-Factor Authentication',
-                                        html: 'Enter this code to proceed <b>'+s.factorAuth[r.ke][r.uid].key+'</b>. The code will only be active for 15 minutes. If you login again the timer will be reset to 15 minutes with the same code.',
+                                        subject: r.lang['2-Factor Authentication'],
+                                        html: r.lang['Enter this code to proceed']+' <b>'+s.factorAuth[r.ke][r.uid].key+'</b>. '+r.lang.FactorAuthText1,
                                     };
                                     nodemailer.sendMail(r.mailOptions, (error, info) => {
                                         if (error) {
-                                            s.systemLog('MAIL ERROR : You must set up conf.json with the mail object or this feature will not work. skipping 2-Factor Authentication this time.',error)
+                                            s.systemLog(r.lang.MailError,error)
                                             req.fn(r)
                                             return
                                         }
@@ -2642,6 +2703,7 @@ app.post('/',function (req,res){
                 if(s.factorAuth[req.body.ke][req.body.id].key===req.body.factorAuthKey){
                     if(req.body.remember==="1"){
                         req.details=JSON.parse(s.factorAuth[req.body.ke][req.body.id].info.details)
+                        req.lang=s.loadedLanguages[req.details.lang]
                         if(!req.details.acceptedMachines||!(req.details.acceptedMachines instanceof Object)){
                             req.details.acceptedMachines={}
                         }
@@ -2653,7 +2715,7 @@ app.post('/',function (req,res){
                     req.resp=s.factorAuth[req.body.ke][req.body.id].info
                     req.fn(s.factorAuth[req.body.ke][req.body.id].user)
                 }else{
-                    req.renderFunction("factor",{$user:s.factorAuth[req.body.ke][req.body.id].info});
+                    req.renderFunction("factor",{$user:s.factorAuth[req.body.ke][req.body.id].info,lang:req.lang});
                     res.end();
                 }
             }else{
@@ -2673,7 +2735,7 @@ app.get('/:auth/hls/:ke/:id/:file', function (req,res){
         if (fs.existsSync(req.dir)){
             fs.createReadStream(req.dir).pipe(res);
         }else{
-            res.send('File Not Found')
+            res.send(user.lang['File Not Found'])
         }
     }
     s.auth(req.params,req.fn,res,req);
@@ -2683,7 +2745,7 @@ app.get('/:auth/jpeg/:ke/:id/s.jpg', function(req,res){
     res.header("Access-Control-Allow-Origin",req.headers.origin);
     s.auth(req.params,function(user){
         if(user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
-            res.end('Not Permitted')
+            res.end(user.lang['Not Permitted'])
             return
         }
         req.dir=s.dir.streams+req.params.ke+'/'+req.params.id+'/s.jpg';
@@ -2707,7 +2769,7 @@ app.get(['/:auth/mjpeg/:ke/:id','/:auth/mjpeg/:ke/:id/:addon'], function(req,res
     }else{
         s.auth(req.params,function(user){
             if(user.permissions.watch_stream==="0"||user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
-                res.end('Not Permitted')
+                res.end(user.lang['Not Permitted'])
                 return
             }
             res.writeHead(200, {
@@ -2743,17 +2805,17 @@ app.get(['/:auth/embed/:ke/:id','/:auth/embed/:ke/:id/:addon'], function (req,re
     req.params.protocol=req.protocol;
     s.auth(req.params,function(user){
         if(user.permissions.watch_stream==="0"||user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
-            res.end('Not Permitted')
+            res.end(user.lang['Not Permitted'])
             return
         }
         if(s.group[req.params.ke]&&s.group[req.params.ke].mon[req.params.id]){
             if(s.group[req.params.ke].mon[req.params.id].started===1){
-                res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,config:config,mon:CircularJSON.parse(CircularJSON.stringify(s.group[req.params.ke].mon_conf[req.params.id]))});
+                res.render("embed",{data:req.params,baseUrl:req.protocol+'://'+req.hostname,config:config,lang:user.lang,mon:CircularJSON.parse(CircularJSON.stringify(s.group[req.params.ke].mon_conf[req.params.id]))});
             }else{
-                res.end('Cannot watch a monitor that isn\'t running.')
+                res.end(user.lang['Cannot watch a monitor that isn\'t running.'])
             }
         }else{
-            res.end('No Monitor Exists with this ID.')
+            res.end(user.lang['No Monitor Exists with this ID.'])
         }
     },res,req);
 });
@@ -2993,7 +3055,7 @@ app.all(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f']
                     req.monitor=JSON.parse(req.body.data)
                 }
             }catch(er){
-                req.ret.msg='Invalid Data, Check to see this is a valid import string.';
+                req.ret.msg=user.lang.monitorEditText1;
                 res.end(s.s(req.ret, null, 3))
                 return
             }
@@ -3002,7 +3064,7 @@ app.all(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f']
                         req.set=[],req.ar=[];
                         req.monitor.mid=req.monitor.mid.replace(/[^\w\s]/gi,'').replace(/ /g,'');
                         try{JSON.parse(req.monitor.details)}catch(er){
-                            req.ret.msg='Invalid Details String. Check to see it is a JSON string and not a regular object being passed.';
+                            req.ret.msg=user.lang.monitorEditText2;
                             res.end(s.s(req.ret, null, 3))
                             return
                         }
@@ -3020,7 +3082,7 @@ app.all(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f']
                                 req.set=req.set.join(',');
                                 req.ar.push(req.monitor.ke),req.ar.push(req.monitor.mid);
                                 s.log(req.monitor,{type:'Monitor Updated',msg:'by user : '+user.uid});
-                                req.ret.msg='Monitor Updated by user : '+user.uid;
+                                req.ret.msg=user.lang['Monitor Updated by user']+' : '+user.uid;
                                 sql.query('UPDATE Monitors SET '+req.set+' WHERE ke=? AND mid=?',req.ar)
                                 req.finish=1;
                             }else{
@@ -3035,13 +3097,13 @@ app.all(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f']
         //                                        req.set.push('ke'),req.st.push('?'),req.ar.push(req.monitor.ke);
                                     req.set=req.set.join(','),req.st=req.st.join(',');
                                     s.log(req.monitor,{type:'Monitor Added',msg:'by user : '+user.uid});
-                                    req.ret.msg='Monitor Added by user : '+user.uid;
+                                    req.ret.msg=user.lang['Monitor Added by user']+' : '+user.uid;
                                     sql.query('INSERT INTO Monitors ('+req.set+') VALUES ('+req.st+')',req.ar)
                                     req.finish=1;
                                 }else{
                                     req.tx.f='monitor_edit_failed';
                                     req.tx.ff='max_reached';
-                                    req.ret.msg='Monitor Edit Failed for Group Key '+user.ke+'. Maximum number of monitors reached.';
+                                    req.ret.msg=user.lang.monitorEditFailedMaxReached;
                                 }
                             }
                             if(req.finish===1){
@@ -3064,7 +3126,7 @@ app.all(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f']
                         res.end(s.s(req.ret, null, 3))
                     }
             }else{
-                    req.ret.msg='Not Permitted';
+                    req.ret.msg=user.lang['Not Permitted'];
                     res.end(s.s(req.ret, null, 3))
             }
         }else{
@@ -3085,10 +3147,10 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
     res.setHeader('Content-Type', 'application/json');
     req.fn=function(user){
         if(user.permissions.control_monitors==="0"||user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitor_edit.indexOf(req.params.id)===-1){
-            res.end('Not Permitted')
+            res.end(user.lang['Not Permitted'])
             return
         }
-        if(req.params.f===''){req.ret.msg='incomplete request, remove last slash in URL or put acceptable value.';res.send(s.s(req.ret, null, 3));return}
+        if(req.params.f===''){req.ret.msg=user.lang.monitorGetText1;res.send(s.s(req.ret, null, 3));return}
         if(req.params.f!=='stop'&&req.params.f!=='start'&&req.params.f!=='record'){
             req.ret.msg='Mode not recognized.';
             res.end(s.s(req.ret, null, 3));
@@ -3111,9 +3173,9 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
                         if(req.params.f!=='stop'){
                             s.camera(req.params.f,s.init('noReference',r));
                         }
-                        req.ret.msg='Monitor mode changed to : '+req.params.f;
+                        req.ret.msg=user.lang['Monitor mode changed']+' : '+req.params.f;
                     }else{
-                        req.ret.msg='Reset Timer';
+                        req.ret.msg=user.lang['Reset Timer'];
                     }
                     req.ret.cmd_at=s.moment(new Date,'YYYY-MM-DD HH:mm:ss');
                     req.ret.ok=true;
@@ -3151,10 +3213,10 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
 //                        req.ret.end_at=s.moment(new Date,'YYYY-MM-DD HH:mm:ss').add(req.timeout,'milliseconds');
                     }
                  }else{
-                    req.ret.msg='Monitor mode is already : '+req.params.f;
+                    req.ret.msg=user.lang['Monitor mode is already']+' : '+req.params.f;
                 }
             }else{
-                req.ret.msg='Monitor or Key does not exist.';
+                req.ret.msg=user.lang['Monitor or Key does not exist.'];
             }
             res.end(s.s(req.ret, null, 3));
         })
@@ -3166,7 +3228,7 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
 app.get('/:auth/videos/:ke/:id/:file', function (req,res){
     s.auth(req.params,function(user){
         if(user.permissions.watch_videos==="0"||user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
-            res.end('Not Permitted')
+            res.end(user.lang['Not Permitted'])
             return
         }
         req.dir=s.dir.videos+req.params.ke+'/'+req.params.id+'/'+req.params.file;
@@ -3196,13 +3258,13 @@ app.get('/:auth/videos/:ke/:id/:file', function (req,res){
             res.writeHead(req.writeCode,req.headerWrite);
             file.pipe(res);
         }else{
-            res.end('File Not Found')
+            res.end(user.lang['File Not Found'])
         }
     },res,req);
 });
 //motion trigger
 app.get('/:auth/motion/:ke/:id', function (req,res){
-    s.auth(req.params,function(){
+    s.auth(req.params,function(user){
         if(req.query.data){
             try{
                 var d={id:req.params.id,ke:req.params.ke,details:JSON.parse(req.query.data)};
@@ -3215,11 +3277,11 @@ app.get('/:auth/motion/:ke/:id', function (req,res){
             return;
         }
         if(!d.ke||!d.id||!s.group[d.ke]){
-            res.end('No Group with this key exists');
+            res.end(user.lang['No Group with this key exists']);
             return;
         }
         s.camera('motion',d,function(){
-            res.end('Trigger Successful')
+            res.end(user.lang['Trigger Successful'])
         });
 },res,req);
 })
@@ -3229,7 +3291,7 @@ app.get(['/:auth/videos/:ke/:id/:file/:mode','/:auth/videos/:ke/:id/:file/:mode/
     res.setHeader('Content-Type', 'application/json');
     s.auth(req.params,function(user){
         if(user.permissions.watch_videos==="0"||user.details.sub&&user.details.allmonitors!=='1'&&user.details.video_delete.indexOf(req.params.id)===-1){
-            res.end('Not Permitted')
+            res.end(user.lang['Not Permitted'])
             return
         }
         req.sql='SELECT * FROM Videos WHERE ke=? AND mid=? AND time=?';
@@ -3257,11 +3319,11 @@ app.get(['/:auth/videos/:ke/:id/:file/:mode','/:auth/videos/:ke/:id/:file/:mode/
                         s.video('delete',r)
                     break;
                     default:
-                        req.ret.msg='Method doesn\'t exist. Check to make sure that the last value of the URL is not blank.';
+                        req.ret.msg=user.lang.modifyVideoText1;
                     break;
                 }
             }else{
-                req.ret.msg='No such file';
+                req.ret.msg=user.lang['No such file'];
             }
             res.send(s.s(req.ret, null, 3));
         })
@@ -3323,7 +3385,7 @@ s.ramUsage=function(e){
             })
         })
     },10000);
-}catch(err){s.systemLog('CPU indicator will not work. Continuing...')}
+}catch(err){s.systemLog(lang['CPU indicator will not work. Continuing...'])}
 //check disk space every 20 minutes
 if(config.autoDropCache===true){
     setInterval(function(){
@@ -3351,7 +3413,7 @@ setTimeout(function(){
                             v.size+=b.size
                         })
                     }
-                    s.systemLog(v.mail+' '+rr.length+' : size check for videos',v.size)
+                    s.systemLog(v.mail+' : '+lang.startUpText0+' : '+rr.length,v.size)
                     if(!s.group[v.ke]){
                         s.group[v.ke]={}
                     }
@@ -3365,9 +3427,9 @@ setTimeout(function(){
                     s.group[v.ke].init.used_space=v.size/1000000;
                     //emit the changes to connected users
                     s.init('diskUsed',v)
-                    s.systemLog(v.mail+' : end of size check for videos',countFinished,count)
+                    s.systemLog(v.mail+' : '+lang.startUpText1,countFinished,count)
                     if(countFinished===count){
-                        s.systemLog('all users checked, wait to close open files and remove files over user limit')
+                        s.systemLog(lang.startUpText2)
                         ////close open videos
                         sql.query('SELECT * FROM Videos WHERE status=?',[0],function(err,r){
                             if(r&&r[0]){
@@ -3377,9 +3439,9 @@ setTimeout(function(){
                                     s.video('close',v);
                                 })
                             }
-                            s.systemLog('waiting to give unfinished video check some time. 3 seconds.')
+                            s.systemLog(lang.startUpText3)
                             setTimeout(function(){
-                                s.systemLog('start all monitors set to watch and record')
+                                s.systemLog(lang.startUpText4)
                                 //preliminary monitor start
                                 sql.query('SELECT * FROM Monitors', function(err,r) {
                                     if(err){s.systemLog(err)}
@@ -3400,7 +3462,7 @@ setTimeout(function(){
                                             s.camera(v.mode,r.ar);
                                         });
                                     }
-                                    s.systemLog('Shinobi is ready.')
+                                    s.systemLog(lang.startUpText5)
                                     process.send('ready')
                                 });
                             },3000)
