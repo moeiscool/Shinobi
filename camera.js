@@ -924,6 +924,30 @@ s.file=function(x,e){
         break;
     }
 }
+s.genSrt=function(fileName,path) {
+    var srtFileName = path+fileName+'.srt';
+    var fd = fs.openSync(srtFileName, 'w');
+    var start = moment(s.nameToTime(fileName))
+    var end = moment(new Date);
+    end.add(1,'seconds');
+    var timecode = moment(new Date(1,1,1,0,0,0));
+    var count = 1;
+    while( start.isBefore(end) ) {
+        fs.writeSync(fd,count);
+        fs.writeSync(fd,'\r\n');
+        fs.writeSync(fd,timecode.format('HH:mm:ss'));
+        fs.writeSync(fd,',000 --> ');
+        timecode.add(1, 'seconds');
+        fs.writeSync(fd,timecode.format('HH:mm:ss'));
+        fs.writeSync(fd,',000\r\n');
+        fs.writeSync(fd,start.format('YYYY-MM-DD HH:mm:ss'));
+        fs.writeSync(fd,'\r\n\r\n');
+        start.add(1, 'seconds');
+        count++;
+    }
+    fs.closeSync(fd);
+    return srtFileName;
+}
 s.camera=function(x,e,cn,tx){
     if(x!=='motion'){
         var ee=s.init('noReference',e);
@@ -1389,7 +1413,16 @@ s.camera=function(x,e,cn,tx){
                                             e.fn()
                                         break;
                                         case /T[0-9][0-9]-[0-9][0-9]-[0-9][0-9]./.test(d):
-                                            return s.log(e,{type:lang['Video Finished'],msg:{filename:d}})
+                                            if( e.details.vcodec=='copy' ) {
+                                                var fileName = d.trim();
+                                                var srtFileName = s.genSrt(fileName,s.dir.videos+e.ke+'/'+e.id+'/');                                            
+                                                var args = '-i '+s.dir.videos+e.ke+'/'+e.id+'/'+fileName+' -i ' + srtFileName + ' -c copy -c:s mov_text ' + s.dir.videos+e.ke+'/'+e.id+'/'+fileName+'.new.mp4';
+                                                execSync('ffmpeg ' + args, {detached:true});
+                                                fs.unlinkSync(srtFileName);
+                                                fs.unlinkSync(s.dir.videos+e.ke+'/'+e.id+'/'+fileName);
+                                                fs.renameSync(s.dir.videos+e.ke+'/'+e.id+'/'+fileName+'.new.mp4',s.dir.videos+e.ke+'/'+e.id+'/'+fileName);
+                                            }
+                                            return s.log(e,{type:lang['Video Finished'],msg:{filename:d}});
                                         break;
                                     }
                                     s.log(e,{type:"FFMPEG STDERR",msg:d})
