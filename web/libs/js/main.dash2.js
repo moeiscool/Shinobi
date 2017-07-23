@@ -2046,7 +2046,7 @@ $.timelapse.e.on('click','[timelapse]',function(){
                     video=e.video
                 }
                 if(video){
-                   $.timelapse.display.append('<video class="video_video '+position+'" video="'+video.href+'" preload><source src="'+video.href+'" type="video/'+video.ext+'"></video>')
+                   $.timelapse.display.append('<video class="video_video '+position+'" video="'+video.href+'" preload><source src="'+video.href+'" type="video/'+video.ext+'"><track default kind="subtitles" src="' + video.href.replace('/videos/','/subtitles/').replace('.'+video.ext,'.'+video.ext+'.vtt') + '"></video>')
                 }
             }
             e.filename=e.e.attr('file')
@@ -2497,7 +2497,7 @@ $('body')
 .on('click','[video]',function(e){
     e.e=$(this),
     e.a=e.e.attr('video'),
-    e.p=e.e.parents('[mid]'),
+    e.p=e.e.closest('[mid]'),
     e.ke=e.p.attr('ke'),
     e.mid=e.p.attr('mid'),
     e.file=e.p.attr('file');
@@ -2517,7 +2517,7 @@ $('body')
             e.href=$(this).attr('href'),e.e=$('#video_viewer');
             e.mon=$.ccio.mon[e.mid];
             e.e.find('.modal-title span').html(e.mon.name+' - '+e.file)
-            e.e.find('.modal-body').html('<video class="video_video" video="'+e.href+'" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"></video>')
+            e.e.find('.modal-body').html('<video class="video_video" video="'+e.href+'" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"><track default kind="subtitles" src="' + e.href.replace('/videos/','/subtitles/').replace('.mp4','.mp4.vtt') + '"></video>')
             e.e.attr('mid',e.mid);
             e.f=e.e.find('.modal-footer');
             e.f.find('.download_link').attr('href',e.href).attr('download',e.file);
@@ -2541,13 +2541,14 @@ $('body')
         break;
         case'delete':
             e.href=e.p.find('[download]').attr('href')
+            alert(e.p.length);
             if(!e.href||e.href===''){
                 e.href=e.p.attr('href')
             }
             $.confirm.e.modal('show');
             $.confirm.title.text('<%-cleanLang(lang['Delete Video'])%> : '+e.file)
             e.html='<%-cleanLang(lang.DeleteVideoMsg)%>'
-            e.html+='<video class="video_video" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"></video>';
+            e.html+='<video class="video_video" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"><track default kind="subtitles" src="' + e.href.replace('/videos/','/subtitles/').replace('.'+e.mon.ext,'.'+e.mon.ext+'.vtt') + '"></video>';
             $.confirm.body.html(e.html)
             $.confirm.click({title:'Delete Video',class:'btn-danger'},function(){
                 e.file=e.file.split('.')

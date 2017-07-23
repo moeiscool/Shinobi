@@ -315,7 +315,8 @@ if(!config.streamDir){
     }
 }
 if(!config.videosDir){config.videosDir=__dirname+'/videos/'}
-s.dir={videos:config.videosDir,streams:config.streamDir,languages:'./languages/'};
+if(!config.subtitlesDir){config.subtitlesDir=__dirname+'/subtitles/'}
+s.dir={videos:config.videosDir,streams:config.streamDir,languages:'./languages/',subtitles:config.subtitlesDir};
 //streams dir
 if(!fs.existsSync(s.dir.streams)){
     fs.mkdirSync(s.dir.streams);
@@ -323,6 +324,10 @@ if(!fs.existsSync(s.dir.streams)){
 //videos dir
 if(!fs.existsSync(s.dir.videos)){
     fs.mkdirSync(s.dir.videos);
+}
+//subtitles dir
+if(!fs.existsSync(s.dir.subtitles)){
+    fs.mkdirSync(s.dir.subtitles);
 }
 ////Camera Controller
 s.init=function(x,e,k,fn){
@@ -470,6 +475,7 @@ s.video=function(x,e){
         case'fix':
             e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
             e.sdir=s.dir.streams+e.ke+'/'+e.id+'/';
+            e.subdir=s.dir.subtitles+e.ke+'/'+e.id+'/';
             if(!e.filename&&e.time){e.filename=s.moment(e.time)}
             if(e.filename.indexOf('.')===-1){
                 e.filename=e.filename+'.'+e.ext
@@ -506,6 +512,7 @@ s.video=function(x,e){
         break;
         case'delete':
             e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
+            e.subdir=s.dir.subtitles+e.ke+'/'+e.id+'/';
             if(!e.filename&&e.time){e.filename=s.moment(e.time)}
             if(!e.status){e.status=0}
             e.save=[e.id,e.ke,s.nameToTime(e.filename)];
@@ -519,6 +526,7 @@ s.video=function(x,e){
                 })
                 s.tx({f:'video_delete',filename:e.filename+'.'+e.ext,mid:e.mid,ke:e.ke,time:s.nameToTime(e.filename),end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
                 s.file('delete',e.dir+e.filename+'.'+e.ext)
+                s.file('delete',e.subdir+e.filename+'.'+e.ext+'.vtt')
             })
         break;
         case'open':
@@ -924,6 +932,37 @@ s.file=function(x,e){
         break;
     }
 }
+s.genVtt=function(e,fileName) {
+    var vttFileName = s.dir.subtitles+e.ke+'/'+e.id+'/'+fileName+'.vtt';
+    var os = fs.createWriteStream(vttFileName);
+    os.write('WEBVTT\r\n\r\n');
+    os.write('NOTE\r\n');
+    var start = moment(s.nameToTime(fileName));
+    var end = moment(new Date());
+    end.add(1,'seconds');
+    os.write(start.format('YYYY-MM-DD HH:mm:ss'));
+    os.write('\r\n');
+    os.write('to\r\n');
+    os.write(end.format('YYYY-MM-DD HH:mm:ss'));
+    os.write('\r\n\r\n');
+    var timecode = moment(new Date(1,1,1,0,0,0));
+    var count = 1;
+    while( start.isBefore(end) ) {
+        os.write(count.toString());
+        os.write('\r\n');
+        os.write(timecode.format('HH:mm:ss'));
+        os.write('.000 --> ');
+        timecode.add(1, 'seconds');
+        os.write(timecode.format('HH:mm:ss'));
+        os.write('.000\r\n');
+        os.write(start.format('YYYY-MM-DD HH:mm:ss'));
+        os.write('\r\n\r\n');
+        start.add(1, 'seconds');
+        count++;
+    }
+    os.end();
+    return vttFileName;
+}
 s.camera=function(x,e,cn,tx){
     if(x!=='motion'){
         var ee=s.init('noReference',e);
@@ -1088,6 +1127,15 @@ s.camera=function(x,e,cn,tx){
             e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
             if (!fs.existsSync(e.dir)){
                 fs.mkdirSync(e.dir);
+            }
+            //subtitles dir
+            e.subdir=s.dir.subtitles+e.ke+'/';
+            if (!fs.existsSync(e.subdir)){
+                fs.mkdirSync(e.subdir);
+            }
+            e.subdir=s.dir.subtitles+e.ke+'/'+e.id+'/';
+            if (!fs.existsSync(e.subdir)){
+                fs.mkdirSync(e.subdir);
             }
             //stream dir
             e.sdir=s.dir.streams+e.ke+'/';
@@ -1389,6 +1437,9 @@ s.camera=function(x,e,cn,tx){
                                             e.fn()
                                         break;
                                         case /T[0-9][0-9]-[0-9][0-9]-[0-9][0-9]./.test(d):
+                                            if( e.details.gensubs==1 ) {
+                                                s.genVtt(e,d.trim());                                            
+                                            }
                                             return s.log(e,{type:lang['Video Finished'],msg:{filename:d}})
                                         break;
                                     }
@@ -2456,6 +2507,7 @@ s.superAuth=function(x,callback){
 ////Pages
 app.enable('trust proxy');
 app.use(express.static(s.dir.videos));
+app.use(express.static(s.dir.subtitles));
 app.use('/libs',express.static(__dirname + '/web/libs'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
@@ -3199,6 +3251,44 @@ app.get('/:auth/videos/:ke/:id/:file', function (req,res){
             return
         }
         req.dir=s.dir.videos+req.params.ke+'/'+req.params.id+'/'+req.params.file;
+        if (fs.existsSync(req.dir)){
+            req.ext=req.params.file.split('.')[1];
+            var total = fs.statSync(req.dir).size;
+            if (req.headers['range']) {
+                var range = req.headers.range;
+                var parts = range.replace(/bytes=/, "").split("-");
+                var partialstart = parts[0];
+                var partialend = parts[1];
+
+                var start = parseInt(partialstart, 10);
+                var end = partialend ? parseInt(partialend, 10) : total-1;
+                var chunksize = (end-start)+1;
+                var file = fs.createReadStream(req.dir, {start: start, end: end});
+                req.headerWrite={ 'Content-Range': 'bytes ' + start + '-' + end + '/' + total, 'Accept-Ranges': 'bytes', 'Content-Length': chunksize, 'Content-Type': 'video/'+req.ext }
+                req.writeCode=206
+            } else {
+                req.headerWrite={ 'Content-Length': total, 'Content-Type': 'video/'+req.ext};
+                var file=fs.createReadStream(req.dir)
+                req.writeCode=200
+            }
+            if(req.query.downloadName){
+                req.headerWrite['content-disposition']='attachment; filename="'+req.query.downloadName+'"';
+            }
+            res.writeHead(req.writeCode,req.headerWrite);
+            file.pipe(res);
+        }else{
+            res.end(user.lang['File Not Found'])
+        }
+    },res,req);
+});
+// Get subtitle file
+app.get('/:auth/subtitles/:ke/:id/:file', function (req,res){
+    s.auth(req.params,function(user){
+        if(user.permissions.watch_videos==="0"||user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitors.indexOf(req.params.id)===-1){
+            res.end(user.lang['Not Permitted'])
+            return
+        }
+        req.dir=s.dir.subtitles+req.params.ke+'/'+req.params.id+'/'+req.params.file;
         if (fs.existsSync(req.dir)){
             req.ext=req.params.file.split('.')[1];
             var total = fs.statSync(req.dir).size;
