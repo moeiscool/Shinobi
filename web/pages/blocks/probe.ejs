@@ -1,77 +1,77 @@
 <!--ffPROBE Window-->
-<div class="modal dark fade" id="probe" tabindex="-1" role="dialog" aria-labelledby="probeLabel" aria-hidden="true">
+<div class="modal dark fade" id="probe" role="dialog" aria-labelledby="probeLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <form class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-        <h4 class="modal-title" id="probeLabel"><i class="fa fa-search"></i> &nbsp; FFprobe <small><span style="display:none" class="_loading"> &nbsp; <i class="fa fa-pulse fa-spinner"></i></span></small></h4>
+        <h4 class="modal-title" id="probeLabel"><i class="fa fa-search"></i> &nbsp; <%-lang.FFprobe%> <small><span style="display:none" class="_loading"> &nbsp; <i class="fa fa-pulse fa-spinner"></i></span></small></h4>
       </div>
       <div class="modal-body">
           <div class="text-center msg"></div>
         <div class="form-group">
-            <i>"ffprobe is a simple multimedia streams analyzer. You can use it to output all kinds of information about an input including duration, frame rate, frame size, etc."</i> - FFmpegTips
+            <i>"<%-lang['FFmpegTip']%>"</i> - FFmpegTips
         </div>
         <div class="form-group">
-            <label><div><span>Complete Stream URL</span></div>
-                <div><input class="form-control" name="url" placeholder="Example : http://192.168.88.126/videostream.cgi or /dev/video0"></div>
+            <label><div><span><%-lang['Complete Stream URL']%></span></div>
+                <div><input class="form-control" name="url" placeholder="<%-lang.Example%> : http://192.168.88.126/videostream.cgi or /dev/video0"></div>
             </label>
         </div>
         <div class="output_data"></div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default pull-left" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
-        <a class="btn btn-danger stop" style="display:none">Stop<span> &nbsp; <i class="fa fa-pulse fa-spinner"></i></span></a> 
-        <button type="submit" class="btn btn-success">Check</button>
+        <button type="button" class="btn btn-default pull-left" data-dismiss="modal"><i class="fa fa-times"></i> <%-lang.Close%></button>
+        <a class="btn btn-danger stop" style="display:none"><%-lang.Stop%><span> &nbsp; <i class="fa fa-pulse fa-spinner"></i></span></a> 
+        <button type="submit" class="btn btn-success"><%-lang.Check%></button>
       </div>
     </form>
   </div>
 </div>
 <!--onvif PROBE Window-->
-<div class="modal full dark fade" id="onvif_probe" tabindex="-1" role="dialog" aria-labelledby="onvif_probeLabel" aria-hidden="true">
+<div class="modal full dark fade" id="onvif_probe" role="dialog" aria-labelledby="onvif_probeLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <form class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-        <h4 class="modal-title" id="onvif_probeLabel"><i class="fa fa-rss"></i> &nbsp; ONVIF Scanner<span style="display:none" class="_loading"> &nbsp; <i class="fa fa-pulse fa-spinner"></i></span></h4>
+        <h4 class="modal-title" id="onvif_probeLabel"><i class="fa fa-rss"></i> &nbsp; <%-lang['ONVIF Scanner']%><span style="display:none" class="_loading"> &nbsp; <i class="fa fa-pulse fa-spinner"></i></span></h4>
       </div>
       <div class="modal-body">
         <div class="row">
           <div class="col-md-6">
               <div class="form-group-group navy">
-                  <h4>Scan Settings</h4>
-                  <p class="text-center">Discover ONVIF devices on networks outside your own or leave it blank to scan your current network. <br>Username and Password can be left blank.</p>
+                  <h4><%-lang['Scan Settings']%></h4>
+                  <p class="text-center"><%-lang.ONVIFnote%></p>
                   <div class="form-group">
-                    <label><div><span>IP <small>Range or Single</small></span></div>
+                    <label><div><span><%-lang['IP Address']%> <small><%-lang['Range or Single']%></small></span></div>
                         <div><input class="form-control" name="ip" placeholder="Example : 10.1.100.1-10.1.100.254"></div>
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><div><span>Port <small>Separate by Commas or a Range</small></span></div>
+                    <label><div><span><%-lang['Port']%> <small>Separate by Commas or a Range</small></span></div>
                         <div><input class="form-control" name="port" placeholder="Example : 80,7575,8000,8080,8081"></div>
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><div><span>Camera Username</span></div>
+                    <label><div><span><%-lang['Camera Username']%></span></div>
                         <div><input class="form-control" name="user" placeholder="Can be left blank."></div>
                     </label>
                   </div>
                   <div class="form-group">
-                    <label><div><span>Camera Password</span></div>
+                    <label><div><span><%-lang['Camera Password']%></span></div>
                         <div><input class="form-control" name="pass"></div>
                     </label>
                   </div>
                   <div class="form-group text-right">
-                      <button type="submit" class="btn btn-success">Search<span class="_loading" style="display:none"> &nbsp; <i class="fa fa-pulse fa-spinner"></i></span></button>
+                      <button type="submit" class="btn btn-success"><%-lang.Search%><span class="_loading" style="display:none"> &nbsp; <i class="fa fa-pulse fa-spinner"></i></span></button>
                   </div>
               </div>
           </div>
           <div class="col-md-6">
               <div class="form-group-group blue">
-                  <h4>Found Devices</h4>
+                  <h4><%-lang['Found Devices']%></h4>
 <!--                  <div id="onvif_video"></div>-->
                   <table class="output_data table table-striped" style="margin:0"></table>
               </div>
@@ -79,7 +79,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default pull-left" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+        <button type="button" class="btn btn-default pull-left" data-dismiss="modal"><i class="fa fa-times"></i> <%-lang.Close%></button>
       </div>
     </form>
   </div>

@@ -424,19 +424,19 @@
     }
 
     var defaultRelativeTime = {
-        future : 'in %s',
-        past   : '%s ago',
-        s  : 'a few seconds',
-        m  : 'a minute',
-        mm : '%d minutes',
-        h  : 'an hour',
-        hh : '%d hours',
-        d  : 'a day',
-        dd : '%d days',
-        M  : 'a month',
-        MM : '%d months',
-        y  : 'a year',
-        yy : '%d years'
+        future : '<%-lang.in%> %s',
+        past   : '%s <%-lang.ago%>',
+        s  : '<%-lang['a few seconds']%>',
+        m  : '<%-lang['a minute']%>',
+        mm : '%d <%-lang.minutes%>',
+        h  : '<%-lang['an hour']%>',
+        hh : '%d <%-lang.hours%>',
+        d  : '<%-lang['a day']%>',
+        dd : '%d <%-lang.days%>',
+        M  : '<%-lang['a month']%>',
+        MM : '%d <%-lang.months%>',
+        y  : '<%-lang['a year']%>',
+        yy : '%d <%-lang.years%>'
     };
 
     function relative__relativeTime (number, withoutSuffix, string, isFuture) {
