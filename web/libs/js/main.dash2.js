@@ -1851,10 +1851,13 @@ $.vidview.e.on('change','#videos_select_all',function(e){
         e.a.prop('checked',false)
     }
 })
-$.vidview.e.find('form').submit(function(e){
+$.vidview.f.submit(function(e){
     e.preventDefault();
     $.vidview.launcher.click()
     return false;
+})
+$('#videos_viewer_limit,#videos_viewer_daterange').change(function(){
+    $.vidview.f.submit()
 })
 $.vidview.e.find('.delete_selected').click(function(e){
     e.s=$.vidview.f.serializeObject();
