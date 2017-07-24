@@ -94,9 +94,9 @@ Currently Fast Install is supported on the following :
 ```
 mkdir Shinobi
 cd Shinobi
-npm install shinobi
+sudo npm install shinobi
 mv node_modules/shinobi/* .
-npm start
+sudo npm start
 ```
 
 #### Elaborate Installs

@@ -1,6 +1,6 @@
 //
 // Shinobi
-// Copyright (C) 2016-2025 Moe Alam, moeiscool
+// Copyright (C) 2016 Moe Alam, moeiscool
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -2915,21 +2915,30 @@ app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
                 req.count_ar.push(req.query.start)
             }
         }
-        if(!req.query.limit||req.query.limit==''){req.query.limit=100}
-        req.sql+=' ORDER BY `time` DESC LIMIT '+req.query.limit+'';
+        req.sql+=' ORDER BY `time` DESC';
+        if(req.query.limit!=='0'){
+            if(!req.query.limit||req.query.limit==''){
+                req.query.limit=100
+            }
+            req.sql+=' LIMIT '+req.query.limit
+        }
         sql.query(req.sql,req.ar,function(err,r){
+            if(!r){
+                res.end(s.s({total:0,limit:req.query.limit,skip:0,videos:[]}, null, 3));
+                return
+            }
         sql.query(req.count_sql,req.count_ar,function(err,count){
             r.forEach(function(v){
                 v.href='/'+req.params.auth+'/videos/'+v.ke+'/'+v.mid+'/'+s.moment(v.time)+'.'+v.ext;
             })
             if(req.query.limit.indexOf(',')>-1){
                 req.skip=parseInt(req.query.limit.split(',')[0])
-                req.limit=parseInt(req.query.limit.split(',')[0])
+                req.query.limit=parseInt(req.query.limit.split(',')[0])
             }else{
                 req.skip=0
-                req.limit=parseInt(req.query.limit)
+                req.query.limit=parseInt(req.query.limit)
             }
-            res.end(s.s({total:count[0]['COUNT(*)'],limit:req.limit,skip:req.skip,videos:r}, null, 3));
+            res.end(s.s({total:count[0]['COUNT(*)'],limit:req.query.limit,skip:req.skip,videos:r}, null, 3));
         })
         })
     },res,req);

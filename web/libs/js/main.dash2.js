@@ -1827,7 +1827,7 @@ $.sM.f.on('click','.mon_groups .add',function(e){
     $.sM.g.change();
 });
 //videos window
-$.vidview={e:$('#videos_viewer'),pages:$('#videos_viewer_pages'),limit:$('#videos_viewer_limit'),dr:$('#videos_viewer_daterange')};
+$.vidview={e:$('#videos_viewer'),pages:$('#videos_viewer_pages'),limit:$('#videos_viewer_limit'),dr:$('#videos_viewer_daterange'),preview:$('#videos_viewer_preview')};
 $.vidview.f=$.vidview.e.find('form')
 $.vidview.dr.daterangepicker({
     startDate:moment().subtract(moment.duration("24:00:00")),
@@ -1851,10 +1851,13 @@ $.vidview.e.on('change','#videos_select_all',function(e){
         e.a.prop('checked',false)
     }
 })
-$.vidview.e.find('form').submit(function(e){
+$.vidview.f.submit(function(e){
     e.preventDefault();
     $.vidview.launcher.click()
     return false;
+})
+$('#videos_viewer_limit,#videos_viewer_daterange').change(function(){
+    $.vidview.f.submit()
 })
 $.vidview.e.find('.delete_selected').click(function(e){
     e.s=$.vidview.f.serializeObject();
@@ -1886,6 +1889,11 @@ $.vidview.pages.on('click','[page]',function(e){
     }
     $.vidview.limit.val((parseInt(e.page)-1)+'00,'+e.limit)
     $.vidview.launcher.click()
+})
+$.vidview.e.on('click','.preview',function(e){
+    e.preventDefault()
+    e=$(this)
+    $.vidview.preview.html('<video class="video_video" video="'+e.attr('href')+'" preload controls autoplay><source src="'+e.attr('href')+'" type="video/mp4"></video>')
 })
 //Timelapse Window
 $.timelapse={e:$('#timelapse')}
@@ -2356,11 +2364,13 @@ $.pwrvid.drawTimeline=function(getData){
     e.live=$.pwrvid.lv.find('iframe');
     e.dateRange=$.pwrvid.dr.data('daterangepicker');
     e.eventLimit=$('#pvideo_event_limit').val();
+    e.videoLimit=$('#pvideo_video_limit').val();
     if(e.eventLimit===''){e.eventLimit=500}
+    if(e.videoLimit===''){e.videoLimit=0}
     e.dateRange={startDate:e.dateRange.startDate,endDate:e.dateRange.endDate}
     e.videoURL='/'+$user.auth_token+'/videos/'+$user.ke+'/'+mid;
     e.eventURL='/'+$user.auth_token+'/events/'+$user.ke+'/'+mid;
-    e.videoURL+='?limit=100&start='+$.ccio.init('th',e.dateRange.startDate)+'&end='+$.ccio.init('th',e.dateRange.endDate);
+    e.videoURL+='?limit='+e.videoLimit+'&start='+$.ccio.init('th',e.dateRange.startDate)+'&end='+$.ccio.init('th',e.dateRange.endDate);
     e.eventURL+='/'+e.eventLimit+'/'+$.ccio.init('th',e.dateRange.startDate)+'/'+$.ccio.init('th',e.dateRange.endDate);
     e.live_header.text($.ccio.mon[mid].name)
     e.live.attr('src','/'+$user.auth_token+'/embed/'+$user.ke+'/'+mid+'/fullscreen|jquery|relative')
@@ -2473,7 +2483,7 @@ $.pwrvid.drawTimeline=function(getData){
         e.next($.pwrvid.currentVideos,$.pwrvid.currentEvents)
     }
 }
-$('#vis_monitors,#pvideo_event_limit').change(function(){
+$('#vis_monitors,#pvideo_event_limit,#pvideo_video_limit').change(function(){
     $.pwrvid.f.submit()
 })
 $.pwrvid.f.submit(function(e){
@@ -2847,10 +2857,11 @@ $('body')
                         e.tmp+='<th data-field="Monitor" data-sortable="true"><%-cleanLang(lang.Monitor)%></th>';
                         e.tmp+='<th data-field="Filename" data-sortable="true"><%-cleanLang(lang.Filename)%></th>';
                         e.tmp+='<th data-field="Size" data-sortable="true"><%-cleanLang(lang['Size (mb)'])%></th>';
+                        e.tmp+='<th data-field="Preview" data-sortable="true"><%-cleanLang(lang.Preview)%></th>';
                         e.tmp+='<th data-field="Watch" data-sortable="true"><%-cleanLang(lang.Watch)%></th>';
                         e.tmp+='<th data-field="Download" data-sortable="true"><%-cleanLang(lang.Download)%></th>';
                         e.tmp+='<th class="permission_video_delete" data-field="Delete" data-sortable="true"><%-cleanLang(lang.Delete)%></th>';
-                        e.tmp+='<th class="permission_video_delete" data-field="Fix" data-sortable="true"><%-cleanLang(lang.Fix)%></th>';
+//                        e.tmp+='<th class="permission_video_delete" data-field="Fix" data-sortable="true"><%-cleanLang(lang.Fix)%></th>';
                         e.tmp+='</tr>';
                         e.tmp+='</thead>';
                         e.tmp+='<tbody>';
@@ -2867,10 +2878,11 @@ $('body')
                                 e.tmp+='<td>'+v.mon.name+'</td>';
                                 e.tmp+='<td>'+v.filename+'</td>';
                                 e.tmp+='<td>'+(parseInt(v.size)/1000000).toFixed(2)+'</td>';
+                                e.tmp+='<td><a class="btn btn-sm btn-default preview" href="'+v.href+'">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a></td>';
                                 e.tmp+='<td><a class="btn btn-sm btn-primary" video="launch" href="'+v.href+'">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a></td>';
                                 e.tmp+='<td><a class="btn btn-sm btn-success" download="'+v.mid+'-'+v.filename+'" href="'+v.href+'?downloadName='+v.mid+'-'+v.filename+'">&nbsp;<i class="fa fa-download"></i>&nbsp;</a></td>';
                                 e.tmp+='<td class="permission_video_delete"><a class="btn btn-sm btn-danger" video="delete">&nbsp;<i class="fa fa-trash"></i>&nbsp;</a></td>';
-                                e.tmp+='<td class="permission_video_delete"><a class="btn btn-sm btn-warning" video="fix">&nbsp;<i class="fa fa-wrench"></i>&nbsp;</a></td>';
+//                                e.tmp+='<td class="permission_video_delete"><a class="btn btn-sm btn-warning" video="fix">&nbsp;<i class="fa fa-wrench"></i>&nbsp;</a></td>';
                                 e.tmp+='</tr>';
                             }
                         })
@@ -3095,7 +3107,18 @@ $('.modal').on('hidden.bs.modal',function(){
     $(this).find('video').remove();
     $(this).find('iframe').attr('src','about:blank');
 });
+$('.modal').on('shown.bs.modal',function(){
+    e={e:$(this).find('.flex-container-modal-body')}
+    if(e.e.length>0){
+        e.e.resize()
+    }
+});
+
 $('body')
+.on('resize','.flex-container-modal-body',function(e){
+    e=$(this)
+    e.find('.flex-modal-block').css('height',e.height())
+})
 .on('resize','#monitors_live .monitor_item',function(e){
     e.e=$(this).find('.mdl-card__media');
     e.c=e.e.find('canvas');
