@@ -2541,7 +2541,6 @@ $('body')
         break;
         case'delete':
             e.href=e.p.find('[download]').attr('href')
-            alert(e.p.length);
             if(!e.href||e.href===''){
                 e.href=e.p.attr('href')
             }
