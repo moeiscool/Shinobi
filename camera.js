@@ -1437,8 +1437,8 @@ s.camera=function(x,e,cn,tx){
                                             e.fn()
                                         break;
                                         case /T[0-9][0-9]-[0-9][0-9]-[0-9][0-9]./.test(d):
-                                            if( e.details.gensubs==1 ) {
-                                                s.genVtt(e,d.trim());                                            
+                                            if( e.details.gensubs==='1' ) {
+                                                s.genVtt(e,d.trim());
                                             }
                                             return s.log(e,{type:lang['Video Finished'],msg:{filename:d}})
                                         break;
