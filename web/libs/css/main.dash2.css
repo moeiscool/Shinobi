@@ -145,6 +145,10 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
     .modal.medium .modal-dialog{width:calc(70% - 10px)!important;margin: 30px auto;}
     .full.modal .modal-body,.medium.modal .modal-body{max-height:calc(100% - 200px);overflow:auto}
 }
+
+.flex-container-modal-body{overflow: auto}
+.flex-container-modal-body .flex-block>div{flex:1;float:none}
+
 .modal{overflow:auto!important}
 #region_editor .modal-body{text-align:center;overflow:auto;max-height:800px}
 #region_editor .canvas_holder{position:relative;display:inline-block;overflow:auto;min-height:450px}

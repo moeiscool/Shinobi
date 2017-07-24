@@ -493,5 +493,8 @@
    "No Monitor Exists with this ID.": "No Monitor Exists with this ID.",
    "Cannot watch a monitor that isn't running.": "Cannot watch a monitor that isn't running.",
    "Not Permitted": "Not Permitted",
-   "Not Authorized": "Not Authorized"
+   "Not Authorized": "Not Authorized",
+   "Generate Subtitles": "Generate Subtitles",
+   "Video Limit":"Video Limit",
+   "Preview":"Preview"
 }
