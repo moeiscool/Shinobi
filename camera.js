@@ -1154,6 +1154,9 @@ s.camera=function(x,e,cn,tx){
                                     if(s.group[e.ke].mon[e.id].open){
                                         s.video('close',e);
                                         if(e.details.detector==='1'&&s.ocv&&s.group[e.ke].mon[e.id].started===1&&e.details&&e.details.detector_record_method==='del'&&e.details.detector_delete_motionless_videos==='1'&&s.group[e.ke].mon[e.id].detector_motion_count===0){
+                                            if(e.details.loglevel!=='quiet'){
+                                                s.log(e,{type:lang['Delete Motionless Video'],msg:e.filename+'.'+e.ext});
+                                            }
                                             s.video('delete',s.init('noReference',e))
                                         }
                                     }
@@ -2540,7 +2543,7 @@ app.post('/',function (req,res){
             delete(data.config)
             data.ok=true;
             res.setHeader('Content-Type', 'application/json');
-            res.send(s.s(data, null, 3))
+            res.end(s.s(data, null, 3))
         }else{
             res.render(focus,data);
         }
@@ -2548,7 +2551,7 @@ app.post('/',function (req,res){
     req.failed=function(){
         if(req.query.json=='true'){
             res.setHeader('Content-Type', 'application/json');
-            res.send(s.s({ok:false}, null, 3))
+            res.end(s.s({ok:false}, null, 3))
         }else{
             res.render("index",{failedLogin:true,lang:lang});
             res.end();
