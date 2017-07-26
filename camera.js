@@ -1198,7 +1198,7 @@ s.camera=function(x,e,cn,tx){
                     if(s.group[e.ke].mon[e.id].started===1){
                     e.error_count=0;
                     s.group[e.ke].mon[e.id].error_socket_timeout_count=0;
-                    if(!e.details.fatal_max||e.details.fatal_max===''){e.details.fatal_max=10}else{e.details.fatal_max=parseFloat(e.details.fatal_max)}
+                    if(e.details.fatal_max===''){e.details.fatal_max=10}else{e.details.fatal_max=parseFloat(e.details.fatal_max)}
                     s.kill(s.group[e.ke].mon[e.id].spawn,e);
                     e.draw=function(err,o){
                         if(o.success===true){
