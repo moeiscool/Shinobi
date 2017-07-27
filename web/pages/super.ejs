@@ -184,14 +184,14 @@
   <button class="mdl-snackbar__action" type="button"></button>
 </div>
 </body>
-<script src="/libs/js/pnotify.custom.min.js"></script>
-<script src="/libs/js/socket.io.js"></script>
-<script src="/libs/js/moment.js"></script>
-<script src="/libs/js/livestamp.min.js"></script>
-<script src="/libs/js/placeholder.js"></script>
-<script src="/libs/js/bootstrap.min.js"></script>
-<script src="/libs/js/bootstrap-table.min.js"></script>
-<script src="/libs/js/material.min.js"></script>
+<script><% include ../libs/js/material.min.js %></script>
+<script><% include ../libs/js/pnotify.custom.min.js %></script>
+<script><% include ../libs/js/moment.js %></script>
+<script><% include ../libs/js/livestamp.min.js %></script>
+<script><% include ../libs/js/placeholder.js %></script>
+<script><% include ../libs/js/bootstrap.min.js %></script>
+<script><% include ../libs/js/bootstrap-table.min.js %></script>
+<script><% include ../libs/js/socket.io.js %></script>
 <script>$user=<%-JSON.stringify($user)%></script>
 <script>
 $.ccio={accounts:{}};$.ls=localStorage;
