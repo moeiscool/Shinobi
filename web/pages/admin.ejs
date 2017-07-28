@@ -78,10 +78,11 @@
                             <label><div><span>Password Again</span></div>
                                 <div><input class="form-control" type="password" name="password_again"></div>
                             </label>
-                        
+                      </div>
                       <div>
+                          <button type="reset" class="btn btn-danger"><i class="fa fa-undo"></i> Reset</button>
                           <div class="pull-right">
-                            <button type="submit" class="btn btn-primary">Submit</button>
+                            <button type="submit" class="btn btn-success"><i class="fa fa-check"></i> Submit</button>
                           </div>
                       </div>
                   </div>
@@ -94,13 +95,13 @@
 <% include blocks/subpermissions.ejs %>
     </div>
 </body>
-<script src="/libs/js/pnotify.custom.min.js"></script>
-<script src="/libs/js/socket.io.js"></script>
-<script src="/libs/js/moment.js"></script>
-<script src="/libs/js/livestamp.min.js"></script>
-<script src="/libs/js/placeholder.js"></script>
-<script src="/libs/js/bootstrap.min.js"></script>
-<script src="/libs/js/bootstrap-table.min.js"></script>
+<script><% include ../libs/js/socket.io.js %></script>
+<script><% include ../libs/js/pnotify.custom.min.js %></script>
+<script><% include ../libs/js/moment.js %></script>
+<script><% include ../libs/js/livestamp.min.js %></script>
+<script><% include ../libs/js/placeholder.js %></script>
+<script><% include ../libs/js/bootstrap.min.js %></script>
+<script><% include ../libs/js/bootstrap-table.min.js %></script>
 <script>
 $.ccio={subs:{}};$.ls=localStorage;
 $.ccio.ws=io(location.origin);
