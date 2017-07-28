@@ -1438,7 +1438,8 @@ s.camera=function(x,e,cn,tx){
                                         break;
                                         case /T[0-9][0-9]-[0-9][0-9]-[0-9][0-9]./.test(d):
                                             if( e.details.gensubs==='1' ) {
-                                                s.genVtt(e,d.trim());
+                                                var match = /([0-9\-T]+\.mp4)/.exec(d);
+                                                s.genVtt(e,match[0].trim());
                                             }
                                             return s.log(e,{type:lang['Video Finished'],msg:{filename:d}})
                                         break;
