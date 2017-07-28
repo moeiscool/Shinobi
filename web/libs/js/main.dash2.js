@@ -1902,7 +1902,7 @@ $.timelapse.meter=$.timelapse.e.find('.motion-meter'),
 $.timelapse.line=$('#timelapse_video_line'),
 $.timelapse.display=$('#timelapse_video_display'),
 $.timelapse.seekBar=$('#timelapse_seekBar'),
-$.timelapse.seekBarProgess=$.timelapse.seekBar.find('.progress-bar'),
+$.timelapse.seekBarProgress=$.timelapse.seekBar.find('.progress-bar'),
 $.timelapse.dr=$('#timelapse_daterange'),
 $.timelapse.mL=$.timelapse.e.find('.motion_list'),
 $.timelapse.monitors=$.timelapse.e.find('.monitors_list');
@@ -2136,7 +2136,7 @@ $.timelapse.e.on('click','[timelapse]',function(){
             .off('pause').on('pause',$.timelapse.onPlayPause)
             .off('timeupdate').on('timeupdate',function(){
                 var value= (( e.videoNow.currentTime / e.videoNow.duration ) * 100)+"%"
-                $.timelapse.seekBarProgess.css("width",value);
+                $.timelapse.seekBarProgress.css("width",value);
                 $.timelapse.e.find('.timelapse_video[file="'+e.filename+'"] .progress-bar').css("width",value);
             })
             $.timelapse.seekBar.off("click").on("click", function(seek){
@@ -2171,7 +2171,10 @@ $.pwrvid.mL=$('#motion_list'),
 $.pwrvid.m=$('#vis_monitors'),
 $.pwrvid.lv=$('#live_view'),
 $.pwrvid.dr=$('#pvideo_daterange'),
-$.pwrvid.vp=$('#video_preview');
+$.pwrvid.vp=$('#video_preview'),
+$.pwrvid.seekBar=$('#pwrvid_seekBar'),
+$.pwrvid.seekBarProgress=$.pwrvid.seekBar.find('.progress-bar'),
+$.pwrvid.playRate = 1;
 $.pwrvid.dr.daterangepicker({
     startDate:moment().subtract(moment.duration("24:00:00")),
     endDate:moment().add(moment.duration("24:00:00")),
@@ -2208,7 +2211,15 @@ $.pwrvid.e.on('click','[preview]',function(e){
             $.pwrvid.vpOnPlayPause(1)
         break;
         case'stepFrontFront':
-            e.video.playbackRate += 5;
+            e.add=e.e.attr('add')
+            e.stepFrontFront=parseInt(e.e.attr('stepFrontFront'))
+            if(!e.stepFrontFront||isNaN(e.stepFrontFront)){e.stepFrontFront = 5}
+            if(e.add==="0"){
+                $.pwrvid.playRate = e.stepFrontFront
+            }else{
+                $.pwrvid.playRate += e.stepFrontFront
+            }
+            e.video.playbackRate = $.pwrvid.playRate;
             e.video.play()
         break;
         case'stepFront':
@@ -2239,7 +2250,7 @@ $.pwrvid.e.on('click','[preview]',function(e){
             e.href=e.e.attr('href');
             e.status=e.p.attr('status');
             e.mon=$.ccio.mon[e.p.attr('mid')];
-            $.pwrvid.vp.find('.holder').html('<video class="video_video" video="'+e.href+'" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"></video>');
+            $.pwrvid.vp.find('.holder').html('<video class="video_video" video="'+e.href+'"><source src="'+e.href+'" type="video/'+e.mon.ext+'"></video>');
             $.pwrvid.vp
                 .attr('mid',e.mon.mid)
                 .attr('ke',e.mon.ke)
@@ -2330,13 +2341,17 @@ $.pwrvid.e.on('click','[preview]',function(e){
                     if(x==1)e.video.pause();
                 }
             }
+            var videoElement=$.pwrvid.vp.find('video')[0]
             $.pwrvid.vp.find('video')
+                .off('loadeddata').on('loadeddata', function() {
+                    this.playbackRate = $.pwrvid.playRate;
+                    this.play()
+                })
                 .off("pause").on("pause",$.pwrvid.vpOnPlayPause)
                 .off("play").on("play",$.pwrvid.vpOnPlayPause)
                 .off("timeupdate").on("timeupdate",function(){
                     var video = $.pwrvid.currentDataObject[e.filename];
-                    var video1 = $('#video_preview video');
-                    var videoTime=moment(video.row.time).add(parseInt(video1[0].currentTime),'seconds').format('MM/DD/YYYY HH:mm:ss');
+                    var videoTime=moment(video.row.time).add(parseInt(videoElement.currentTime),'seconds').format('MM/DD/YYYY HH:mm:ss');
                     var event = eventsLabeledByTime[videoTime];
                     if(event){
                         if(event.details.plates){
@@ -2344,7 +2359,7 @@ $.pwrvid.e.on('click','[preview]',function(e){
                         }
                         if(event.details.matrices){
                             event.monitorDetails=JSON.parse(e.mon.details)
-                            event.stream=video1
+                            event.stream=$(videoElement)
                             event.streamObjects=$.pwrvid.vp.find('.stream-objects')
                             $.ccio.init('drawMatrices',event)
                         }
@@ -2352,7 +2367,17 @@ $.pwrvid.e.on('click','[preview]',function(e){
                             $.pwrvid.vp.find('.motion-meter .progress-bar').css('width',event.details.confidence+'px').find('span').text(event.details.confidence)
                         }
                     }
+                    var value= (( videoElement.currentTime / videoElement.duration ) * 100)+"%"
+                    $.pwrvid.seekBarProgress.css("width",value);
                 })
+                $.pwrvid.seekBar.off("click").on("click", function(seek){
+                    var offset = $(this).offset();
+                    var left = (seek.pageX - offset.left);
+                    var totalWidth = $.pwrvid.seekBar.width();
+                    var percentage = ( left / totalWidth );
+                    var vidTime = videoElement.duration * percentage;
+                    videoElement.currentTime = vidTime;
+                });
         break;
     }
 })
