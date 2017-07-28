@@ -1,6 +1,6 @@
 {
   "name": "shinobi",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "CCTV and NVR for Node.js",
   "main": "camera.js",
   "scripts": {
@@ -12,7 +12,7 @@
     "url": "git+https://github.com/moeiscool/Shinobi.git"
   },
   "author": "Moe Alam",
-  "license": "CC BY-NC-SA",
+  "license": "GPL",
   "bugs": {
     "url": "https://github.com/moeiscool/Shinobi/issues"
   },

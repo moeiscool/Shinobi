@@ -2263,7 +2263,7 @@ $.pwrvid.e.on('click','[preview]',function(e){
                     $.pwrvid.vp.find('.stream-objects').empty().css('width',$(this).width())
                 })
             if(e.status==1){
-                $.get(e.href+'/status/2',function(d){
+                $.get(e.href.split('?')[0]+'/status/2',function(d){
                 })
             }
             var labels=[]
@@ -2559,7 +2559,7 @@ $('body')
             e.f.find('[monitor="download"][host="dropbox"]').attr('href',e.href);
             e.e.modal('show').attr('ke',e.ke).attr('mid',e.mid).attr('file',e.file);
             if(e.status==1){
-                $.get(e.href+'/status/2',function(d){
+                $.get(e.href.split('?')[0]+'/status/2',function(d){
                 })
             }
         break;
