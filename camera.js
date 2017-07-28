@@ -1200,6 +1200,7 @@ s.camera=function(x,e,cn,tx){
                             fs.exists(e.dir+filename,function(exists){
                                 if(exists){
                                     if(s.group[e.ke].mon[e.id].open){
+                                        //close video file
                                         s.video('close',e);
                                         if(e.details.detector==='1'&&s.ocv&&s.group[e.ke].mon[e.id].started===1&&e.details&&e.details.detector_record_method==='del'&&e.details.detector_delete_motionless_videos==='1'&&s.group[e.ke].mon[e.id].detector_motion_count===0){
                                             s.video('delete',s.init('noReference',e))
