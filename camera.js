@@ -1907,6 +1907,8 @@ var tx;
                                         tx({f:'control',mid:d.mid,ke:d.ke,direction:d.direction,url_stop:false});
                                     }
                                   });
+                                  first.on('data', function() {
+                                  });
                             }).on('error', function(err) {
                                 s.log(d,{type:'Control Error',msg:err});
                             }).end();
