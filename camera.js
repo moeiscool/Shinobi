@@ -2549,7 +2549,7 @@ app.post('/',function (req,res){
             res.render(focus,data);
         }
     }
-    req.failed=function(){
+    req.failed=function(message){
         if(req.query.json=='true'){
             res.setHeader('Content-Type', 'application/json');
             res.end(s.s({ok:false}, null, 3))
@@ -2557,6 +2557,19 @@ app.post('/',function (req,res){
             res.render("index",{failedLogin:true,lang:lang});
             res.end();
         }
+        req.logTo={ke:'$',mid:'$USER'}
+        req.logData={type:lang['Authentication Failed'],msg:{for:message,mail:req.body.mail,ip:req.ip}}
+        sql.query('SELECT ke,uid,details FROM Users WHERE mail=?',[req.body.mail],function(err,r) {
+            if(r&&r[0]){
+                r=r[0]
+                r.details=JSON.parse(r.details);
+                r.lang=s.getLanguageFile(r.details.lang)
+                req.logData.id=r.uid
+                req.logData.type=r.lang['Authentication Failed']
+                req.logTo.ke=r.ke
+            }
+            s.log(req.logTo,req.logData)
+        })
     }
     req.fn=function(r){
         switch(req.body.function){
@@ -2588,7 +2601,7 @@ app.post('/',function (req,res){
                 req.renderFunction("home",{$user:req.resp,config:config,lang:r.lang,fs:fs});
             break;
         }
-        s.log({ke:r.ke,mid:'$USER'},{type:r.lang['New Auth Token'],msg:{mail:r.mail,id:r.uid,ip:req.ip}})
+        s.log({ke:r.ke,mid:'$USER'},{type:r.lang['New Authentication Token'],msg:{mail:r.mail,id:r.uid,ip:req.ip}})
     //    res.end();
     }
     if(req.body.mail&&req.body.pass){
@@ -2601,7 +2614,7 @@ app.post('/',function (req,res){
                 req.renderFunction("super",data);
             })
             if(req.ok===false){
-                req.failed()
+                req.failed(lang.Superuser)
             }
         }else{
             sql.query('SELECT * FROM Users WHERE mail=? AND pass=?',[req.body.mail,s.md5(req.body.pass)],function(err,r) {
@@ -2665,7 +2678,7 @@ app.post('/',function (req,res){
                         req.factorAuth()
                     }
                 }else{
-                    req.failed()
+                    req.failed(lang['Basic Authentication'])
                 }
             })
         }
@@ -2691,10 +2704,10 @@ app.post('/',function (req,res){
                     res.end();
                 }
             }else{
-                req.failed()
+                req.failed(lang['2-Factor Authentication'])
             }
         }else{
-            req.failed()
+            req.failed(lang['2-Factor Authentication'])
         }
     }
 });

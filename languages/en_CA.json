@@ -498,7 +498,9 @@
    "Video Limit":"Video Limit",
    "Preview":"Preview",
    "Websocket Connected":"Websocket Connected",
-   "New Auth Token":"New Auth Token",
+   "New Authentication Token":"New Authentication Token",
    "All Logs":"All Logs",
-   "For Group":"For Group"
+   "For Group":"For Group",
+   "Basic Authentication":"Basic Authentication",
+   "Authentication Failed":"Authentication Failed"
 }
