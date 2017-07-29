@@ -1601,7 +1601,9 @@ var tx;
             sql.query('SELECT ke,uid,auth,mail,details FROM Users WHERE ke=? AND auth=? AND uid=?',[d.ke,d.auth,d.uid],function(err,r) {
                 if(r&&r[0]){
                     r=r[0];cn.join('GRP_'+d.ke);cn.join('CPU');
-                    cn.ke=d.ke,cn.uid=d.uid,cn.auth=d.auth;
+                    cn.ke=d.ke,
+                    cn.uid=d.uid,
+                    cn.auth=d.auth;
                     if(!s.group[d.ke])s.group[d.ke]={};
 //                    if(!s.group[d.ke].vid)s.group[d.ke].vid={};
                     if(!s.group[d.ke].users)s.group[d.ke].users={};
@@ -2364,8 +2366,9 @@ var tx;
             }
             if(!cn.embedded){
                 if(s.group[cn.ke].users[cn.auth].login_type==='Dashboard'){
-                   s.tx({f:'user_status_change',ke:cn.ke,uid:cn.uid,status:0})
+                    s.tx({f:'user_status_change',ke:cn.ke,uid:cn.uid,status:0})
                 }
+                s.log({ke:cn.ke,mid:'$USER'},{type:s.group[cn.ke].users[cn.auth].lang['Websocket Disconnected'],msg:{mail:s.group[cn.ke].users[cn.auth].mail,id:cn.uid,ip:cn.ip}})
                 delete(s.group[cn.ke].users[cn.auth]);
             }
         }
@@ -2601,7 +2604,7 @@ app.post('/',function (req,res){
                 req.renderFunction("home",{$user:req.resp,config:config,lang:r.lang,fs:fs});
             break;
         }
-        s.log({ke:r.ke,mid:'$USER'},{type:r.lang['New Authentication Token'],msg:{mail:r.mail,id:r.uid,ip:req.ip}})
+        s.log({ke:r.ke,mid:'$USER'},{type:r.lang['New Authentication Token'],msg:{for:req.body.function,mail:r.mail,id:r.uid,ip:req.ip}})
     //    res.end();
     }
     if(req.body.mail&&req.body.pass){
@@ -2614,7 +2617,7 @@ app.post('/',function (req,res){
                 req.renderFunction("super",data);
             })
             if(req.ok===false){
-                req.failed(lang.Superuser)
+                req.failed(req.body.function)
             }
         }else{
             sql.query('SELECT * FROM Users WHERE mail=? AND pass=?',[req.body.mail,s.md5(req.body.pass)],function(err,r) {
@@ -2678,7 +2681,7 @@ app.post('/',function (req,res){
                         req.factorAuth()
                     }
                 }else{
-                    req.failed(lang['Basic Authentication'])
+                    req.failed(req.body.function)
                 }
             })
         }

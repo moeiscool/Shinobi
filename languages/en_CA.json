@@ -498,6 +498,7 @@
    "Video Limit":"Video Limit",
    "Preview":"Preview",
    "Websocket Connected":"Websocket Connected",
+   "Websocket Disconnected":"Websocket Disconnected",
    "New Authentication Token":"New Authentication Token",
    "All Logs":"All Logs",
    "For Group":"For Group",
