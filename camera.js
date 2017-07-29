@@ -2417,7 +2417,7 @@ s.auth=function(xx,x,res,req){
             sql.query('SELECT * FROM API WHERE code=? AND ke=?',[xx.auth,xx.ke],function(err,r){
                 if(r&&r[0]){
                     r=r[0];
-                    s.api[xx.auth]={ip:r.ip,permissions:JSON.parse(r.details)};
+                    s.api[xx.auth]={ip:r.ip,permissions:JSON.parse(r.details),details:{}};
                     sql.query('SELECT details FROM Users WHERE uid=? AND ke=?',[r.uid,r.ke],function(err,rr){
                         if(rr&&rr[0]){
                             rr=rr[0];
@@ -2552,7 +2552,7 @@ app.post('/',function (req,res){
             res.render(focus,data);
         }
     }
-    req.failed=function(message){
+    req.failed=function(board){
         if(req.query.json=='true'){
             res.setHeader('Content-Type', 'application/json');
             res.end(s.s({ok:false}, null, 3))
@@ -2561,18 +2561,22 @@ app.post('/',function (req,res){
             res.end();
         }
         req.logTo={ke:'$',mid:'$USER'}
-        req.logData={type:lang['Authentication Failed'],msg:{for:message,mail:req.body.mail,ip:req.ip}}
-        sql.query('SELECT ke,uid,details FROM Users WHERE mail=?',[req.body.mail],function(err,r) {
-            if(r&&r[0]){
-                r=r[0]
-                r.details=JSON.parse(r.details);
-                r.lang=s.getLanguageFile(r.details.lang)
-                req.logData.id=r.uid
-                req.logData.type=r.lang['Authentication Failed']
-                req.logTo.ke=r.ke
-            }
+        req.logData={type:lang['Authentication Failed'],msg:{for:board,mail:req.body.mail,ip:req.ip}}
+        if(board==='super'){
             s.log(req.logTo,req.logData)
-        })
+        }else{
+            sql.query('SELECT ke,uid,details FROM Users WHERE mail=?',[req.body.mail],function(err,r) {
+                if(r&&r[0]){
+                    r=r[0]
+                    r.details=JSON.parse(r.details);
+                    r.lang=s.getLanguageFile(r.details.lang)
+                    req.logData.id=r.uid
+                    req.logData.type=r.lang['Authentication Failed']
+                    req.logTo.ke=r.ke
+                }
+                s.log(req.logTo,req.logData)
+            })
+        }
     }
     req.fn=function(r){
         switch(req.body.function){
@@ -2885,10 +2889,10 @@ app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
             }
         }
         req.sql+=' ORDER BY `time` DESC';
+        if(!req.query.limit||req.query.limit==''){
+            req.query.limit='100'
+        }
         if(req.query.limit!=='0'){
-            if(!req.query.limit||req.query.limit==''){
-                req.query.limit=100
-            }
             req.sql+=' LIMIT '+req.query.limit
         }
         sql.query(req.sql,req.ar,function(err,r){

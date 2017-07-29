@@ -503,5 +503,6 @@
    "All Logs":"All Logs",
    "For Group":"For Group",
    "Basic Authentication":"Basic Authentication",
+   "Superuser Logs":"Superuser Logs",
    "Authentication Failed":"Authentication Failed"
 }
