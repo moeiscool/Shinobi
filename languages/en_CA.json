@@ -504,5 +504,16 @@
    "For Group":"For Group",
    "Basic Authentication":"Basic Authentication",
    "Superuser Logs":"Superuser Logs",
-   "Authentication Failed":"Authentication Failed"
+   "Authentication Failed":"Authentication Failed",
+   "Max Number of Cameras":"Max Number of Cameras",
+   "Can edit Max Storage":"Can edit Max Storage",
+   "Can edit Max Days":"Can edit Max Days",
+   "in Days":"in Days",
+   "Can edit how long to keep Logs":"Can edit how long to keep Logs",
+   "Can use Admin Panel":"Can use Admin Panel",
+   "Can use WebDAV":"Can use WebDAV",
+   "Can edit how long to keep Events":"Can edit how long to keep Events",
+   "Leave blank for unlimited":"Leave blank for unlimited",
+   "Limited":"Limited",
+   "All Privileges":"All Privileges"
 }

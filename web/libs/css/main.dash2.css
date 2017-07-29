@@ -55,6 +55,8 @@
 ul{list-style:none}
 *{transition:0.2s;box-sizing:border-box}
 .no-padding{padding:0!important}
+.no-margin{margin:0!important}
+.pre-inline{white-space: normal;word-break: normal}
 a{cursor:pointer}
 nav h4{cursor:default;font-size:95%;padding:16px 40px;font-weight:100;text-transform:uppercase;letter-spacing:2px}
 .m-r{margin-right:10px}

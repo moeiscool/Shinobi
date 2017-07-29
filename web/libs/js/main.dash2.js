@@ -1486,11 +1486,6 @@ $.log.lm.change(function(e){
     $.get('/'+$user.auth_token+'/logs/'+$user.ke+'/'+e.v,function(d){
         e.tmp='';
         $.each(d,function(n,v){
-            if($.ccio.mon[v.mid]&&$.ccio.mon[v.mid].name){
-                v.name=$.ccio.mon[v.mid].name
-            }else{
-                v.name='System'
-            }
             e.tmp+='<tr class="search-row"><td title="'+v.time+'" class="livestamp"></td><td>'+v.time+'</td><td>'+v.name+'</td><td>'+v.mid+'</td><td>'+$.ccio.init('jsontoblock',v.info)+'</td></tr>'
         })
         $.log.o.html(e.tmp)

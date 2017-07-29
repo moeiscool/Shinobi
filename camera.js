@@ -93,13 +93,6 @@ s.getLanguageFile=function(rule,file){
     }
     return file
 }
-s.systemLog=function(q,w,e){
-    if(!w){w=''}
-    if(!e){e=''}
-    if(config.systemLog===true){
-       return console.log(moment().format(),q,w,e)
-    }
-}
 s.disc=function(){
     sql = mysql.createConnection(config.db);
     sql.connect(function(err){if(err){s.systemLog(lang['Error Connecting']+' : DB',err);setTimeout(s.disc, 2000);}});
@@ -253,6 +246,7 @@ s.kill=function(x,e,p){
         }
     }
 }
+//user log
 s.log=function(e,x){
     if(!x||!e.mid){return}
     if((e.details&&e.details.sqllog==='1')||e.mid.indexOf('$')>-1){
@@ -260,6 +254,18 @@ s.log=function(e,x){
     }
     s.tx({f:'log',ke:e.ke,mid:e.mid,log:x,time:moment()},'GRP_'+e.ke);
 //    s.systemLog('s.log : ',{f:'log',ke:e.ke,mid:e.mid,log:x,time:moment()},'GRP_'+e.ke)
+}
+//system log
+s.systemLog=function(q,w,e){
+    if(!w){w=''}
+    if(!e){e=''}
+    if(config.systemLog===true){
+        if(typeof q==='string'&&sql){
+            sql.query('INSERT INTO Logs (ke,mid,info) VALUES (?,?,?)',['$','$SYSTEM',s.s({type:q,msg:w})]);
+            s.tx({f:'log',log:{time:moment(),ke:'$',mid:'$SYSTEM',time:moment(),info:s.s({type:q,msg:w})}},'$');
+        }
+        return console.log(moment().format(),q,w,e)
+    }
 }
 //SSL options
 if(config.ssl&&config.ssl.key&&config.ssl.cert){
@@ -511,7 +517,7 @@ s.video=function(x,e){
             sql.query('DELETE FROM Videos WHERE `mid`=? AND `ke`=? AND `time`=?',e.save,function(err,r){
                 fs.stat(e.dir+e.filename+'.'+e.ext,function(err,file){
                     if(err){
-                        return s.systemLog(err)
+                        return s.systemLog('File Delete Error : '+e.ke+' : '+' : '+e.mid,err)
                     }
                     s.group[e.ke].init.used_space=s.group[e.ke].init.used_space-(file.size/1000000)
                     s.init('diskUsed',e)
@@ -1119,7 +1125,7 @@ s.camera=function(x,e,cn,tx){
                             e.mailOptions.html+='<div><b>'+lang['Monitor ID']+' </b> : '+e.id+'</div>'
                             nodemailer.sendMail(e.mailOptions, (error, info) => {
                                 if (error) {
-                                   s.systemLog('detector:notrigger:sendMail',s.moment(),error)
+                                   s.systemLog('detector:notrigger:sendMail',error)
                                     s.tx({f:'error',ff:'detector_notrigger_mail',id:e.id,ke:e.ke,error:error},'GRP_'+e.ke);
                                     return ;
                                 }
@@ -1424,7 +1430,8 @@ s.camera=function(x,e,cn,tx){
                                 s.group[e.ke].mon[e.id].child_node=n;
                                 s.cx({f:'spawn',d:s.init('noReference',e),mon:s.init('noReference',s.group[e.ke].mon[e.mid])},s.group[e.ke].mon[e.mid].child_node_id)
                             }else{
-                                s.systemLog('Cannot Connect, Retrying...',e.id);e.error_fatal();return;
+//                                s.systemLog('Cannot Connect, Retrying...',e.id);
+                                e.error_fatal();return;
                             }
                         })
                         }
@@ -1654,7 +1661,7 @@ var tx;
                                 },2000)
                             });
                         }).on('error', function(e){
-                              s.systemLog("Get Snapshot Error", e);
+//                              s.systemLog("Get Snapshot Error", e);
                         });
                     })
                 }else{
@@ -1713,7 +1720,7 @@ var tx;
                                     tx({f:'api_key_deleted',form:d.form});
                                     delete(s.api[d.form.code]);
                                 }else{
-                                    s.systemLog(err)
+                                    s.systemLog('API Delete Error : '+e.ke+' : '+' : '+e.mid,err)
                                 }
                             })
                         break;
@@ -1741,7 +1748,6 @@ var tx;
                                         if(r&&r[0]){
                                             r=r[0];
                                             d.d=JSON.parse(r.details);
-                                            s.systemLog(d)
                                             if(d.form.id===''){d.form.id=s.gid(5)}
                                             if(!d.d.filters)d.d.filters={};
                                             //save/modify or delete
@@ -2041,7 +2047,9 @@ var tx;
                     }); // foreach
                 break;
             }
-        }catch(er){s.systemLog(er)}
+        }catch(er){
+            s.systemLog('ERROR CATCH 1',er)
+        }
         }else{
             tx({ok:false,msg:lang.NotAuthorizedText1});
         }
@@ -2120,7 +2128,9 @@ var tx;
     cn.on('super',function(d){
         if(!cn.init&&d.f=='init'){
             d.ok=s.superAuth({mail:d.mail,pass:d.pass},function(data){
-                cn.join('SUPER');
+                cn.uid=d.mail
+                cn.join('$');
+                s.log({ke:'$',mid:'$USER'},{type:lang['Websocket Connected'],msg:{for:lang['Superuser'],id:cn.uid,ip:cn.request.connection.remoteAddress}})
                 cn.init='super';
                 cn.mail=d.mail;
                 s.tx({f:'init_success',mail:d.mail},cn.id);
@@ -2131,6 +2141,13 @@ var tx;
         }else{
             if(cn.mail&&cn.init=='super'){
                 switch(d.f){
+                    case'logs':
+                        switch(d.ff){
+                            case'delete':
+                                sql.query('DELETE FROM Logs WHERE ke=?',[d.ke])
+                            break;
+                        }
+                    break;
                     case'accounts':
                         switch(d.ff){
                             case'register':
@@ -2148,7 +2165,7 @@ var tx;
                                                     d.form.ke=s.gid()
                                                 }
                                                 sql.query('INSERT INTO Users (ke,uid,mail,pass,details) VALUES (?,?,?,?,?)',[d.form.ke,d.form.uid,d.form.mail,s.md5(d.form.pass),d.form.details])
-                                                s.tx({f:'add_account',details:d.form.details,ke:d.form.ke,uid:d.form.uid,mail:d.form.mail},'SUPER');
+                                                s.tx({f:'add_account',details:d.form.details,ke:d.form.ke,uid:d.form.uid,mail:d.form.mail},'$');
                                             }
                                         })
                                     }else{
@@ -2184,11 +2201,10 @@ var tx;
                                 d.values.push(d.account.mail)
                                 sql.query('UPDATE Users SET '+d.set.join(',')+' WHERE mail=?',d.values,function(err,r) {
                                     if(err){
-                                        s.systemLog('UPDATE Users SET '+d.set.join(',')+' WHERE mail=?',d.values,err)
                                         s.tx({f:'error',ff:'account_edit',msg:lang.AccountEditText1},cn.id)
                                         return
                                     }
-                                    s.tx({f:'edit_account',form:d.form,ke:d.account.ke,uid:d.account.uid},'SUPER');
+                                    s.tx({f:'edit_account',form:d.form,ke:d.account.ke,uid:d.account.uid},'$');
                                     delete(s.group[d.account.ke].init);
                                     s.init('apps',d.account)
                                 })
@@ -2196,7 +2212,7 @@ var tx;
                             case'delete':
                                 sql.query('DELETE FROM Users WHERE uid=? AND ke=? AND mail=?',[d.account.uid,d.account.ke,d.account.mail])
                                 sql.query('DELETE FROM API WHERE uid=? AND ke=?',[d.account.uid,d.account.ke])
-                                s.tx({f:'delete_account',ke:d.account.ke,uid:d.account.uid,mail:d.account.mail},'SUPER');
+                                s.tx({f:'delete_account',ke:d.account.ke,uid:d.account.uid,mail:d.account.mail},'$');
                             break;
                         }
                     break;
@@ -2296,7 +2312,7 @@ var tx;
                 s.child_nodes[cn.ip].cpu=0;
                 tx({f:'init_success',child_nodes:s.child_nodes});
             }else{
-                if(d.f!=='s.tx'){s.systemLog(d)};
+                if(d.f!=='s.tx'){s.systemLog('CRON',d)};
                 switch(d.f){
                     case'cpu':
                         s.child_nodes[cn.ip].cpu=d.cpu;
@@ -2618,7 +2634,13 @@ app.post('/',function (req,res){
                 return
             }
             req.ok=s.superAuth({mail:req.body.mail,pass:req.body.pass,users:true,md5:true},function(data){
-                req.renderFunction("super",data);
+                sql.query('SELECT * FROM Logs WHERE ke=?',['$'],function(err,r) {
+                    if(!r){
+                        r=[]
+                    }
+                    data.Logs=r;
+                    req.renderFunction("super",data);
+                })
             })
             if(req.ok===false){
                 req.failed(req.body.function)
@@ -3428,7 +3450,7 @@ setTimeout(function(){
                     s.group[v.ke].init.used_space=v.size/1000000;
                     //emit the changes to connected users
                     s.init('diskUsed',v)
-                    s.systemLog(v.mail+' : '+lang.startUpText1,countFinished,count)
+                    s.systemLog(v.mail+' : '+lang.startUpText1,countFinished+'/'+count)
                     if(countFinished===count){
                         s.systemLog(lang.startUpText2)
                         ////close open videos
