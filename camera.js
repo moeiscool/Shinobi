@@ -44,7 +44,6 @@ var crypto = require('crypto');
 var webdav = require("webdav");
 var connectionTester = require('connection-tester');
 var events = require('events');
-var df = require('node-df');
 var Cam = require('onvif').Cam;
 var config = require('./conf.json');
 if(!config.language){
@@ -256,7 +255,7 @@ s.kill=function(x,e,p){
 }
 s.log=function(e,x){
     if(!x||!e.mid){return}
-    if(e.details&&e.details.sqllog==1){
+    if((e.details&&e.details.sqllog==='1')||e.mid.indexOf('$')>-1){
         sql.query('INSERT INTO Logs (ke,mid,info) VALUES (?,?,?)',[e.ke,e.mid,s.s(x)]);
     }
     s.tx({f:'log',ke:e.ke,mid:e.mid,log:x,time:moment()},'GRP_'+e.ke);
@@ -563,10 +562,10 @@ s.video=function(x,e){
                                 if(!s.group[e.ke].init.used_space){s.group[e.ke].init.used_space=0}else{s.group[e.ke].init.used_space=parseFloat(s.group[e.ke].init.used_space)}
                                 s.group[e.ke].init.used_space=s.group[e.ke].init.used_space+e.filesizeMB;
                                 if(config.cron.deleteOverMax===true&&s.group[e.ke].checkSpaceLock!==1){
+                                    s.group[e.ke].checkSpaceLock=1;
                                     //check space
                                     var check=function(){
                                         if(s.group[e.ke].init.used_space>(s.group[e.ke].init.size*config.cron.deleteOverMaxOffset)){
-                                            s.group[e.ke].checkSpaceLock=1;
                                             sql.query('SELECT * FROM Videos WHERE status != 0 AND ke=? ORDER BY `time` ASC LIMIT 2',[e.ke],function(err,evs){
                                                 k.del=[];k.ar=[e.ke];
                                                 evs.forEach(function(ev){
@@ -1610,6 +1609,7 @@ var tx;
                     s.group[d.ke].users[d.auth]={cnid:cn.id,uid:r.uid,mail:r.mail,details:JSON.parse(r.details),logged_in_at:moment(new Date).format(),login_type:'Dashboard'}
                     try{s.group[d.ke].users[d.auth].details=JSON.parse(r.details)}catch(er){}
                     s.group[d.ke].users[d.auth].lang=s.getLanguageFile(s.group[d.ke].users[d.auth].details.lang)
+                    s.log({ke:d.ke,mid:'$USER'},{type:s.group[d.ke].users[d.auth].lang['Websocket Connected'],msg:{mail:r.mail,id:d.uid,ip:cn.ip}})
                     if(!s.group[d.ke].mon){
                         s.group[d.ke].mon={}
                         if(!s.group[d.ke].mon){s.group[d.ke].mon={}}
@@ -2535,6 +2535,7 @@ s.deleteFactorAuth=function(r){
     }
 }
 app.post('/',function (req,res){
+    req.ip=req.headers['cf-connecting-ip']||req.headers["CF-Connecting-IP"]||req.headers["'x-forwarded-for"]||req.connection.remoteAddress;
     if(req.query.json=='true'){
         res.header("Access-Control-Allow-Origin",req.headers.origin);
     }
@@ -2587,6 +2588,7 @@ app.post('/',function (req,res){
                 req.renderFunction("home",{$user:req.resp,config:config,lang:r.lang,fs:fs});
             break;
         }
+        s.log({ke:r.ke,mid:'$USER'},{type:r.lang['New Auth Token'],msg:{mail:r.mail,id:r.uid,ip:req.ip}})
     //    res.end();
     }
     if(req.body.mail&&req.body.pass){
@@ -2964,7 +2966,7 @@ app.get(['/:auth/logs/:ke','/:auth/logs/:ke/:id','/:auth/logs/:ke/:limit','/:aut
                 req.sql+=' AND ('+req.or.join(' OR ')+')'
             }
         }else{
-            if(!user.details.sub||user.details.allmonitors!=='0'||user.details.monitors.indexOf(req.params.id)>-1){
+            if(!user.details.sub||user.details.allmonitors!=='0'||user.details.monitors.indexOf(req.params.id)>-1||req.params.id.indexOf('$')>-1){
                 req.sql+=' and mid=?';req.ar.push(req.params.id)
             }else{
                 res.send('[]');return;

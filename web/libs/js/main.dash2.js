@@ -1473,6 +1473,7 @@ $.pB.e.find('.stop').click(function(e){
 //log viewer
 $.log={e:$('#logs_modal'),lm:$('#log_monitors')};$.log.o=$.log.e.find('table tbody');
 $.log.e.on('shown.bs.modal', function () {
+    $.log.lm.find('option:not(.hard)').remove()
     $.each($.ccio.mon,function(n,v){
         v.id=v.mid;
         $.ccio.tm('option',v,'#log_monitors')
@@ -1485,7 +1486,12 @@ $.log.lm.change(function(e){
     $.get('/'+$user.auth_token+'/logs/'+$user.ke+'/'+e.v,function(d){
         e.tmp='';
         $.each(d,function(n,v){
-            e.tmp+='<tr class="search-row"><td title="'+v.time+'" class="livestamp"></td><td>'+v.time+'</td><td>'+$.ccio.mon[v.mid].name+'</td><td>'+v.mid+'</td><td>'+$.ccio.init('jsontoblock',v.info)+'</td></tr>'
+            if($.ccio.mon[v.mid]&&$.ccio.mon[v.mid].name){
+                v.name=$.ccio.mon[v.mid].name
+            }else{
+                v.name='System'
+            }
+            e.tmp+='<tr class="search-row"><td title="'+v.time+'" class="livestamp"></td><td>'+v.time+'</td><td>'+v.name+'</td><td>'+v.mid+'</td><td>'+$.ccio.init('jsontoblock',v.info)+'</td></tr>'
         })
         $.log.o.html(e.tmp)
         $.ccio.init('ls')

@@ -496,5 +496,9 @@
    "Not Authorized": "Not Authorized",
    "Generate Subtitles": "Generate Subtitles",
    "Video Limit":"Video Limit",
-   "Preview":"Preview"
+   "Preview":"Preview",
+   "Websocket Connected":"Websocket Connected",
+   "New Auth Token":"New Auth Token",
+   "All Logs":"All Logs",
+   "For Group":"For Group"
 }
