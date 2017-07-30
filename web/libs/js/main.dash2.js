@@ -40,6 +40,15 @@ switch($.ccio.userDetails.lang){
     $.ccio.init=function(x,d,z,k){
         if(!k){k={}};k.tmp='';
         switch(x){
+            case'fullscreen':
+                if (d.requestFullscreen) {
+                  d.requestFullscreen();
+                } else if (d.mozRequestFullScreen) {
+                  d.mozRequestFullScreen();
+                } else if (d.webkitRequestFullscreen) {
+                  d.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                }
+            break;
             case'drawMatrices':
                 d.height=d.stream.height()
                 d.width=d.stream.width()
@@ -493,7 +502,7 @@ switch($.ccio.userDetails.lang){
                 tmp+='<div class="mdl-card__supporting-text text-center">';
                 tmp+='<div class="indifference"><div class="progress"><div class="progress-bar progress-bar-danger" role="progressbar"><span></span></div></div></div>';
                 tmp+='<div class="monitor_name">'+d.name+'</div>';
-                tmp+='<div class="btn-group"><a title="<%-cleanLang(lang.Snapshot)%>" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="<%-cleanLang(lang['Show Logs'])%>" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="<%-cleanLang(lang.Control)%>" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="<%-cleanLang(lang['Status Indicator'])%>" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-plug"></i></a> <a title="<%-cleanLang(lang.Calendar)%>" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="<%-cleanLang(lang['Power Viewer'])%>" class="btn btn-default" monitor="powerview"><i class="fa fa-map-marker"></i></a> <a title="<%-cleanLang(lang['Time-lapse'])%>" class="btn btn-default" monitor="timelapse"><i class="fa fa-angle-double-right"></i></a> <a title="<%-cleanLang(lang['Videos List'])%>" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a title="<%-cleanLang(lang['Monitor Settings'])%>" class="btn btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="<%-cleanLang(lang.Enlarge)%>" monitor="bigify" class="hidden btn btn-default"><i class="fa fa-expand"></i></a> <a title="<%-cleanLang(lang.Fullscreen)%>" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="<%-cleanLang(lang.Close)%> Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
+                tmp+='<div class="btn-group"><a title="<%-cleanLang(lang.Snapshot)%>" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="<%-cleanLang(lang['Show Logs'])%>" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="<%-cleanLang(lang.Control)%>" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="<%-cleanLang(lang['Status Indicator'])%>" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-plug"></i></a> <a title="<%-cleanLang(lang.Calendar)%>" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="<%-cleanLang(lang['Power Viewer'])%>" class="btn btn-default" monitor="powerview"><i class="fa fa-map-marker"></i></a> <a title="<%-cleanLang(lang['Time-lapse'])%>" class="btn btn-default" monitor="timelapse"><i class="fa fa-angle-double-right"></i></a> <a title="<%-cleanLang(lang['Videos List'])%>" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a title="<%-cleanLang(lang['Monitor Settings'])%>" class="btn btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="<%-cleanLang(lang.Fullscreen)%>" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="<%-cleanLang(lang.Close)%> Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
                 tmp+='</div>';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col mdl-cell--4-col-desktop">';
@@ -2202,6 +2211,9 @@ $.pwrvid.e.on('click','[preview]',function(e){
         clearInterval($.pwrvid.video.interval);
     }
     switch(e.e.attr('preview')){
+        case'fullscreen':
+            $.ccio.init('fullscreen',e.video)
+        break;
         case'mute':
             e.video.muted = !e.video.muted
             e.e.find('i').toggleClass('fa-volume-off fa-volume-up')
@@ -2934,32 +2946,7 @@ $('body')
                e.vid.attr('height',e.doc.height())
                e.vid.attr('width',e.doc.width())
             }
-            e.vid=e.vid[0]
-            if (e.vid.requestFullscreen) {
-              e.vid.requestFullscreen();
-            } else if (e.vid.mozRequestFullScreen) {
-              e.vid.mozRequestFullScreen();
-            } else if (e.vid.webkitRequestFullscreen) {
-              e.vid.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
-            }
-        break;
-        case'bigify':
-            e.m=$('#monitors_live')
-            if(e.p.hasClass('selected')){e.m.find('.monitor_item').resize();return}
-            $('.monitor_item .videos_list').remove();
-            e.e=e.e.parents('.monitor_item');
-            if(!e.e.is(':first')){
-                e.f=e.m.find('.monitor_item').first().insertAfter(e.e.prev())
-                e.e.prependTo('#monitors_live');
-                $('#main_canvas .scrollable').animate({scrollTop: $("#monitor_live_"+e.mid).position().top},1000);
-//                $.ccio.cx({f:'monitor',ff:'watch_on',id:e.f.attr('mid')})
-            }
-            e.m.find('.monitor_item').resize();
-            e.e=$('#files_recent .videos_list.glM'+e.mid);
-            if(e.e.length>1){
-                e.e.eq(2).remove();
-            }
-            $('video').each(function(n,v){if(v.paused){v.play()}})
+            $.ccio.init('fullscreen',e.video)
         break;
         case'watch_on':
             $.ccio.cx({f:'monitor',ff:'watch_on',id:e.mid})
