@@ -432,6 +432,7 @@
    "FileNotExistText": "Cannot save non existant file. Something went wrong.",
    "CameraNotRecordingText": "Settings may be incompatible. Check encoders. Restarting...",
    "Camera is not recording": "Camera is not recording",
+   "Camera is not streaming": "Camera is not streaming",
    "Restarting Process": "Restarting Process",
    "Monitor Stopped": "Monitor Stopped",
    "MonitorStoppedText": "Monitor session has been ordered to stop.",

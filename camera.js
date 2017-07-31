@@ -224,6 +224,8 @@ s.kill=function(x,e,p){
         }
         clearTimeout(s.group[e.ke].mon[e.id].checker);
         delete(s.group[e.ke].mon[e.id].checker);
+        clearTimeout(s.group[e.ke].mon[e.id].checkStream);
+        delete(s.group[e.ke].mon[e.id].checkStream);
         clearTimeout(s.group[e.ke].mon[e.id].watchdog_stop);
         delete(s.group[e.ke].mon[e.id].watchdog_stop);
         if(e&&s.group[e.ke].mon[e.id].record){
@@ -1037,6 +1039,7 @@ s.camera=function(x,e,cn,tx){
         case'idle':case'stop'://stop monitor
             if(!s.group[e.ke]||!s.group[e.ke].mon[e.id]){return}
             if(s.group[e.ke].mon[e.id].fswatch){s.group[e.ke].mon[e.id].fswatch.close();delete(s.group[e.ke].mon[e.id].fswatch)}
+            if(s.group[e.ke].mon[e.id].fswatchStream){s.group[e.ke].mon[e.id].fswatchStream.close();delete(s.group[e.ke].mon[e.id].fswatchStream)}
             if(s.group[e.ke].mon[e.id].open){ee.filename=s.group[e.ke].mon[e.id].open,ee.ext=s.group[e.ke].mon[e.id].open_ext;s.video('close',ee)}
             if(s.group[e.ke].mon[e.id].last_frame){delete(s.group[e.ke].mon[e.id].last_frame)}
             if(s.group[e.ke].mon[e.id].started!==1){return}
@@ -1140,43 +1143,68 @@ s.camera=function(x,e,cn,tx){
             //cutoff time and recording check interval
             if(!e.details.cutoff||e.details.cutoff===''){e.cutoff=15}else{e.cutoff=parseFloat(e.details.cutoff)};
             if(isNaN(e.cutoff)===true){e.cutoff=15}
-            if(x==='record'){
-                s.group[e.ke].mon[e.id].fswatch=fs.watch(e.dir,{encoding:'utf8'},function(eventType,filename){
-                    if(s.group[e.ke].mon[e.id].fixingVideos[filename]){return}
-                    switch(eventType){
-                        case'change':
-                            clearTimeout(s.group[e.ke].mon[e.id].checker)
-                            s.group[e.ke].mon[e.id].checker=setTimeout(function(){
-                                if(s.group[e.ke].mon[e.id].started===1){
-                                    e.fn();
-                                    s.log(e,{type:lang['Camera is not recording'],msg:{msg:lang['Restarting Process']}});
-                                }
-                            },60000*2);
-                        break;
-                        case'rename':
-                            fs.exists(e.dir+filename,function(exists){
-                                if(exists){
-                                    if(s.group[e.ke].mon[e.id].open){
-                                        s.video('close',e);
-                                        if(e.details.detector==='1'&&s.ocv&&s.group[e.ke].mon[e.id].started===1&&e.details&&e.details.detector_record_method==='del'&&e.details.detector_delete_motionless_videos==='1'&&s.group[e.ke].mon[e.id].detector_motion_count===0){
-                                            if(e.details.loglevel!=='quiet'){
-                                                s.log(e,{type:lang['Delete Motionless Video'],msg:e.filename+'.'+e.ext});
-                                            }
-                                            s.video('delete',s.init('noReference',e))
-                                        }
+            e.resetStreamCheck=function(){
+                clearTimeout(s.group[e.ke].mon[e.id].checkStream)
+                s.group[e.ke].mon[e.id].checkStream=setTimeout(function(){
+                    if(s.group[e.ke].mon[e.id].started===1){
+                        e.fn();
+                        s.log(e,{type:lang['Camera is not streaming'],msg:{msg:lang['Restarting Process']}});
+                    }
+                },60000*2);
+            }
+            switch(x){
+                case'record':
+                    s.group[e.ke].mon[e.id].fswatch=fs.watch(e.dir,{encoding:'utf8'},function(eventType,filename){
+                        if(s.group[e.ke].mon[e.id].fixingVideos[filename]){return}
+                        switch(eventType){
+                            case'change':
+                                clearTimeout(s.group[e.ke].mon[e.id].checker)
+                                clearTimeout(s.group[e.ke].mon[e.id].checkStream)
+                                s.group[e.ke].mon[e.id].checker=setTimeout(function(){
+                                    if(s.group[e.ke].mon[e.id].started===1){
+                                        e.fn();
+                                        s.log(e,{type:lang['Camera is not recording'],msg:{msg:lang['Restarting Process']}});
                                     }
-                                    setTimeout(function(){
-                                        e.filename=filename.split('.')[0];
-                                        s.video('open',e);
-                                        s.group[e.ke].mon[e.id].open=e.filename;
-                                        s.group[e.ke].mon[e.id].open_ext=e.ext;
-                                        s.group[e.ke].mon[e.id].detector_motion_count=0;
-                                    },2000)
+                                },60000*2);
+                            break;
+                            case'rename':
+                                fs.exists(e.dir+filename,function(exists){
+                                    if(exists){
+                                        if(s.group[e.ke].mon[e.id].open){
+                                            s.video('close',e);
+                                            if(e.details.detector==='1'&&s.ocv&&s.group[e.ke].mon[e.id].started===1&&e.details&&e.details.detector_record_method==='del'&&e.details.detector_delete_motionless_videos==='1'&&s.group[e.ke].mon[e.id].detector_motion_count===0){
+                                                if(e.details.loglevel!=='quiet'){
+                                                    s.log(e,{type:lang['Delete Motionless Video'],msg:e.filename+'.'+e.ext});
+                                                }
+                                                s.video('delete',s.init('noReference',e))
+                                            }
+                                        }
+                                        setTimeout(function(){
+                                            e.filename=filename.split('.')[0];
+                                            s.video('open',e);
+                                            s.group[e.ke].mon[e.id].open=e.filename;
+                                            s.group[e.ke].mon[e.id].open_ext=e.ext;
+                                            s.group[e.ke].mon[e.id].detector_motion_count=0;
+                                        },2000)
+                                    }
+                                });
+                            break;
+                        }
+                    })
+                break;
+                case'start':
+                    switch(e.details.stream_type){
+                        case'jpeg':case'hls':
+                            s.group[e.ke].mon[e.id].fswatchStream=fs.watch(e.sdir,{encoding:'utf8'},function(eventType,filename){
+                                switch(eventType){
+                                    case'change':
+                                        e.resetStreamCheck()
+                                    break;
                                 }
-                            });
+                            })
                         break;
                     }
-                })
+                break;
             }
             s.camera('snapshot',{mid:e.id,ke:e.ke,mon:e})
             //check host to see if has password and user in it
@@ -1319,12 +1347,13 @@ s.camera=function(x,e,cn,tx){
                            switch(e.details.stream_type){
                                case'mjpeg':
                                    e.frame_to_stream=function(d){
-//                                           s.group[e.ke].mon[e.id].last_frame=d;
+                                       e.resetStreamCheck()
                                        s.group[e.ke].mon[e.id].emitter.emit('data',d);
                                    }
                                break;
                                case'b64':case undefined:case null:
                                    e.frame_to_stream=function(d){
+                                       e.resetStreamCheck()
                                        if(s.group[e.ke]&&s.group[e.ke].mon[e.id]&&s.group[e.ke].mon[e.id].watch&&Object.keys(s.group[e.ke].mon[e.id].watch).length>0){
                                           if(!e.buffer){
                                               e.buffer=[d]
