@@ -15,17 +15,14 @@ if [ "$mysqlagree" = "y" ]; then
     echo "mariadb-server mariadb-server/root_password password $sqlpass" | debconf-set-selections
     echo "mariadb-server mariadb-server/root_password_again password $sqlpass" | debconf-set-selections
     apt install mariadb-server -y
-    #Start mysql and enable on boot
     service mysql start
-    update-rc.d mariadb enable
 fi
-if which node > /dev/null
-then
+echo "============="
+echo "Shinobi - Install Node.js?"
+echo "(y)es or (N)o"
+read installNode
+if [ "$installNode" = "y" ]; then
     sudo apt install nodejs npm -y
-else
-    echo "Node.js is installed, skipping..."
-    node -v
-    npm -v
 fi
 echo "============="
 echo "Shinobi - Get latest Node.js?"
@@ -37,7 +34,7 @@ if [ "$updateNode" = "y" ]; then
     sudo n stable
 fi
 echo "============="
-echo "Shinobi - Linking node to nodejs"
+echo "Shinobi - Link node to Node.js?"
 echo "(y)es or (N)o"
 read linkNode
 if [ "$linkNode" = "y" ]; then
