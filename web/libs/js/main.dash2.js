@@ -2946,7 +2946,7 @@ $('body')
                e.vid.attr('height',e.doc.height())
                e.vid.attr('width',e.doc.width())
             }
-            $.ccio.init('fullscreen',e.video)
+            $.ccio.init('fullscreen',e.vid[0])
         break;
         case'watch_on':
             $.ccio.cx({f:'monitor',ff:'watch_on',id:e.mid})
