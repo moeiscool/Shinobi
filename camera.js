@@ -1150,7 +1150,7 @@ s.camera=function(x,e,cn,tx){
                         e.fn();
                         s.log(e,{type:lang['Camera is not streaming'],msg:{msg:lang['Restarting Process']}});
                     }
-                },60000*2);
+                },60000*1);
             }
             switch(x){
                 case'record':
@@ -2926,8 +2926,8 @@ app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
             req.query.start=req.query.start.replace('T',' ')
             if(req.query.end&&req.query.end!==''){
                 req.query.end=req.query.end.replace('T',' ')
-                req.sql+=' AND `time` >= ? AND `time` <= ?';
-                req.count_sql+=' AND `time` >= ? AND `time` <= ?';
+                req.sql+=' AND `time` >= ? AND `end` <= ?';
+                req.count_sql+=' AND `time` >= ? AND `end` <= ?';
                 req.ar.push(req.query.start)
                 req.ar.push(req.query.end)
                 req.count_ar.push(req.query.start)
