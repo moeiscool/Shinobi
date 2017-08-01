@@ -17,15 +17,32 @@ if [ "$mysqlagree" = "y" ]; then
     apt install mariadb-server -y
     #Start mysql and enable on boot
     service mysql start
-    update-rc.d mysql enable
+    update-rc.d mariadb enable
 fi
-sudo apt install nodejs npm -y
-sudo npm cache clean -f
-sudo npm install -g n
-sudo n stable
+if which node > /dev/null
+then
+    sudo apt install nodejs npm -y
+else
+    echo "Node.js is installed, skipping..."
+    node -v
+    npm -v
+fi
+echo "============="
+echo "Shinobi - Get latest Node.js?"
+echo "(y)es or (N)o"
+read updateNode
+if [ "$updateNode" = "y" ]; then
+    sudo npm cache clean -f
+    sudo npm install -g n
+    sudo n stable
+fi
 echo "============="
 echo "Shinobi - Linking node to nodejs"
-ln -s /usr/bin/nodejs /usr/bin/node
+echo "(y)es or (N)o"
+read linkNode
+if [ "$linkNode" = "y" ]; then
+    ln -s /usr/bin/nodejs /usr/bin/node
+fi
 chmod -R 755 .
 echo "============="
 echo "Shinobi - Database Installation"
