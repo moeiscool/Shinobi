@@ -55,6 +55,8 @@
 ul{list-style:none}
 *{transition:0.2s;box-sizing:border-box}
 .no-padding{padding:0!important}
+.no-margin{margin:0!important}
+.pre-inline{white-space: normal;word-break: normal}
 a{cursor:pointer}
 nav h4{cursor:default;font-size:95%;padding:16px 40px;font-weight:100;text-transform:uppercase;letter-spacing:2px}
 .m-r{margin-right:10px}
@@ -291,7 +293,7 @@ img.circle-img,div.circle-img{border-radius:50%;height:50px;width:50px}
 
 
 
-#motion_list{height:195px;overflow:auto;border-radius:5px;border:1px solid #444;position:relative;background: #222;}
+#motion_list{height:155px;overflow:auto;border-radius:5px;border:1px solid #444;position:relative;background: #222;margin:0}
 .dark .list-group-item{border-color: #444;background:#222}
 .dark .list-group-item.active{background:#c49a68;border-color:#a7865f}
 .novideos{text-transform: uppercase;text-align: center;border-bottom:0!important;padding-top: 55%!important;letter-spacing:2px}
