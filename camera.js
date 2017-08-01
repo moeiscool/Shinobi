@@ -2922,21 +2922,38 @@ app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
                 res.send('[]');return;
             }
         }
-        if(req.query.start&&req.query.start!==''){
-            req.query.start=req.query.start.replace('T',' ')
-            if(req.query.end&&req.query.end!==''){
-                req.query.end=req.query.end.replace('T',' ')
-                req.sql+=' AND `time` >= ? AND `end` <= ?';
-                req.count_sql+=' AND `time` >= ? AND `end` <= ?';
-                req.ar.push(req.query.start)
-                req.ar.push(req.query.end)
-                req.count_ar.push(req.query.start)
-                req.count_ar.push(req.query.end)
-            }else{
-                req.sql+=' AND `time` >= ?';
-                req.count_sql+=' AND `time` >= ?';
-                req.ar.push(req.query.start)
-                req.count_ar.push(req.query.start)
+        if(req.query.start||req.query.end){
+            if(!req.query.startOperator||req.query.startOperator==''){
+                req.query.startOperator='>='
+            }
+            if(!req.query.endOperator||req.query.endOperator==''){
+                req.query.endOperator='<='
+            }
+            switch(true){
+                case(req.query.start&&req.query.start!==''&&req.query.end&&req.query.end!==''):
+                    req.query.start=req.query.start.replace('T',' ')
+                    req.query.end=req.query.end.replace('T',' ')
+                    req.sql+=' AND `time` '+req.query.startOperator+' ? AND `end` '+req.query.endOperator+' ?';
+                    req.count_sql+=' AND `time` '+req.query.startOperator+' ? AND `end` '+req.query.endOperator+' ?';
+                    req.ar.push(req.query.start)
+                    req.ar.push(req.query.end)
+                    req.count_ar.push(req.query.start)
+                    req.count_ar.push(req.query.end)
+                break;
+                case(req.query.start&&req.query.start!==''):
+                    req.query.start=req.query.start.replace('T',' ')
+                    req.sql+=' AND `time` '+req.query.startOperator+' ?';
+                    req.count_sql+=' AND `time` '+req.query.startOperator+' ?';
+                    req.ar.push(req.query.start)
+                    req.count_ar.push(req.query.start)
+                break;
+                case(req.query.end&&req.query.end!==''):
+                    req.query.end=req.query.end.replace('T',' ')
+                    req.sql+=' AND `end` '+req.query.endOperator+' ?';
+                    req.count_sql+=' AND `end` '+req.query.endOperator+' ?';
+                    req.ar.push(req.query.end)
+                    req.count_ar.push(req.query.end)
+                break;
             }
         }
         req.sql+=' ORDER BY `time` DESC';
