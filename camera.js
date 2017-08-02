@@ -1010,7 +1010,7 @@ s.camera=function(x,e,cn,tx){
                                    if( !e.snapshot_temp ) {
                                        e.snapshot_temp=Buffer.from(data);
                                    } else {
-                                       e.snapshot_temp.concat(data);
+                                       e.snapshot_temp = Buffer.concat([e.snapshot_temp, data]);
                                    }
                                 });
                                 e.spawn.on('close',function(data){
