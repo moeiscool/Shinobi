@@ -8,7 +8,7 @@
         </button>
         <h4 class="modal-title" id="pvideo_viewerLabel"><i class="fa fa-map-marker"></i> &nbsp; <%-lang['Power Video Viewer']%><span style="display:none" class="_loading"> &nbsp; <i class="fa fa-pulse fa-spinner"></i></span></h4>
       </div>
-      <div class="modal-body">
+      <div class="modal-body" style="overflow:inherit">
           <form class="row text-center" style="margin:0">
             <div id="live_view" class="col-md-4"><h3><%-lang['Live View']%> : <span></span></h3><iframe></iframe></div>
             <div id="video_preview" class="col-md-4">
@@ -18,11 +18,25 @@
                     <div class="stream-objects"></div>
                 </div>
                 <div style="margin-top:10px">
-                    <div class="progress motion-meter" title="<%-lang['Motion Meter']%>">
-                        <div class="progress-bar progress-bar-danger" role="progressbar" style="width:0%;"><span></span></div>
+                    <div class="form-group">
+                        <div class="progress" id="pwrvid_seekBar" style="height:10px;">
+                            <div class="progress-bar progress-bar-primary" role="progressbar" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="progress motion-meter" title="<%-lang['Motion Meter']%>">
+                            <div class="progress-bar progress-bar-danger" role="progressbar" style="width:0%;"><span></span></div>
+                        </div>
                     </div>
                     <div class="clearfix" style="margin:5px"></div>
-                    <div class="btn-group"><a preview="stepBackBack" class="active btn btn-sm btn-primary"><i class="fa fa-fast-backward"></i></a> <a preview="stepBack" class="btn btn-sm btn-primary"><i class="fa fa-backward"></i></a> <a preview="play" class="btn btn-sm btn-default"><i class="fa fa-play"></i></a> <a preview="mute" class="btn btn-sm btn-default"><i class="fa fa-volume-up"></i></a> <a preview="stepFront" class="btn btn-sm btn-primary"><i class="fa fa-fast-forward"></i></a> <a preview="stepFrontFront" class="active btn btn-sm btn-primary"><i class="fa fa-forward"></i></a>
+                    <div class="btn-group btn-group-sm">
+                        <a preview="stepBackBack" class="active btn btn-primary"><i class="fa fa-backward"></i></a>
+                        <a preview="stepBack" class="btn btn-primary"><i class="fa fa-arrow-circle-o-left"></i></a>
+                        <a preview="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a>
+                        <a preview="play" class="btn btn-default"><i class="fa fa-play"></i></a>
+                        <a preview="mute" class="btn btn-default"><i class="fa fa-volume-up"></i></a>
+                        <a preview="stepFront" class="btn btn-primary"><i class="fa fa-arrow-circle-o-right"></i></a>
+                        <a preview="stepFrontFront" class="active btn btn-primary"><i class="fa fa-forward"></i></a>
                     </div>
                     <div class="btn-group"><a download="" href="" class="btn btn-sm btn-default"><i class="fa fa-download"></i></a>
                         <% if(config.DropboxAppKey){ %><a video="download" host="dropbox" download="" href="" class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a><% } %>

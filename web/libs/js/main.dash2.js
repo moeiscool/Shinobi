@@ -40,6 +40,15 @@ switch($.ccio.userDetails.lang){
     $.ccio.init=function(x,d,z,k){
         if(!k){k={}};k.tmp='';
         switch(x){
+            case'fullscreen':
+                if (d.requestFullscreen) {
+                  d.requestFullscreen();
+                } else if (d.mozRequestFullScreen) {
+                  d.mozRequestFullScreen();
+                } else if (d.webkitRequestFullscreen) {
+                  d.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                }
+            break;
             case'drawMatrices':
                 d.height=d.stream.height()
                 d.width=d.stream.width()
@@ -493,7 +502,7 @@ switch($.ccio.userDetails.lang){
                 tmp+='<div class="mdl-card__supporting-text text-center">';
                 tmp+='<div class="indifference"><div class="progress"><div class="progress-bar progress-bar-danger" role="progressbar"><span></span></div></div></div>';
                 tmp+='<div class="monitor_name">'+d.name+'</div>';
-                tmp+='<div class="btn-group"><a title="<%-cleanLang(lang.Snapshot)%>" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="<%-cleanLang(lang['Show Logs'])%>" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="<%-cleanLang(lang.Control)%>" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="<%-cleanLang(lang['Status Indicator'])%>" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-plug"></i></a> <a title="<%-cleanLang(lang.Calendar)%>" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="<%-cleanLang(lang['Power Viewer'])%>" class="btn btn-default" monitor="powerview"><i class="fa fa-map-marker"></i></a> <a title="<%-cleanLang(lang['Time-lapse'])%>" class="btn btn-default" monitor="timelapse"><i class="fa fa-angle-double-right"></i></a> <a title="<%-cleanLang(lang['Videos List'])%>" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a title="<%-cleanLang(lang['Monitor Settings'])%>" class="btn btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="<%-cleanLang(lang.Enlarge)%>" monitor="bigify" class="hidden btn btn-default"><i class="fa fa-expand"></i></a> <a title="<%-cleanLang(lang.Fullscreen)%>" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="<%-cleanLang(lang.Close)%> Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
+                tmp+='<div class="btn-group"><a title="<%-cleanLang(lang.Snapshot)%>" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="<%-cleanLang(lang['Show Logs'])%>" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="<%-cleanLang(lang.Control)%>" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="<%-cleanLang(lang['Status Indicator'])%>" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-plug"></i></a> <a title="<%-cleanLang(lang.Calendar)%>" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="<%-cleanLang(lang['Power Viewer'])%>" class="btn btn-default" monitor="powerview"><i class="fa fa-map-marker"></i></a> <a title="<%-cleanLang(lang['Time-lapse'])%>" class="btn btn-default" monitor="timelapse"><i class="fa fa-angle-double-right"></i></a> <a title="<%-cleanLang(lang['Videos List'])%>" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a title="<%-cleanLang(lang['Monitor Settings'])%>" class="btn btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="<%-cleanLang(lang.Fullscreen)%>" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="<%-cleanLang(lang.Close)%> Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
                 tmp+='</div>';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col mdl-cell--4-col-desktop">';
@@ -1473,6 +1482,7 @@ $.pB.e.find('.stop').click(function(e){
 //log viewer
 $.log={e:$('#logs_modal'),lm:$('#log_monitors')};$.log.o=$.log.e.find('table tbody');
 $.log.e.on('shown.bs.modal', function () {
+    $.log.lm.find('option:not(.hard)').remove()
     $.each($.ccio.mon,function(n,v){
         v.id=v.mid;
         $.ccio.tm('option',v,'#log_monitors')
@@ -1485,7 +1495,7 @@ $.log.lm.change(function(e){
     $.get('/'+$user.auth_token+'/logs/'+$user.ke+'/'+e.v,function(d){
         e.tmp='';
         $.each(d,function(n,v){
-            e.tmp+='<tr class="search-row"><td title="'+v.time+'" class="livestamp"></td><td>'+v.time+'</td><td>'+$.ccio.mon[v.mid].name+'</td><td>'+v.mid+'</td><td>'+$.ccio.init('jsontoblock',v.info)+'</td></tr>'
+            e.tmp+='<tr class="search-row"><td title="'+v.time+'" class="livestamp"></td><td>'+v.time+'</td><td>'+v.name+'</td><td>'+v.mid+'</td><td>'+$.ccio.init('jsontoblock',v.info)+'</td></tr>'
         })
         $.log.o.html(e.tmp)
         $.ccio.init('ls')
@@ -1902,7 +1912,7 @@ $.timelapse.meter=$.timelapse.e.find('.motion-meter'),
 $.timelapse.line=$('#timelapse_video_line'),
 $.timelapse.display=$('#timelapse_video_display'),
 $.timelapse.seekBar=$('#timelapse_seekBar'),
-$.timelapse.seekBarProgess=$.timelapse.seekBar.find('.progress-bar'),
+$.timelapse.seekBarProgress=$.timelapse.seekBar.find('.progress-bar'),
 $.timelapse.dr=$('#timelapse_daterange'),
 $.timelapse.mL=$.timelapse.e.find('.motion_list'),
 $.timelapse.monitors=$.timelapse.e.find('.monitors_list');
@@ -2136,7 +2146,7 @@ $.timelapse.e.on('click','[timelapse]',function(){
             .off('pause').on('pause',$.timelapse.onPlayPause)
             .off('timeupdate').on('timeupdate',function(){
                 var value= (( e.videoNow.currentTime / e.videoNow.duration ) * 100)+"%"
-                $.timelapse.seekBarProgess.css("width",value);
+                $.timelapse.seekBarProgress.css("width",value);
                 $.timelapse.e.find('.timelapse_video[file="'+e.filename+'"] .progress-bar').css("width",value);
             })
             $.timelapse.seekBar.off("click").on("click", function(seek){
@@ -2171,7 +2181,10 @@ $.pwrvid.mL=$('#motion_list'),
 $.pwrvid.m=$('#vis_monitors'),
 $.pwrvid.lv=$('#live_view'),
 $.pwrvid.dr=$('#pvideo_daterange'),
-$.pwrvid.vp=$('#video_preview');
+$.pwrvid.vp=$('#video_preview'),
+$.pwrvid.seekBar=$('#pwrvid_seekBar'),
+$.pwrvid.seekBarProgress=$.pwrvid.seekBar.find('.progress-bar'),
+$.pwrvid.playRate = 1;
 $.pwrvid.dr.daterangepicker({
     startDate:moment().subtract(moment.duration("24:00:00")),
     endDate:moment().add(moment.duration("24:00:00")),
@@ -2198,6 +2211,9 @@ $.pwrvid.e.on('click','[preview]',function(e){
         clearInterval($.pwrvid.video.interval);
     }
     switch(e.e.attr('preview')){
+        case'fullscreen':
+            $.ccio.init('fullscreen',e.video)
+        break;
         case'mute':
             e.video.muted = !e.video.muted
             e.e.find('i').toggleClass('fa-volume-off fa-volume-up')
@@ -2208,7 +2224,15 @@ $.pwrvid.e.on('click','[preview]',function(e){
             $.pwrvid.vpOnPlayPause(1)
         break;
         case'stepFrontFront':
-            e.video.playbackRate += 5;
+            e.add=e.e.attr('add')
+            e.stepFrontFront=parseInt(e.e.attr('stepFrontFront'))
+            if(!e.stepFrontFront||isNaN(e.stepFrontFront)){e.stepFrontFront = 5}
+            if(e.add==="0"){
+                $.pwrvid.playRate = e.stepFrontFront
+            }else{
+                $.pwrvid.playRate += e.stepFrontFront
+            }
+            e.video.playbackRate = $.pwrvid.playRate;
             e.video.play()
         break;
         case'stepFront':
@@ -2239,7 +2263,7 @@ $.pwrvid.e.on('click','[preview]',function(e){
             e.href=e.e.attr('href');
             e.status=e.p.attr('status');
             e.mon=$.ccio.mon[e.p.attr('mid')];
-            $.pwrvid.vp.find('.holder').html('<video class="video_video" video="'+e.href+'" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"></video>');
+            $.pwrvid.vp.find('.holder').html('<video class="video_video" video="'+e.href+'"><source src="'+e.href+'" type="video/'+e.mon.ext+'"></video>');
             $.pwrvid.vp
                 .attr('mid',e.mon.mid)
                 .attr('ke',e.mon.ke)
@@ -2252,7 +2276,7 @@ $.pwrvid.e.on('click','[preview]',function(e){
                     $.pwrvid.vp.find('.stream-objects').empty().css('width',$(this).width())
                 })
             if(e.status==1){
-                $.get(e.href+'/status/2',function(d){
+                $.get(e.href.split('?')[0]+'/status/2',function(d){
                 })
             }
             var labels=[]
@@ -2330,13 +2354,17 @@ $.pwrvid.e.on('click','[preview]',function(e){
                     if(x==1)e.video.pause();
                 }
             }
+            var videoElement=$.pwrvid.vp.find('video')[0]
             $.pwrvid.vp.find('video')
+                .off('loadeddata').on('loadeddata', function() {
+                    this.playbackRate = $.pwrvid.playRate;
+                    this.play()
+                })
                 .off("pause").on("pause",$.pwrvid.vpOnPlayPause)
                 .off("play").on("play",$.pwrvid.vpOnPlayPause)
                 .off("timeupdate").on("timeupdate",function(){
                     var video = $.pwrvid.currentDataObject[e.filename];
-                    var video1 = $('#video_preview video');
-                    var videoTime=moment(video.row.time).add(parseInt(video1[0].currentTime),'seconds').format('MM/DD/YYYY HH:mm:ss');
+                    var videoTime=moment(video.row.time).add(parseInt(videoElement.currentTime),'seconds').format('MM/DD/YYYY HH:mm:ss');
                     var event = eventsLabeledByTime[videoTime];
                     if(event){
                         if(event.details.plates){
@@ -2344,7 +2372,7 @@ $.pwrvid.e.on('click','[preview]',function(e){
                         }
                         if(event.details.matrices){
                             event.monitorDetails=JSON.parse(e.mon.details)
-                            event.stream=video1
+                            event.stream=$(videoElement)
                             event.streamObjects=$.pwrvid.vp.find('.stream-objects')
                             $.ccio.init('drawMatrices',event)
                         }
@@ -2352,7 +2380,17 @@ $.pwrvid.e.on('click','[preview]',function(e){
                             $.pwrvid.vp.find('.motion-meter .progress-bar').css('width',event.details.confidence+'px').find('span').text(event.details.confidence)
                         }
                     }
+                    var value= (( videoElement.currentTime / videoElement.duration ) * 100)+"%"
+                    $.pwrvid.seekBarProgress.css("width",value);
                 })
+                $.pwrvid.seekBar.off("click").on("click", function(seek){
+                    var offset = $(this).offset();
+                    var left = (seek.pageX - offset.left);
+                    var totalWidth = $.pwrvid.seekBar.width();
+                    var percentage = ( left / totalWidth );
+                    var vidTime = videoElement.duration * percentage;
+                    videoElement.currentTime = vidTime;
+                });
         break;
     }
 })
@@ -2534,7 +2572,7 @@ $('body')
             e.f.find('[monitor="download"][host="dropbox"]').attr('href',e.href);
             e.e.modal('show').attr('ke',e.ke).attr('mid',e.mid).attr('file',e.file);
             if(e.status==1){
-                $.get(e.href+'/status/2',function(d){
+                $.get(e.href.split('?')[0]+'/status/2',function(d){
                 })
             }
         break;
@@ -2908,32 +2946,7 @@ $('body')
                e.vid.attr('height',e.doc.height())
                e.vid.attr('width',e.doc.width())
             }
-            e.vid=e.vid[0]
-            if (e.vid.requestFullscreen) {
-              e.vid.requestFullscreen();
-            } else if (e.vid.mozRequestFullScreen) {
-              e.vid.mozRequestFullScreen();
-            } else if (e.vid.webkitRequestFullscreen) {
-              e.vid.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
-            }
-        break;
-        case'bigify':
-            e.m=$('#monitors_live')
-            if(e.p.hasClass('selected')){e.m.find('.monitor_item').resize();return}
-            $('.monitor_item .videos_list').remove();
-            e.e=e.e.parents('.monitor_item');
-            if(!e.e.is(':first')){
-                e.f=e.m.find('.monitor_item').first().insertAfter(e.e.prev())
-                e.e.prependTo('#monitors_live');
-                $('#main_canvas .scrollable').animate({scrollTop: $("#monitor_live_"+e.mid).position().top},1000);
-//                $.ccio.cx({f:'monitor',ff:'watch_on',id:e.f.attr('mid')})
-            }
-            e.m.find('.monitor_item').resize();
-            e.e=$('#files_recent .videos_list.glM'+e.mid);
-            if(e.e.length>1){
-                e.e.eq(2).remove();
-            }
-            $('video').each(function(n,v){if(v.paused){v.play()}})
+            $.ccio.init('fullscreen',e.vid[0])
         break;
         case'watch_on':
             $.ccio.cx({f:'monitor',ff:'watch_on',id:e.mid})
