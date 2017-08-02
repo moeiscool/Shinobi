@@ -1007,12 +1007,16 @@ s.camera=function(x,e,cn,tx){
                                 if(e.mon.type==='local'){e.url=e.mon.path;}
                                 e.spawn=spawn(config.ffmpegDir,('-loglevel quiet -i '+e.url+' -s 400x400 -r 25 -ss 1.8 -frames:v 1 -f singlejpeg pipe:1').split(' '),{detached: true})
                                 e.spawn.stdout.on('data',function(data){
-                                   e.snapshot_sent=true; s.tx({f:'monitor_snapshot',snapshot:data.toString('base64'),snapshot_format:'b64',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
-                                    e.spawn.kill();
+                                   if( !e.snapshot_temp ) {
+                                       e.snapshot_temp=Buffer.from(data);
+                                   } else {
+                                       e.snapshot_temp.concat(data);
+                                   }
                                 });
                                 e.spawn.on('close',function(data){
                                     if(!e.snapshot_sent){
-                                        s.tx({f:'monitor_snapshot',snapshot:e.mon.name,snapshot_format:'plc',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
+                                        e.snapshot_sent=true; s.tx({f:'monitor_snapshot',snapshot:e.snapshot_temp.toString('base64'),snapshot_format:'b64',mid:e.mid,ke:e.ke},'GRP_'+e.ke)
+                                        e.spawn.kill();
                                     }
                                     delete(e.snapshot_sent);
                                 });
