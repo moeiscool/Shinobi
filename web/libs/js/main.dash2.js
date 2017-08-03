@@ -468,7 +468,7 @@ switch($.ccio.userDetails.lang){
                 d.per=parseInt(d.hr/24*100);
                 d.href='href="'+d.href+'?downloadName='+d.mid+'-'+d.filename+'"';
                 d.circle='<div title="at '+d.hr+' hours of '+d.mom.format('MMMM DD')+'" '+d.href+' video="launch" class="progress-circle progress-'+d.per+'"><span>'+d.hr+'</span></div>'
-                tmp+='<li class="glM'+d.mid+'" mid="'+d.mid+'" ke="'+d.ke+'" status="'+d.status+'" file="'+d.filename+'">'+d.circle+'<div><span title="'+d.end+'" class="livestamp"></span></div><div><div class="small"><b><%-cleanLang(lang.Start)%></b> : '+moment(d.time).format('h:mm:ss , MMMM Do YYYY')+'</div><div class="small"><b><%-cleanLang(lang.End)%></b> : '+moment(d.end).format('h:mm:ss , MMMM Do YYYY')+'</div></div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls btn-group"><a class="btn btn-sm btn-primary" video="launch" '+d.href+'><i class="fa fa-play-circle"></i></a> <a download="'+d.dlname+'" '+d.href+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a>'
+                tmp+='<li class="glM'+d.mid+'" mid="'+d.mid+'" ke="'+d.ke+'" status="'+d.status+'" file="'+d.filename+'">'+d.circle+'<div><span title="'+d.end+'" class="livestamp"></span></div><div><div class="small"><b><%-cleanLang(lang.Start)%></b> : '+moment(d.time).format('h:mm:ss , MMMM Do YYYY')+'</div><div class="small"><b><%-cleanLang(lang.End)%></b> : '+moment(d.end).format('h:mm:ss , MMMM Do YYYY')+'</div></div><div><span class="pull-right">'+(parseInt(d.size)/1000000).toFixed(2)+'mb</span><div class="controls btn-group"><a class="btn btn-sm btn-primary" video="launch" '+d.href+' subtitlehref='+d.subtitleHref+'><i class="fa fa-play-circle"></i></a> <a download="'+d.dlname+'" '+d.href+' subtitlehref='+d.subtitleHref+' class="btn btn-sm btn-default"><i class="fa fa-download"></i></a>'
                 <% if(config.DropboxAppKey){ %> tmp+='<a video="download" host="dropbox" download="'+d.dlname+'" '+d.href+' class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a>' <% } %>
                 tmp+='<a title="<%-cleanLang(lang['Delete Video'])%>" video="delete" class="btn btn-sm btn-danger permission_video_delete"><i class="fa fa-trash"></i></a></div></div></li>';
             break;
@@ -1903,7 +1903,11 @@ $.vidview.pages.on('click','[page]',function(e){
 $.vidview.e.on('click','.preview',function(e){
     e.preventDefault()
     e=$(this)
-    $.vidview.preview.html('<video class="video_video" video="'+e.attr('href')+'" preload controls autoplay><source src="'+e.attr('href')+'" type="video/mp4"></video>')
+    var html='<video class="video_video" video="'+e.attr('href')+'" preload controls autoplay><source src="'+e.attr('href')+'" type="video/mp4">';
+    if( e.attr('subtitlehref')!=='' )
+        html+='<track default kind="subtitles" src="'+e.attr('subtitlehref')+'">';
+    html+='</video>';
+    $.vidview.preview.html(html)
 })
 //Timelapse Window
 $.timelapse={e:$('#timelapse')}
@@ -2064,7 +2068,11 @@ $.timelapse.e.on('click','[timelapse]',function(){
                     video=e.video
                 }
                 if(video){
-                   $.timelapse.display.append('<video class="video_video '+position+'" video="'+video.href+'" preload><source src="'+video.href+'" type="video/'+video.ext+'"><track default kind="subtitles" src="' + video.href.replace('/videos/','/subtitles/').replace('.'+video.ext,'.'+video.ext+'.vtt') + '"></video>')
+                    var html = '<video class="video_video '+position+'" video="'+video.href+'" preload><source src="'+video.href+'" type="video/'+video.ext+'">';
+                    if( video.subtitleHref )
+                        html+='<track default kind="subtitles" src="'+video.subtitleHref+'">';
+                    html+='</video>';
+                   $.timelapse.display.append(html);
                 }
             }
             e.filename=e.e.attr('file')
@@ -2272,6 +2280,7 @@ $.pwrvid.e.on('click','[preview]',function(e){
                 .find('[download],[video="download"]')
                 .attr('download',e.filename)
                 .attr('href',e.href)
+                .attr('subtitlehref','test')
                 $.pwrvid.vp.find('video').off('loadeddata').on('loadeddata',function(){
                     $.pwrvid.vp.find('.stream-objects').empty().css('width',$(this).width())
                 })
@@ -2563,9 +2572,14 @@ $('body')
         case'launch':
             e.preventDefault();
             e.href=$(this).attr('href'),e.e=$('#video_viewer');
+            e.subtitleHref=$(this).attr('subtitlehref');
             e.mon=$.ccio.mon[e.mid];
             e.e.find('.modal-title span').html(e.mon.name+' - '+e.file)
-            e.e.find('.modal-body').html('<video class="video_video" video="'+e.href+'" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"><track default kind="subtitles" src="' + e.href.replace('/videos/','/subtitles/').replace('.mp4','.mp4.vtt') + '"></video>')
+            var body = '<video class="video_video" video="'+e.href+'" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'">';
+            if( e.subtitleHref!=='' )
+                body+='<track default kind="subtitles" src="'+e.subtitleHref+'">';
+            body+='</video>';
+            e.e.find('.modal-body').html(body);
             e.e.attr('mid',e.mid);
             e.f=e.e.find('.modal-footer');
             e.f.find('.download_link').attr('href',e.href).attr('download',e.file);
@@ -2592,10 +2606,14 @@ $('body')
             if(!e.href||e.href===''){
                 e.href=e.p.attr('href')
             }
+            e.subtitleHref=e.p.find('[download]').attr('subtitlehref')
             $.confirm.e.modal('show');
             $.confirm.title.text('<%-cleanLang(lang['Delete Video'])%> : '+e.file)
             e.html='<%-cleanLang(lang.DeleteVideoMsg)%>'
-            e.html+='<video class="video_video" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"><track default kind="subtitles" src="' + e.href.replace('/videos/','/subtitles/').replace('.'+e.mon.ext,'.'+e.mon.ext+'.vtt') + '"></video>';
+            e.html+='<video class="video_video" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'">';
+            if(e.subtitleHref!=='')
+                e.html+='<track default kind="subtitles" src="'+e.subtitleHref+'">';
+            e.html+='</video>';
             $.confirm.body.html(e.html)
             $.confirm.click({title:'Delete Video',class:'btn-danger'},function(){
                 e.file=e.file.split('.')
@@ -2916,8 +2934,8 @@ $('body')
                                 e.tmp+='<td>'+v.mon.name+'</td>';
                                 e.tmp+='<td>'+v.filename+'</td>';
                                 e.tmp+='<td>'+(parseInt(v.size)/1000000).toFixed(2)+'</td>';
-                                e.tmp+='<td><a class="btn btn-sm btn-default preview" href="'+v.href+'">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a></td>';
-                                e.tmp+='<td><a class="btn btn-sm btn-primary" video="launch" href="'+v.href+'">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a></td>';
+                                e.tmp+='<td><a class="btn btn-sm btn-default preview" href="'+v.href+'" subtitlehref="'+v.subtitleHref+'" >&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a></td>';
+                                e.tmp+='<td><a class="btn btn-sm btn-primary" video="launch" href="'+v.href+'" subtitlehref="'+v.subtitleHref+'">&nbsp;<i class="fa fa-play-circle"></i>&nbsp;</a></td>';
                                 e.tmp+='<td><a class="btn btn-sm btn-success" download="'+v.mid+'-'+v.filename+'" href="'+v.href+'?downloadName='+v.mid+'-'+v.filename+'">&nbsp;<i class="fa fa-download"></i>&nbsp;</a></td>';
                                 e.tmp+='<td class="permission_video_delete"><a class="btn btn-sm btn-danger" video="delete">&nbsp;<i class="fa fa-trash"></i>&nbsp;</a></td>';
 //                                e.tmp+='<td class="permission_video_delete"><a class="btn btn-sm btn-warning" video="fix">&nbsp;<i class="fa fa-wrench"></i>&nbsp;</a></td>';

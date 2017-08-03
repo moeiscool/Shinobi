@@ -3030,6 +3030,7 @@ app.get(['/:auth/videos/:ke','/:auth/videos/:ke/:id'], function (req,res){
         sql.query(req.count_sql,req.count_ar,function(err,count){
             r.forEach(function(v){
                 v.href='/'+req.params.auth+'/videos/'+v.ke+'/'+v.mid+'/'+s.moment(v.time)+'.'+v.ext;
+                v.subtitleHref='/'+req.params.auth+'/subtitles/'+v.ke+'/'+v.mid+'/'+s.moment(v.time)+'.'+v.ext+'.vtt';
             })
             if(req.query.limit.indexOf(',')>-1){
                 req.skip=parseInt(req.query.limit.split(',')[0])
