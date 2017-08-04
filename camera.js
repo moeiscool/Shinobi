@@ -923,11 +923,11 @@ s.file=function(x,e){
         break;
         case'delete':
             if(!e){return false;}
-            return exec('rm -rf '+e,{detached: true});
+            return exec('rm -f '+e,{detached: true});
         break;
         case'delete_files':
             if(!e.age_type){e.age_type='min'};if(!e.age){e.age='1'};
-            exec('find '+e.path+' -type f -c'+e.age_type+' +'+e.age+' -exec rm -rf {} +',{detached: true});
+            exec('find '+e.path+' -type f -c'+e.age_type+' +'+e.age+' -exec rm -f {} +',{detached: true});
         break;
     }
 }
