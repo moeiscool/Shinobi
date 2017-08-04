@@ -76,12 +76,15 @@ s.cameraVals=function(e){
 }
 //directories
 s.group={};
-s.dir={videos:__dirname+'/videos/',frames:__dirname+'/frames/'};
+s.dir={videos:__dirname+'/videos/',frames:__dirname+'/frames/',subtitles:__dirname+'/subtitles/'};
 if (!fs.existsSync(s.dir.frames)){
     fs.mkdirSync(s.dir.frames);
 }
 if (!fs.existsSync(s.dir.videos)){
     fs.mkdirSync(s.dir.videos);
+}
+if (!fs.existsSync(s.dir.subtitles)){
+    fs.mkdirSync(s.dir.subtitles);
 }
 ////Camera Controller
 s.init=function(x,e){
@@ -137,12 +140,18 @@ s.video=function(x,e){
     switch(x){
         case'delete':
             e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
+            e.subdir=s.dir.subtitles+e.ke+'/'+e.id+'/';
             e.save=[e.id,e.ke,s.nameToTime(e.filename),0];
             sql.query('DELETE FROM Videos WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save)
             s.tx({f:'video_delete',reason:'Camera Error',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),end:moment().format('YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
+            s.log(e,{type:'delete path',msg:e.subdir+e.filename+'.'+e.ext+'.vtt'});
+            if(fs.existsSync(e.subdir+e.filename+'.'+e.ext+'.vtt')){
+                fs.unlink(e.subdir+e.filename+'.'+e.ext+'.vtt');
+            }
             if(fs.existsSync(e.dir+e.filename+'.'+e.ext)){
                 return fs.unlink(e.dir+e.filename+'.'+e.ext);
             }
+            
         break;
         case'close':
             e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
@@ -252,8 +261,12 @@ io.on('c',function(d){
         break;
         case'delete_file'://delete video
             d.dir=s.dir.videos+d.ke+'/'+d.mid+'/'+d.file;
+            d.subdir=s.dir.subtitles+d.ke+'/'+d.mid+'/'+d.file+'.vtt';
             if(fs.existsSync(d.dir)){
                 fs.unlink(d.dir);
+            }
+            if(fs.existsSync(d.subdir)){
+                fs.unlink(d.subdir);
             }
         break;
         case'close'://close video
