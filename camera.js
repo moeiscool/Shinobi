@@ -1879,6 +1879,8 @@ var tx;
                             }
                             d.setURL(d.base+d.m.details['control_url_'+d.direction])
                             http.get(d.options, function(first) {
+                                  // Wanscam protocol cameras return ok in data which means end never gets called
+                                  first.on('data', function(toss) {});
                                   first.on('end', function(){
                                     if(d.m.details.control_stop=='1'&&d.direction!=='center'){
                                         d.setURL(d.base+d.m.details['control_url_'+d.direction+'_stop'])
