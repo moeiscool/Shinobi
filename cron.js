@@ -12,14 +12,14 @@ var sql=mysql.createConnection(config.db);
 
 //set option defaults
 s={lock:{}};
-if(!config.cron)config.cron={};
-if(!config.cron.deleteOld)config.cron.deleteOld=true;
-if(!config.cron.deleteOrphans)config.cron.deleteOrphans=false;
-if(!config.cron.deleteNoVideo)config.cron.deleteNoVideo=true;
-if(!config.cron.deleteOverMax)config.cron.deleteOverMax=true;
-if(!config.cron.deleteLogs)config.cron.deleteLogs=true;
-if(!config.cron.deleteEvents)config.cron.deleteEvents=true;
-if(!config.cron.interval)config.cron.interval=1;
+if(config.cron===undefined)config.cron={};
+if(config.cron.deleteOld===undefined)config.cron.deleteOld=true;
+if(config.cron.deleteOrphans===undefined)config.cron.deleteOrphans=false;
+if(config.cron.deleteNoVideo===undefined)config.cron.deleteNoVideo=true;
+if(config.cron.deleteOverMax===undefined)config.cron.deleteOverMax=true;
+if(config.cron.deleteLogs===undefined)config.cron.deleteLogs=true;
+if(config.cron.deleteEvents===undefined)config.cron.deleteEvents=true;
+if(config.cron.interval===undefined)config.cron.interval=1;
 
 if(!config.ip||config.ip===''||config.ip.indexOf('0.0.0.0')>-1)config.ip='localhost';
 if(!config.videosDir)config.videosDir=__dirname+'/videos/';
@@ -33,6 +33,7 @@ io = require('socket.io-client')('ws://'+config.ip+':'+config.port);//connect to
 s.cx=function(x){x.cronKey=config.cron.key;return io.emit('cron',x)}
 //emulate master socket emitter
 s.tx=function(x,y){s.cx({f:'s.tx',data:x,to:y})}
+s.video=function(x,y){s.cx({f:'s.video',data:x,file:y})}
 //Cron Job
 s.cx({f:'init',time:moment()})
 
@@ -40,14 +41,21 @@ s.checkFilterRules=function(v){
     Object.keys(v.d.filters).forEach(function(m,b){
         b=v.d.filters[m];
         if(b.enabled==="1"){
-            b.ar=[];
+            b.ar=[v.ke];
             b.sql=[];
             b.where.forEach(function(j,k){
                 if(j.p1==='ke'){j.p3=v.ke}
-                b.sql.push(j.p1+' '+j.p2+' ?')
-                b.ar.push(j.p3)
+                switch(j.p3_type){
+                    case'function':
+                        b.sql.push(j.p1+' '+j.p2+' '+j.p3)
+                    break;
+                    default:
+                        b.sql.push(j.p1+' '+j.p2+' ?')
+                        b.ar.push(j.p3)
+                    break;
+                }
             })
-            b.sql='WHERE ('+b.sql.join(' AND ')+')';
+            b.sql='WHERE ke=? AND status != 0 AND ('+b.sql.join(' AND ')+')';
             if(b.sort_by&&b.sort_by!==''){
                 b.sql+=' ORDER BY `'+b.sort_by+'` '+b.sort_by_direction
             }
@@ -55,12 +63,11 @@ s.checkFilterRules=function(v){
                 b.sql+=' LIMIT '+b.limit
             }
             sql.query('SELECT * FROM Videos '+b.sql,b.ar,function(err,r){
-//                                sql.query('SELECT * FROM Events '+b.sql,b.ar,function(err,rr){
+                 if(r&&r[0]){
                     b.cx={
                         f:'filters',
                         name:b.name,
                         videos:r,
-//                                        events:rr,
                         time:moment(),
                         ke:v.ke,
                         id:b.id
@@ -83,7 +90,7 @@ s.checkFilterRules=function(v){
                     if(b.execute&&b.execute!==""){
                         s.cx({f:'filters',ff:'execute',execute:b.execute,time:moment()});
                     }
-//                                })
+                }
             })
 
         }
@@ -158,22 +165,23 @@ s.cron=function(){
                     v.d.filters={};
                 }
                 //delete old videos with filter
-                if(config.deleteOld===true){
+                if(config.cron.deleteOld===true){
                     v.d.filters.deleteOldByCron={
                         "id":"deleteOldByCron",
                         "name":"deleteOldByCron",
                         "sort_by":"time",
                         "sort_by_direction":"ASC",
                         "limit":"",
-                        "enabled":"0",
+                        "enabled":"1",
                         "archive":"0",
                         "email":"0",
-                        "delete":"0",
+                        "delete":"1",
                         "execute":"",
                         "where":[{
                             "p1":"end",
                             "p2":"<",
-                            "p3":"DATE_SUB(NOW(), INTERVAL "+v.d.days+" DAY)",
+                            "p3":"NOW() - INTERVAL "+(v.d.days*24)+" HOUR",
+                            "p3_type":"function",
                         }]
                     };
                 }
@@ -183,27 +191,20 @@ s.cron=function(){
                     if(s.lock[v.ke]!==1){
                         s.lock[v.ke]=1;
                         es={};
-                        v.size=0;
                         sql.query('SELECT * FROM Videos WHERE ke = ? AND status != 0 AND time < (NOW() - INTERVAL 10 MINUTE)',[v.ke],function(err,evs){
                             if(evs&&evs[0]){
                                 es.del=[];es.ar=[v.ke];
                                 evs.forEach(function(ev){
-                                    v.size+=ev.size;
                                     ev.dir=s.dir.videos+v.ke+'/'+ev.mid+'/'+s.moment(ev.time)+'.'+ev.ext;
                                     if(config.cron.deleteNoVideo===true&&fs.existsSync(ev.dir)!==true){
+                                        s.video('delete',ev)
                                         es.del.push('(mid=? AND time=?)');
                                         es.ar.push(ev.mid),es.ar.push(ev.time);
-                                        exec('rm '+ev.dir);
                                         s.tx({f:'video_delete',filename:s.moment(ev.time)+'.'+ev.ext,mid:ev.mid,ke:ev.ke,time:ev.time,end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+ev.ke);
                                     }
                                 });
                                 if(config.cron.deleteNoVideo===true){
-                                    es.count=es.del.length;
-                                    if(es.del.length>0){
-                                        es.del=es.del.join(' OR ');
-                                        sql.query('DELETE FROM Videos WHERE ke =? AND ('+es.del+')',es.ar)
-                                    }
-                                    s.cx({f:'deleteNoVideo',msg:es.count+' SQL rows with no file deleted',ke:v.ke,time:moment()})
+                                    s.cx({f:'deleteNoVideo',msg:es.del.length+' SQL rows with no file deleted',ke:v.ke,time:moment()})
                                 }
                             }
                             //delete files when over specified maximum

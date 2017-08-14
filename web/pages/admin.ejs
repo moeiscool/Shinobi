@@ -106,6 +106,9 @@
 $.ccio={subs:{}};$.ls=localStorage;
 $.ccio.ws=io(location.origin);
 $.ccio.cx=function(x){if(!x.ke){x.ke=$user.ke;};if(!x.uid){x.uid=$user.uid;};return $.ccio.ws.emit('a',x)}
+$.ccio.ws.on('connect',function(d){
+    $.ccio.cx({f:'init',auth:$user.auth_token});
+})
 $.ccio.ws.on('f',function(d){
     console.log(d);
     switch(d.f){
@@ -122,7 +125,6 @@ $.ccio.ws.on('f',function(d){
         break;
     }
 })
-$.ccio.cx({f:'init',auth:$user.auth_token});
     $.ccio.tm=function(x,d,z,k){
         var tmp='';if(!d){d={}};if(!k){k={}};
         if(d.id&&!d.mid){d.mid=d.id;}

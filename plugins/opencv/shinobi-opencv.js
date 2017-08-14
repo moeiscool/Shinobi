@@ -2,16 +2,6 @@
 // Shinobi - OpenCV Plugin
 // Copyright (C) 2016-2025 Moe Alam, moeiscool
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version 2
-// of the License, or (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
 // # Donate
 //
 // If you like what I am doing here and want me to continue please consider donating :)
@@ -108,7 +98,7 @@ s.detectObject=function(buffer,d){
                               })
                               scan.plates.push({coordinates:v.coordinates,candidates:v.candidates,confidence:v.confidence,plate:v.plate})
                           })
-                          s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:v,reason:'licensePlate',plates:scan.plates,confidence:d.average,imgHeight:d.height,imgWidth:d.width}})
+                          s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:v,reason:'licensePlate',plates:scan.plates,confidence:d.average,imgHeight:d.height,imgWidth:d.width,frame:d.base64}})
                       }
                   }catch(err){
                       s.systemLog(err);
@@ -131,7 +121,7 @@ s.detectObject=function(buffer,d){
           im.detectObject(s.dir.cascades+v+'.xml',{}, function(err,mats){
               if(err){console.log(err);return false;}
               if(mats&&mats.length>0){
-                  s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:v,reason:'object',matrices:mats,confidence:d.average,imgHeight:height,imgWidth:width}})
+                  s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:v,reason:'object',matrices:mats,confidence:d.average,imgHeight:height,imgWidth:width,frame:d.base64}})
               }
           })
       })
@@ -202,7 +192,7 @@ s.blenderRegion=function(d,cord){
               if(d.mon.detector_use_detect_object==="1"){
                   s.detectObject(buffer,d)
               }else{
-                  s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:cord.name,reason:'motion',confidence:d.average}})
+                  s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:cord.name,reason:'motion',confidence:d.average,frame:d.base64}})
               }
           }
     }
@@ -346,6 +336,9 @@ io.on('f',function(d){
                         d.mon.detector_cascades=JSON.parse(d.mon.detector_cascades)
                     }catch(err){
                         
+                    }
+                    if(d.mon.detector_frame_save==="1"){
+                       d.base64=s.group[d.ke][d.id].buffer.toString('base64')
                     }
                     if(d.mon.detector_use_motion==="1"||d.mon.detector_use_detect_object!=="1"){
                         if((typeof d.mon.cords ==='string')&&d.mon.cords.trim()===''){

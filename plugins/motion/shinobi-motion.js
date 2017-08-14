@@ -2,16 +2,6 @@
 // Shinobi - Motion Plugin
 // Copyright (C) 2016-2025 Moe Alam, moeiscool
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version 2
-// of the License, or (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
 // # Donate
 //
 // If you like what I am doing here and want me to continue please consider donating :)
@@ -24,6 +14,11 @@ var fs = require('fs');
 var moment = require('moment');
 var Canvas = require('canvas');
 var config=require('./conf.json');
+if(process.argv[2]&&process.argv[3]){
+    config.host=process.argv[2]
+    config.port=process.argv[3]
+    config.key=process.argv[4]
+}
 if(config.systemLog===undefined){config.systemLog=true}
 s={
     group:{},
@@ -207,6 +202,9 @@ io.on('f',function(d){
                             d.mon.cords=JSON.parse(d.mon.cords)
                         }catch(err){
                         }
+                    }
+                    if(d.mon.detector_frame_save==="1"){
+                       d.base64=s.group[d.ke][d.id].buffer.toString('base64')
                     }
                     s.group[d.ke][d.id].cords=Object.values(d.mon.cords);
                     d.mon.cords=d.mon.cords;

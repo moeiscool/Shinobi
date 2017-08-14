@@ -1,6 +1,6 @@
 {
   "name": "shinobi",
-  "version": "1.0.12",
+  "version": "1.0.21",
   "description": "CCTV and NVR for Node.js",
   "main": "camera.js",
   "scripts": {
@@ -14,7 +14,7 @@
   "author": "Moe Alam",
   "license": "GPL",
   "bugs": {
-    "url": "https://github.com/moeiscool/Shinobi/issues"
+    "url": "https://github.com/ShinobiCCTV/Shinobi/issues"
   },
   "homepage": "https://github.com/moeiscool/Shinobi#readme",
   "dependencies": {
@@ -27,13 +27,14 @@
     "jsonfile": "^3.0.1",
     "moment": "^2.17.0",
     "mysql": "^2.12.0",
-    "nodemailer": "^3.1.3",
+    "nodemailer": "^4.0.1",
     "onvif": "^0.5.3",
     "path": "^0.12.7",
     "request": "^2.79.0",
     "socket.io": "^1.7.1",
     "socket.io-client": "^1.7.2",
-    "webdav": "^0.3.1"
+    "webdav": "^0.3.1",
+    "ldapauth-fork": "^4.0.2"
   },
   "devDependencies": {}
 }
