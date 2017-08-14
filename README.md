@@ -1,8 +1,12 @@
-# Shinobi
+# Shinobi CE 
+### (GNU General Public License v3.0)
+
+### Get Shinobi Pro for the latest code
+https://github.com/ShinobiCCTV/Shinobi
 
 Shinobi is the Open Source CCTV Solution written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. Shinobi can record IP Cameras and Local Cameras.
 
-<a href="http://shinobi.video/gallery"><img src="https://github.com/moeiscool/Shinobi/blob/master/web/libs/img/demo.jpg?raw=true"></a>
+<a href="http://shinobi.video/gallery"><img src="https://github.com/ShinobiCCTV/Shinobi/blob/master/web/libs/img/demo.jpg?raw=true"></a>
 
 # Key Aspects
 
@@ -83,6 +87,8 @@ http://shinobi.video/why
 > *A Reddit user, /r/HomeNetworking*
 
 # How to Install and Run
+
+> FOR DOCKER USERS : Docker is not officially supported and is not recommended. The kitematic method is provided for those who wish to quickly test Shinobi. The Docker files included in the master and dev branches are maintained by the community. If you would like support with Docker please find a community member who maintains the Docker files or please refer to Docker's forum.
 
 #### Fast Install
 
