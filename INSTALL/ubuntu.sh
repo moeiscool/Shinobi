@@ -1,11 +1,19 @@
 #!/bin/bash
-echo "Shinobi - Updating Repositories"
-sudo apt update -y
+echo "Shinobi - Do you want to Install Node.js?"
+echo "(y)es or (N)o"
+read nodejsinstall
+if [ "$nodejsinstall" = "y" ]; then
+    wget https://deb.nodesource.com/setup_8.x
+    chmod +x setup_8.x
+    ./setup_8.x
+    sudo apt install nodejs -y
+fi
 echo "============="
-echo "Shinobi - Get dependencies"
-sudo apt install libav-tools ffmpeg -y
+echo "Shinobi - Get FFMPEG 3.x from ppa:jonathonf/ffmpeg-3"
+sudo add-apt-repository ppa:jonathonf/ffmpeg-3 -y
+sudo apt update -y && sudo apt install ffmpeg libav-tools x264 x265 -y
 echo "============="
-echo "Shinobi - Do you want to Install MariaDB?"
+echo "Shinobi - Do you want to Install MariaDB? Choose Mo if you have MySQL."
 echo "(y)es or (N)o"
 read mysqlagree
 if [ "$mysqlagree" = "y" ]; then
@@ -16,29 +24,6 @@ if [ "$mysqlagree" = "y" ]; then
     echo "mariadb-server mariadb-server/root_password_again password $sqlpass" | debconf-set-selections
     apt install mariadb-server -y
     service mysql start
-fi
-echo "============="
-echo "Shinobi - Install Node.js?"
-echo "(y)es or (N)o"
-read installNode
-if [ "$installNode" = "y" ]; then
-    sudo apt install nodejs npm -y
-fi
-echo "============="
-echo "Shinobi - Get latest Node.js?"
-echo "(y)es or (N)o"
-read updateNode
-if [ "$updateNode" = "y" ]; then
-    sudo npm cache clean -f
-    sudo npm install -g n
-    sudo n stable
-fi
-echo "============="
-echo "Shinobi - Link node to Node.js?"
-echo "(y)es or (N)o"
-read linkNode
-if [ "$linkNode" = "y" ]; then
-    ln -s /usr/bin/nodejs /usr/bin/node
 fi
 chmod -R 755 .
 echo "============="

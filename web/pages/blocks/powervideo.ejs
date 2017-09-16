@@ -38,7 +38,9 @@
                         <a preview="stepFront" class="btn btn-primary"><i class="fa fa-arrow-circle-o-right"></i></a>
                         <a preview="stepFrontFront" class="active btn btn-primary"><i class="fa fa-forward"></i></a>
                     </div>
-                    <div class="btn-group"><a download="" href="" class="btn btn-sm btn-default"><i class="fa fa-download"></i></a>
+                    <div class="btn-group">
+                        <a onclick="$.pwrvid.f.submit()" class="active btn btn-success"><i class="fa fa-refresh"></i></a>
+                        <a download="" href="" class="btn btn-sm btn-default"><i class="fa fa-download"></i></a>
                         <% if(config.DropboxAppKey){ %><a video="download" host="dropbox" download="" href="" class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a><% } %>
                     </div>
 <!--                <a class="btn btn-sm btn-primary" video="launch" href=""><i class="fa fa-play-circle"></i> <span>No Video Selected</span></a>-->

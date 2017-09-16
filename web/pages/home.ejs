@@ -115,6 +115,7 @@
           <div class="demo-avatar-dropdown">
             <button id="accbtn" style="color:#fff" class="usermail mdl-button mdl-js-button mdl-js-ripple-effect"></button>
             <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="accbtn">
+                <li class="mdl-menu__item" data-toggle="modal" data-target="#multi_mon"><div><i class="fa fa-clone"></i><div><%- lang['Monitors'] %></div></div></li>
                 <li class="mdl-menu__item" mid="" ke=""><div class="flex" monitor="powerview"><i class="fa fa-map-marker"></i><div><%- lang['Power Viewer'] %></div></div></li>
                 <li class="mdl-menu__item" mid="" ke=""><div class="flex" monitor="timelapse"><i class="fa fa-angle-double-right"></i><div><%- lang['Time-lapse'] %></div></div></li>
                 <li class="mdl-menu__item" system="montage"><div><i class="fa fa-th"></i><div><%- lang.Montage %></div></div></li>
@@ -154,6 +155,7 @@
 </html>
 <!---->
 <div class="hidden" id="temp"></div>
+<% include blocks/multimon.ejs %>
 <% include blocks/api.ejs %>
 <% include blocks/logs.ejs %>
 <% include blocks/settings.ejs %>

@@ -8,10 +8,6 @@ window.chartColors = {
     grey: 'rgb(201, 203, 207)'
 };
 $.ccio={fr:$('#files_recent'),mon:{},userDetails:JSON.parse($user.details)};
-<% cleanLang=function(string){
-    if(!string){string=''}
-    return string.replace(/'/g,"\\'")
-} %>
 if(!$.ccio.userDetails.lang||$.ccio.userDetails.lang==''){
     $.ccio.userDetails.lang="<%-config.language%>"
 }
@@ -40,6 +36,56 @@ switch($.ccio.userDetails.lang){
     $.ccio.init=function(x,d,z,k){
         if(!k){k={}};k.tmp='';
         switch(x){
+            case'streamURL':
+                var streamURL
+                switch(JSON.parse(d.details).stream_type){
+                    case'jpeg':
+                        streamURL='/'+$user.auth_token+'/jpeg/'+d.ke+'/'+d.mid+'/s.jpg'
+                    break;
+                    case'mjpeg':
+                        streamURL='/'+$user.auth_token+'/mjpeg/'+d.ke+'/'+d.mid
+                    break;
+                    case'hls':
+                        streamURL='/'+$user.auth_token+'/hls/'+d.ke+'/'+d.mid+'/s.m3u8'
+                    break;
+                    case'b64':
+                        streamURL='Websocket'
+                    break;
+                }
+                return streamURL
+            break;
+            case'humanReadMode':
+                switch(d){
+                    case'idle':
+                        k.mode='<%-cleanLang(lang['Idle'])%>'
+                    break;
+                    case'stop':
+                        k.mode='<%-cleanLang(lang['Disabled'])%>'
+                    break;
+                    case'record':
+                        k.mode='<%-cleanLang(lang['Record'])%>'
+                    break;
+                    case'start':
+                        k.mode='<%-cleanLang(lang['Watch Only'])%>'
+                    break;
+                }
+                return k.mode
+            break;
+            case'monitorInfo':
+                d.e=$('.glM'+d.mon.mid);
+                if(d.mon.details.vcodec!=='copy'&&d.mon.mode=='record'){
+                    d.e.find('.monitor_not_record_copy').show()
+                }else{
+                    d.e.find('.monitor_not_record_copy').hide()
+                }
+                d.e.find('.monitor_name').text(d.mon.name)
+                d.e.find('.monitor_mid').text(d.mon.mid)
+                d.e.find('.monitor_ext').text(d.mon.ext);
+                d.mode=$.ccio.init('humanReadMode',d.mon.mode)
+                d.e.find('.monitor_mode').text(d.mode)
+                d.e.attr('mode',d.mode)
+                d.e.find('.lamp').attr('title',d.mode)
+            break;
             case'fullscreen':
                 if (d.requestFullscreen) {
                   d.requestFullscreen();
@@ -378,56 +424,64 @@ switch($.ccio.userDetails.lang){
         return k.tmp;
     }
     $.ccio.snapshot=function(e,cb){
-        var image_data;
+        var image_data,url;
         e.details=JSON.parse(e.mon.details);
         if(e.details.stream_scale_x===''){e.details.stream_scale_x=640}
         if(e.details.stream_scale_y===''){e.details.stream_scale_y=480}
         if($.ccio.op().jpeg_on!==true){
+            var extend=function(){
+                var len = image_data.length
+                var arraybuffer = new Uint8Array( len );
+                for (var i = 0; i < len; i++)        {
+                    arraybuffer[i] = image_data.charCodeAt(i);
+                }
+                try {
+                    var blob = new Blob([arraybuffer], {type: 'application/octet-stream'});
+                } catch (e) {
+                    var bb = new (window.WebKitBlobBuilder || window.MozBlobBuilder);
+                    bb.append(arraybuffer);
+                    var blob = bb.getBlob('application/octet-stream');
+                }
+                url = (window.URL || window.webkitURL).createObjectURL(blob);
+                cb(url,image_data);
+                try{
+                    setTimeout(function(){
+                        URL.revokeObjectURL(url)
+                    },10000)
+                }catch(er){}
+            }
             switch(JSON.parse(e.mon.details).stream_type){
                 case'hls':
-                    $('#temp').html('<canvas></canvas>')
-                    var c = $('#temp canvas')[0];
-                    var img = e.p.find('video')[0];
-                    c.width = img.videoWidth;
-                    c.height = img.videoHeight;
-                    var ctx = c.getContext('2d');
-                    ctx.drawImage(img, 0, 0,c.width,c.height);
-                    image_data=atob(c.toDataURL('image/jpeg').split(',')[1]);
+                    $.ccio.snapshotVideo($('[mid='+e.mon.mid+'].monitor_item video')[0],function(base64,video_data){
+                        url=base64
+                        image_data=video_data
+                        extend()
+                    })
                 break;
                 case'mjpeg':
                     $('#temp').html('<canvas></canvas>')
                     var c = $('#temp canvas')[0];
-                    var img = $('img',e.p.find('.stream-element').contents())[0];
-                    c.width = e.details.stream_scale_x;
-                    c.height = e.details.stream_scale_y;
+                    var img = $('img',$('[mid='+e.mon.mid+'].monitor_item .stream-element').contents())[0];
+                    c.width = img.width;
+                    c.height = img.height;
                     var ctx = c.getContext('2d');
                     ctx.drawImage(img, 0, 0,c.width,c.height);
                     image_data=atob(c.toDataURL('image/jpeg').split(',')[1]);
+                    extend()
                 break;
                 case'b64':
                     image_data = atob(e.mon.last_frame.split(',')[1]);
+                    extend()
+                break;
+                case'jpeg':
+                    url=e.p.find('.stream-element').attr('src');
+                    cb(url,image_data);
                 break;
             }
-            var arraybuffer = new ArrayBuffer(image_data.length);
-            var view = new Uint8Array(arraybuffer);
-            for (var i=0; i<image_data.length; i++) {
-                view[i] = image_data.charCodeAt(i) & 0xff;
-            }
-            try {
-                var blob = new Blob([arraybuffer], {type: 'application/octet-stream'});
-            } catch (e) {
-                var bb = new (window.WebKitBlobBuilder || window.MozBlobBuilder);
-                bb.append(arraybuffer);
-                var blob = bb.getBlob('application/octet-stream');
-            }
-            var url = (window.URL || window.webkitURL).createObjectURL(blob);
         }else{
             url=e.p.find('.stream-element').attr('src');
-        }
             cb(url,image_data);
-        try{
-            URL.revokeObjectURL(url)
-        }catch(er){}
+        }
     }
     $.ccio.snapshotVideo=function(videoElement,cb){
         var image_data;
@@ -474,35 +528,24 @@ switch($.ccio.userDetails.lang){
             break;
             case 1://monitor icon
                 d.src=placeholder.getData(placeholder.plcimg({bgcolor:'#b57d00',text:'...'}));
-                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" title="'+d.mid+' : '+d.name+'" class="monitor_block glM'+d.mid+' col-md-4"><img monitor="watch" class="snapshot" src="'+d.src+'"><div class="box"><div class="title monitor_name truncate">'+d.name+'</div><div class="list-data"><div class="monitor_mid">'+d.mid+'</div><div><b><%-cleanLang(lang['Save as'])%> :</b> <span class="monitor_ext">'+d.ext+'</span></div><div><b>Mode :</b> <span class="monitor_mode">'+d.mode+'</span></div></div><div class="icons btn-group"><a class="btn btn-xs btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a monitor="calendar" class="btn btn-xs btn-default"><i class="fa fa-calendar"></i></a> <a monitor="videos_table" class="btn btn-xs btn-default"><i class="fa fa-film"></i></a></div></div></div>';
+                tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" title="'+d.mid+' : '+d.name+'" class="monitor_block glM'+d.mid+' col-md-4"><img monitor="watch" class="snapshot" src="'+d.src+'"><div class="box"><div class="title monitor_name truncate">'+d.name+'</div><div class="list-data"><div class="monitor_mid">'+d.mid+'</div><div><b><%-cleanLang(lang['Save as'])%> :</b> <span class="monitor_ext">'+d.ext+'</span></div><div><b>Mode :</b> <span class="monitor_mode">'+d.mode+'</span></div></div><div class="icons text-center"><div class="btn-group"><a class="btn btn-xs btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a monitor="videos_table" class="btn btn-xs btn-default"><i class="fa fa-film"></i></a> <a monitor="pop" class="btn btn-xs btn-success"><i class="fa fa-external-link"></i></a></div></div></div></div>';
                 delete(d.src);
             break;
             case 2://monitor stream
                 try{k.d=JSON.parse(d.details);}catch(er){k.d=d.details;}
-                switch(d.mode){
-                    case'idle':
-                        k.mode='<%-cleanLang(lang['Idle'])%>'
-                    break;
-                    case'stop':
-                        k.mode='<%-cleanLang(lang['Disabled'])%>'
-                    break;
-                    case'record':
-                        k.mode='<%-cleanLang(lang['Record'])%>'
-                    break;
-                    case'start':
-                        k.mode='<%-cleanLang(lang['Watch Only'])%>'
-                    break;
-                }
+                k.mode=$.ccio.init('humanReadMode',d.mode)
                 tmp+='<div mid="'+d.mid+'" ke="'+d.ke+'" id="monitor_live_'+d.mid+'" mode="'+k.mode+'" class="monitor_item glM'+d.mid+' mdl-grid col-md-6">';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col">';
                 tmp+='<div class="stream-block no-padding mdl-card__media mdl-color-text--grey-50">';
                 tmp+='<div class="stream-objects"></div>';
-                tmp+='<div class="stream-hud"><div class="lamp" title="'+k.mode+'"><i class="fa fa-eercast"></i></div><div class="controls"><span title="<%-cleanLang(lang['Currently viewing'])%>" class="label label-default"><span class="viewers"></span></span> <a class="btn-xs btn-danger btn" monitor="mode" mode="record"><i class="fa fa-circle"></i> <%-cleanLang(lang['Start Recording'])%></a> <a class="btn-xs btn-primary btn" monitor="mode" mode="start"><i class="fa fa-eye"></i> <%-cleanLang(lang['Set to Watch Only'])%></a></div></div>';
+                tmp+='<div class="stream-hud"><div class="lamp" title="'+k.mode+'"><i class="fa fa-eercast"></i></div><div class="controls"><span title="<%-cleanLang(lang['Currently viewing'])%>" class="label label-default"><span class="viewers"></span></span> <a class="btn-xs btn-danger btn" monitor="mode" mode="record"><i class="fa fa-circle"></i> <%-cleanLang(lang['Start Recording'])%></a> <a class="btn-xs btn-primary btn" monitor="mode" mode="start"><i class="fa fa-eye"></i> <%-cleanLang(lang['Set to Watch Only'])%></a></div><div class="bottom-text"><span class="detector-fade">Objects Detected : <span class="stream-detected-count"></span></span></div></div>';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card__supporting-text text-center">';
-                tmp+='<div class="indifference"><div class="progress"><div class="progress-bar progress-bar-danger" role="progressbar"><span></span></div></div></div>';
-                tmp+='<div class="monitor_name">'+d.name+'</div>';
-                tmp+='<div class="btn-group"><a title="<%-cleanLang(lang.Snapshot)%>" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="<%-cleanLang(lang['Show Logs'])%>" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="<%-cleanLang(lang.Control)%>" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="<%-cleanLang(lang['Status Indicator'])%>" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-plug"></i></a> <a title="<%-cleanLang(lang.Calendar)%>" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="<%-cleanLang(lang['Power Viewer'])%>" class="btn btn-default" monitor="powerview"><i class="fa fa-map-marker"></i></a> <a title="<%-cleanLang(lang['Time-lapse'])%>" class="btn btn-default" monitor="timelapse"><i class="fa fa-angle-double-right"></i></a> <a title="<%-cleanLang(lang['Videos List'])%>" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a title="<%-cleanLang(lang['Monitor Settings'])%>" class="btn btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="<%-cleanLang(lang.Fullscreen)%>" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="<%-cleanLang(lang.Close)%> Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
+                tmp+='<div class="indifference detector-fade"><div class="progress"><div class="progress-bar progress-bar-danger" role="progressbar"><span></span></div></div></div>';
+                tmp+='<div class="monitor_details">';
+                tmp+='<div><span class="monitor_name">'+d.name+'</span><span class="monitor_not_record_copy">, <%-cleanLang(lang['Recording FPS'])%> : <span class="monitor_fps">'+d.fps+'</span></span></div>';
+                tmp+='</div>';
+                tmp+='<div class="btn-group"><a title="<%-cleanLang(lang.Snapshot)%>" monitor="snapshot" class="btn btn-primary"><i class="fa fa-camera"></i></a> <a title="<%-cleanLang(lang['Show Logs'])%>" class_toggle="show_logs" data-target=".monitor_item[mid=\''+d.mid+'\'][ke=\''+d.ke+'\']" class="btn btn-warning"><i class="fa fa-exclamation-triangle"></i></a> <a title="<%-cleanLang(lang.Control)%>" monitor="control_toggle" class="btn btn-default"><i class="fa fa-arrows"></i></a> <a title="<%-cleanLang(lang['Status Indicator'])%>" class="btn btn-danger signal" monitor="watch_on"><i class="fa fa-plug"></i></a> <a title="<%-cleanLang(lang.Pop)%>" monitor="pop" class="btn btn-default"><i class="fa fa-external-link"></i></a> <a title="<%-cleanLang(lang.Calendar)%>" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="<%-cleanLang(lang['Power Viewer'])%>" class="btn btn-default" monitor="powerview"><i class="fa fa-map-marker"></i></a> <a title="<%-cleanLang(lang['Time-lapse'])%>" class="btn btn-default" monitor="timelapse"><i class="fa fa-angle-double-right"></i></a> <a title="<%-cleanLang(lang['Videos List'])%>" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a title="<%-cleanLang(lang['Monitor Settings'])%>" class="btn btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a> <a title="<%-cleanLang(lang.Fullscreen)%>" monitor="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a> <a title="<%-cleanLang(lang.Close)%> Stream" monitor="watch_off" class="btn btn-danger"><i class="fa fa-times"></i></a></div>';
                 tmp+='</div>';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card mdl-cell mdl-cell--8-col mdl-cell--4-col-desktop">';
@@ -511,7 +554,7 @@ switch($.ccio.userDetails.lang){
                 tmp+='<div class="side-menu videos_monitor_list glM'+d.mid+' scrollable"><ul></ul></div>';
                 tmp+='</div>';
                 tmp+='<div class="mdl-card__supporting-text meta meta--fill mdl-color-text--grey-600">';
-                tmp+='<span class="monitor_name">'+d.name+'</span>';
+                tmp+='<div><span class="monitor_name">'+d.name+'</span><span class="monitor_not_record_copy"><%-cleanLang(lang['Recording FPS'])%> : <b class="monitor_fps">'+d.fps+'</b></span>';
                 tmp+='<b class="monitor_mode">'+k.mode+'</b>';
                 tmp+='</div>';
                 tmp+='</div>';
@@ -655,6 +698,9 @@ switch($.ccio.userDetails.lang){
                     }
                     $.ccio.tm('stream-element',d)
                 }catch(re){$.ccio.log(re)}
+                k.mid=d.mid
+                k.mon=$.ccio.mon[d.mid]
+                $.ccio.init('monitorInfo',k)
             break;
             case'filters-where':
                 $('#filters_where').append(tmp);
@@ -799,17 +845,18 @@ $.ccio.ws.on('f',function (d){
                     d.stream=d.e.find('.stream-element')
                     d.streamObjects=d.e.find('.stream-objects')
                     $.ccio.init('drawMatrices',d)
+                    d.e.find('.stream-detected-count').text(d.streamObjects.find('.stream-detected-object').length)
                 }
                 if(d.details.confidence){
-                    d.e.addClass('detector_triggered')
-                    clearTimeout($.ccio.mon[d.id].detector_trigger_timeout);
-                    $.ccio.mon[d.id].detector_trigger_timeout=setTimeout(function(){
-                        $('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]').removeClass('detector_triggered').find('.stream-detected-object').remove()
-                    },5000);
                     d.tt=d.details.confidence;
                     if (d.tt > 100) { d.tt = 100; }
                     d.e.find('.indifference .progress-bar').css('width',d.tt + "%").find('span').text(d.details.confidence)
                 }
+                d.e.addClass('detector_triggered')
+                clearTimeout($.ccio.mon[d.id].detector_trigger_timeout);
+                $.ccio.mon[d.id].detector_trigger_timeout=setTimeout(function(){
+                    $('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"]').removeClass('detector_triggered').find('.stream-detected-object').remove()
+                },5000);
             }
         break;
         case'detector_cascade_list':
@@ -849,6 +896,7 @@ $.ccio.ws.on('f',function (d){
             $('.shinobi-detector_name').text(d.plug)
             $('.shinobi-detector-'+d.plug).show()
             $('.shinobi-detector-invert').hide()
+            $.aM.drawList()
         break;
         case'detector_unplugged':
             $('.stream-objects').empty()
@@ -857,6 +905,7 @@ $.ccio.ws.on('f',function (d){
             $('.shinobi-detector_name').empty()
             $('.shinobi-detector_plug').hide()
             $('.shinobi-detector-invert').show()
+            $.aM.drawList()
         break;
         case'log':
             $.ccio.tm(4,d,'#logs,.monitor_item[mid="'+d.mid+'"][ke="'+d.ke+'"] .logs')
@@ -1011,27 +1060,7 @@ $.ccio.ws.on('f',function (d){
                     }
                 break;
             }
-            d.e=$('.glM'+d.mon.mid);
-            d.e.find('.monitor_name').text(d.mon.name)
-            d.e.find('.monitor_mid').text(d.mon.mid)
-            d.e.find('.monitor_ext').text(d.mon.ext);
-                switch(d.mon.mode){
-                    case'idle':
-                        d.mode='Idle'
-                    break;
-                    case'stop':
-                        d.mode='Disabled'
-                    break;
-                    case'record':
-                        d.mode='Record'
-                    break;
-                    case'start':
-                        d.mode='Watch Only'
-                    break;
-                }
-            d.e.find('.monitor_mode').text(d.mode)
-            d.e.attr('mode',d.mode)
-            d.e.find('.lamp').attr('title',d.mode)
+            $.ccio.init('monitorInfo',d)
             $.gR.drawList();
             $.ccio.init('note',{title:'Monitor Saved',text:'<b>'+d.mon.name+'</b> <small>'+d.mon.mid+'</small> has been saved.',type:'success'});
         break;
@@ -1142,9 +1171,11 @@ $.ccio.ws.on('f',function (d){
         break;
         case'monitor_frame':
             try{
+                if(!$.ccio.mon[d.id].ctx||$.ccio.mon[d.id].ctx.length===0){
+                    $.ccio.mon[d.id].ctx = $('#monitor_live_'+d.id+' canvas');
+                }
                 if(!$.ccio.mon[d.id].image){
                     $.ccio.mon[d.id].image = new Image();
-                    $.ccio.mon[d.id].ctx = $('#monitor_live_'+d.id+' canvas');
                     $.ccio.mon[d.id].image.onload = function() {
                         d.x = 0,d.y = 0;
                         d.ratio = Math.min($.ccio.mon[d.id].ctx.width()/$.ccio.mon[d.id].image.width,$.ccio.mon[d.id].ctx.height()/$.ccio.mon[d.id].image.height);
@@ -1157,11 +1188,10 @@ $.ccio.ws.on('f',function (d){
                         $.ccio.mon[d.id].ctx[0].getContext("2d").drawImage($.ccio.mon[d.id].image,0,0,$.ccio.mon[d.id].image.width,$.ccio.mon[d.id].image.height,d.x,d.y,d.width,d.height);
                     };
                 }
-                if($.ccio.mon[d.id].image.complete){
-                    $.ccio.mon[d.id].image.src='data:image/jpeg;base64,'+d.frame;
-                }
+                $.ccio.mon[d.id].image.src='data:image/jpeg;base64,'+d.frame;
                 $.ccio.mon[d.id].last_frame='data:image/jpeg;base64,'+d.frame;
             }catch(er){
+                console.log(er)
                 $.ccio.log('base64 frame')
             }
             $.ccio.init('signal',d);
@@ -1504,9 +1534,105 @@ $.log.lm.change(function(e){
         $.ccio.init('ls')
     })
 });
+//multi monitor manager
+$.multimon={e:$('#multi_mon')};$.multimon.table=$.multimon.e.find('.tableData tbody')
+$.multimon.e.on('shown.bs.modal',function() {
+    var tmp=''
+    $.each($.ccio.mon,function(n,v){
+        var streamURL = $.ccio.init('streamURL',v)
+        if(streamURL!=='Websocket'&&v.mode!==('idle'&&'stop')){
+            streamURL='<a target="_blank" href="'+streamURL+'">'+streamURL+'</a>'
+        }
+        var img = $('#left_menu [mid="'+v.mid+'"] [monitor="watch"]').attr('src')
+        tmp+='<tr mid="'+v.mid+'" ke="'+v.ke+'">'
+        tmp+='<td><a monitor="watch"><img class="small-square-img" src="'+img+'"></a></td><td>'+v.name+'<br><small>'+v.mid+'</small></td><td class="monitor_mode">'+$.ccio.init('humanReadMode',v.mode)+'</td><td>'+streamURL+'</td>'
+        //buttons
+        tmp+='<td class="text-right"><a title="<%-cleanLang(lang.Pop)%>" monitor="pop" class="btn btn-primary"><i class="fa fa-external-link"></i></a> <a title="<%-cleanLang(lang.Calendar)%>" monitor="calendar" class="btn btn-default"><i class="fa fa-calendar"></i></a> <a title="<%-cleanLang(lang['Power Viewer'])%>" class="btn btn-default" monitor="powerview"><i class="fa fa-map-marker"></i></a> <a title="<%-cleanLang(lang['Time-lapse'])%>" class="btn btn-default" monitor="timelapse"><i class="fa fa-angle-double-right"></i></a> <a title="<%-cleanLang(lang['Videos List'])%>" monitor="videos_table" class="btn btn-default"><i class="fa fa-film"></i></a> <a title="<%-cleanLang(lang['Monitor Settings'])%>" class="btn btn-default permission_monitor_edit" monitor="edit"><i class="fa fa-wrench"></i></a></td>'
+        tmp+='</tr>'
+    })
+    $.multimon.table.html(tmp)
+})
 //add Monitor
 $.aM={e:$('#add_monitor')};$.aM.f=$.aM.e.find('form')
+$.aM.e.find('.follow-list ul').affix();
+$.each(<%-JSON.stringify(define["Monitor Settings"].blocks)%>,function(n,v){
+    $.each(v.info,function(m,b){
+        if(!b.name){
+            console.log(b)
+            return
+        }
+        if(b.name.indexOf('detail=')>-1){
+            b.name=b.name.replace('detail=','')
+            v.element=$('[detail="'+b.name+'"]')
+        }else{
+            v.element=$('[name="'+b.name+'"]')
+        }
+        v.parent=v.element.parents('.form-group').find('label div:first-child span')
+        v.parent.find('small').remove()
+        v.parent.append('<small class="hover">'+b.description+'</small>')
+    })
+})
+if(!$.ccio.op().tabsOpen){
+    $.ccio.op('tabsOpen',{})
+}
+$.aM.tab=function(x,e){
+    var k={e:$('#monedit_tabs')}
+    k.tabs=$.ccio.op().tabsOpen
+    k.append=function(e){
+        k.e.append('<li class="mdl-menu__item" mid="'+e.mid+'" ke="'+e.ke+'"><a title="Delete Pending Changes" class="delete btn btn-default btn-xs">&nbsp;<i class="fa fa-trash-o"></i>&nbsp;</a> &nbsp; <span class="name">'+e.name+'</span> <small>'+e.mid+'</small></li>')
+    }
+    if(!x){
+        $.each(k.tabs,function(n,v){
+            k.append(v)
+        })
+        return
+    }
+    if(!e.mid||e.mid===''){return}
+    e.ke=$user.ke
+    k.launcher=k.e.find('[mid="'+e.mid+'"][ke="'+e.ke+'"]')
+    switch(x){
+        case'add':
+            k.tabs[e.mid]=e
+            if(k.launcher.length===0){
+                k.append(e)
+            }else{
+                k.launcher.find('.name').text(e.name)
+            }
+        break;
+        case'delete':
+            delete(k.tabs[e.mid])
+            k.launcher.remove()
+        break;
+    }
+    $.ccio.op('tabsOpen',k.tabs)
+}
+$.aM.tab()
+$.aM.e.on('click','#monedit_tabs li .delete',function(e){
+    e.preventDefault()
+    $.aM.tab('delete',$.ccio.op().tabsOpen[$(this).parents('li').attr('mid')])
+})
+$.aM.e.on('click','#monedit_tabs li',function(){
+    e={e:$(this)}
+    e.mid=e.e.attr('mid')
+    e.ke=e.e.attr('ke')
+    e.values=$.ccio.op().tabsOpen[e.mid]
+    if(e.values){
+        $.aM.import(e)
+    }
+})
+$.aM.drawList=function(){
+    e={list:$.aM.e.find('.follow-list ul'),html:''}
+    $.aM.e.find('[section]:visible').each(function(n,v){
+        e.e=$(v)
+        e.id = e.e.attr('id');
+        e.title = e.e.find('h4').first().html();
+        e.html += '<li><a class="scrollTo" href="#'+e.id+'" scrollToParent="#add_monitor .modal-body">'+e.title+'</a></li>'
+    })
+    e.list.html(e.html)
+}
 $.aM.import=function(e){
+    $.aM.e.find('.edit_id').text(e.values.mid);
+    $.aM.e.attr('mid',e.values.mid).attr('ke',e.values.ke)
     $.each(e.values,function(n,v){
         $.aM.e.find('[name="'+n+'"]').val(v).change()
     })
@@ -1545,6 +1671,7 @@ $.aM.import=function(e){
             }
         }
     });
+    setTimeout(function(){$.aM.drawList()},1000)
 }
 $.aM.e.find('.refresh_cascades').click(function(e){
     $.ccio.cx({f:'ocv_in',data:{f:'refreshPlugins',ke:$user.ke}})
@@ -1568,6 +1695,7 @@ $.aM.f.submit(function(e){
     })
     if(!$.ccio.mon[e.s.mid]){$.ccio.mon[e.s.mid]={}}
     $.each(e.s,function(n,v){$.ccio.mon[e.s.mid][n]=v;})
+    $.aM.tab('delete',e.s)
     $.aM.e.modal('hide')
     return false;
 });
@@ -1677,6 +1805,7 @@ $.aM.f.find('[selector]').change(function(e){
     $.aM.f.find('.'+e.a+'_input').hide()
     $.aM.f.find('.'+e.a+'_'+e.v).show();
     $.aM.f.find('.'+e.a+'_text').text($(this).find('option:selected').text())
+    $.aM.drawList()
 });
 $.aM.f.find('[name="type"]').change(function(e){
     e.e=$(this);
@@ -1692,6 +1821,9 @@ $.aM.f.find('[name="type"]').change(function(e){
         break;
     }
 });
+$.aM.f.find('input,select,textarea').change(function(e){
+    $.aM.tab('add',$.aM.f.serializeObject())
+})
 //api window
 $.apM={e:$('#apis')};$.apM.f=$.apM.e.find('form');
 $.apM.md=$.apM.f.find('[detail]');
@@ -2743,6 +2875,27 @@ $('body')
         e.mid=e.p.attr('mid'),//monitor id
         e.mon=$.ccio.mon[e.mid];//monitor configuration
     switch(e.a){
+        case'pop':
+            e.fin=function(img){
+                if($.ccio.mon[e.mid].popOut){
+                    $.ccio.mon[e.mid].popOut.close()
+                }
+                $.ccio.mon[e.mid].popOut = window.open('/'+$user.auth_token+'/embed/'+e.ke+'/'+e.mid+'/fullscreen|jquery','pop_'+e.mid,'height='+img.height+',width='+img.width);
+            }
+            if(e.mon.watch===1){
+                $.ccio.snapshot(e,function(url){
+                    $('#temp').html('<img>')
+                    var img=$('#temp img')[0]
+                    img.onload=function(){
+                        e.fin(img)
+                    }
+                    img.src=url
+                })
+            }else{
+                var img={height:720,width:1280}
+                e.fin(img)
+            }
+        break;
         case'mode':
             e.mode=e.e.attr('mode')
             if(e.mode){
@@ -2992,7 +3145,7 @@ $('body')
             });
         break;
         case'edit':
-            e.p=$('#add_monitor'),e.mt=e.p.attr('mid',e.mid).attr('ke',e.ke).find('.modal-title')
+            e.p=$('#add_monitor'),e.mt=e.p.find('.modal-title')
             e.p.find('.am_notice').hide()
             e.p.find('[detailcontainer="detector_cascades"]').prop('checked',false).parents('.mdl-js-switch').removeClass('is-checked')
             if(!$.ccio.mon[e.mid]){
@@ -3086,17 +3239,19 @@ $('body')
                     "shto":"[]",
                     "shfr":"[]"
                 }
-                e.mt.find('.edit_id').text(e.values.mid);
             }else{
                 e.p.find('.am_notice_edit').show()
                 //edit monitor
                 e.p.find('[monitor="delete"]').show()
-                e.mt.find('.edit_id').text(e.mid);
                 e.mt.find('span').text('<%-cleanLang(lang.Edit)%>');
                 e.mt.find('i').attr('class','fa fa-wrench');
                 e.values=$.ccio.mon[e.mid];
             }
             $.aM.selected=e.mid;
+            e.openTabs=$.ccio.op().tabsOpen
+            if(e.openTabs[e.mid]){
+                e.values=e.openTabs[e.mid]
+            }
             $.aM.import(e)
             try{
                 e.tmp='';
@@ -3136,6 +3291,17 @@ $('.modal').on('shown.bs.modal',function(){
 });
 
 $('body')
+.on('click','.scrollTo',function(ee){
+    ee.preventDefault()
+    var e = {e:$(this)};
+    e.parent=e.e.attr('scrollToParent')
+    if(!e.parent){
+        e.parent='body,html'
+    }
+    $(e.parent).animate({
+        scrollTop: $(e.e.attr('href')).position().top
+    }, 400);
+})
 .on('resize','.flex-container-modal-body',function(e){
     e=$(this)
     e.find('.flex-modal-block').css('height',e.height())

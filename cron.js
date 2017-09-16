@@ -23,7 +23,18 @@ if(config.cron.interval===undefined)config.cron.interval=1;
 
 if(!config.ip||config.ip===''||config.ip.indexOf('0.0.0.0')>-1)config.ip='localhost';
 if(!config.videosDir)config.videosDir=__dirname+'/videos/';
-s.dir={videos:config.videosDir};
+if(!config.addStorage){config.addStorage=[]}
+s.checkCorrectPathEnding=function(x){
+    var length=x.length
+    if(x.charAt(length-1)!=='/'){
+        x=x+'/'
+    }
+    return x.replace('__DIR__',__dirname)
+}
+s.dir={
+    videos:s.checkCorrectPathEnding(config.videosDir),
+    addStorage:config.addStorage,
+};
 s.moment=function(e,x){
     if(!e){e=new Date};if(!x){x='YYYY-MM-DDTHH-mm-ss'};
     return moment(e).format(x);
@@ -36,7 +47,17 @@ s.tx=function(x,y){s.cx({f:'s.tx',data:x,to:y})}
 s.video=function(x,y){s.cx({f:'s.video',data:x,file:y})}
 //Cron Job
 s.cx({f:'init',time:moment()})
-
+s.getVideoDirectory=function(e){
+    if(e.mid&&!e.id){e.id=e.mid};
+    if(e.details&&(e.details instanceof Object)===false){
+        try{e.details=JSON.parse(e.details)}catch(err){}
+    }
+    if(e.details.dir&&e.details.dir!==''){
+        return s.checkCorrectPathEnding(e.details.dir)+e.ke+'/'+e.id+'/'
+    }else{
+        return s.dir.videos+e.ke+'/'+e.id+'/';
+    }
+}
 s.checkFilterRules=function(v){
     Object.keys(v.d.filters).forEach(function(m,b){
         b=v.d.filters[m];
@@ -101,7 +122,8 @@ s.checkForOrphanedFiles=function(v){
         e={};
         sql.query('SELECT * FROM Monitors WHERE ke=?',[v.ke],function(arr,b) {
             b.forEach(function(mon,m){
-                fs.readdir(s.dir.videos+mon.ke+'/'+mon.mid, function(err, items) {
+                mon.dir=s.
+                fs.readdir(s.getVideoDirectory(mon), function(err, items) {
                     e.query=[];
                     e.filesFound=[mon.ke,mon.mid];
                     if(items&&items.length>0){
@@ -120,7 +142,7 @@ s.checkForOrphanedFiles=function(v){
                             });
                             items.forEach(function(v,n){
                                 if(v&&v!==null){
-                                    exec('rm '+s.dir.videos+mon.ke+'/'+mon.mid+'/'+v);
+                                    exec('rm '+s.getVideoDirectory(mon)+v);
                                 }
                             })
                         })
@@ -195,7 +217,7 @@ s.cron=function(){
                             if(evs&&evs[0]){
                                 es.del=[];es.ar=[v.ke];
                                 evs.forEach(function(ev){
-                                    ev.dir=s.dir.videos+v.ke+'/'+ev.mid+'/'+s.moment(ev.time)+'.'+ev.ext;
+                                    ev.dir=s.getVideoDirectory(ev)+s.moment(ev.time)+'.'+ev.ext;
                                     if(config.cron.deleteNoVideo===true&&fs.existsSync(ev.dir)!==true){
                                         s.video('delete',ev)
                                         es.del.push('(mid=? AND time=?)');

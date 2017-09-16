@@ -1,6 +1,6 @@
 {
   "name": "shinobi",
-  "version": "1.0.21",
+  "version": "1.0.23",
   "description": "CCTV and NVR for Node.js",
   "main": "camera.js",
   "scripts": {

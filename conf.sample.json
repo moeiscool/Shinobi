@@ -1,7 +1,8 @@
 {
   "port": 8080,
-  "utcOffset":"-0800",
-  "DropboxAppKey": "mwgh09b16myew4s",
+  "addStorage": [
+      {"name":"second","path":"__DIR__/videos2"}
+  ],
   "db": {
     "host": "127.0.0.1",
     "user": "majesticflame",

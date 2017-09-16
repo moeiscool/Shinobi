@@ -47,13 +47,19 @@ if(config.productType==='Pro'){
 if(!config.language){
     config.language='en_CA'
 }
-if(config.language.split('_')[0]==='he'){config.language=='ar'}
 try{
     var lang = require('./languages/'+config.language+'.json');
 }catch(er){
     console.error(er)
     console.log('There was an error loading your language file.')
     var lang = require('./languages/en_CA.json');
+}
+try{
+    var definitions = require('./definitions/'+config.language+'.json');
+}catch(er){
+    console.error(er)
+    console.log('There was an error loading your language file.')
+    var definitions = require('./definitions/en_CA.json');
 }
 process.send = process.send || function () {};
 if(config.mail){
@@ -73,11 +79,12 @@ if(config.cron.deleteOverMax===undefined)config.cron.deleteOverMax=true;
 if(config.cron.deleteOverMaxOffset===undefined)config.cron.deleteOverMaxOffset=0.9;
 if(config.pluginKeys===undefined)config.pluginKeys={};
 s={factorAuth:{},child_help:false,totalmem:os.totalmem(),platform:os.platform(),s:JSON.stringify,isWin:(process.platform==='win32')};
+//load languages dynamically
 s.loadedLanguages={}
 s.loadedLanguages[config.language]=lang;
-s.getLanguageFile=function(rule,file){
+s.getLanguageFile=function(rule){
     if(rule&&rule!==''){
-        file=s.loadedLanguages[file]
+        var file=s.loadedLanguages[file]
         if(!file){
             try{
                 s.loadedLanguages[rule]=require('./languages/'+rule+'.json')
@@ -91,14 +98,48 @@ s.getLanguageFile=function(rule,file){
     }
     return file
 }
+//load defintions dynamically
+s.loadedDefinitons={}
+s.loadedDefinitons[config.language]=definitions;
+s.getDefinitonFile=function(rule){
+    if(rule&&rule!==''){
+        var file=s.loadedDefinitons[file]
+        if(!file){
+            try{
+                s.loadedDefinitons[rule]=require('./definitions/'+rule+'.json')
+                file=s.loadedDefinitons[rule]
+            }catch(err){
+                file=definitions
+            }
+        }
+    }else{
+        file=definitions
+    }
+    return file
+}
 s.disc=function(){
     sql = mysql.createConnection(config.db);
     sql.connect(function(err){if(err){s.systemLog(lang['Error Connecting']+' : DB',err);setTimeout(s.disc, 2000);}});
     sql.on('error',function(err) {s.systemLog(lang['DB Lost.. Retrying..']);s.systemLog(err);s.disc();return;});
+    sql.on('connect',function() {
+        sql.query('ALTER TABLE `Videos` ADD COLUMN `details` TEXT NULL DEFAULT NULL AFTER `status`;',function(err){
+            if(err){
+                s.systemLog("Already applied critical update.");
+            }
+        });
+    });
 }
 s.disc();
 //kill any ffmpeg running
-s.ffmpegKill=function(){exec("ps aux | grep -ie ffmpeg | awk '{print $2}' | xargs kill -9",{detached: true})};
+s.ffmpegKill=function(){
+    var cmd=''
+    if(s.isWin===true){
+        cmd="Taskkill /IM ffmpeg.exe /F"
+    }else{
+        cmd="ps aux | grep -ie ffmpeg | awk '{print $2}' | xargs kill -9"
+    }
+    exec(cmd,{detached: true})
+};
 process.on('exit',s.ffmpegKill.bind(null,{cleanup:true}));
 process.on('SIGINT',s.ffmpegKill.bind(null, {exit:true}));
 //key for child servers
@@ -115,7 +156,7 @@ s.checkCorrectPathEnding=function(x){
     if(x.charAt(length-1)!=='/'){
         x=x+'/'
     }
-    return x
+    return x.replace('__DIR__',__dirname)
 }
 s.md5=function(x){return crypto.createHash('md5').update(x).digest("hex");}
 s.tx=function(z,y,x){if(x){return x.broadcast.to(y).emit('f',z)};io.to(y).emit('f',z);}
@@ -252,7 +293,7 @@ s.log=function(e,x){
     if((e.details&&e.details.sqllog==='1')||e.mid.indexOf('$')>-1){
         sql.query('INSERT INTO Logs (ke,mid,info) VALUES (?,?,?)',[e.ke,e.mid,s.s(x)]);
     }
-    s.tx({f:'log',ke:e.ke,mid:e.mid,log:x,time:moment()},'GRP_'+e.ke);
+    s.tx({f:'log',ke:e.ke,mid:e.mid,log:x,time:moment()},'GRPLOG_'+e.ke);
 //    s.systemLog('s.log : ',{f:'log',ke:e.ke,mid:e.mid,log:x,time:moment()},'GRP_'+e.ke)
 }
 //system log
@@ -293,7 +334,7 @@ server.listen(config.port,config.bindip,function(){
     console.log(lang.Shinobi+' - PORT : '+config.port);
 });
 io.attach(server);
-console.log('NODE.JS : '+execSync("node -v"))
+console.log('NODE.JS version : '+execSync("node -v"))
 //ffmpeg location
 if(!config.ffmpegDir){
     if(s.isWin===true){
@@ -301,6 +342,12 @@ if(!config.ffmpegDir){
     }else{
         config.ffmpegDir='ffmpeg'
     }
+}
+s.ffmpegVersion=execSync(config.ffmpegDir+" -version").toString().split('Copyright')[0].replace('ffmpeg version','').trim()
+console.log('FFMPEG version : '+s.ffmpegVersion)
+if(s.ffmpegVersion.indexOf(': 2.')>-1){
+    s.systemLog('FFMPEG is too old : '+s.ffmpegVersion+', Needed : 3.2+',err)
+    return
 }
 //directories
 s.group={};
@@ -320,7 +367,13 @@ if(!config.streamDir){
     }
 }
 if(!config.videosDir){config.videosDir=__dirname+'/videos/'}
-s.dir={videos:config.videosDir,streams:config.streamDir,languages:'./languages/'};
+if(!config.addStorage){config.addStorage=[]}
+s.dir={
+    videos:s.checkCorrectPathEnding(config.videosDir),
+    streams:s.checkCorrectPathEnding(config.streamDir),
+    addStorage:config.addStorage,
+    languages:'./languages/'
+};
 //streams dir
 if(!fs.existsSync(s.dir.streams)){
     fs.mkdirSync(s.dir.streams);
@@ -329,6 +382,13 @@ if(!fs.existsSync(s.dir.streams)){
 if(!fs.existsSync(s.dir.videos)){
     fs.mkdirSync(s.dir.videos);
 }
+//additional storage areas
+s.dir.addStorage.forEach(function(v,n){
+    v.path=s.checkCorrectPathEnding(v.path)
+    if(!fs.existsSync(v.path)){
+        fs.mkdirSync(v.path);
+    }
+})
 ////Camera Controller
 s.init=function(x,e,k,fn){
     if(!e){e={}}
@@ -469,11 +529,23 @@ s.filter=function(x,d){
 }
 s.video=function(x,e){
     if(!e){e={}};
-    k={}
-    if(e.mid&&!e.id){e.id=e.mid};
+    switch(x){
+        case'getDir':
+            if(e.mid&&!e.id){e.id=e.mid};
+            if(e.details&&(e.details instanceof Object)===false){
+                try{e.details=JSON.parse(e.details)}catch(err){}
+            }
+            if(e.details&&e.details.dir&&e.details.dir!==''){
+                return s.checkCorrectPathEnding(e.details.dir)+e.ke+'/'+e.id+'/'
+            }else{
+                return s.dir.videos+e.ke+'/'+e.id+'/';
+            }
+        break;
+    }
+    var k={}
+    if(x!=='getDir'){e.dir=s.video('getDir',e)}
     switch(x){
         case'fix':
-            e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
             e.sdir=s.dir.streams+e.ke+'/'+e.id+'/';
             if(!e.filename&&e.time){e.filename=s.moment(e.time)}
             if(e.filename.indexOf('.')===-1){
@@ -501,7 +573,6 @@ s.video=function(x,e){
             });
         break;
         case'archive':
-            e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
             if(!e.filename&&e.time){e.filename=s.moment(e.time)}
             if(!e.status){e.status=0}
             e.save=[e.id,e.ke,s.nameToTime(e.filename)];
@@ -510,101 +581,122 @@ s.video=function(x,e){
             });
         break;
         case'delete':
-            e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
             if(!e.filename&&e.time){e.filename=s.moment(e.time)}
             if(!e.status){e.status=0}
             e.save=[e.id,e.ke,s.nameToTime(e.filename)];
-            sql.query('DELETE FROM Videos WHERE `mid`=? AND `ke`=? AND `time`=?',e.save,function(err,r){
-                fs.stat(e.dir+e.filename+'.'+e.ext,function(err,file){
-                    if(err){
-                        return s.systemLog('File Delete Error : '+e.ke+' : '+' : '+e.mid,err)
-                    }
-                    s.group[e.ke].init.used_space=s.group[e.ke].init.used_space-(file.size/1000000)
-                    s.init('diskUsed',e)
-                })
-                s.tx({f:'video_delete',filename:e.filename+'.'+e.ext,mid:e.mid,ke:e.ke,time:s.nameToTime(e.filename),end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
-                s.file('delete',e.dir+e.filename+'.'+e.ext)
+            sql.query('SELECT * FROM Videos WHERE `mid`=? AND `ke`=? AND `time`=?',e.save,function(err,r){
+                if(r&&r[0]){
+                    r=r[0]
+                    e.dir=s.video('getDir',r)
+                    sql.query('DELETE FROM Videos WHERE `mid`=? AND `ke`=? AND `time`=?',e.save,function(){
+                        fs.stat(e.dir+e.filename+'.'+e.ext,function(err,file){
+                            if(err){
+                                s.systemLog('File Delete Error : '+e.ke+' : '+' : '+e.mid,err)
+                            }
+                            s.group[e.ke].init.used_space=s.group[e.ke].init.used_space-(r.size/1000000)
+                            s.init('diskUsed',e)
+                        })
+                        s.tx({f:'video_delete',filename:e.filename+'.'+e.ext,mid:e.mid,ke:e.ke,time:s.nameToTime(e.filename),end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
+                        s.file('delete',e.dir+e.filename+'.'+e.ext)
+                    })
+                }
             })
         break;
         case'open':
             e.save=[e.id,e.ke,s.nameToTime(e.filename),e.ext];
             if(!e.status){e.save.push(0)}else{e.save.push(e.status)}
-            sql.query('INSERT INTO Videos (mid,ke,time,ext,status) VALUES (?,?,?,?,?)',e.save)
+            k.details={}
+            if(e.details&&e.details.dir&&e.details.dir!==''){
+                k.details.dir=e.details.dir
+            }
+            e.save.push(s.s(k.details))
+            sql.query('INSERT INTO Videos (mid,ke,time,ext,status,details) VALUES (?,?,?,?,?,?)',e.save)
             s.tx({f:'video_build_start',filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:s.nameToTime(e.filename),end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
         break;
         case'close':
-            e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
             if(s.group[e.ke]&&s.group[e.ke].mon[e.id]){
                 if(s.group[e.ke].mon[e.id].open&&!e.filename){e.filename=s.group[e.ke].mon[e.id].open;e.ext=s.group[e.ke].mon[e.id].open_ext}
                 if(s.group[e.ke].mon[e.id].child_node){
                     s.cx({f:'close',d:s.init('noReference',e)},s.group[e.ke].mon[e.id].child_node_id);
                 }else{
-                    if(fs.existsSync(e.dir+e.filename+'.'+e.ext)===true){
-                        k.stat=fs.statSync(e.dir+e.filename+'.'+e.ext);
+                    k.file=e.filename+'.'+e.ext
+                    k.dir=e.dir.toString()
+                    k.fileExists=fs.existsSync(k.dir+k.file)
+                    if(k.fileExists!==true){
+                        k.dir=s.dir.videos+'/'+e.ke+'/'+e.id+'/'
+                        k.fileExists=fs.existsSync(k.dir+k.file)
+                        if(k.fileExists!==true){
+                            s.dir.addStorage.forEach(function(v){
+                                if(k.fileExists!==true){
+                                    k.dir=s.checkCorrectPathEnding(v.path)+e.ke+'/'+e.id+'/'
+                                    k.fileExists=fs.existsSync(k.dir+k.file)
+                                }
+                            })
+                        }
+                    }
+                    if(k.fileExists===true){
+                        k.stat=fs.statSync(k.dir+k.file);
                         e.filesize=k.stat.size;
                         e.filesizeMB=parseFloat((e.filesize/1000000).toFixed(2));
                         e.end_time=s.moment(k.stat.mtime,'YYYY-MM-DD HH:mm:ss');
-                        if(config.deleteCorruptFiles===true&&e.filesizeMB<0.05){
-                            s.video('delete',e);
-                            s.log(e,{type:'File Corrupt',msg:{ffmpeg:s.group[e.ke].mon[e.mid].ffmpeg,filesize:e.filesizeMB}})
-                        }else{
-                            e.save=[e.filesize,1,e.end_time,e.id,e.ke,s.nameToTime(e.filename)];
-                            if(!e.status){e.save.push(0)}else{e.save.push(e.status)}
-                            sql.query('UPDATE Videos SET `size`=?,`status`=?,`end`=? WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save)
-                            s.txWithSubPermissions({f:'video_build_success',hrefNoAuth:'/videos/'+e.ke+'/'+e.mid+'/'+e.filename+'.'+e.ext,filename:e.filename+'.'+e.ext,mid:e.id,ke:e.ke,time:moment(s.nameToTime(e.filename)).format(),size:e.filesize,end:moment(e.end_time).format()},'GRP_'+e.ke,'video_view');
+                        e.save=[e.filesize,1,e.end_time,e.id,e.ke,s.nameToTime(e.filename)];
+                        if(!e.status){e.save.push(0)}else{e.save.push(e.status)}
+                        sql.query('UPDATE Videos SET `size`=?,`status`=?,`end`=? WHERE `mid`=? AND `ke`=? AND `time`=? AND `status`=?',e.save)
+                        s.txWithSubPermissions({f:'video_build_success',hrefNoAuth:'/videos/'+e.ke+'/'+e.mid+'/'+k.file,filename:k.file,mid:e.id,ke:e.ke,time:moment(s.nameToTime(e.filename)).format(),size:e.filesize,end:moment(e.end_time).format()},'GRP_'+e.ke,'video_view');
 
-                            //cloud auto savers
-                            //webdav
-                            if(s.group[e.ke].webdav&&s.group[e.ke].init.use_webdav!=='0'&&s.group[e.ke].init.webdav_save=="1"){
-                               fs.readFile(e.dir+e.filename+'.'+e.ext,function(err,data){
-                                   s.group[e.ke].webdav.putFileContents(s.group[e.ke].init.webdav_dir+e.ke+'/'+e.mid+'/'+e.filename+'.'+e.ext,"binary",data)
-                                .catch(function(err) {
-                                       s.log(e,{type:lang['Webdav Error'],msg:{msg:lang.WebdavErrorText+' <b>/'+e.ke+'/'+e.id+'</b>',info:err},ffmpeg:s.group[e.ke].mon[e.id].ffmpeg})
-                                    console.error(err);
-                                   });
-                                });
-                            }
-                            if(s.group[e.ke].init){
-                                if(!s.group[e.ke].init.used_space){s.group[e.ke].init.used_space=0}else{s.group[e.ke].init.used_space=parseFloat(s.group[e.ke].init.used_space)}
-                                s.group[e.ke].init.used_space=s.group[e.ke].init.used_space+e.filesizeMB;
-                                clearTimeout(s.group[e.ke].checkSpaceLockTimeout)
-                                s.group[e.ke].checkSpaceLockTimeout=setTimeout(function(){
-                                    s.group[e.ke].checkSpaceLock=0
-                                    s.init('diskUsed',e)
-                                },1000*60*5)
-                                if(config.cron.deleteOverMax===true&&s.group[e.ke].checkSpaceLock!==1){
-                                    s.group[e.ke].checkSpaceLock=1;
-                                    //check space
-                                    var check=function(){
-                                        if(s.group[e.ke].init.used_space>(s.group[e.ke].init.size*config.cron.deleteOverMaxOffset)){
-                                            sql.query('SELECT * FROM Videos WHERE status != 0 AND ke=? ORDER BY `time` ASC LIMIT 2',[e.ke],function(err,evs){
-                                                k.del=[];k.ar=[e.ke];
-                                                evs.forEach(function(ev){
-                                                    ev.dir=s.dir.videos+e.ke+'/'+ev.mid+'/'+s.moment(ev.time)+'.'+ev.ext;
-                                                    k.del.push('(mid=? AND time=?)');
-                                                    k.ar.push(ev.mid),k.ar.push(ev.time);
-                                                    s.file('delete',ev.dir);
-                                                   s.group[e.ke].init.used_space=s.group[e.ke].init.used_space-ev.size/1000000;
-                                                    s.tx({f:'video_delete',ff:'over_max',size:s.group[e.ke].init.used_space,limit:s.group[e.ke].init.size,filename:s.moment(ev.time)+'.'+ev.ext,mid:ev.mid,ke:ev.ke,time:ev.time,end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
-                                                });
-                                                if(k.del.length>0){
-                                                    k.qu=k.del.join(' OR ');
-                                                    sql.query('DELETE FROM Videos WHERE ke =? AND ('+k.qu+')',k.ar,function(){
-                                                        check()
-                                                    })
-                                                }
-                                            })
-                                        }else{
-                                            clearTimeout(s.group[e.ke].checkSpaceLockTimeout)
-                                            s.group[e.ke].checkSpaceLock=0
-                                            s.init('diskUsed',e)
-                                        }
+                        //cloud auto savers
+                        //webdav
+                        if(s.group[e.ke].webdav&&s.group[e.ke].init.use_webdav!=='0'&&s.group[e.ke].init.webdav_save=="1"){
+                           fs.readFile(k.dir+k.file,function(err,data){
+                               s.group[e.ke].webdav.putFileContents(s.group[e.ke].init.webdav_dir+e.ke+'/'+e.mid+'/'+k.file,"binary",data)
+                            .catch(function(err) {
+                                   s.log(e,{type:lang['Webdav Error'],msg:{msg:lang.WebdavErrorText+' <b>/'+e.ke+'/'+e.id+'</b>',info:err},ffmpeg:s.group[e.ke].mon[e.id].ffmpeg})
+                                console.error(err);
+                               });
+                            });
+                        }
+                        if(s.group[e.ke].init){
+                            if(!s.group[e.ke].init.used_space){s.group[e.ke].init.used_space=0}else{s.group[e.ke].init.used_space=parseFloat(s.group[e.ke].init.used_space)}
+                            if(s.group[e.ke].init.used_space<0){s.group[e.ke].init.used_space=0}
+                            s.group[e.ke].init.used_space=s.group[e.ke].init.used_space+e.filesizeMB;
+                            clearTimeout(s.group[e.ke].checkSpaceLockTimeout)
+                            s.group[e.ke].checkSpaceLockTimeout=setTimeout(function(){
+                                s.group[e.ke].checkSpaceLock=0
+                                s.init('diskUsed',e)
+                            },1000*60*5)
+                            if(config.cron.deleteOverMax===true&&s.group[e.ke].checkSpaceLock!==1){
+                                s.group[e.ke].checkSpaceLock=1;
+                                //check space
+                                var check=function(){
+                                    if(s.group[e.ke].init.used_space>(s.group[e.ke].init.size*config.cron.deleteOverMaxOffset)){
+                                        sql.query('SELECT * FROM Videos WHERE status != 0 AND ke=? ORDER BY `time` ASC LIMIT 2',[e.ke],function(err,evs){
+                                            k.del=[];k.ar=[e.ke];
+                                            evs.forEach(function(ev){
+                                                ev.dir=s.video('getDir',ev)+s.moment(ev.time)+'.'+ev.ext;
+                                                k.del.push('(mid=? AND time=?)');
+                                                k.ar.push(ev.mid),k.ar.push(ev.time);
+                                                s.file('delete',ev.dir);
+                                                s.group[e.ke].init.used_space-=ev.size/1000000;
+
+                                                s.tx({f:'video_delete',ff:'over_max',size:s.group[e.ke].init.used_space,limit:s.group[e.ke].init.size,filename:s.moment(ev.time)+'.'+ev.ext,mid:ev.mid,ke:ev.ke,time:ev.time,end:s.moment(new Date,'YYYY-MM-DD HH:mm:ss')},'GRP_'+e.ke);
+                                            });
+                                            if(k.del.length>0){
+                                                k.qu=k.del.join(' OR ');
+                                                sql.query('DELETE FROM Videos WHERE ke =? AND ('+k.qu+')',k.ar,function(){
+                                                    check()
+                                                })
+                                            }
+                                        })
+                                    }else{
+                                        clearTimeout(s.group[e.ke].checkSpaceLockTimeout)
+                                        s.group[e.ke].checkSpaceLock=0
+                                        s.init('diskUsed',e)
                                     }
-                                    check()
-                                }else{
-                                    clearTimeout(s.group[e.ke].checkSpaceLockTimeout)
-                                    s.init('diskUsed',e)
                                 }
+                                check()
+                            }else{
+                                clearTimeout(s.group[e.ke].checkSpaceLockTimeout)
+                                s.init('diskUsed',e)
                             }
                         }
                     }else{
@@ -633,6 +725,7 @@ s.ffmpeg=function(e,x){
     x.cust_detect=' '
     x.record_video_filters=[]
     x.stream_video_filters=[]
+    x.hwaccel=''
     //input - analyze duration
     if(e.details.aduration&&e.details.aduration!==''){x.cust_input+=' -analyzeduration '+e.details.aduration};
     //input - probe size
@@ -743,7 +836,7 @@ s.ffmpeg=function(e,x){
         x.record_video_filters.push('movie='+e.details.watermark_location+'[watermark],[in][watermark]overlay='+x.watermark_position+'[out]');
     }
     //record - rotation
-    if(e.details.rotate_record&&e.details.rotate_record!==""&&e.details.rotate_record!=="no"){
+    if(e.details.rotate_record&&e.details.rotate_record!==""&&e.details.rotate_record!=="no"&&e.details.stream_vcodec!=="copy"){
         x.record_video_filters.push('transpose='+e.details.rotate_record);
     }
     //check custom record filters for -vf
@@ -795,18 +888,9 @@ s.ffmpeg=function(e,x){
     if(e.details.rotate_stream&&e.details.rotate_stream!==""&&e.details.rotate_stream!=="no"){
         x.stream_video_filters.push('transpose='+e.details.rotate_stream);
     }
-    //stream - video filter
-    if(e.details.svf&&e.details.svf!==''){
-        x.stream_video_filters.push(e.details.svf)
-    }
-    if(x.stream_video_filters.length>0){
-       x.stream_video_filters=' -vf '+x.stream_video_filters.join(',')
-    }else{
-        x.stream_video_filters=''
-    }
     //stream - hls vcodec
     if(e.details.stream_vcodec&&e.details.stream_vcodec!=='no'){
-        if(e.details.stream_vcodec!==''){x.stream_vcodec=' -c:v '+e.details.stream_vcodec}else{x.stream_vcodec='libx264'}
+        if(e.details.stream_vcodec!==''){x.stream_vcodec=' -c:v '+e.details.stream_vcodec}else{x.stream_vcodec=' -c:v libx264'}
     }else{
         x.stream_vcodec='';
     }
@@ -825,12 +909,54 @@ s.ffmpeg=function(e,x){
     if(e.details.preset_stream&&e.details.preset_stream!==''){x.preset_stream=' -preset '+e.details.preset_stream;}else{x.preset_stream=''}
     //stream - quality
     if(e.details.stream_quality&&e.details.stream_quality!==''){x.stream_quality=e.details.stream_quality}else{x.stream_quality=''}
+    //hardware acceleration
+    if(e.details.accelerator&&e.details.accelerator==='1'){
+        if(e.details.hwaccel&&e.details.hwaccel!==''){
+            x.hwaccel+=' -hwaccel '+e.details.hwaccel;
+        }
+        if(e.details.hwaccel_vcodec&&e.details.hwaccel_vcodec!==''){
+            x.hwaccel+=' -c:v '+e.details.hwaccel_vcodec;
+        }
+        if(e.details.hwaccel_device&&e.details.hwaccel_device!==''){
+            switch(e.details.hwaccel){
+                case'vaapi':
+                    x.hwaccel+=' -vaapi_device '+e.details.hwaccel_device+' -hwaccel_output_format vaapi';
+                break;
+                default:
+                    x.hwaccel+=' -hwaccel_device '+e.details.hwaccel_device;
+                break;
+            }
+        }
+//        else{
+//            if(e.details.hwaccel==='vaapi'){
+//                x.hwaccel+=' -hwaccel_device 0';
+//            }
+//        }
+    }
+    if(e.details.stream_vcodec==='h264_vaapi'){
+        x.stream_video_filters=[]
+        x.stream_video_filters.push('format=nv12|vaapi');
+        if(e.details.stream_scale_x&&e.details.stream_scale_x!==''&&e.details.stream_scale_y&&e.details.stream_scale_y!==''){
+            x.stream_video_filters.push('scale_vaapi=w='+e.details.stream_scale_x+':h='+e.details.stream_scale_y)
+        }
+	}
+    //stream - video filter
+    if(e.details.svf&&e.details.svf!==''){
+        x.stream_video_filters.push(e.details.svf)
+    }
+    if(x.stream_video_filters.length>0){
+        x.stream_video_filters=' -vf '+x.stream_video_filters.join(',')
+    }else{
+        x.stream_video_filters=''
+    }
     //stream - pipe build
     switch(e.details.stream_type){
         case'hls':
-            if(x.cust_stream.indexOf('-tune')===-1){x.cust_stream+=' -tune zerolatency'}
-            if(x.cust_stream.indexOf('-g ')===-1){x.cust_stream+=' -g 1'}
-            if(x.stream_quality)x.stream_quality=' -crf '+x.stream_quality;
+            if(e.details.stream_vcodec!=='h264_vaapi'){
+                if(x.stream_quality)x.stream_quality=' -crf '+x.stream_quality;
+                if(x.cust_stream.indexOf('-tune')===-1){x.cust_stream+=' -tune zerolatency'}
+                if(x.cust_stream.indexOf('-g ')===-1){x.cust_stream+=' -g 1'}
+            }
             x.pipe=x.preset_stream+x.stream_quality+x.stream_acodec+x.stream_vcodec+x.stream_fps+' -f hls -s '+x.ratio+x.stream_video_filters+x.cust_stream+' -hls_time '+x.hls_time+' -hls_list_size '+x.hls_list_size+' -start_number 0 -hls_allow_cache 0 -hls_flags +delete_segments+omit_endlist '+e.sdir+'s.m3u8';
         break;
         case'mjpeg':
@@ -908,7 +1034,7 @@ s.ffmpeg=function(e,x){
             if(e.mode=='record'){
                 x.record_string+=x.vcodec+x.framerate+x.acodec+x.record_dimensions+x.record_video_filters+' '+x.segment;
             }
-            x.tmp=x.loglevel+x.cust_input+' -i '+e.url+x.record_string+x.pipe;
+            x.tmp=x.loglevel+x.cust_input+x.hwaccel+' -i '+e.url+x.record_string+x.pipe;
         break;
         case'local':
             if(e.mode=='record'){
@@ -1063,8 +1189,8 @@ s.camera=function(x,e,cn,tx){
             s.tx({f:'monitor_stopping',mid:e.id,ke:e.ke,time:s.moment()},'GRP_'+e.ke);
             s.camera('snapshot',{mid:e.id,ke:e.ke,mon:e})
             if(x==='stop'){
-                    s.log(e,{type:lang['Monitor Stopped'],msg:lang.MonitorStoppedText});
-                    clearTimeout(s.group[e.ke].mon[e.id].delete)
+                s.log(e,{type:lang['Monitor Stopped'],msg:lang.MonitorStoppedText});
+                clearTimeout(s.group[e.ke].mon[e.id].delete)
                 if(e.delete===1){
                     s.group[e.ke].mon[e.id].delete=setTimeout(function(){
                         delete(s.group[e.ke].mon[e.id]);
@@ -1093,14 +1219,26 @@ s.camera=function(x,e,cn,tx){
             }else{
                 s.group[e.ke].mon[e.mid].record.yes=0;
             }
-            //videos dir
-            e.dir=s.dir.videos+e.ke+'/';
-            if (!fs.existsSync(e.dir)){
-                fs.mkdirSync(e.dir);
-            }
-            e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
-            if (!fs.existsSync(e.dir)){
-                fs.mkdirSync(e.dir);
+            if(e.details&&e.details.dir&&e.details.dir!==''){
+                //addStorage choice
+                e.dir=s.checkCorrectPathEnding(e.details.dir)+e.ke+'/';
+                if (!fs.existsSync(e.dir)){
+                    fs.mkdirSync(e.dir);
+                }
+                e.dir=e.dir+e.id+'/';
+                if (!fs.existsSync(e.dir)){
+                    fs.mkdirSync(e.dir);
+                }                
+            }else{
+                //MAIN videos dir
+                e.dir=s.dir.videos+e.ke+'/';
+                if (!fs.existsSync(e.dir)){
+                    fs.mkdirSync(e.dir);
+                }
+                e.dir=s.dir.videos+e.ke+'/'+e.id+'/';
+                if (!fs.existsSync(e.dir)){
+                    fs.mkdirSync(e.dir);
+                }
             }
             //stream dir
             e.sdir=s.dir.streams+e.ke+'/';
@@ -1532,24 +1670,35 @@ s.camera=function(x,e,cn,tx){
                 }else{
                     d.mon.details.detector_timeout=parseFloat(d.mon.details.detector_timeout)
                 }
-                d.auth=s.gid();
-                s.group[d.ke].users[d.auth]={system:1,details:{}}
+                if(!d.auth){
+                    d.auth=s.gid();
+                }
+                if(!s.group[d.ke].users[d.auth]){
+                    s.group[d.ke].users[d.auth]={system:1,details:{},lang:lang}
+                }
+                d.urlQuery=[]
                 d.url='http://'+config.ip+':'+config.port+'/'+d.auth+'/monitor/'+d.ke+'/'+d.id+'/record/'+d.mon.details.detector_timeout+'/min';
                 if(d.mon.details.watchdog_reset!=='0'){
-                    d.url+='?reset=1'
+                    d.urlQuery.push('reset=1')
+                }
+                if(d.mon.details.detector_trigger_record_fps&&d.mon.details.detector_trigger_record_fps!==''&&d.mon.details.detector_trigger_record_fps!=='0'){
+                    d.urlQuery.push('fps='+d.mon.details.detector_trigger_record_fps)
+                }
+                if(d.urlQuery.length>0){
+                    d.url+='?'+d.urlQuery.join('&')
                 }
                 http.get(d.url, function(data) {
-                      data.setEncoding('utf8');
-                      var chunks='';
-                      data.on('data', (chunk) => {
-                          chunks+=chunk;
-                      });
-                      data.on('end', () => {
-                          delete(s.group[d.ke].users[d.auth])
-                          d.cx.f='detector_record_engaged';
-                          d.cx.msg=JSON.parse(chunks);
-                          s.tx(d.cx,'GRP_'+d.ke);
-                      });
+                    data.setEncoding('utf8');
+                    var chunks='';
+                    data.on('data', (chunk) => {
+                        chunks+=chunk;
+                    });
+                    data.on('end', () => {
+                        delete(s.group[d.ke].users[d.auth])
+                        d.cx.f='detector_record_engaged';
+                        d.cx.msg=JSON.parse(chunks);
+                        s.tx(d.cx,'GRP_'+d.ke);
+                    });
 
                 }).on('error', function(e) {
 
@@ -1570,7 +1719,7 @@ s.camera=function(x,e,cn,tx){
                         clearTimeout(s.group[d.ke].mon[d.id].detector_mail);
                         delete(s.group[d.ke].mon[d.id].detector_mail);
                     },d.mon.details.detector_mail_timeout);
-                    d.frame_filename='Motion_'+d.id+'_'+d.ke+'_'+s.moment()+'.jpg';
+                    d.frame_filename='Motion_'+(d.name.replace(/[^\w\s]/gi, ''))+'_'+d.id+'_'+d.ke+'_'+s.moment()+'.jpg';
                     fs.readFile(s.dir.streams+'/'+d.ke+'/'+d.id+'/s.jpg',function(err, frame){
                         d.mailOptions = {
                             from: '"ShinobiCCTV" <no-reply@shinobi.video>', // sender address
@@ -1651,6 +1800,9 @@ var tx;
 //                    s.group[d.ke].vid[cn.id]={uid:d.uid};
                     s.group[d.ke].users[d.auth]={cnid:cn.id,uid:r.uid,mail:r.mail,details:JSON.parse(r.details),logged_in_at:moment(new Date).format(),login_type:'Dashboard'}
                     try{s.group[d.ke].users[d.auth].details=JSON.parse(r.details)}catch(er){}
+                    if(s.group[d.ke].users[d.auth].details.get_server_log&&s.group[d.ke].users[d.auth].details.get_server_log!=='0'){
+                        cn.join('GRPLOG_'+d.ke)
+                    }
                     s.group[d.ke].users[d.auth].lang=s.getLanguageFile(s.group[d.ke].users[d.auth].details.lang)
                     s.log({ke:d.ke,mid:'$USER'},{type:s.group[d.ke].users[d.auth].lang['Websocket Connected'],msg:{mail:r.mail,id:d.uid,ip:cn.ip}})
                     if(!s.group[d.ke].mon){
@@ -1803,6 +1955,11 @@ var tx;
                                 if(r&&r[0]){
                                     r=r[0];
                                     d.d=JSON.parse(r.details);
+                                    if(d.d.get_server_log==='1'){
+                                        cn.join('GRPLOG_'+d.ke)
+                                    }else{
+                                        cn.leave('GRPLOG_'+d.ke)
+                                    }
                                     ///unchangeable from client side, so reset them in case they did.
                                     d.form.details=JSON.parse(d.form.details)
                                     //admin permissions
@@ -1868,7 +2025,7 @@ var tx;
                                 d.URLobject=URL.parse(url)
                                 if(!d.URLobject.port){d.URLobject.port=80}
                                 d.options = {
-                                    host: d.URLobject.host,
+                                    host: d.URLobject.hostname,
                                     port: d.URLobject.port,
                                     method: "GET",
                                     path: d.URLobject.pathname,
@@ -2192,7 +2349,7 @@ var tx;
                         switch(d.ff){
                             case'update':
                                 s.ffmpegKill()
-                                s.systemLog('Shinobi ordered to update',{by:cn.mail,ip:cn.ip})
+                                s.systemLog('Shinobi ordered to update',{by:cn.mail,ip:cn.ip,distro:d.distro})
                                 exec('chmod +x '+__dirname+'/UPDATE.sh&&'+__dirname+'/./UPDATE.sh '+d.distro,{detached: true})
                             break;
                             case'restart':
@@ -2401,7 +2558,11 @@ var tx;
                         s.log(d.data,d.to)
                     break;
                     case'created_file':
-                        d.dir=s.dir.videos+d.d.ke+'/'+d.d.mid+'/';
+                        if(d.details&&d.details.dir&&d.details.dir!==''){
+                            d.dir=s.checkCorrectPathEnding(d.details.dir)+d.ke+'/'+d.id+'/'
+                        }else{
+                            d.dir=s.dir.videos+d.ke+'/'+d.id+'/';
+                        }
                         fs.writeFile(d.dir+d.filename,d.created_file,'binary',function (err,data) {
                             if (err) {
                                 return console.error('created_file'+d.d.mid,err);
@@ -2474,7 +2635,7 @@ var tx;
 //Authenticator functions
 s.api={};
 //auth handler
-s.auth=function(xx,x,res,req){
+s.auth=function(xx,cb,res,req){
     if(req){
         xx.ip=req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         xx.failed=function(){
@@ -2489,14 +2650,14 @@ s.auth=function(xx,x,res,req){
     }
     xx.checkIP=function(ee){
         if(s.api[xx.auth].ip.indexOf('0.0.0.0')>-1||s.api[xx.auth].ip.indexOf(xx.ip)>-1){
-            x(s.api[xx.auth]);
+            cb(s.api[xx.auth]);
         }else{
             xx.failed();
         }
     }
     if(s.group[xx.ke]&&s.group[xx.ke].users&&s.group[xx.ke].users[xx.auth]){
         s.group[xx.ke].users[xx.auth].permissions={};
-        x(s.group[xx.ke].users[xx.auth]);
+        cb(s.group[xx.ke].users[xx.auth]);
     }else{
         if(s.api[xx.auth]&&s.api[xx.auth].details){
             xx.checkIP();
@@ -2504,7 +2665,7 @@ s.auth=function(xx,x,res,req){
             sql.query('SELECT * FROM API WHERE code=? AND ke=?',[xx.auth,xx.ke],function(err,r){
                 if(r&&r[0]){
                     r=r[0];
-                    s.api[xx.auth]={ip:r.ip,permissions:JSON.parse(r.details),details:{}};
+                    s.api[xx.auth]={ip:r.ip,uid:r.uid,permissions:JSON.parse(r.details),details:{}};
                     sql.query('SELECT details FROM Users WHERE uid=? AND ke=?',[r.uid,r.ke],function(err,rr){
                         if(rr&&rr[0]){
                             rr=rr[0];
@@ -2548,7 +2709,6 @@ s.superAuth=function(x,callback){
 }
 ////Pages
 app.enable('trust proxy');
-app.use(express.static(s.dir.videos));
 app.use('/libs',express.static(__dirname + '/web/libs'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
@@ -2685,29 +2845,29 @@ app.post(['/','/:screen'],function (req,res){
             case'cam':
                 sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"dashcam"],function(err,rr){
                     req.resp.mons=rr;
-                    req.renderFunction("dashcam",{$user:req.resp,lang:r.lang});
+                    req.renderFunction("dashcam",{$user:req.resp,lang:r.lang,define:s.getDefinitonFile(r.details.lang)});
                 })
             break;
             case'streamer':
                 sql.query('SELECT * FROM Monitors WHERE ke=? AND type=?',[r.ke,"socket"],function(err,rr){
                     req.resp.mons=rr;
-                    req.renderFunction("streamer",{$user:req.resp,lang:r.lang});
+                    req.renderFunction("streamer",{$user:req.resp,lang:r.lang,define:s.getDefinitonFile(r.details.lang)});
                 })
             break;
             case'admin':
                 if(!r.details.sub){
                     sql.query('SELECT uid,mail,details FROM Users WHERE ke=? AND details LIKE \'%"sub"%\'',[r.ke],function(err,rr) {
                         sql.query('SELECT * FROM Monitors WHERE ke=?',[r.ke],function(err,rrr) {
-                            req.renderFunction("admin",{$user:req.resp,$subs:rr,$mons:rrr,lang:r.lang});
+                            req.renderFunction("admin",{$user:req.resp,$subs:rr,$mons:rrr,lang:r.lang,define:s.getDefinitonFile(r.details.lang)});
                         })
                     })
                 }else{
                     //not admin user
-                    req.renderFunction("home",{$user:req.resp,config:config,lang:r.lang,fs:fs});
+                    req.renderFunction("home",{$user:req.resp,config:config,lang:r.lang,define:s.getDefinitonFile(r.details.lang),addStorage:s.dir.addStorage,fs:fs});
                 }
             break;
             default:
-                req.renderFunction("home",{$user:req.resp,config:config,lang:r.lang,fs:fs});
+                req.renderFunction("home",{$user:req.resp,config:config,lang:r.lang,define:s.getDefinitonFile(r.details.lang),addStorage:s.dir.addStorage,fs:fs});
             break;
         }
         s.log({ke:r.ke,mid:'$USER'},{type:r.lang['New Authentication Token'],msg:{for:req.body.function,mail:r.mail,id:r.uid,ip:req.ip}})
@@ -2915,7 +3075,7 @@ app.post(['/','/:screen'],function (req,res){
                 if(s.factorAuth[req.body.ke][req.body.id].key===req.body.factorAuthKey){
                     if(req.body.remember==="1"){
                         req.details=JSON.parse(s.factorAuth[req.body.ke][req.body.id].info.details)
-                        req.lang=s.loadedLanguages[req.details.lang]
+                        req.lang=s.getLanguageFile(req.details.lang)
                         if(!req.details.acceptedMachines||!(req.details.acceptedMachines instanceof Object)){
                             req.details.acceptedMachines={}
                         }
@@ -3307,18 +3467,26 @@ app.all(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f']
                     req.monitor=JSON.parse(req.body.data)
                 }
             }catch(er){
-                req.ret.msg=user.lang.monitorEditText1;
-                res.end(s.s(req.ret, null, 3))
+                if(!req.monitor){
+                    req.ret.msg=user.lang.monitorEditText1;
+                    res.end(s.s(req.ret, null, 3))
+                }
                 return
             }
             if(!user.details.sub||user.details.allmonitors==='1'||user.details.monitor_edit.indexOf(req.monitor.mid)>-1){
                     if(req.monitor&&req.monitor.mid&&req.monitor.name){
                         req.set=[],req.ar=[];
                         req.monitor.mid=req.monitor.mid.replace(/[^\w\s]/gi,'').replace(/ /g,'');
-                        try{JSON.parse(req.monitor.details)}catch(er){
-                            req.ret.msg=user.lang.monitorEditText2;
-                            res.end(s.s(req.ret, null, 3))
-                            return
+                        try{
+                            JSON.parse(req.monitor.details)
+                        }catch(er){
+                            if(!req.monitor.details||!req.monitor.details.stream_type){
+                                req.ret.msg=user.lang.monitorEditText2;
+                                res.end(s.s(req.ret, null, 3))
+                                return
+                            }else{
+                                req.monitor.details=JSON.stringify(req.monitor.details)
+                            }
                         }
                         req.monitor.ke=req.params.ke
                         req.logObject={details:JSON.parse(req.monitor.details),ke:req.params.ke,mid:req.params.id}
@@ -3374,7 +3542,7 @@ app.all(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f']
                             res.end(s.s(req.ret, null, 3))
                         })
                     }else{
-                        req.ret.msg='Invalid Data, Check to see this is a valid import string.';
+                        req.ret.msg=user.lang.monitorEditText1;
                         res.end(s.s(req.ret, null, 3))
                     }
             }else{
@@ -3397,7 +3565,7 @@ app.all(['/:auth/configureMonitor/:ke/:id','/:auth/configureMonitor/:ke/:id/:f']
 app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/monitor/:ke/:id/:f/:ff/:fff'], function (req,res){
     req.ret={ok:false};
     res.setHeader('Content-Type', 'application/json');
-    req.fn=function(user){
+    s.auth(req.params,function(user){
         if(user.permissions.control_monitors==="0"||user.details.sub&&user.details.allmonitors!=='1'&&user.details.monitor_edit.indexOf(req.params.id)===-1){
             res.end(user.lang['Not Permitted'])
             return
@@ -3411,11 +3579,22 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
         sql.query('SELECT * FROM Monitors WHERE ke=? AND mid=?',[req.params.ke,req.params.id],function(err,r){
             if(r&&r[0]){
                 r=r[0];
-                if(req.query.reset==='1'||(s.group[r.ke]&&s.group[r.ke].mon_conf[r.mid].mode!==req.params.f)){
+                if(req.query.reset==='1'||(s.group[r.ke]&&s.group[r.ke].mon_conf[r.mid].mode!==req.params.f)||req.query.fps&&(!s.group[r.ke].mon[r.mid].currentState||!s.group[r.ke].mon[r.mid].currentState.trigger_on)){
                     if(req.query.reset!=='1'||!s.group[r.ke].mon[r.mid].trigger_timer){
-                        s.group[r.ke].mon[r.mid].currentState=r.mode.toString()
+                        if(!s.group[r.ke].mon[r.mid].currentState)s.group[r.ke].mon[r.mid].currentState={}
+                        s.group[r.ke].mon[r.mid].currentState.mode=r.mode.toString()
+                        s.group[r.ke].mon[r.mid].currentState.fps=r.fps.toString()
+                        if(!s.group[r.ke].mon[r.mid].currentState.trigger_on){
+                           s.group[r.ke].mon[r.mid].currentState.trigger_on=true
+                        }else{
+                            s.group[r.ke].mon[r.mid].currentState.trigger_on=false
+                        }
                         r.mode=req.params.f;
                         try{r.details=JSON.parse(r.details);}catch(er){}
+                        if(req.query.fps){
+                            r.fps=parseFloat(r.details.detector_trigger_record_fps)
+                            s.group[r.ke].mon[r.mid].currentState.detector_trigger_record_fps=r.fps
+                        }
                         r.id=r.mid;
                         sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',[r.mode,r.ke,r.mid]);
                         s.group[r.ke].mon_conf[r.mid]=r;
@@ -3450,12 +3629,13 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
                         }
                         s.group[r.ke].mon[r.mid].trigger_timer=setTimeout(function(){
                             delete(s.group[r.ke].mon[r.mid].trigger_timer)
-                            sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',[s.group[r.ke].mon[r.mid].currentState,r.ke,r.mid]);
+                            sql.query('UPDATE Monitors SET mode=? WHERE ke=? AND mid=?',[s.group[r.ke].mon[r.mid].currentState.mode,r.ke,r.mid]);
                             r.neglectTriggerTimer=1;
-                            r.mode=s.group[r.ke].mon[r.mid].currentState;
+                            r.mode=s.group[r.ke].mon[r.mid].currentState.mode;
+                            r.fps=s.group[r.ke].mon[r.mid].currentState.fps;
                             s.camera('stop',s.init('noReference',r),function(){
-                                if(s.group[r.ke].mon[r.mid].currentState!=='stop'){
-                                    s.camera(s.group[r.ke].mon[r.mid].currentState,s.init('noReference',r));
+                                if(s.group[r.ke].mon[r.mid].currentState.mode!=='stop'){
+                                    s.camera(s.group[r.ke].mon[r.mid].currentState.mode,s.init('noReference',r));
                                 }
                                 s.group[r.ke].mon_conf[r.mid]=r;
                             });
@@ -3472,8 +3652,7 @@ app.get(['/:auth/monitor/:ke/:id/:f','/:auth/monitor/:ke/:id/:f/:ff','/:auth/mon
             }
             res.end(s.s(req.ret, null, 3));
         })
-    }
-    s.auth(req.params,req.fn,res,req);
+    },res,req);
 })
 
 // Get video file
@@ -3483,38 +3662,44 @@ app.get('/:auth/videos/:ke/:id/:file', function (req,res){
             res.end(user.lang['Not Permitted'])
             return
         }
-        req.dir=s.dir.videos+req.params.ke+'/'+req.params.id+'/'+req.params.file;
-        if (fs.existsSync(req.dir)){
-            req.ext=req.params.file.split('.')[1];
-            var total = fs.statSync(req.dir).size;
-            if (req.headers['range']) {
-                var range = req.headers.range;
-                var parts = range.replace(/bytes=/, "").split("-");
-                var partialstart = parts[0];
-                var partialend = parts[1];
+        sql.query('SELECT * FROM Videos WHERE ke=? AND mid=? AND time=?',[req.params.ke,req.params.id,s.nameToTime(req.params.file)],function(err,r){
+            if(r&&r[0]){
+                req.dir=s.video('getDir',r[0])+req.params.file
+                if (fs.existsSync(req.dir)){
+                    req.ext=req.params.file.split('.')[1];
+                    var total = fs.statSync(req.dir).size;
+                    if (req.headers['range']) {
+                        var range = req.headers.range;
+                        var parts = range.replace(/bytes=/, "").split("-");
+                        var partialstart = parts[0];
+                        var partialend = parts[1];
 
-                var start = parseInt(partialstart, 10);
-                var end = partialend ? parseInt(partialend, 10) : total-1;
-                var chunksize = (end-start)+1;
-                var file = fs.createReadStream(req.dir, {start: start, end: end});
-                req.headerWrite={ 'Content-Range': 'bytes ' + start + '-' + end + '/' + total, 'Accept-Ranges': 'bytes', 'Content-Length': chunksize, 'Content-Type': 'video/'+req.ext }
-                req.writeCode=206
-            } else {
-                req.headerWrite={ 'Content-Length': total, 'Content-Type': 'video/'+req.ext};
-                var file=fs.createReadStream(req.dir)
-                req.writeCode=200
+                        var start = parseInt(partialstart, 10);
+                        var end = partialend ? parseInt(partialend, 10) : total-1;
+                        var chunksize = (end-start)+1;
+                        var file = fs.createReadStream(req.dir, {start: start, end: end});
+                        req.headerWrite={ 'Content-Range': 'bytes ' + start + '-' + end + '/' + total, 'Accept-Ranges': 'bytes', 'Content-Length': chunksize, 'Content-Type': 'video/'+req.ext }
+                        req.writeCode=206
+                    } else {
+                        req.headerWrite={ 'Content-Length': total, 'Content-Type': 'video/'+req.ext};
+                        var file=fs.createReadStream(req.dir)
+                        req.writeCode=200
+                    }
+                    if(req.query.downloadName){
+                        req.headerWrite['content-disposition']='attachment; filename="'+req.query.downloadName+'"';
+                    }
+                    res.writeHead(req.writeCode,req.headerWrite);
+                    file.on('close',function(){
+                        res.end();
+                    })
+                    file.pipe(res);
+                }else{
+                    res.end(user.lang['File Not Found'])
+                }
+            }else{
+                res.end(user.lang['File Not Found'])
             }
-            if(req.query.downloadName){
-                req.headerWrite['content-disposition']='attachment; filename="'+req.query.downloadName+'"';
-            }
-            res.writeHead(req.writeCode,req.headerWrite);
-            file.on('close',function(){
-                res.end();
-            })
-            file.pipe(res);
-        }else{
-            res.end(user.lang['File Not Found'])
-        }
+        })
     },res,req);
 });
 //motion trigger

@@ -29,3 +29,7 @@
 <script src="/libs/js/jquery-ui.min.js"></script>
 <script src="/libs/js/jquery.serialize.js"></script>
 </head>
+<% cleanLang=function(string){
+    if(!string){string=''}
+    return string.replace(/'/g,"\\'")
+} %>

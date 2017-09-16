@@ -48,6 +48,14 @@
                             </select></div>
                     </label>
                 </div>
+                <div class="form-group">
+                    <label><div><span><%-lang['Get Logs to Client']%></span></div>
+                            <div><select class="form-control" detail="get_server_log">
+                                <option value="1" selected><%-lang.Yes%></option>  
+                                <option value="0"><%-lang.No%></option>
+                            </select></div>
+                    </label>
+                </div>
               <% if(!details.sub){ %>
                 <% if(details.edit_size!=='0'){ %>
                 <div class="form-group">

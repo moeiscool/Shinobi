@@ -7,10 +7,17 @@ yum install epel-release -y
 #Enable Nux Dextop repo for FFMPEG
 rpm --import http://li.nux.ro/download/nux/RPM-GPG-KEY-nux.ro
 rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-1.el7.nux.noarch.rpm
-yum install ffmpeg ffmpeg-devel nodejs npm -y
-sudo npm cache clean -f
-sudo npm install -g n
-sudo n stable
+yum install ffmpeg ffmpeg-devel -y
+echo "Shinobi - Do you want to Install Node.js?"
+echo "(y)es or (N)o"
+read nodejsinstall
+if [ "$nodejsinstall" = "y" ]; then
+    wget https://rpm.nodesource.com/setup_8.x
+    chmod +x setup_8.x
+    ./setup_8.x
+    sudo yum install nodejs -y
+fi
+echo "============="
 echo "Shinobi - Do you want to Install MariaDB?"
 echo "(y)es or (N)o"
 read mysqlagree
@@ -22,8 +29,6 @@ if [ "$mysqlagree" = "y" ]; then
     #Run mysql install
     mysql_secure_installation
 fi
-echo "Shinobi - Linking node to nodejs"
-ln -s /usr/bin/nodejs /usr/bin/node
 chmod -R 755 .
 echo "============="
 echo "Shinobi - Database Installation"
