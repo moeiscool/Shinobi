@@ -5,7 +5,8 @@
   "main": "camera.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "chmod +x INSTALL/start.sh && INSTALL/start.sh"
+    "start": "chmod +x INSTALL/start.sh && INSTALL/start.sh",
+    "stop": "chmod +x INSTALL/stop.sh && INSTALL/stop.sh"
   },
   "repository": {
     "type": "git",
