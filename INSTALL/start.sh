@@ -3,7 +3,7 @@ if [ -e "INSTALL/installed.txt" ]; then
     echo "Start as Daemon with PM2?"
     echo "(y)es or (N)o"
     read daemon
-    case $oschoicee in
+    case $daemon in
     "y")
     echo "Starting Shinobi"
     pm2 start camera.js&&pm2 start cron.js&&pm2 logs

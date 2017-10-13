@@ -66,7 +66,7 @@ if(config.mail){
     var nodemailer = require('nodemailer').createTransport(config.mail);
 }
 //config defaults
-if(config.cpuUsageMarker===undefined){config.cpuUsageMarker='%Cpu'}
+if(config.cpuUsageMarker===undefined){config.cpuUsageMarker='\\%Cpu'}
 if(config.autoDropCache===undefined){config.autoDropCache=true}
 if(config.doSnapshot===undefined){config.doSnapshot=true}
 if(config.restart===undefined){config.restart={}}
@@ -3780,7 +3780,10 @@ s.cpuUsage=function(e){
             k.cmd="ps -A -o %cpu | awk '{s+=$1} END {print s}'";
         break;
         case'linux':
-            k.cmd='LANG=C top -b -n 2 | grep "^'+config.cpuUsageMarker+'" | awk \'{print $2}\' | tail -n1';
+            // this parses output of modern linux's "top" command
+            // it samples two seconds worth of cpu, slices out the cpu percentage
+            // and then computes the mean over all the cpus for the two seconds
+            k.cmd='LANG=C top -b -n 2 | grep "^'+config.cpuUsageMarker+'" | awk \'{ print $4 }\' | sed "s/\\[.*//g" | awk \'START { sum=0; count=0; } { sum+=$1; count+=1; } END { print sum/count }\'';
         break;
     }
     if(k.cmd){
