@@ -1,1 +1,1 @@
-`ubuntu.sh` wass originally `INSTALL.sh`.
+`ubuntu.sh` was originally `INSTALL.sh`.
