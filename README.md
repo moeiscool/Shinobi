@@ -1,6 +1,8 @@
 # Shinobi CE
 ### GPLv3
 
+Shinobi Pro is free for personal use. Get Shinobi Pro for the latest code.
+
 Shinobi is the Open Source CCTV Solution written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. Shinobi can record IP Cameras and Local Cameras.
 
 <a href="http://shinobi.video/gallery"><img src="https://github.com/ShinobiCCTV/Shinobi/blob/master/web/libs/img/demo.jpg?raw=true"></a>
