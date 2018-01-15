@@ -89,19 +89,20 @@ http://shinobi.video/why
 
 > FOR DOCKER USERS : Docker is not officially supported and is not recommended. The kitematic method is provided for those who wish to quickly test Shinobi. The Docker files included in the master and dev branches are maintained by the community. If you would like support with Docker please find a community member who maintains the Docker files or please refer to Docker's forum.
 
-#### Fast Install
+#### Fast Install (The Ninja Way)
 
-Currently Fast Install is supported on the following :
+1. Become `root` to use the installer and run Shinobi. Use one of the following to do so.
 
-- Ubuntu / Debian
-- CentOS / RHEL / Fedora
+    - Ubuntu 17.04, 17.10
+        - `sudo su`
+    - CentOS 7
+        - `su`
+    - MacOS 10.7(+)
+        - `su`
+2. Download and run the installer.
 
 ```
-mkdir Shinobi
-cd Shinobi
-sudo npm install shinobi
-mv node_modules/shinobi/* .
-sudo npm start
+bash <(curl -s https://raw.githubusercontent.com/ShinobiCCTV/Shinobi-Installer/master/shinobi-install.sh)
 ```
 
 #### Elaborate Installs
