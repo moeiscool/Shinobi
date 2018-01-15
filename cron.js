@@ -264,7 +264,7 @@ s.checkForOrphanedFiles=function(v,callback){
     if(config.cron.deleteOrphans===true){
         var finish=function(count){
             if(count>0){
-                s.cx({f:'deleteOrphanedFiles',msg:ecount+' SQL rows with no database row deleted',ke:v.ke,time:moment()})
+                s.cx({f:'deleteOrphanedFiles',msg:count+' SQL rows with no database row deleted',ke:v.ke,time:moment()})
             }
             callback()
         }
