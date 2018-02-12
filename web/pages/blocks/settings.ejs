@@ -48,14 +48,6 @@
                             </select></div>
                     </label>
                 </div>
-                <div class="form-group">
-                    <label><div><span><%-lang['Get Logs to Client']%></span></div>
-                            <div><select class="form-control" detail="get_server_log">
-                                <option value="1" selected><%-lang.Yes%></option>  
-                                <option value="0"><%-lang.No%></option>
-                            </select></div>
-                    </label>
-                </div>
               <% if(!details.sub){ %>
                 <% if(details.edit_size!=='0'){ %>
                 <div class="form-group">
@@ -218,6 +210,28 @@
                             </select></div>
                     </label>
                 </div>
+                <div class="form-group">
+                    <label><div><span><%-lang['Get Logs to Client']%></span></div>
+                            <div><select class="form-control" detail="get_server_log">
+                                <option value="1" selected><%-lang.Yes%></option>  
+                                <option value="0"><%-lang.No%></option>
+                            </select></div>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label><div><span><%-lang['Themes']%></span></div>
+                        <div><select class="form-control" detail="theme">
+                            <option value="" selected>Default</option>
+                            <% fs.readdirSync(__dirname+'/web/libs/themes').forEach(function(v){ %>
+                            <option value="<%-v%>"><%-v%></option>
+                            <% }) %>
+                            </select></div>
+                    </label>
+                </div>
+            </div>
+            <div class="form-group-group green linkShinobi">
+                <h4><%-lang['Link Shinobi']%><div class="pull-right"><a class="btn btn-success btn-xs add"><i class="fa fa-plus"></i></a></div></h4>
+                <div id="linkShinobi"></div>
             </div>
         <input type="hidden" name="details">
       </div>

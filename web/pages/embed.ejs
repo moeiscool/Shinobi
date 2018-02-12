@@ -13,6 +13,7 @@ if(data.addon.indexOf('relative')>-1){
 %>
 <script src="<%=data.url%>/libs/js/socket.io.js"></script>
 <script src="<%=data.url%>/libs/js/hls.min.js"></script>
+<script src="<%=data.url%>/libs/js/flv.min.js"></script>
 <% if(data.addon){
     var ar={}
     decodeURI(data.addon).split('|').forEach(function(v){
@@ -79,6 +80,9 @@ $(document).ready(function(){
         case'jpeg':
             %><img class="stream-element"><%
         break;
+        case'flv':
+            %><video class="stream-element" autoplay></video><%
+        break;
         case'hls':
             %><video class="stream-element" autoplay></video><%
         break;
@@ -109,6 +113,26 @@ $(document).ready(function(){
             };
             $.shinobi.init=function(d){
                   switch($.shinobi.mon[d.id].details.stream_type){
+                   case'flv':
+                        if (flvjs.isSupported()) {
+                            if($.shinobi.mon[d.id].flv){
+                                $.shinobi.mon[d.id].flv.destroy()
+                            }
+                            $.shinobi.mon[d.id].flv = flvjs.createPlayer({
+                                type: 'flv',
+                                isLive: true,
+                                url: '<%=data.url%>/<%=data.auth%>/flv/'+d.ke+'/'+d.id+'/s.flv'
+                            });
+                            $.shinobi.mon[d.id].flv.attachMediaElement($('#SHINOBI_'+d.ke+'_'+d.id+' .stream-element')[0]);
+                            $.shinobi.mon[d.id].flv.on('error',function(err){
+                                console.log(err)
+                            });
+                            $.shinobi.mon[d.id].flv.load();
+                            $.shinobi.mon[d.id].flv.play();
+                        }else{
+                            alert({title:'Stream cannot be started',text:'FLV.js is not supported on this browser. Try another stream type.',type:'error'})
+                        }
+                    break;
                     case'jpeg':
                         d.mon=$.shinobi.mon[d.id]
                         k=d.mon.details;
@@ -124,14 +148,17 @@ $(document).ready(function(){
                     case'hls':
                     var video = $('#SHINOBI_'+d.ke+'_'+d.id+' .stream-element')[0];
                     d.url='<%=data.url%>/<%=data.auth%>/hls/'+d.ke+'/'+d.id+'/s.m3u8';
+                    if($.shinobi.mon[d.id].hls){
+                        $.shinobi.mon[d.id].hls.destroy()
+                    }
                     if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)||(navigator.userAgent.match(/(Safari)/)&&!navigator.userAgent.match('Chrome'))) {
                         video.src=d.url;
                         video.play();
                     }else{
-                        var hls = new Hls();
-                        hls.loadSource(d.url);
-                        hls.attachMedia(video);
-                        hls.on(Hls.Events.MANIFEST_PARSED,function() {
+                        $.shinobi.mon[d.id].hls = new Hls();
+                        $.shinobi.mon[d.id].hls.loadSource(d.url);
+                        $.shinobi.mon[d.id].hls.attachMedia(video);
+                        $.shinobi.mon[d.id].hls.on(Hls.Events.MANIFEST_PARSED,function() {
                           video.play();
                         });
                     }

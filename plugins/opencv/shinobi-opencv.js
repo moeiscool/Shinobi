@@ -89,19 +89,36 @@ s.detectObject=function(buffer,d){
                   s.systemLog(err);
               }else{
                   try{
-                      scan=JSON.parse(scan)
+                      try{
+                          scan=JSON.parse(scan)
+                      }catch(err){
+                          if(!scan||!scan.results){
+                              return s.systemLog(scan,err);
+                          }
+                      }
                       if(scan.results.length>0){
                           scan.plates=[]
+                          scan.mats=[]
                           scan.results.forEach(function(v){
                               v.candidates.forEach(function(g,n){
-                                  delete(v[n].matches_template)
+                                  if(v.candidates[n].matches_template)
+                                    delete(v.candidates[n].matches_template)
                               })
                               scan.plates.push({coordinates:v.coordinates,candidates:v.candidates,confidence:v.confidence,plate:v.plate})
+                              var width = Math.sqrt( Math.pow(v.coordinates[1].x - v.coordinates[0].x, 2) + Math.pow(v.coordinates[1].y - v.coordinates[0].y, 2));
+                              var height = Math.sqrt( Math.pow(v.coordinates[2].x - v.coordinates[1].x, 2) + Math.pow(v.coordinates[2].y - v.coordinates[1].y, 2))
+                              scan.mats.push({
+                                x:v.coordinates[0].x,
+                                y:v.coordinates[0].y,
+                                width:width,
+                                height:height,
+                                tag:v.plate
+                              })
                           })
-                          s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:v,reason:'licensePlate',plates:scan.plates,confidence:d.average,imgHeight:d.height,imgWidth:d.width,frame:d.base64}})
+                          tx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:'licensePlate',reason:'object',matrices:scan.mats,confidence:d.average,imgHeight:d.mon.detector_scale_y,imgWidth:d.mon.detector_scale_x,frame:d.base64}})
                       }
                   }catch(err){
-                      s.systemLog(err);
+                      s.systemLog(scan,err);
                   }
               }
               exec('rm -rf '+d.dir+d.tmpFile,{encoding:'utf8'})
@@ -121,6 +138,12 @@ s.detectObject=function(buffer,d){
           im.detectObject(s.dir.cascades+v+'.xml',{}, function(err,mats){
               if(err){console.log(err);return false;}
               if(mats&&mats.length>0){
+                  mats.forEach(function(v,n){
+                      v.centerX=v.width/2
+                      v.centerY=v.height/2
+                      v.centerXnoParent=v.x+(v.width/2)
+                      v.centerYnoParent=v.y+(v.height/2)
+                  })
                   s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:v,reason:'object',matrices:mats,confidence:d.average,imgHeight:height,imgWidth:width,frame:d.base64}})
               }
           })
@@ -187,13 +210,11 @@ s.blenderRegion=function(d,cord){
     }
     d.average = (d.average / (blendedData.data.length * 0.25))*10;
     if (d.average > parseFloat(cord.sensitivity)){
-          if(d.mon.detector_cascades&&d.mon.detector_cascades instanceof Object){
-              var buffer=s.group[d.ke][d.id].canvas[cord.name].toBuffer();
-              if(d.mon.detector_use_detect_object==="1"){
-                  s.detectObject(buffer,d)
-              }else{
-                  s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:cord.name,reason:'motion',confidence:d.average,frame:d.base64}})
-              }
+          var buffer=s.group[d.ke][d.id].canvas[cord.name].toBuffer();
+          if(d.mon.detector_use_detect_object==="1"){
+              s.detectObject(buffer,d)
+          }else{
+              s.cx({f:'trigger',id:d.id,ke:d.ke,details:{plug:config.plug,name:cord.name,reason:'motion',confidence:d.average,frame:d.base64}})
           }
     }
     s.group[d.ke][d.id].canvasContext[cord.name].clearRect(0, 0, d.width, d.height);

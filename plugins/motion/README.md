@@ -22,28 +22,34 @@ yum install liberation-sans-fonts.noarch
 sudo npm install canvas
 ```
 
+Go to the Shinobi directory. **Below is an example.**
+
+```
+cd /home/Shinobi
+```
+
 Copy the config file.
 
 ```
-cp conf.sample.json conf.json
+cp plugins/motion/conf.sample.json plugins/motion/conf.json
 ```
 
 Edit it the new file. Host should be `localhost` and port should match the `listening port for camera.js`.
 
 ```
-nano conf.json
+nano plugins/motion/conf.json
 ```
 
 Start the plugin.
 
 ```
-node shinobi-motion.js
+node plugins/motion/shinobi-motion.js
 ```
 
 Or to daemonize with PM2.
 
 ```
-pm2 start shinobi-motion.js
+pm2 start plugins/motion/shinobi-motion.js
 ```
 
 Doing this will reveal options in the monitor configuration. Shinobi does not need to be restarted when a plugin is initiated or stopped.

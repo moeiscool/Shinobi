@@ -10,6 +10,9 @@
 <link rel="stylesheet" href="/libs/css/fullcalendar.min.css">
 <link rel="stylesheet" href="/libs/css/bootstrap-table.min.css">
 <link rel="stylesheet" href="/libs/css/main.dash2.css">
+<style id="theme">
+<% if(details.theme&&details.theme!==''){ %><%- include(__dirname+'/web/libs/themes/'+details.theme+'/style.css'); %><% } %>
+</style>
 <style id="custom_css">
 <%= details.css %>
 </style>
@@ -133,7 +136,6 @@
                 <li class="mdl-menu__item" system="jpegToggle"><div><i class="fa fa-file-image-o"></i><div><%- lang['JPEG Mode'] %></div></div></li>
                 <li class="mdl-menu__item" system="switch" switch="monitorOrder" type="text"><div><i class="fa fa-sort"></i><div><%- lang['Order Streams'] %></div></div></li>
                 <li class="mdl-menu__item" system="switch" switch="notifyHide" type="text"><div><i class="fa fa-exclamation-circle"></i><div><%- lang['Hide Notes'] %></div></div></li>
-                <li class="mdl-menu__item" data-toggle="modal" data-target="#help_window"><div><i class="fa fa-question-circle"></i><div><%- lang.Help %></div></div></li>
                 <li class="mdl-menu__item logout"><div><i class="fa fa-sign-out"></i><div><%- lang.Logout %></div></div></li>
             </ul>
             <div class="mdl-layout-spacer"></div>
@@ -182,9 +184,11 @@
 <script src="/libs/js/socket.io.js"></script>
 <script src="/libs/js/fullcalendar.min.js"></script>
 <script src="/libs/js/hls.min.js"></script>
+<script type="text/javascript" src="/libs/js/flv.shinobi.js">;</script>
 <script src="/libs/js/menu.js"></script>
 <script src="/libs/js/clock.js"></script>
 <script src="/libs/js/Chart.js"></script>
+<script src="/libs/js/clusterPoints.js"></script>
 <script src="/libs/js/daterangepicker.js"></script>
 <script src="/libs/js/jquery.canvasAreaDraw.js"></script>
 <script><% include ../libs/js/main.dash2.js %></script>

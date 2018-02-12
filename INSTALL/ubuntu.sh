@@ -22,7 +22,11 @@ if [ "$ffmpeginstall" = "y" ]; then
     echo "Shinobi - Get FFMPEG 3.x from ppa:jonathonf/ffmpeg-3"
     sudo apt-get install software-properties-common python-software-properties -y
     sudo add-apt-repository ppa:jonathonf/ffmpeg-3 -y
-    sudo apt update -y && sudo apt install ffmpeg libav-tools x264 x265 -y
+    sudo apt update -y
+    sudo apt install ffmpeg -y
+    sudo apt install libav-tools -y
+    sudo apt install x264 -y
+    sudo apt install x265 -y
 fi
 echo "============="
 echo "Shinobi - Do you want to Install MariaDB? Choose No if you have MySQL or MariaDB already."

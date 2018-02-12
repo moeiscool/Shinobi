@@ -14,8 +14,7 @@
             <div id="video_preview" class="col-md-4">
                 <h3></h3>
                 <div style="position:relative">
-                    <div class="holder"></div>
-                    <div class="stream-objects"></div>
+                    <div class="stream-objects holder"></div>
                 </div>
                 <div style="margin-top:10px">
                     <div class="form-group">
@@ -32,13 +31,13 @@
                     <div class="btn-group btn-group-sm">
                         <a preview="stepBackBack" class="active btn btn-primary"><i class="fa fa-backward"></i></a>
                         <a preview="stepBack" class="btn btn-primary"><i class="fa fa-arrow-circle-o-left"></i></a>
-                        <a preview="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a>
                         <a preview="play" class="btn btn-default"><i class="fa fa-play"></i></a>
                         <a preview="mute" class="btn btn-default"><i class="fa fa-volume-up"></i></a>
                         <a preview="stepFront" class="btn btn-primary"><i class="fa fa-arrow-circle-o-right"></i></a>
                         <a preview="stepFrontFront" class="active btn btn-primary"><i class="fa fa-forward"></i></a>
+                        <a preview="fullscreen" class="btn btn-default"><i class="fa fa-arrows-alt"></i></a>
                     </div>
-                    <div class="btn-group">
+                    <div class="btn-group btn-group-sm">
                         <a onclick="$.pwrvid.f.submit()" class="active btn btn-success"><i class="fa fa-refresh"></i></a>
                         <a download="" href="" class="btn btn-sm btn-default"><i class="fa fa-download"></i></a>
                         <% if(config.DropboxAppKey){ %><a video="download" host="dropbox" download="" href="" class="btn btn-sm btn-default"><i class="fa fa-dropbox"></i></a><% } %>
@@ -65,7 +64,7 @@
                   </div>
                   <div class="form-group">
                     <label><div><span><%-lang['Video Limit']%></span></div>
-                        <div><input type="text" id="pvideo_video_limit" class="form-control dark" placeholder="0 for No Limit" localStorage="powerVideoLimit" /></div>
+                        <div><input type="text" id="pvideo_video_limit" class="form-control dark" value="200" placeholder="0 for No Limit" localStorage="powerVideoLimit" /></div>
                     </label>
                   </div>
                   <div class="form-group">
@@ -75,6 +74,7 @@
           </form>
           <div class="row" style="position:relative">
               <div class="nodata super-center"><%-lang['No Data']%> <div class="divider"></div><i class="fa fa-4x fa-area-chart"></i></div>
+              <div class="loading super-center" style="display:none">Loading <div class="divider"></div><i class="fa fa-4x fa-spinner fa-pulse"></i></div>
               <div id="vis_pwrvideo" class="col-md-12"></div>
           </div>
       </div>

@@ -46,7 +46,7 @@
                {
                   "name": "detail=fatal_max",
                   "field": "Retry Connection",
-                  "description": "The number of times to retry for network connection between the server and camera before setting the monitor to Disabled. No decimals.",
+                  "description": "The number of times to retry for network connection between the server and camera before setting the monitor to Disabled. No decimals. Set to 0 to retry forever.",
                   "default": "10",
                   "example": "100000",
                   "possible": ""
@@ -55,6 +55,14 @@
                   "name": "detail=notes",
                   "field": "Notes",
                   "description": "Comments you want to leave for this camera.",
+                  "default": "",
+                  "example": "",
+                  "possible": ""
+               },
+               {
+                  "name": "detail=dir",
+                  "field": "Storage Location",
+                  "description": "Location of where recorded files will be saved. You can configure more locations with the <code>addStorage</code> variable.",
                   "default": "",
                   "example": "",
                   "possible": ""
@@ -93,6 +101,30 @@
                         "info": "Continuous Recording. Segments are made every 15 minutes by default."
                      }
                   ]
+               },
+               {
+                  "name": "detail=auto_host_enable",
+                  "field": "Automatic",
+                  "description": "Feed the individual pieces required to build a stream URL or provide the full URL and allow Shinobi to parse it for you.",
+                  "default": "",
+                  "example": "",
+                  "possible": ""
+               },
+               {
+                  "name": "detail=auto_host",
+                  "field": "Full URL Path",
+                  "description": "The full Stream URL.",
+                  "default": "",
+                  "example": "",
+                  "possible": ""
+               },
+               {
+                  "name": "detail=accelerator",
+                  "field": "Accelerator",
+                  "description": "Hardware Acceleration (HWAccel) for decoding streams.",
+                  "default": "",
+                  "example": "",
+                  "possible": ""
                },
                {
                   "name": "protocol",
@@ -162,7 +194,7 @@
                {
                   "name": "path",
                   "field": "Path",
-                  "description": "The password for your camera",
+                  "description": "The path to your camera",
                   "default": "",
                   "example": "/videostream.cgi",
                   "possible": ""
@@ -186,7 +218,7 @@
                {
                   "name": "detail=rtsp_transport",
                   "field": "RTSP Transport",
-                  "description": "The password for your camera",
+                  "description": "The transport protocol your camera will use. TCP is usually the best choice.",
                   "default": "",
                   "example": "",
                   "possible": [
@@ -232,6 +264,14 @@
                      {
                         "name": "Base64",
                         "info": "Sending Base64 encoded frames over WebSocket. This avoids caching but there is no audio."
+                     },
+                     {
+                        "name": "FLV",
+                        "info": "Sending FLV encoded frames over WebSocket."
+                     },
+                     {
+                        "name": "kVid",
+                        "info": "Using Kevin Godell's custom JavaScript MP4 segmenting engine."
                      }
                   ]
                },
@@ -239,6 +279,14 @@
                   "name": "detail=signal_check",
                   "field": "Check Signal Interval",
                   "description": "How often your client will check each stream to see if it is alive. This is calculated in minutes.",
+                  "default": "10",
+                  "example": "",
+                  "possible": ""
+               },
+               {
+                  "name": "detail=stream_flv_type",
+                  "field": "FLV Stream Type",
+                  "description": "The method you will view your FLV stream. Both methods are always active for each stream regardless of your viewing choice for the Shinobi Dashboard.",
                   "default": "10",
                   "example": "",
                   "possible": ""
@@ -424,6 +472,22 @@
                   "name": "detail=stream_scale_y",
                   "field": "Video Filter",
                   "description": "Place FFMPEG video filters in this box to affect the streaming portion. No spaces.",
+                  "default": "",
+                  "example": "",
+                  "possible": ""
+               },
+               {
+                  "name": "detail=tv_channel",
+                  "field": "TV Channel",
+                  "description": "This monitor will have TV Channel features enabled. You will be able to view it in your TV Channel list.",
+                  "default": "",
+                  "example": "",
+                  "possible": ""
+               },
+               {
+                  "name": "detail=tv_channel_id",
+                  "field": "TV Channel ID",
+                  "description": "A Custom ID for the Channel.",
                   "default": "",
                   "example": "",
                   "possible": ""
@@ -675,6 +739,14 @@
                   "possible": ""
                },
                {
+                  "name": "detail=detector_pam",
+                  "field": "Use Built-In",
+                  "description": "Use Kevin Godell's Motion Detector. This is built into Shinobi and requires no other configuration to activate.",
+                  "default": "No",
+                  "example": "",
+                  "possible": ""
+               },
+               {
                   "name": "detail=detector_trigger",
                   "field": "Trigger Record",
                   "description": "This will order the camera to record if it is set to \"Watch-Only\" when a motion even is detected.",
@@ -710,7 +782,7 @@
                {
                   "name": "detail=detector_save",
                   "field": "Save Events to SQL",
-                  "description": "Save Motion Events in SQL (not the image). This will overlay object on top of video recorded during the time motion events occured. (Currently not implemented yet)",
+                  "description": "Save Motion Events in SQL. This will overlay object on top of video recorded during the time motion events occured.",
                   "default": "No",
                   "example": "",
                   "possible": ""
