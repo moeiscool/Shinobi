@@ -3,12 +3,11 @@ process.on('uncaughtException', function (err) {
 });
 var fs = require('fs');
 var path = require('path');
-var mysql = require('mysql');
+var knex = require('knex');
 var moment = require('moment');
 var exec = require('child_process').exec;
 var spawn = require('child_process').spawn;
 var config=require('./conf.json');
-var sql=mysql.createConnection(config.db);
 
 //set option defaults
 s={};
@@ -22,11 +21,75 @@ if(config.cron.deleteLogs===undefined)config.cron.deleteLogs=true;
 if(config.cron.deleteEvents===undefined)config.cron.deleteEvents=true;
 if(config.cron.deleteFileBins===undefined)config.cron.deleteFileBins=true;
 if(config.cron.interval===undefined)config.cron.interval=1;
+if(config.databaseType===undefined){config.databaseType='mysql'}
+if(config.databaseLogs===undefined){config.databaseLogs=false}
 
 if(!config.ip||config.ip===''||config.ip.indexOf('0.0.0.0')>-1)config.ip='localhost';
 if(!config.videosDir)config.videosDir=__dirname+'/videos/';
 if(!config.binDir){config.binDir=__dirname+'/fileBin/'}
 if(!config.addStorage){config.addStorage=[]}
+
+// Database Connection
+var databaseOptions = {
+  client: config.databaseType,
+  connection: config.db,
+}
+if(databaseOptions.client.indexOf('sqlite')>-1){
+    databaseOptions.client = 'sqlite3';
+    databaseOptions.useNullAsDefault = true;
+}
+if(databaseOptions.client === 'sqlite3' && databaseOptions.connection.filename === undefined){
+    databaseOptions.connection.filename = __dirname+"/shinobi.sqlite"
+}
+s.databaseEngine = knex(databaseOptions)
+s.sqlQuery = function(query,values,onMoveOn,hideLog){
+    if(!values){values=[]}
+    var valuesNotFunction = true;
+    if(typeof values === 'function'){
+        var onMoveOn = values;
+        var values = [];
+        valuesNotFunction = false;
+    }
+    if(!onMoveOn){onMoveOn=function(){}}
+    if(values&&valuesNotFunction){
+        var splitQuery = query.split('?')
+        var newQuery = ''
+        splitQuery.forEach(function(v,n){
+            newQuery += v
+            if(values[n]){
+                if(isNaN(values[n])){
+                    newQuery += "'"+values[n]+"'"
+                }else{
+                    newQuery += values[n]
+                }
+            }
+        })
+    }else{
+        newQuery = query
+    }
+    return s.databaseEngine.raw(newQuery)
+        .asCallback(function(err,r){
+            if(err&&config.databaseLogs){
+                s.systemLog('s.sqlQuery QUERY',query)
+                s.systemLog('s.sqlQuery ERROR',err)
+            }
+            if(onMoveOn)
+                if(typeof onMoveOn === 'function'){
+                    switch(databaseOptions.client){
+                        case'sqlite3':
+                            if(!r)r=[]
+                        break;
+                        default:
+                            if(r)r=r[0]
+                        break;
+                    }
+                    onMoveOn(err,r)
+                }else{
+                    console.log(onMoveOn)
+                }
+        })
+}
+
 //containers
 s.overlapLock={};
 s.alreadyDeletedRowsWithNoVideosOnStart={};
@@ -93,7 +156,7 @@ s.checkFilterRules=function(v,callback){
             "where":[{
                 "p1":"end",
                 "p2":"<",
-                "p3":"NOW() - INTERVAL "+(v.maxVideoDays[v.mid]*24)+" HOUR",
+                "p3":"NOW() - INTERVAL "+(v.d.days*24)+" HOUR",
                 "p3_type":"function",
             }]
         };
@@ -124,7 +187,7 @@ s.checkFilterRules=function(v,callback){
                 if(b.limit&&b.limit!==''){
                     b.sql+=' LIMIT '+b.limit
                 }
-                sql.query('SELECT * FROM Videos '+b.sql,b.ar,function(err,r){
+                s.sqlQuery('SELECT * FROM Videos '+b.sql,b.ar,function(err,r){
                      if(r&&r[0]){
                         b.cx={
                             f:'filters',
@@ -176,7 +239,7 @@ s.deleteRowsWithNoVideo=function(v,callback){
     ){
         s.alreadyDeletedRowsWithNoVideosOnStart[v.ke]=true;
         es={};
-        sql.query('SELECT * FROM Videos WHERE ke = ? AND status != 0 AND details NOT LIKE \'%"archived":"1"%\' AND time < (NOW() - INTERVAL 10 MINUTE)',[v.ke],function(err,evs){
+        s.sqlQuery('SELECT * FROM Videos WHERE ke=? AND status!=0 AND details NOT LIKE \'%"archived":"1"%\' AND time < (NOW() - INTERVAL 10 MINUTE)',[v.ke],function(err,evs){
             if(evs&&evs[0]){
                 es.del=[];es.ar=[v.ke];
                 evs.forEach(function(ev){
@@ -204,7 +267,7 @@ s.deleteRowsWithNoVideo=function(v,callback){
 s.deleteOldLogs=function(v,callback){
     if(!v.d.log_days||v.d.log_days==''){v.d.log_days=10}else{v.d.log_days=parseFloat(v.d.log_days)};
     if(config.cron.deleteLogs===true&&v.d.log_days!==0){
-        sql.query("DELETE FROM Logs WHERE ke=? AND `time` < DATE_SUB(NOW(), INTERVAL ? DAY)",[v.ke,v.d.log_days],function(err,rrr){
+        s.sqlQuery("DELETE FROM Logs WHERE ke=? AND `time` < DATE_SUB(NOW(), INTERVAL ? DAY)",[v.ke,v.d.log_days],function(err,rrr){
             callback()
             if(err)return console.error(err);
             if(rrr.affectedRows.length>0){
@@ -219,7 +282,7 @@ s.deleteOldLogs=function(v,callback){
 s.deleteOldEvents=function(v,callback){
     if(!v.d.event_days||v.d.event_days==''){v.d.event_days=10}else{v.d.event_days=parseFloat(v.d.event_days)};
     if(config.cron.deleteEvents===true&&v.d.event_days!==0){
-        sql.query("DELETE FROM Events WHERE ke=? AND `time` < DATE_SUB(NOW(), INTERVAL ? DAY)",[v.ke,v.d.event_days],function(err,rrr){
+        s.sqlQuery("DELETE FROM Events WHERE ke=? AND `time` < DATE_SUB(NOW(), INTERVAL ? DAY)",[v.ke,v.d.event_days],function(err,rrr){
             callback()
             if(err)return console.error(err);
             if(rrr.affectedRows.length>0){
@@ -235,7 +298,7 @@ s.deleteOldFileBins=function(v,callback){
     if(!v.d.fileBin_days||v.d.fileBin_days==''){v.d.fileBin_days=10}else{v.d.fileBin_days=parseFloat(v.d.fileBin_days)};
     if(config.cron.deleteFileBins===true&&v.d.fileBin_days!==0){
         var fileBinQuery = ' FROM Files WHERE ke=? AND `date` < DATE_SUB(NOW(), INTERVAL ? DAY)';
-        sql.query("SELECT *"+fileBinQuery,[v.ke,v.d.fileBin_days],function(err,files){
+        s.sqlQuery("SELECT *"+fileBinQuery,[v.ke,v.d.fileBin_days],function(err,files){
             if(files&&files[0]){
                 //delete the files
                 files.forEach(function(file){
@@ -244,7 +307,7 @@ s.deleteOldFileBins=function(v,callback){
                     })
                 })
                 //delete the database rows
-                sql.query("DELETE"+fileBinQuery,[v.ke,v.d.fileBin_days],function(err,rrr){
+                s.sqlQuery("DELETE"+fileBinQuery,[v.ke,v.d.fileBin_days],function(err,rrr){
                     callback()
                     if(err)return console.error(err);
                     if(rrr.affectedRows.length>0){
@@ -270,7 +333,7 @@ s.checkForOrphanedFiles=function(v,callback){
         }
         e={};
         var numberOfItems = 0;
-        sql.query('SELECT * FROM Monitors WHERE ke=?',[v.ke],function(arr,b) {
+        s.sqlQuery('SELECT * FROM Monitors WHERE ke=?',[v.ke],function(arr,b) {
             if(b&&b[0]){
                 b.forEach(function(mon,m){
                     fs.readdir(s.getVideoDirectory(mon), function(err, items) {
@@ -282,7 +345,7 @@ s.checkForOrphanedFiles=function(v,callback){
                                 e.query.push('time=?')
                                 e.filesFound.push(s.nameToTime(v))
                             })
-                            sql.query('SELECT * FROM Videos WHERE ke=? AND mid=? AND ('+e.query.join(' OR ')+')',e.filesFound,function(arr,r) {
+                            s.sqlQuery('SELECT * FROM Videos WHERE ke=? AND mid=? AND ('+e.query.join(' OR ')+')',e.filesFound,function(arr,r) {
                                 if(!r){r=[]};
                                 e.foundSQLrows=[];
                                 r.forEach(function(v,n){
@@ -333,16 +396,34 @@ s.processUser = function(number,rows){
         //size
         if(!v.d.size||v.d.size==''){v.d.size=10000}else{v.d.size=parseFloat(v.d.size)};
         //days to keep videos
-        v.maxVideoDays={}
         if(!v.d.days||v.d.days==''){v.d.days=5}else{v.d.days=parseFloat(v.d.days)};
-        sql.query('SELECT * FROM Monitors WHERE ke=?', [v.ke], function(err,rr) {
+        s.sqlQuery('SELECT * FROM Monitors WHERE ke=?', [v.ke], function(err,rr) {
             rr.forEach(function(b,m){
                 b.details=JSON.parse(b.details);
                 if(b.details.max_keep_days&&b.details.max_keep_days!==''){
-                    v.maxVideoDays[b.mid]=parseFloat(b.details.max_keep_days)
-                }else{
-                    v.maxVideoDays[b.mid]=v.d.days
-                };
+                    v.d.filters['deleteOldByCron'+b.mid]={
+                        "id":'deleteOldByCron'+b.mid,
+                        "name":'deleteOldByCron'+b.mid,
+                        "sort_by":"time",
+                        "sort_by_direction":"ASC",
+                        "limit":"",
+                        "enabled":"1",
+                        "archive":"0",
+                        "email":"0",
+                        "delete":"1",
+                        "execute":"",
+                        "where":[{
+                            "p1":"ke",
+                            "p2":"=",
+                            "p3":b.mid
+                        },{
+                            "p1":"end",
+                            "p2":"<",
+                            "p3":"NOW() - INTERVAL "+(parseFloat(b.details.max_keep_days)*24)+" HOUR",
+                            "p3_type":"function",
+                        }]
+                    };
+                }
             })
             s.deleteOldLogs(v,function(){
                 s.deleteOldFileBins(v,function(){
@@ -366,7 +447,7 @@ s.processUser = function(number,rows){
 s.cron=function(){
     x={};
     s.cx({f:'start',time:moment()})
-    sql.query('SELECT ke,uid,details,mail FROM Users WHERE details NOT LIKE \'%"sub"%\'', function(err,rows) {
+    s.sqlQuery('SELECT ke,uid,details,mail FROM Users WHERE details NOT LIKE \'%"sub"%\'', function(err,rows) {
         if(err){
             console.error(err)
         }

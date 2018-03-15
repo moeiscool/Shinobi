@@ -22,6 +22,7 @@
   },
   "pluginKeys":{
       "Motion":"change_this_to_something_very_random____make_sure_to_match__/plugins/motion/conf.json",
-      "OpenCV":"change_this_to_something_very_random____make_sure_to_match__/plugins/opencv/conf.json"
+      "OpenCV":"change_this_to_something_very_random____make_sure_to_match__/plugins/opencv/conf.json",
+      "OpenALPR":"SomeOpenALPRkeySoPeopleDontMessWithYourShinobi"
   }
 }

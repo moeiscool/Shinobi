@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="/libs/css/vbox.css">
 <link rel="stylesheet" href="/libs/css/daterangepicker.css">
 <link rel="stylesheet" href="/libs/css/circles.css">
+<!--<link rel="stylesheet" href="/libs/css/poseidon.css">-->
 <link rel="stylesheet" href="/libs/css/bootstrap.min.css">
 <link rel="stylesheet" href="/libs/css/font-awesome.min.css">
 <link rel="stylesheet" href="/libs/css/fullcalendar.min.css">
@@ -145,8 +146,11 @@
           </div>
         </header>
         <nav class="demo-navigation mdl-navigation side-menu" id="left_menu">
+            <div class="form-group col-md-12">
+                <input class="form-control dark" placeholder="Search Monitors" id="monitors_list_search">
+            </div>
             <div id="monitors_list" class="display-table"></div>
-          <div class="mdl-layout-spacer"></div>
+            <div class="mdl-layout-spacer"></div>
         </nav>
       </div>
       <main class="mdl-layout__content selected" id="main_canvas">
@@ -187,6 +191,7 @@
 <script type="text/javascript" src="/libs/js/flv.shinobi.js">;</script>
 <script src="/libs/js/menu.js"></script>
 <script src="/libs/js/clock.js"></script>
+<script src="/libs/js/poseidon.js"></script>
 <script src="/libs/js/Chart.js"></script>
 <script src="/libs/js/clusterPoints.js"></script>
 <script src="/libs/js/daterangepicker.js"></script>

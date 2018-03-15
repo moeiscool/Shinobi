@@ -27,6 +27,7 @@
         <div class="modal-footer">
             <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
             <div>
+<!--                <a class="btn btn-success edit_all"><%-lang['Edit Selected']%></a>-->
                 <a class="btn btn-danger delete"><%-lang['Delete']%></a>
                 <a class="btn btn-primary save_config"><%-lang['Export']%></a>
                 <a class="btn btn-default import_config"><%-lang['Import']%></a>
@@ -36,3 +37,112 @@
     </div>
   </div>
 </div>
+<!--Multi Monitor Manager-->
+<!--
+<div class="modal medium fade dark" mid ke id="multi_mon_edit" tabindex="-1" role="dialog" aria-labelledby="multi_mon_editLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title" id="multi_mon_editLabel"><i class="fa fa-clone"></i> &nbsp; <%- lang['Monitors'] %></h4>
+        </div>
+        <div class="modal-body">
+            <table class="table table-striped tableData">
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+            <div>
+                <a class="btn btn-success save"><%-lang['Save']%></a>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+<script>
+    $(document).ready(function(){
+        
+        //multiple monitor editor, multimonitoredit
+        $.multimonedit={
+            e:$('#multi_mon_edit'),
+            
+        }
+        
+        $.multimonedit.findFieldInDefintion = function(){
+            $define['Monitor Settings']
+        }
+        $.multimonedit.submit = function(){
+            
+        }
+        $.multimonedit.refreshMonitors = function(){
+//            $.get('/'+$user.auth_token+'/monitor/'+$user.ke,function(monitors){
+//                $.multimonedit.monitorsList = monitors;
+//                var selectedMonitors = $.multimonedit.selectedList;
+//                $.each(monitors,function(n,monitor){
+//                    if(selectedMonitors[monitor.ke+monitor.mid]){
+//                        monitor.details = JSON.parse(monitor.details)
+//                    }
+//                })
+//                console.log(monitors)
+//            })
+            var tmp = '';
+            var tmpHeader = '<tr>';
+            $.each($.multimonedit.selectedList,function(n,monitor){
+                var details = '';
+                var detailsHeader = '';
+                tmp += '<tr>';
+                monitor.details = JSON.parse(monitor.details)
+                var drawField = function(e){
+                    if(!e.attr){
+                        e.attr='name'
+                    }
+                    if(!e.value){
+                        e.value=''
+                    }
+                    return '<td><input class="form-control" '+e.attr+'='+e.name+' value="'+e.value+'" style="width:100px"></td>'
+                }
+                $.each(monitor,function(m,field){
+                    console.log(n)
+                    var drawHeader = function(mm){
+                        if(n === 0){
+                            return '<th>'+mm+'</th>'
+                        }
+                    }
+                    if(m === 'ke'){
+                        return
+                    }
+                    if(m === 'details'){
+                        $.each(field,function(k,detailField){
+                            detailsHeader += drawHeader(k)
+                            details += drawField({
+                                attr:'detail',
+                                name:k,
+                                value:detailField
+                            })
+                        })
+                    }else{
+                        tmpHeader += drawHeader(m)
+                        tmp += drawField({
+                            attr:'name',
+                            name:m,
+                            value:field
+                        })
+                    }
+                })
+                tmpHeader += detailsHeader;
+                tmp += details;
+                tmp += '</tr>';
+            })
+            tmpHeader += '</tr>';
+            $.multimonedit.e.find('tbody').html(tmp)
+            $.multimonedit.e.find('thead').html(tmpHeader)
+        }
+        $.multimonedit.e.on('shown.bs.modal', function() {
+            $.multimonedit.refreshMonitors()
+        })
+    })
+</script>-->

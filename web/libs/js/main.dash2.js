@@ -44,7 +44,7 @@ switch($user.details.lang){
             user=$user
         }
         switch(x){
-            case'cleanMons':
+            case'cleanMon':
                 var acceptedFields = [
                     'mid',
                     'ke',
@@ -63,18 +63,22 @@ switch($user.details.lang){
                     'width',
                     'height'
                 ]
+                var row = {};
+                $.each(d,function(m,b){
+                    if(acceptedFields.indexOf(m)>-1){
+                        row[m]=b;
+                    }
+                })
+                return row
+            break;
+            case'cleanMons':
                 if(d==='object'){
                     var arr={}
                 }else{
                     var arr=[]
                 }
                 $.each($.ccio.mon,function(n,v){
-                    var row = {};
-                    $.each(v,function(m,b){
-                        if(acceptedFields.indexOf(m)>-1){
-                            row[m]=b;
-                        }
-                    })
+                    var row = $.ccio.init('cleanMon',v)
                     if(d==='object'){
                         arr[n]=row
                     }else{
@@ -109,7 +113,7 @@ switch($user.details.lang){
             break;
             case'streamMotionDetectOn':
                 switch(JSON.parse(d.mon.details).stream_type){
-                    case'hls':case'flv':
+                    case'hls':case'flv':case'mp4':
                         //pass
                     break;
                     default:
@@ -260,6 +264,9 @@ switch($user.details.lang){
                     break;
                     case'flv':
                         streamURL=$.ccio.init('location',user)+user.auth_token+'/flv/'+d.ke+'/'+d.mid+'/s.flv'
+                    break;
+                    case'mp4':
+                        streamURL=$.ccio.init('location',user)+user.auth_token+'/mp4/'+d.ke+'/'+d.mid+'/s.mp4'
                     break;
                     case'b64':
                         streamURL='Websocket'
@@ -587,7 +594,7 @@ switch($user.details.lang){
                         case'b64':
                             d.p.resize()
                         break;
-                        case'hls':case'flv':
+                        case'hls':case'flv':case'mp4':
                             if(d.p.find('video')[0].paused){
                                 if(d.d.signal_check_log==1){
                                     d.log={type:'Stream Check',msg:'<%-cleanLang(lang.clientStreamFailedattemptingReconnect)%>'}
@@ -684,7 +691,7 @@ switch($user.details.lang){
                 cb(url,image_data,width,height);
             }
             switch(JSON.parse(e.mon.details).stream_type){
-                case'hls':case'flv':
+                case'hls':case'flv':case'mp4':
                     $.ccio.snapshotVideo($('[mid='+e.mon.mid+'].monitor_item video')[0],function(base64,video_data,width,height){
                         extend(video_data,width,height)
                     })
@@ -942,7 +949,7 @@ switch($user.details.lang){
                     tmp+='<img class="stream-element">';
                 }else{
                     switch(k.d.stream_type){
-                        case'hls':case'flv':
+                        case'hls':case'flv':case'mp4':
                             tmp+='<video class="stream-element" autoplay></video>';
                         break;
                         case'mjpeg':
@@ -1024,9 +1031,220 @@ switch($user.details.lang){
                 tmp+='<div class="form-group"><label><div><span><%-lang['Group Key']%></span></div><div><input class="form-control" link="ke" value="'+d.ke+'"></div></label></div>'
                 tmp+='<div class="form-group"><label><div><span><%-lang['API Key']%></span></div><div><input class="form-control" link="api" value="'+d.api+'"></div></label></div>'
                 tmp+='<div class="form-group"><label><div><span><%-lang.Secure%> (HTTPS/WSS)</span></div><div><select class="form-control" link="secure"><option value="1"><%-lang.Yes%></option><option selected value="0"><%-lang.No%></option></select></div></label></div>'
+                tmp+='</div>';
+            break;
+            case 'form-group'://Input Map Selector
+                var fields = []
+                if(d.fields){
+                    if(d.fields instanceof Object){
+                        fields = [d]
+                    }else{
+                        fields = d
+                    }
+                }
+                $.each(fields,function(n,v){
+                    var value,hidden
+                    if(!v.attribute)v.attribute='';
+                    if(!v.placeholder)v.placeholder='';
+                    if(!v.class)v.class='';
+                    if(!v.inputType)v.inputType='value';
+                    if(v.hidden){hidden='style="display:none"'}else{hidden=''};
+                    if(v.value){value='value=""'}else{value=''};
+                    tmp+='     <div class="form-group '+v.class+'" '+hidden+'>'
+                    tmp+='        <label><div><span>'+v.label+'</span></div>'
+                    tmp+='            <div>'
+                    switch(v.type){
+                        case'text':
+                        tmp+='<input class="form-control" '+v.inputType+'="'+v.name+'" placeholder="'+v.placeholder+'" "'+value+'" '+v.attribute+'>'
+                        break;
+                        case'selector':
+                        tmp+='<select class="form-control" '+v.inputType+'="'+v.name+'" placeholder="'+v.placeholder+'" '+v.attribute+'>'
+                        $.each(v.choices,function(m,b){
+                            tmp+='<option value="'+b.value+'">'+b.label+'</option>'
+                        })
+                        tmp+='</select>'
+                        break;
+                    }
+                    tmp+='            </div>'
+                    tmp+='        </label>'
+                    tmp+='      </div>'
+                })
+            break;
+            case 'input-map-selector'://Input Map Selector
+                if(!d.map){d.map=''}
+                tmp+='     <div class="form-group map-row">'
+                tmp+='        <label><div><span><%-cleanLang(lang['Map'])%></span></div>'
+                tmp+='            <div>'
+                tmp+='            <div class="input-group input-group-sm">'
+                tmp+='<input class="form-control" map-input="map" value="'+d.map+'" placeholder="0">'
+                tmp+='              <div class="input-group-btn">'
+                tmp+='                  <a class="btn btn-danger delete_map_row">&nbsp;<i class="fa fa-trash-o"></i>&nbsp;</a>'
+                tmp+='              </div>'
+                tmp+='            </div>'
+                tmp+='            </div>'
+                tmp+='        </label>'
+                tmp+='      </div>'
+            break;
+            case 'input-map'://Input Map Options
+                var tempID = $.ccio.gid();
+                if(!d.channel){
+                    var numberOfChannelsDrawn = $('#monSectionInputMaps .input-map').length
+                    d.channel=numberOfChannelsDrawn+1
+                }
+                var fields = [
+//                    {
+//                        name:'',
+//                        class:'',
+//                        placeholder:'',
+//                        default:'',
+//                        attribute:'',
+//                        type:'text',
+//                    },
+                    {
+                        name:'type',
+                        label:'<%-cleanLang(lang['Input Type'])%>',
+                        default:'h264',
+                        attribute:'selector="h_i_'+tempID+'"',
+                        type:'selector',
+                        choices:[
+                            {label:'<%-cleanLang(lang['H.264 / H.265 / H.265+'])%>',value:'h264'},
+                            {label:'<%-cleanLang(lang['JPEG'])%>',value:'jpeg'},
+                            {label:'<%-cleanLang(lang['MJPEG'])%>',value:'mjpeg'},
+                            {label:'<%-cleanLang(lang['HLS (.m3u8)'])%>',value:'hls'},
+                            {label:'<%-cleanLang(lang['MPEG-4 (.mp4 / .ts)'])%>',value:'mp4'},
+                            {label:'<%-cleanLang(lang['Local'])%>',value:'local'},
+                            {label:'<%-cleanLang(lang['Raw'])%>',value:'raw'},
+                        ]
+                    },
+                    {
+                        name:'fulladdress',
+                        label:'<%-cleanLang(lang['Full URL Path'])%>',
+                        placeholder:'Example : rtsp://admin:password@123.123.123.123/stream/1',
+                        type:'text',
+                    },
+                    {
+                        name:'aduration',
+                        label:'<%-cleanLang(lang['Analyzation Duration'])%>',
+                        placeholder:'Example : 1000000',
+                        type:'text',
+                    },
+                    {
+                        name:'probesize',
+                        label:'<%-cleanLang(lang['Probe Size'])%>',
+                        placeholder:'Example : 1000000',
+                        type:'text',
+                    },
+                    {
+                        name:'stream_loop',
+                        label:'<%-cleanLang(lang['Loop Stream'])%>',
+                        class:'h_i_'+tempID+'_input h_i_'+tempID+'_mp4 h_i_'+tempID+'_raw',
+                        hidden:true,
+                        default:'0',
+                        type:'selector',
+                        choices:[
+                            {label:'No',value:'0'},
+                            {label:'Yes',value:'1'}
+                        ]
+                    },
+                    {
+                        name:'rtsp_transport',
+                        label:'<%-cleanLang(lang['RTSP Transport'])%>',
+                        class:'h_i_'+tempID+'_input h_i_'+tempID+'_h264',
+                        default:'0',
+                        type:'selector',
+                        choices:[
+                            {label:'Auto',value:''},
+                            {label:'TCP',value:'tcp'},
+                            {label:'UDP',value:'udp'}
+                        ]
+                    },
+                    {
+                        name:'accelerator',
+                        label:'<%-cleanLang(lang['Accelerator'])%>',
+                        attribute:'selector="h_accel_'+tempID+'"',
+                        default:'0',
+                        type:'selector',
+                        choices:[
+                            {label:'No',value:'0'},
+                            {label:'Yes',value:'1'},
+                        ]
+                    },
+                    {
+                        name:'hwaccel',
+                        label:'<%-cleanLang(lang['hwaccel'])%>',
+                        class:'h_accel_'+tempID+'_input h_accel_'+tempID+'_1',
+                        hidden:true,
+                        default:'',
+                        type:'selector',
+                        choices:[
+                            {label:'<%-cleanLang(lang['Auto'])%>',value:''},
+                            {label:'<%-cleanLang(lang['cuvid'])%>',value:'cuvid'},
+                            {label:'<%-cleanLang(lang['vaapi'])%>',value:'vaapi'},
+                            {label:'<%-cleanLang(lang['qsv'])%>',value:'qsv'},
+                            {label:'<%-cleanLang(lang['vdpau'])%>',value:'vdpau'},
+                            {label:'<%-cleanLang(lang['dxva2'])%>',value:'dxva2'},
+                            {label:'<%-cleanLang(lang['vdpau'])%>',value:'vdpau'},
+                            {label:'<%-cleanLang(lang['videotoolbox'])%>',value:'videotoolbox'},
+                        ]
+                    },
+                    {
+                        name:'hwaccel_vcodec',
+                        label:'<%-cleanLang(lang['hwaccel_vcodec'])%>',
+                        class:'h_accel_'+tempID+'_input h_accel_'+tempID+'_1',
+                        hidden:true,
+                        default:'auto',
+                        type:'selector',
+                        choices:[
+                            {label:'<%-cleanLang(lang['Auto'])%>',value:'auto'},
+                            {label:'<%-cleanLang(lang['h264_cuvid'])%>',value:'h264_cuvid',group:'NVIDIA'},
+                            {label:'<%-cleanLang(lang['hevc_cuvid'])%>',value:'hevc_cuvid',group:'NVIDIA'},
+                            {label:'<%-cleanLang(lang['mjpeg_cuvid'])%>',value:'mjpeg_cuvid',group:'NVIDIA'},
+                            {label:'<%-cleanLang(lang['mpeg4_cuvid'])%>',value:'mpeg4_cuvid',group:'NVIDIA'},
+                            {label:'<%-cleanLang(lang['h264_qsv'])%>',value:'h264_qsv',group:'QuickSync Video'},
+                            {label:'<%-cleanLang(lang['hevc_qsv'])%>',value:'hevc_qsv',group:'QuickSync Video'},
+                            {label:'<%-cleanLang(lang['mpeg2_qsv'])%>',value:'mpeg2_qsv',group:'QuickSync Video'},
+                        ]
+                    },
+                    {
+                        name:'hwaccel_device',
+                        label:'<%-cleanLang(lang['hwaccel_device'])%>',
+                        class:'h_accel_'+tempID+'_input h_accel_'+tempID+'_1',
+                        hidden:true,
+                        placeholder:'Example : /dev/dri/video0',
+                        type:'text',
+                    },
+                ];
+                tmp+='<div class="form-group-group forestgreen input-map" section id="monSectionMap'+tempID+'">'
+                tmp+='  <h4><%-lang["Input"]%> <b><%-lang["Map"]%> : <span class="place">'+d.channel+'</span></b>'
+                tmp+='  <div class="pull-right"><a class="btn btn-danger btn-xs delete"><i class="fa fa-trash-o"></i></a></div>'
+                tmp+='  </h4>'
+                $.each(fields,function(n,v){
+                    if(!v.attribute)v.attribute='';
+                    if(!v.placeholder)v.placeholder='';
+                    if(!v.class)v.class='';
+                    if(v.hidden){v.hidden='style="display:none"'}else{v.hidden=''};
+                    tmp+='     <div class="form-group '+v.class+'" '+v.hidden+'>'
+                    tmp+='        <label><div><span>'+v.label+'</span></div>'
+                    tmp+='            <div>'
+                    switch(v.type){
+                        case'text':
+                        tmp+='<input class="form-control" map-detail="'+v.name+'" placeholder="'+v.placeholder+'" '+v.attribute+'>'
+                        break;
+                        case'selector':
+                        tmp+='<select class="form-control" map-detail="'+v.name+'" placeholder="'+v.placeholder+'" '+v.attribute+'>'
+                            $.each(v.choices,function(m,b){
+                                tmp+='<option value="'+b.value+'">'+b.label+'</option>'
+                            })
+                        tmp+='</select>'
+                        break;
+                    }
+                    tmp+='            </div>'
+                    tmp+='        </label>'
+                    tmp+='      </div>'
+                })
                 tmp+='</div>'
             break;
-            case 'stream-channel'://Link Shinobi - 1 set
+            case 'stream-channel'://Stream Channel
                 var tempID = $.ccio.gid();
                 if(!d.channel){
                     var numberOfChannelsDrawn = $('#monSectionStreamChannels .stream-channel').length
@@ -1041,9 +1259,19 @@ switch($user.details.lang){
 //                tmp+='            <div><input class="form-control" channel-detail="stream_map" placeholder="0"></div>'
 //                tmp+='        </label>'
 //                tmp+='      </div>'
+                tmp+='<div class="form-group-group forestgreen" input-mapping="stream_channel-'+d.channel+'">'
+                tmp+='    <h4><%-cleanLang(lang['Input Feed'])%>'
+                tmp+='        <div class="pull-right">'
+                tmp+='            <a class="btn btn-success btn-xs add_map_row"><i class="fa fa-plus-square-o"></i></a>'
+                tmp+='        </div>'
+                tmp+='    </h4>'
+                tmp+='    <div class="choices"></div>'
+                tmp+='</div>'
                 tmp+='     <div class="form-group">'
                 tmp+='        <label><div><span><%-lang["Stream Type"]%></span></div>'
                 tmp+='            <div><select class="form-control" channel-detail="stream_type" selector="h_st_channel_'+tempID+'" triggerChange="#monSectionChannel'+tempID+' [channel-detail=stream_vcodec]">'
+                tmp+='                <option value="mp4"><%-lang["Poseidon"]%></option>'
+                tmp+='                <option value="rtmp"><%-lang["RTMP Stream"]%></option>'
                 tmp+='                <option value="flv"><%-lang["FLV"]%></option>'
                 tmp+='                <option value="h264"><%-lang["Raw H.264 Stream"]%></option>'
                 tmp+='                <option value="hls"><%-lang["HLS (includes Audio)"]%></option>'
@@ -1051,12 +1279,24 @@ switch($user.details.lang){
                 tmp+='            </select></div>'
                 tmp+='        </label>'
                 tmp+='      </div>'
+                tmp+='          <div class="h_st_channel_'+tempID+'_input h_st_channel_'+tempID+'_rtmp">'
+                tmp+='              <div class="form-group">'
+                tmp+='                <label><div><span><%-lang["Server URL"]%></span></div>'
+                tmp+='                <div><input class="form-control" channel-detail="rtmp_server_url" placeholder="Example : rtmp://live-api.facebook.com:80/rtmp/"></div>'
+                tmp+='                </label>'
+                tmp+='              </div>'
+                tmp+='              <div class="form-group">'
+                tmp+='                <label><div><span><%-lang["Stream Key"]%></span></div>'
+                tmp+='                <div><input class="form-control" channel-detail="rtmp_stream_key" placeholder="Example : 1111111111?ds=1&a=xxxxxxxxxx"></div>'
+                tmp+='                </label>'
+                tmp+='              </div>'
+                tmp+='          </div>'
                 tmp+='      <div class="form-group h_st_channel_'+tempID+'_input h_st_channel_'+tempID+'_mjpeg" style="display:none">'
                 tmp+='        <label><div><span><%-lang["# of Allow MJPEG Clients"]%></span></div>'
                 tmp+='            <div><input class="form-control" channel-detail="stream_mjpeg_clients" placeholder="20"></div>'
                 tmp+='        </label>'
                 tmp+='      </div>'
-                tmp+='      <div class="h_st_channel_'+tempID+'_input h_st_channel_'+tempID+'_hls h_st_channel_'+tempID+'_jsmpeg h_st_channel_'+tempID+'_flv h_st_channel_'+tempID+'_h264">'
+                tmp+='      <div class="h_st_channel_'+tempID+'_input h_st_channel_'+tempID+'_hls h_st_channel_'+tempID+'_rtmp h_st_channel_'+tempID+'_flv h_st_channel_'+tempID+'_mp4  h_st_channel_'+tempID+'_h264">'
                 tmp+='          <div class="form-group">'
                 tmp+='            <label><div><span><%-lang["HLS Video Encoder"]%></span></div>'
                 tmp+='                <div><select class="form-control" channel-detail="stream_vcodec" selector="h_hls_v_channel_'+tempID+'">'
@@ -1106,31 +1346,39 @@ switch($user.details.lang){
                 tmp+='            </label>'
                 tmp+='          </div>'
                 tmp+='      </div>'
-                tmp+='      <div class="h_st_channel_'+tempID+'_input h_st_channel_'+tempID+'_mjpeg h_st_channel_'+tempID+'_b64 h_st_channel_'+tempID+'_hls h_st_channel_'+tempID+'_jsmpeg h_st_channel_'+tempID+'_flv h_st_channel_'+tempID+'_h264 h_hls_v_channel_'+tempID+'_input h_hls_v_channel_'+tempID+'_libx264 h_hls_v_channel_'+tempID+'_libx265 h_hls_v_channel_'+tempID+'_h264_nvenc h_hls_v_channel_'+tempID+'_hevc_nvenc h_hls_v_channel_'+tempID+'_no" style="display:none">'
-                tmp+='          <div class="row">'
-                tmp+='              <div class="form-group col-md-12">'
+                tmp+='      <div class="h_st_channel_'+tempID+'_input h_st_channel_'+tempID+'_mjpeg h_st_channel_'+tempID+'_hls h_st_channel_'+tempID+'_rtmp h_st_channel_'+tempID+'_jsmpeg h_st_channel_'+tempID+'_flv h_st_channel_'+tempID+'_mp4  h_st_channel_'+tempID+'_h264 h_hls_v_channel_'+tempID+'_input h_hls_v_channel_'+tempID+'_libx264 h_hls_v_channel_'+tempID+'_libx265 h_hls_v_channel_'+tempID+'_h264_nvenc h_hls_v_channel_'+tempID+'_hevc_nvenc h_hls_v_channel_'+tempID+'_no" style="display:none">'
+                tmp+='              <div class="form-group">'
                 tmp+='                <label><div><span><%-lang["Quality"]%></span></div>'
                 tmp+='                <div><input class="form-control" placeholder="23" channel-detail="stream_quality"></div>'
                 tmp+='                </label>'
                 tmp+='              </div>'
-                tmp+='              <div class="form-group col-md-12">'
+                tmp+='          <div class="h_st_channel_'+tempID+'_input h_st_channel_'+tempID+'_rtmp">'
+                tmp+='              <div class="form-group">'
+                tmp+='                <label><div><span><%-lang["Video Bit Rate"]%></span></div>'
+                tmp+='                <div><input class="form-control" channel-detail="stream_v_br" placeholder=""></div>'
+                tmp+='                </label>'
+                tmp+='              </div>'
+                tmp+='              <div class="form-group">'
+                tmp+='                <label><div><span><%-lang["Audio Bit Rate"]%></span></div>'
+                tmp+='                <div><input class="form-control" channel-detail="stream_a_br" placeholder="128k"></div>'
+                tmp+='                </label>'
+                tmp+='              </div>'
+                tmp+='          </div>'
+                tmp+='              <div class="form-group">'
                 tmp+='                <label><div><span><%-lang["Rate"]%></span></div>'
-                tmp+='                <div><input class="form-control" channel-detail="stream_fps" placeholder="1"></div>'
+                tmp+='                <div><input class="form-control" channel-detail="stream_fps" placeholder=""></div>'
                 tmp+='                </label>'
                 tmp+='              </div>'
-                tmp+='          </div>'
-                tmp+='          <div class="row">'
-                tmp+='              <div class="form-group col-md-12">'
+                tmp+='              <div class="form-group">'
                 tmp+='                <label><div><span><%-lang["Width"]%></span></div>'
-                tmp+='                <div><input class="form-control" type="number" min="1" channel-detail="stream_scale_x" placeholder="640"></div>'
+                tmp+='                <div><input class="form-control" type="number" min="1" channel-detail="stream_scale_x" placeholder="Example : 640"></div>'
                 tmp+='                </label>'
                 tmp+='              </div>'
-                tmp+='              <div class="form-group col-md-12">'
+                tmp+='              <div class="form-group">'
                 tmp+='                <label><div><span><%-lang["Height"]%></span></div>'
-                tmp+='                <div><input class="form-control" type="number" min="1" channel-detail="stream_scale_y" placeholder="480"></div>'
+                tmp+='                <div><input class="form-control" type="number" min="1" channel-detail="stream_scale_y" placeholder="Example : 480"></div>'
                 tmp+='                </label>'
                 tmp+='              </div>'
-                tmp+='          </div>'
                 tmp+='          <div class="form-group">'
                 tmp+='            <label><div><span><%-lang["Rotate"]%></span></div>'
                 tmp+='                    <div><select class="form-control" channel-detail="rotate_stream">'
@@ -1206,6 +1454,12 @@ switch($user.details.lang){
                 $('#filters_where .row:last [where="p1"]').val(d.p1)
                 $('#filters_where .row:last [where="p2"]').val(d.p2)
                 $('#filters_where .row:last [where="p3"]').val(d.p3)
+            break;
+            case'input-map':
+                var mapsList = $.aM.maps
+                mapsList.append(tmp)
+                mapsList.find('.input-map').last().find('[map-detail="aduration"]').change()
+                return tempID;
             break;
             case'stream-channel':
                 var channeList = $.aM.channels
@@ -1301,6 +1555,9 @@ $.ccio.globalWebsocket=function(d,user){
         $('[ke="'+d.ke+'"][mid="'+d.id+'"][auth="'+user.auth_token+'"] .viewers').html(d.viewers);
     }
     switch(d.f){
+        case'note':
+            $.ccio.init('note',d.note);
+        break;
         case'detector_trigger':
             d.e=$('.monitor_item[ke="'+d.ke+'"][mid="'+d.id+'"][auth="'+user.auth_token+'"]')
             if($.ccio.mon[d.ke+d.id+user.auth_token]&&d.e.length>0){
@@ -1494,9 +1751,48 @@ $.ccio.globalWebsocket=function(d,user){
             if($.ccio.op().jpeg_on===true){
                 $.ccio.init('jpegMode',$.ccio.mon[d.ke+d.id+user.auth_token]);
             }else{
+                var url = $.ccio.init('location',user);
+                var prefix = 'ws'
+                if(location.protocol==='https:'){
+                    prefix = 'wss'
+                }
+                if(url=='/'){
+                    url = prefix+'://'+location.host
+                }else{
+                    url = prefix+'://'+url.split('://')[1]
+                }
                 switch(d.d.stream_type){
                     case'jpeg':
                         $.ccio.init('jpegMode',$.ccio.mon[d.ke+d.id+user.auth_token]);
+                    break;
+                    case'mp4':
+                        var stream = d.e.find('.stream-element');
+                        if(d.d.stream_flv_type==='ws'){
+                            if($.ccio.mon[d.ke+d.id+user.auth_token].Poseidon){
+                                $.ccio.mon[d.ke+d.id+user.auth_token].Poseidon.destroy()
+                            }
+                            try{
+                                $.ccio.mon[d.ke+d.id+user.auth_token].Poseidon = new Poseidon({
+                                    video: stream[0],
+                                    auth_token:user.auth_token,
+                                    ke:d.ke,
+                                    uid:user.uid,
+                                    id:d.id,
+                                    url: url
+                                });
+                                $.ccio.mon[d.ke+d.id+user.auth_token].Poseidon.start();
+                            }catch(err){
+                                setTimeout(function(){
+                                    $.ccio.cx({f:'monitor',ff:'watch_on',id:d.id},user)
+                                },3000)
+                                console.log(err)
+                            }
+                        }else{
+                            stream.attr('src',$.ccio.init('location',user)+user.auth_token+'/mp4/'+d.ke+'/'+d.id+'/s.mp4')
+                            setTimeout(function(){
+                                $.ccio.init('signal-check',{id:d.id,ke:d.ke})
+                            },3000)
+                        }
                     break;
                     case'flv':
                         if (flvjs.isSupported()) {
@@ -1509,16 +1805,6 @@ $.ccio.globalWebsocket=function(d,user){
                                     d.d.stream_flv_maxLatency = parseInt(d.d.stream_flv_maxLatency)
                                 }else{
                                     d.d.stream_flv_maxLatency = 20000;
-                                }
-                                var url = $.ccio.init('location',user);
-                                var prefix = 'ws'
-                                if(location.protocol==='https:'){
-                                    prefix = 'wss'
-                                }
-                                if(url=='/'){
-                                    url = prefix+'://'+location.host
-                                }else{
-                                    url = prefix+'://'+url.split('://')[1]
                                 }
                                 options = {
                                     type: 'flv',
@@ -1950,8 +2236,18 @@ $user.ws.on('f',function (d){
             }
             $.ccio.init('note',d.pnote);
         break;
+//        case'onvif_end':
+//            if(Object.keys($.oB.foundMonitorsCount).length===0){
+//                $.oB.e.find('._loading').hide()
+//                $.oB.e.find('[type="submit"]').prop('disabled',false)
+//                $.oB.o.append('<td class="text-center _notfound">Sorry, nothing was found.</td>')
+//            }
+//        break;
         case'onvif':
+            var tempID = $.ccio.gid();
+            $.oB.foundMonitors[tempID] = Object.assign({},d);
             $.oB.e.find('._loading').hide()
+            $.oB.e.find('._notfound').remove()
             $.oB.e.find('[type="submit"]').prop('disabled',false)
             d.info=$.ccio.init('jsontoblock',d.info)
             if(d.url){
@@ -1960,7 +2256,7 @@ $user.ws.on('f',function (d){
             }else{
                 d.stream='URL not Found'
             }
-            $('#onvif_probe .output_data').append('<tr><td class="ip">'+d.ip+'</td><td class="port">'+d.port+'</td><td>'+$.ccio.init('jsontoblock',d.info)+'</td><td class="url">'+d.stream+'</td><td class="date">'+d.date+'</td><td><a class="btn btn-sm btn-primary copy">&nbsp;<i class="fa fa-copy"></i>&nbsp;</a></td></tr>')
+            $('#onvif_probe .output_data').append('<tr onvif_row="'+tempID+'"><td><a class="btn btn-sm btn-primary copy">&nbsp;<i class="fa fa-copy"></i>&nbsp;</a></td><td class="ip">'+d.ip+'</td><td class="port">'+d.port+'</td><td>'+$.ccio.init('jsontoblock',d.info)+'</td><td class="url">'+d.stream+'</td><td class="date">'+d.date+'</td></tr>')
         break;
     }
     delete(d);
@@ -1985,9 +2281,16 @@ $.ccio.form.details=function(e){
     e.f.find('[name="details"]').val(JSON.stringify(e.ar));
 };
 //onvif probe
-$.oB={e:$('#onvif_probe'),v:$('#onvif_video')};$.oB.f=$.oB.e.find('form');$.oB.o=$.oB.e.find('.output_data');
-$.oB.f.submit(function(e){
-    e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
+$.oB={
+    e:$('#onvif_probe'),
+    v:$('#onvif_video'),
+};
+$.oB.f=$.oB.e.find('form');$.oB.o=$.oB.e.find('.output_data');
+$.oB.f.submit(function(ee){
+    ee.preventDefault();
+    e={};
+    $.oB.foundMonitors={}
+    e.e=$(this),e.s=e.e.serializeObject();
     $.oB.o.empty();
     $.oB.e.find('._loading').show()
     $.oB.e.find('[type="submit"]').prop('disabled',true)
@@ -1997,27 +2300,25 @@ $.oB.f.submit(function(e){
         if($.oB.o.find('tr').length===0){
             $.oB.e.find('._loading').hide()
             $.oB.e.find('[type="submit"]').prop('disabled',false)
-            $.oB.o.append('<td class="text-center">Sorry, nothing was found.</td>')
+            $.oB.o.append('<td class="text-center _notfound">Sorry, nothing was found.</td>')
         }
-    },30000)
+    },5000)
     return false;
 });
-$.oB.e.on('click','.copy',function(e){
-    e.e=$(this).parents('tr');
+$.oB.e.on('click','.copy',function(){
     $('.hidden-xs [monitor="edit"]').click();
-    e.host=e.e.find('.ip').text();
-    e.url=$.ccio.init('getLocation',e.e.find('.url').text().replace('rtsp','http'));
+    e={};
+    e.e = $(this).parents('[onvif_row]');
+    var id = e.e.attr('onvif_row');
+    var onvifRecord = $.oB.foundMonitors[id];
+    console.log(onvifRecord)
+    var streamURL = onvifRecord.url.uri;
     if($.oB.e.find('[name="user"]').val()!==''){
-        e.host=$.oB.e.find('[name="user"]').val()+':'+$.oB.e.find('[name="pass"]').val()+'@'+e.host
+        streamURL = streamURL.split('://')
+        streamURL = streamURL[0]+'://'+$.oB.e.find('[name="user"]').val()+':'+$.oB.e.find('[name="pass"]').val()+'@'+streamURL[1];
     }
-    $.aM.e.find('[name="host"]').val(e.host)
-    $.aM.e.find('[detail="port_force"]').val('1')
-    $.aM.e.find('[detail="rtsp_transport"]').val('tcp')
-    $.aM.e.find('[detail="aduration"]').val('100000')
-    $.aM.e.find('[name="port"]').val(e.url.port)
+    $.aM.e.find('[detail="auto_host"]').val(streamURL).change()
     $.aM.e.find('[name="mode"]').val('start')
-    $.aM.e.find('[name="type"] [value="h264"]').prop('selected',true).parent().change()
-    $.aM.e.find('[name="path"]').val(e.url.pathname)
     $.oB.e.modal('hide')
 })
 $.oB.e.find('[name="ip"]').change(function(e){
@@ -2050,10 +2351,10 @@ $.gR.drawList=function(){
     })
     $.gR.e.html(e.tmp)
 }
-$.gR.e.on('click','[group]',function(){
+$.gR.e.on('click','[groups]',function(){
   var e={};
     e.e=$(this),
-    e.a=e.e.attr('group');
+    e.a=e.e.attr('groups');
     var user=$.users[e.e.attr('auth')];
     if(!user){user=$user}
     if(user===$user){
@@ -2385,11 +2686,16 @@ $.multimon.e.find('.import_config').click(function(){
 //        });
     });
 })
-$.multimon.e.find('.delete').click(function(){
+$.multimon.getSelectedMonitors = function(){
     var arr=[];
+    var monitors = $.ccio.init('cleanMons','object')
     $.each($.multimon.f.serializeObject(),function(n,v){
-        arr.push($.ccio.mon[n])
+        arr.push(monitors[n])
     })
+    return arr;
+}
+$.multimon.e.find('.delete').click(function(){
+    var arr=$.multimon.getSelectedMonitors();
     if(arr.length===0){
         $.ccio.init('note',{title:'No Monitors Selected',text:'Select atleast one monitor to delete.',type:'error'});
         return
@@ -2406,15 +2712,21 @@ $.multimon.e.find('.delete').click(function(){
         })
     });
 })
+//$.multimon.e.find('.edit_all').click(function(){
+//    var arr=$.multimon.getSelectedMonitors();
+//    var arrObject={}
+//    if(arr.length===0){
+//        $.ccio.init('note',{title:'No Monitors Selected',text:'Select atleast one monitor to delete.',type:'error'});
+//        return
+//    }
+//    $.multimonedit.selectedList = arr;
+//    $.multimonedit.e.modal('show')
+//})
 $.multimon.e.find('.save_config').click(function(){
     var e={};e.e=$(this);
-    var arr=[];
-    var monitors = $.ccio.init('cleanMons','object')
-    $.each($.multimon.f.serializeObject(),function(n,v){
-        arr.push(monitors[n])
-    })
+    var arr=$.multimon.getSelectedMonitors();
     if(arr.length===0){
-        $.ccio.init('note',{title:'No Monitors Selected',text:'Select atleast one monitor to export.',type:'error'});
+        $.ccio.init('note',{title:'No Monitors Selected',text:'Select atleast one monitor to delete.',type:'error'});
         return
     }
     e.dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(arr));
@@ -2442,9 +2754,10 @@ $.multimon.e.on('shown.bs.modal',function() {
     $.multimon.table.html(tmp)
 })
 //Monitor Editor
-$.aM={e:$('#add_monitor')};
+$.aM={e:$('#add_monitor'),monitorsForCopy:$('#copy_settings_monitors')};
 $.aM.f=$.aM.e.find('form')
 $.aM.channels=$('#monSectionStreamChannels')
+$.aM.maps=$('#monSectionInputMaps')
 $.aM.e.find('.follow-list ul').affix();
 $.each(<%-JSON.stringify(define["Monitor Settings"].blocks)%>,function(n,v){
     $.each(v.info,function(m,b){
@@ -2463,6 +2776,173 @@ $.each(<%-JSON.stringify(define["Monitor Settings"].blocks)%>,function(n,v){
         v.parent.append('<small class="hover">'+b.description+'</small>')
     })
 })
+$.aM.generateDefaultMonitorSettings=function(){
+    return {
+    "mode": "start",
+    "mid": $.ccio.gid(),
+    "name": "Some Stream",
+    "type": "h264",
+    "protocol": "rtsp",
+    "host": "",
+    "port": "",
+    "path": "",
+    "ext": "mp4",
+    "fps": "1",
+    "width": "640",
+    "height": "480",
+    "details": JSON.stringify({
+        "fatal_max": "0",
+        "notes": "",
+        "dir": "",
+        "auto_host_enable": "1",
+        "auto_host": "",
+        "rtsp_transport": "tcp",
+        "muser": "",
+        "mpass": "",
+        "port_force": "0",
+        "aduration": "1000000",
+        "probesize": "1000000",
+        "stream_loop": "0",
+        "sfps": "1",
+        "accelerator": "1",
+        "hwaccel": "auto",
+        "hwaccel_vcodec": "",
+        "hwaccel_device": "",
+        "stream_type": "mp4",
+        "stream_flv_type": "ws",
+        "stream_mjpeg_clients": "",
+        "stream_vcodec": "copy",
+        "stream_acodec": "no",
+        "hls_time": "2",
+        "preset_stream": "ultrafast",
+        "hls_list_size": "3",
+        "signal_check": "10",
+        "signal_check_log": "0",
+        "stream_quality": "15",
+        "stream_fps": "2",
+        "stream_scale_x": "",
+        "stream_scale_y": "",
+        "rotate_stream": "no",
+        "svf": "",
+        "rtmp_vcodec": "h264",
+        "rtmp_acodec": "aac",
+        "stream_timestamp": "0",
+        "stream_timestamp_font": "",
+        "stream_timestamp_font_size": "",
+        "stream_timestamp_color": "",
+        "stream_timestamp_box_color": "",
+        "stream_timestamp_x": "",
+        "stream_timestamp_y": "",
+        "stream_watermark": "0",
+        "stream_watermark_location": "",
+        "stream_watermark_position": "tr",
+        "snap": "1",
+        "snap_fps": "",
+        "snap_scale_x": "",
+        "snap_scale_y": "",
+        "snap_vf": "",
+        "rawh264": "0",
+        "rawh264_vcodec": "copy",
+        "rawh264_acodec": "",
+        "rawh264_fps": "",
+        "rawh264_scale_x": "",
+        "rawh264_scale_y": "",
+        "rawh264_crf": "",
+        "rawh264_vf": "",
+        "vcodec": "copy",
+        "crf": "1",
+        "preset_record": "",
+        "acodec": "no",
+        "dqf": "0",
+        "cutoff": "15",
+        "rotate_record": "no",
+        "vf": "",
+        "timestamp": "0",
+        "timestamp_font": "",
+        "timestamp_font_size": "10",
+        "timestamp_color": "white",
+        "timestamp_box_color": "0x00000000@1",
+        "timestamp_x": "(w-tw)/2",
+        "timestamp_y": "0",
+        "watermark": "0",
+        "watermark_location": "",
+        "watermark_position": "tr",
+        "cust_input": "",
+        "cust_snap": "",
+        "cust_rawh264": "",
+        "cust_detect": "",
+        "cust_stream": "",
+        "cust_stream_server": "",
+        "cust_record": "",
+        "custom_output": "",
+        "detector": "0",
+        "detector_pam": "1",
+        "detector_webhook": "0",
+        "detector_webhook_url": "",
+        "detector_command_enable": "0",
+        "detector_command": "",
+        "detector_command_timeout": "",
+        "detector_lock_timeout": "",
+        "detector_save": "0",
+        "detector_frame_save": "0",
+        "detector_mail": "0",
+        "detector_mail_timeout": "",
+        "detector_record_method": "sip",
+        "detector_trigger": "1",
+        "detector_trigger_record_fps": "",
+        "detector_timeout": "10",
+        "watchdog_reset": "0",
+        "detector_delete_motionless_videos": "0",
+        "detector_send_frames": "1",
+        "detector_region_of_interest": "0",
+        "detector_fps": "",
+        "detector_scale_x": "640",
+        "detector_scale_y": "480",
+        "detector_use_motion": "1",
+        "detector_use_detect_object": "0",
+        "detector_frame": "0",
+        "detector_sensitivity": "",
+        "cords": "[]",
+        "detector_buffer_vcodec": "auto",
+        "detector_buffer_fps": "",
+        "detector_buffer_hls_time": "",
+        "detector_buffer_hls_list_size": "",
+        "detector_buffer_start_number": "",
+        "detector_buffer_live_start_index": "",
+        "detector_lisence_plate": "0",
+        "detector_lisence_plate_country": "us",
+        "detector_notrigger": "0",
+        "detector_notrigger_mail": "0",
+        "detector_notrigger_timeout": "",
+        "control": "0",
+        "control_base_url": "",
+        "control_stop": "0",
+        "control_url_stop_timeout": "",
+        "control_url_center": "",
+        "control_url_left": "",
+        "control_url_left_stop": "",
+        "control_url_right": "",
+        "control_url_right_stop": "",
+        "control_url_up": "",
+        "control_url_up_stop": "",
+        "control_url_down": "",
+        "control_url_down_stop": "",
+        "control_url_enable_nv": "",
+        "control_url_disable_nv": "",
+        "control_url_zoom_out": "",
+        "control_url_zoom_out_stop": "",
+        "control_url_zoom_in": "",
+        "control_url_zoom_in_stop": "",
+        "tv_channel": "0",
+        "groups": "[]",
+        "loglevel": "warning",
+        "sqllog": "0",
+        "detector_cascades": ""
+    }),
+    "shto": "[]",
+    "shfr": "[]"
+}
+}
 $.aM.drawList=function(){
     e={list:$.aM.e.find('.follow-list ul'),html:''}
     $.aM.e.find('[section]:visible').each(function(n,v){
@@ -2486,12 +2966,35 @@ $.aM.import=function(e){
     $('#monEditBufferPreview').attr('src','/'+$user.auth_token+'/hls/'+e.values.ke+'/'+e.values.mid+'/detectorStream.m3u8')
     $.aM.e.find('.edit_id').text(e.values.mid);
     $.aM.e.attr('mid',e.values.mid).attr('ke',e.values.ke).attr('auth',e.auth)
-    $.aM.channels.empty()
     $.each(e.values,function(n,v){
         $.aM.e.find('[name="'+n+'"]').val(v).change()
     })
     e.ss=JSON.parse(e.values.details);
+    //get maps
+    $.aM.maps.empty()
+    if(e.ss.input_maps&&e.ss.input_maps!==''){
+        var input_maps
+        try{
+            input_maps = JSON.parse(e.ss.input_maps)
+        }catch(er){
+            input_maps = e.ss.input_maps;
+        }
+        var mapContainers = $('[input-mapping]')
+        if(input_maps.length>0){
+            mapContainers.show()
+            $.each(input_maps,function(n,v){
+                var tempID = $.ccio.tm('input-map')
+                var parent = $('#monSectionMap'+tempID)
+                $.each(v,function(m,b){
+                    parent.find('[map-detail="'+m+'"]').val(b).change()
+                })
+            })
+        }else{
+            mapContainers.hide()
+        }
+    }
     //get channels
+    $.aM.channels.empty()
     if(e.ss.stream_channels&&e.ss.stream_channels!==''){
         var stream_channels
         try{
@@ -2501,10 +3004,25 @@ $.aM.import=function(e){
         }
         $.each(stream_channels,function(n,v){
             var tempID = $.ccio.tm('stream-channel')
-            console.log(tempID)
             var parent = $('#monSectionChannel'+tempID)
             $.each(v,function(m,b){
                 parent.find('[channel-detail="'+m+'"]').val(b)
+            })
+        })
+    }
+    //get map choices for outputs
+    $('[input-mapping] .choices').empty()
+    if(e.ss.input_map_choices&&e.ss.input_map_choices!==''){
+        var input_map_choices
+        try{
+            input_map_choices = JSON.parse(e.ss.input_map_choices)
+        }catch(er){
+            input_map_choices = e.ss.input_map_choices;
+        }
+        $.each(input_map_choices,function(n,v){
+            $.each(v,function(m,b){
+                var parent = $('[input-mapping="'+n+'"] .choices')
+                $.ccio.tm('input-map-selector',b,parent)
             })
         })
     }
@@ -2547,32 +3065,40 @@ $.aM.import=function(e){
         }
     });
     try{
-        $.each(['group','group_detector'],function(m,b){
-            e.tmp=''
+        $.each(['groups','group_detector'],function(m,b){
+            var tmp=''
             $.each($user.mon_groups,function(n,v){
-                e.tmp+='<li class="mdl-list__item">';
-                e.tmp+='<span class="mdl-list__item-primary-content">';
-                e.tmp+=v.name;
-                e.tmp+='</span>';
-                e.tmp+='<span class="mdl-list__item-secondary-action">';
-                e.tmp+='<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect">';
-                e.tmp+='<input type="checkbox" '+b+' value="'+v.id+'" class="mdl-switch__input"';
+                tmp+='<li class="mdl-list__item">';
+                tmp+='<span class="mdl-list__item-primary-content">';
+                tmp+=v.name;
+                tmp+='</span>';
+                tmp+='<span class="mdl-list__item-secondary-action">';
+                tmp+='<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect">';
+                tmp+='<input type="checkbox" '+b+' value="'+v.id+'" class="mdl-switch__input"';
                 if(!e.ss[b]){
                     e.ss[b]=[]
                 }
-                if(e.ss[b].indexOf(v.id)>-1){e.tmp+=' checked';}
-                e.tmp+=' />';
-                e.tmp+='</label>';
-                e.tmp+='</span>';
-                e.tmp+='</li>';
+                if(e.ss[b].indexOf(v.id)>-1){tmp+=' checked';}
+                tmp+=' />';
+                tmp+='</label>';
+                tmp+='</span>';
+                tmp+='</li>';
             })
-            $('#monitor_'+b).html(e.tmp)
+            $('#monitor_'+b).html(tmp)
         })
         componentHandler.upgradeAllRegistered()
     }catch(er){
         console.log(er)
         //no group, this 'try' will be removed in future.
     };
+    $('#copy_settings').val('0').change()
+    var tmp = '';
+    $.each($.ccio.mon,function(n,v){
+        if(v.ke === $user.ke){
+            tmp += $.ccio.tm('option',{auth_token:$user.auth_token,id:v.mid,name:v.name},null,$user);
+        }
+    })
+    $.aM.monitorsForCopy.find('optgroup').html(tmp)
     setTimeout(function(){$.aM.drawList()},1000)
 }
 //parse "Automatic" field in "Input" Section
@@ -2618,8 +3144,10 @@ $.aM.e.on('change','[detail="auto_host"]',function(e){
 $.aM.e.find('.refresh_cascades').click(function(e){
     $.ccio.cx({f:'ocv_in',data:{f:'refreshPlugins',ke:$user.ke}})
 })
-$.aM.f.submit(function(e){
-    e.preventDefault();e.e=$(this),e.s=e.e.serializeObject();
+$.aM.f.submit(function(ee){
+    ee.preventDefault();
+    e={e:$(this)};
+    e.s=e.e.serializeObject();
     e.er=[];
     $.each(e.s,function(n,v){e.s[n]=v.trim()});
     e.s.mid=e.s.mid.replace(/[^\w\s]/gi,'').replace(/ /g,'')
@@ -2635,27 +3163,157 @@ $.aM.f.submit(function(e){
     $.post('/'+$user.auth_token+'/configureMonitor/'+$user.ke+'/'+e.s.mid,{data:JSON.stringify(e.s)},function(d){
         $.ccio.log(d)
     })
+    //
+    if($('#copy_settings').val() === '1'){
+        e.s.details = JSON.parse(e.s.details);
+        var copyMonitors = $.aM.monitorsForCopy.val();
+        var chosenSections = [];
+        var chosenMonitors = {};
+        
+        if(!copyMonitors||copyMonitors.length===0){
+            $.ccio.init('note',{title:'<%-cleanLang(lang['No Monitors Selected'])%>',text:'<%-cleanLang(lang.monSavedButNotCopied)%>'})
+            return
+        }
+        
+        $.aM.e.find('[copy]').each(function(n,v){
+            var el = $(v)
+            if(el.val() === '1'){
+                chosenSections.push(el.attr('copy'))
+            }
+        })
+        var alterSettings = function(settingsToAlter,monitor){
+            monitor.details = JSON.parse(monitor.details);
+            $.aM.e.find(settingsToAlter).find('input,select,textarea').each(function(n,v){
+                var el = $(v);
+                var name = el.attr('name')
+                var detail = el.attr('detail')
+                var value
+                switch(true){
+                    case !!name:
+                        var value = e.s[name]
+                        monitor[name] = value;
+                    break;
+                    case !!detail:
+                        detail = detail.replace('"','')
+                        var value = e.s.details[detail]
+                        monitor.details[detail] = value;
+                    break;
+                }
+            })
+            monitor.details = JSON.stringify(monitor.details);
+            return monitor;
+        }
+        $.each(copyMonitors,function(n,id){
+            var monitor
+            if(id === '$New'){
+                monitor = $.aM.generateDefaultMonitorSettings();
+                //connection
+                monitor.name = e.s.name+' - '+monitor.mid
+                monitor.type = e.s.type
+                monitor.protocol = e.s.protocol
+                monitor.host = e.s.host
+                monitor.port = e.s.port
+                monitor.path = e.s.path
+                monitor.details.fatal_max = e.s.details.fatal_max
+                monitor.details.port_force = e.s.details.port_force
+                monitor.details.muser = e.s.details.muser
+                monitor.details.password = e.s.details.password
+                monitor.details.rtsp_transport = e.s.details.rtsp_transport
+                monitor.details.auto_host = e.s.details.auto_host
+                monitor.details.auto_host_enable = e.s.details.auto_host_enable
+                //input
+                monitor.details.aduration = e.s.details.aduration
+                monitor.details.probesize = e.s.details.probesize
+                monitor.details.stream_loop = e.s.details.stream_loop
+                monitor.details.sfps = e.s.details.sfps
+                monitor.details.accelerator = e.s.details.accelerator
+                monitor.details.hwaccel = e.s.details.hwaccel
+                monitor.details.hwaccel_vcodec = e.s.details.hwaccel_vcodec
+                monitor.details.hwaccel_device = e.s.details.hwaccel_device
+            }else{
+                monitor = Object.assign({},$.ccio.init('cleanMon',$.ccio.mon[$user.ke+id+$user.auth_token]));
+            }
+            $.each(chosenSections,function(n,section){
+                monitor = alterSettings(section,monitor)
+            })
+            console.log(monitor)
+            $.post('/'+$user.auth_token+'/configureMonitor/'+$user.ke+'/'+monitor.mid,{data:JSON.stringify(monitor)},function(d){
+                $.ccio.log(d)
+            })
+             chosenMonitors[monitor.mid] = monitor;
+        })
+        console.log(chosenMonitors)
+    }
+    
     $.aM.e.modal('hide')
     return false;
 });
-$.aM.channelPlacementInit = function(){
-    $('.stream-channel').each(function(n,v){
+//////////////////
+//Input Map (Feed)
+$.aM.mapPlacementInit = function(){
+    $('.input-map').each(function(n,v){
         var _this = $(this)
-        _this.attr('stream-channel',n)
-        _this.find('.place').text(n)
+        _this.find('.place').text(n+1)
     })
 }
-$.aM.channels.on('click','.delete',function(){
-    $(this).parents('.stream-channel').remove()
-    var inputs = $('[channel-detail]')
+$.aM.mapSave = function(){
+    var e={};
+    var mapContainers = $('[input-mapping]');
+    var stringForSave={}
+    mapContainers.each(function(q,t){
+        var mapRowElement = $(t).find('.map-row');
+        var mapRow = []
+        mapRowElement.each(function(n,v){
+            var map={}
+            $.each($(v).find('[map-input]'),function(m,b){
+                map[$(b).attr('map-input')]=$(b).val()
+            });
+            mapRow.push(map)
+        });
+        stringForSave[$(t).attr('input-mapping')] = mapRow;
+    });
+    $.aM.e.find('[detail="input_map_choices"]').val(JSON.stringify(stringForSave)).change();
+}
+$.aM.maps.on('click','.delete',function(){
+    $(this).parents('.input-map').remove()
+    var inputs = $('[map-detail]')
+    var mapContainers = $('[input-mapping]');
     if(inputs.length===0){
-        $.aM.e.find('[detail="stream_channels"]').val('[]').change()
+        $.aM.e.find('[detail="input_maps"]').val('[]').change()
+        mapContainers.hide();
     }else{
         inputs.first().change()
+        mapContainers.show();
     }
-    $.aM.channelPlacementInit()
+    $.aM.mapPlacementInit()
 })
-$.aM.e.on('change','[channel-detail]',function(){
+$.aM.e.on('change','[map-detail]',function(){
+  var e={};
+    e.e=$.aM.maps.find('.input-map')
+    e.s=[]
+    e.e.each(function(n,v){
+        var map={}
+        $.each($(v).find('[map-detail]'),function(m,b){
+            map[$(b).attr('map-detail')]=$(b).val()
+        });
+        e.s.push(map)
+    });
+    $.aM.e.find('[detail="input_maps"]').val(JSON.stringify(e.s)).change()
+})
+$.aM.e.on('click','[input-mapping] .add_map_row',function(){
+    $.ccio.tm('input-map-selector',{},$(this).parents('[input-mapping]').find('.choices'))
+    $.aM.mapSave()
+})
+$.aM.e.on('click','[input-mapping] .delete_map_row',function(){
+    $(this).parents('.map-row').remove()
+    $.aM.mapSave()
+})
+$.aM.e.on('change','[map-input]',function(){
+    $.aM.mapSave()
+})
+//////////////////
+//Stream Channels
+$.aM.channelSave = function(){
   var e={};
     e.e=$.aM.channels.find('.stream-channel')
     e.s=[]
@@ -2667,10 +3325,28 @@ $.aM.e.on('change','[channel-detail]',function(){
         e.s.push(channel)
     });
     $.aM.e.find('[detail="stream_channels"]').val(JSON.stringify(e.s)).change()
+}
+$.aM.channelPlacementInit = function(){
+    $('.stream-channel').each(function(n,v){
+        var _this = $(this)
+        _this.attr('stream-channel',n)
+        _this.find('.place').text(n)
+        _this.find('[input-mapping]').attr('input-mapping','stream_channel-'+n)
+        $.aM.mapSave()
+    })
+}
+$.aM.channels.on('click','.delete',function(){
+    $(this).parents('.stream-channel').remove()
+    $.aM.channelSave()
+    $.aM.channelPlacementInit()
 })
-$.aM.e.on('change','[group]',function(){
+$.aM.e.on('change','[channel-detail]',function(){
+    $.aM.channelSave()
+})
+//////////////////
+$.aM.e.on('change','[groups]',function(){
   var e={};
-    e.e=$.aM.e.find('[group]:checked');
+    e.e=$.aM.e.find('[groups]:checked');
     e.s=[];
     e.e.each(function(n,v){
         e.s.push($(v).val())
@@ -2758,6 +3434,10 @@ $.aM.e.find('.save_config').click(function(e){
         .attr('href',e.dataStr)
         .attr('download','Shinobi_'+e.mid+'_config.json')
         [0].click()
+});
+$.aM.e.find('.add_map').click(function(e){
+    $('[input-mapping]').show()
+    $.ccio.tm('input-map')
 });
 $.aM.e.find('.add_channel').click(function(e){
     $.ccio.tm('stream-channel')
@@ -2905,8 +3585,8 @@ $.sM.reDrawMonGroups=function(){
 $.sM.f.submit(function(e){
     e.preventDefault();
     $.sM.writewMonGroups()
-    e.e=$(this),e.s=e.e.serializeObject();
     $.sM.linkChange()
+    e.e=$(this),e.s=e.e.serializeObject();
     e.er=[];
     if(e.s.pass!==''&&e.password_again===e.s.pass){e.er.push("<%-lang["Passwords don't match"]%>")};
     if(e.er.length>0){$.sM.e.find('.msg').html(e.er.join('<br>'));return;}
@@ -2926,7 +3606,7 @@ $.sM.g.change(function(e){
         $.sM.f.find('[group="'+n+'"]').val(v)
     })
 });
-$.sM.f.find('[group]').change(function(e){
+$.sM.f.find('[groups]').change(function(e){
     e.v=$.sM.g.val();
     if(!e.v||e.v==''){
         e.e=$.sM.f.find('[group="name"]')
@@ -2936,9 +3616,9 @@ $.sM.f.find('[group]').change(function(e){
         e.e.val(e.name)
     }
     e.group=$user.mon_groups[e.v];
-    $.sM.f.find('[group]').each(function(n,v){
+    $.sM.f.find('[groups]').each(function(n,v){
         v=$(v)
-        e.group[v.attr('group')]=v.val()
+        e.group[v.attr('groups')]=v.val()
     });
     $user.mon_groups[e.v]=e.group;
     $.sM.g.find('option[value="'+$.sM.g.val()+'"]').text(e.group.name)
@@ -3027,8 +3707,9 @@ $.vidview.e.find('.delete_selected').click(function(e){
     $.confirm.body.html(e.html)
     $.confirm.click({title:'Delete Video',class:'btn-danger'},function(){
         $.each(e.s,function(n,v){
-            n=n.split('.')
-            $.ccio.cx({f:'video',ff:'delete',filename:n[0],ext:n[1],mid:v.mid},$.users[v.auth]);
+            $.getJSON($.ccio.init('location',$.users[v.auth])+v.auth+'/videos/'+v.ke+'/'+v.mid+'/'+n+'/delete',function(d){
+                $.ccio.log(d)
+            })
         })
     });
 })
@@ -3605,6 +4286,25 @@ $.pwrvid.e.on('hidden.bs.modal',function(e){
 $('[class_toggle="list-blocks"][data-target="#left_menu"]').dblclick(function(){
     $('#monitors_list [monitor="watch"]').click()
 })
+//search monitors list
+$('#monitors_list_search').keyup(function(){
+    var monitorBlocks = $('.monitor_block');
+    var searchTerms = $(this).val().toLowerCase().split(' ')
+    if(searchTerms.length === 0 || searchTerms[0] === ''){
+        monitorBlocks.show()
+        return
+    }
+    monitorBlocks.hide()
+    $.each($.ccio.mon,function(n,monitor){
+        var searchThis = JSON.stringify($.ccio.init('cleanMon',monitor)).toLowerCase().replace('"','');
+        console.log(searchTerms,searchThis)
+        $.each(searchTerms,function(m,term){
+            if(searchThis.indexOf(term) >-1 ){
+                $('.monitor_block[ke="'+monitor.ke+'"][mid="'+monitor.mid+'"]').show()
+            }
+        })
+    })
+})
 //dynamic bindings
 $('body')
 .on('click','.logout',function(e){
@@ -3660,17 +4360,6 @@ $('body')
                 })
             }
         break;
-        case'fix':
-            $.confirm.e.modal('show');
-            $.confirm.title.text('<%-cleanLang(lang['Fix Video'])%> : '+e.file)
-            e.html='<%-cleanLang(lang.FixVideoMsg)%>'
-            e.html+='<video class="video_video" autoplay loop controls><source src="'+e.p.find('[download]').attr('href')+'" type="video/'+e.mon.ext+'"></video>';
-            $.confirm.body.html(e.html)
-            $.confirm.click({title:'Fix Video',class:'btn-warning'},function(){
-                e.file=e.file.split('.')
-                $.ccio.cx({f:'video',ff:'fix',filename:e.file[0],ext:e.file[1],ke:e.ke,mid:e.mid});
-            });
-        break;
         case'delete':
             e.href=e.p.find('[download]').attr('href')
             if(!e.href||e.href===''){
@@ -3682,8 +4371,9 @@ $('body')
             e.html+='<video class="video_video" autoplay loop controls><source src="'+e.href+'" type="video/'+e.mon.ext+'"></video>';
             $.confirm.body.html(e.html)
             $.confirm.click({title:'Delete Video',class:'btn-danger'},function(){
-                e.file=e.file.split('.')
-                $.ccio.cx({f:'video',ff:'delete',filename:e.file[0],ext:e.file[1],ke:e.ke,mid:e.mid});
+                $.getJSON($.ccio.init('location',$.users[e.auth])+e.auth+'/videos/'+e.ke+'/'+e.mid+'/'+e.file+'/delete',function(d){
+                    $.ccio.log(d)
+                })
             });
         break;
         case'download':
@@ -3841,7 +4531,7 @@ $('body')
                 if($.ccio.mon[e.ke+e.mid+user.auth_token].popOut){
                     $.ccio.mon[e.ke+e.mid+user.auth_token].popOut.close()
                 }
-                $.ccio.mon[e.ke+e.mid+user.auth_token].popOut = window.open($.ccio.init('location',user)+user.auth_token+'/embed/'+e.ke+'/'+e.mid+'/fullscreen|jquery|gui','pop_'+e.mid+user.auth_token,'height='+img.height+',width='+img.width);
+                $.ccio.mon[e.ke+e.mid+user.auth_token].popOut = window.open($.ccio.init('location',user)+user.auth_token+'/embed/'+e.ke+'/'+e.mid+'/fullscreen|jquery|relative|gui','pop_'+e.mid+user.auth_token,'height='+img.height+',width='+img.width);
             }
             if(e.mon.watch===1){
                 $.ccio.snapshot(e,function(url){
@@ -4118,168 +4808,7 @@ $('body')
                 e.p.find('[monitor="delete"]').hide()
                 e.mt.find('span').text('Add'),e.mt.find('i').attr('class','fa fa-plus');
                 //default values
-                e.values={
-                    "mode": "start",
-                    "mid": $.ccio.gid(),
-                    "name": "Some Stream",
-                    "type": "h264",
-                    "protocol": "rtsp",
-                    "host": "",
-                    "port": "",
-                    "path": "",
-                    "ext": "mp4",
-                    "fps": "1",
-                    "width": "640",
-                    "height": "480",
-                    "details": JSON.stringify({
-                        "fatal_max": "0",
-                        "notes": "",
-                        "dir": "",
-                        "auto_host_enable": "1",
-                        "auto_host": "",
-                        "rtsp_transport": "tcp",
-                        "muser": "",
-                        "mpass": "",
-                        "port_force": "0",
-                        "aduration": "1000000",
-                        "probesize": "1000000",
-                        "stream_loop": "0",
-                        "sfps": "1",
-                        "accelerator": "0",
-                        "hwaccel": "0",
-                        "hwaccel_vcodec": "",
-                        "hwaccel_device": "",
-                        "stream_type": "hls",
-                        "stream_mjpeg_clients": "",
-                        "stream_vcodec": "copy",
-                        "stream_acodec": "no",
-                        "hls_time": "2",
-                        "preset_stream": "ultrafast",
-                        "hls_list_size": "3",
-                        "signal_check": "10",
-                        "signal_check_log": "0",
-                        "stream_quality": "15",
-                        "stream_fps": "2",
-                        "stream_scale_x": "",
-                        "stream_scale_y": "",
-                        "rotate_stream": "no",
-                        "svf": "",
-                        "stream_timestamp": "0",
-                        "stream_timestamp_font": "",
-                        "stream_timestamp_font_size": "",
-                        "stream_timestamp_color": "",
-                        "stream_timestamp_box_color": "",
-                        "stream_timestamp_x": "",
-                        "stream_timestamp_y": "",
-                        "stream_watermark": "0",
-                        "stream_watermark_location": "",
-                        "stream_watermark_position": "tr",
-                        "snap": "1",
-                        "snap_fps": "",
-                        "snap_scale_x": "",
-                        "snap_scale_y": "",
-                        "snap_vf": "",
-                        "rawh264": "0",
-                        "rawh264_vcodec": "copy",
-                        "rawh264_acodec": "",
-                        "rawh264_fps": "",
-                        "rawh264_scale_x": "",
-                        "rawh264_scale_y": "",
-                        "rawh264_crf": "",
-                        "rawh264_vf": "",
-                        "vcodec": "copy",
-                        "crf": "1",
-                        "preset_record": "",
-                        "acodec": "no",
-                        "dqf": "0",
-                        "cutoff": "15",
-                        "rotate_record": "no",
-                        "vf": "",
-                        "timestamp": "0",
-                        "timestamp_font": "",
-                        "timestamp_font_size": "10",
-                        "timestamp_color": "white",
-                        "timestamp_box_color": "0x00000000@1",
-                        "timestamp_x": "(w-tw)/2",
-                        "timestamp_y": "0",
-                        "watermark": "0",
-                        "watermark_location": "",
-                        "watermark_position": "tr",
-                        "cust_input": "",
-                        "cust_snap": "",
-                        "cust_rawh264": "",
-                        "cust_detect": "",
-                        "cust_stream": "",
-                        "cust_stream_server": "",
-                        "cust_record": "",
-                        "custom_output": "",
-                        "detector": "0",
-                        "detector_pam": "1",
-                        "detector_webhook": "0",
-                        "detector_webhook_url": "",
-                        "detector_command_enable": "0",
-                        "detector_command": "",
-                        "detector_command_timeout": "",
-                        "detector_lock_timeout": "",
-                        "detector_save": "0",
-                        "detector_frame_save": "0",
-                        "detector_mail": "0",
-                        "detector_mail_timeout": "",
-                        "detector_record_method": "sip",
-                        "detector_trigger": "1",
-                        "detector_trigger_record_fps": "",
-                        "detector_timeout": "10",
-                        "watchdog_reset": "0",
-                        "detector_delete_motionless_videos": "0",
-                        "detector_send_frames": "1",
-                        "detector_region_of_interest": "0",
-                        "detector_fps": "",
-                        "detector_scale_x": "640",
-                        "detector_scale_y": "480",
-                        "detector_use_motion": "1",
-                        "detector_use_detect_object": "0",
-                        "detector_frame": "0",
-                        "detector_sensitivity": "",
-                        "cords": "[]",
-                        "detector_buffer_vcodec": "auto",
-                        "detector_buffer_fps": "",
-                        "detector_buffer_hls_time": "",
-                        "detector_buffer_hls_list_size": "",
-                        "detector_buffer_start_number": "",
-                        "detector_buffer_live_start_index": "",
-                        "detector_lisence_plate": "0",
-                        "detector_lisence_plate_country": "us",
-                        "detector_notrigger": "0",
-                        "detector_notrigger_mail": "0",
-                        "detector_notrigger_timeout": "",
-                        "control": "0",
-                        "control_base_url": "",
-                        "control_stop": "0",
-                        "control_url_stop_timeout": "",
-                        "control_url_center": "",
-                        "control_url_left": "",
-                        "control_url_left_stop": "",
-                        "control_url_right": "",
-                        "control_url_right_stop": "",
-                        "control_url_up": "",
-                        "control_url_up_stop": "",
-                        "control_url_down": "",
-                        "control_url_down_stop": "",
-                        "control_url_enable_nv": "",
-                        "control_url_disable_nv": "",
-                        "control_url_zoom_out": "",
-                        "control_url_zoom_out_stop": "",
-                        "control_url_zoom_in": "",
-                        "control_url_zoom_in_stop": "",
-                        "tv_channel": "0",
-                        "groups": "[]",
-                        "loglevel": "warning",
-                        "sqllog": "0",
-                        "detector_cascades": ""
-                    }),
-                    "shto": "[]",
-                    "shfr": "[]"
-                }
+                e.values=$.aM.generateDefaultMonitorSettings();
             }else{
                 e.p.find('.am_notice_edit').show()
                 //edit monitor

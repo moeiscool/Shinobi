@@ -104,8 +104,8 @@ img{max-width:100%}
 
 
 #vis_pwrvideo{height:250px}
-#monSectionStreamChannels{margin-bottom: 15px;}
-#monSectionStreamChannels:empty{display:none}
+#monSectionStreamChannels,#monSectionInputMaps{margin-bottom: 15px;}
+#monSectionStreamChannels:empty,#monSectionInputMaps:empty{display:none}
 #region_editor_live iframe,.canvas_holder canvas{border:0;position:absolute;left:0;top:0}
 .canvas_holder canvas{z-index:11}
 

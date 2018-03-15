@@ -47,11 +47,6 @@
                 </label>
               </div>
               <div class="form-group">
-                <label><div><span><%-lang['Retry Connection']%></span></div>
-                    <div><input class="form-control" detail="fatal_max" placeholder="10"></div>
-                </label>
-              </div>
-              <div class="form-group">
                 <label><div><span><%-lang.Notes%></span></div>
                     <div><textarea class="form-control" detail="notes" placeholder="<%-lang.NotesPlacholder%>"></textarea></div>
                 </label>
@@ -68,9 +63,9 @@
             </label>
             </div>
           </div>
-<!--     START of Input     -->
-          <div class="form-group-group forestgreen" section id="monSectionInput">
-          <h4><%-lang.Input%></h4>
+<!--     START of Connection     -->
+          <div class="form-group-group orange" section id="monSectionConnection">
+          <h4><%-lang.Connection%></h4>
               <blockquote class="global_tip">
                   <p><%-lang.InputText1%></p>
                   <%-lang.InputText2%>
@@ -164,24 +159,34 @@
                     <div><input class="form-control" name="path" placeholder="/videostream.cgi?1"></div>
                     </label>
                   </div>
-                  <div class="form-group">
-                    <label><div><span><%-lang['Analyzation Duration']%></span></div>
-                    <div><input class="form-control" detail="aduration"></div>
-                    </label>
-                  </div>
-                  <div class="form-group">
-                    <label><div><span><%-lang['Probe Size']%></span></div>
-                    <div><input class="form-control" detail="probesize"></div>
-                    </label>
-                  </div>
-                  <div class="form-group h_t_input h_t_mp4">
-                    <label><div><span><%-lang["Loop Stream"]%></span></div>
-                        <div><select class="form-control" detail="stream_loop">
-                            <option value="0" selected><%-lang.No%></option>
-                            <option value="1"><%-lang.Yes%></option>
-                        </select></div>
-                    </label>
-                  </div>
+              </div>
+              <div class="form-group">
+                <label><div><span><%-lang['Retry Connection']%></span></div>
+                    <div><input class="form-control" detail="fatal_max" placeholder="10"></div>
+                </label>
+              </div>
+            </div>
+<!--     END of Connection     -->
+<!--     START of Input     -->
+          <div class="form-group-group forestgreen" section id="monSectionInput">
+          <h4><%-lang['Input Settings']%></h4>
+              <div class="form-group">
+                <label><div><span><%-lang['Analyzation Duration']%></span></div>
+                <div><input class="form-control" detail="aduration"></div>
+                </label>
+              </div>
+              <div class="form-group">
+                <label><div><span><%-lang['Probe Size']%></span></div>
+                <div><input class="form-control" detail="probesize"></div>
+                </label>
+              </div>
+              <div class="form-group h_t_input h_t_mp4">
+                <label><div><span><%-lang["Loop Stream"]%></span></div>
+                    <div><select class="form-control" detail="stream_loop">
+                        <option value="0" selected><%-lang.No%></option>
+                        <option value="1"><%-lang.Yes%></option>
+                    </select></div>
+                </label>
               </div>
               <div class="form-group h_t_input h_t_socket h_t_jpeg h_t_mjpeg">
                 <label><div><span><%-lang['Monitor Capture Rate']%></span></div>
@@ -207,7 +212,7 @@
                             <option value="vdpau"><%-lang.vdpau%></option>
                             <option value="dxva2"><%-lang.dxva2%></option>
                             <option value="vdpau"><%-lang.vda%></option>
-                            <option value="vdpau"><%-lang.videotoolbox%></option>
+                            <option value="videotoolbox"><%-lang.videotoolbox%></option>
                         </select></div>
                     </label>
                   </div>
@@ -237,15 +242,27 @@
               </div>
           </div>
 <!--     END of Input     -->
+<!--     START of Input Maps     -->
+          <div id="monSectionInputMaps"></div>
+<!--     END of Input Maps     -->
 <!--     START of Stream     -->
           <div class="form-group-group navy" section id="monSectionStream">
           <h4><%-lang['Stream']%></h4>
               <blockquote class="global_tip">
                   <%-lang.StreamText%>
               </blockquote>
+              <div class="form-group-group forestgreen" input-mapping="stream">
+                  <h4><%-lang['Input Feed']%>
+                      <div class="pull-right">
+                          <a class="btn btn-success btn-xs add_map_row"><i class="fa fa-plus-square-o"></i></a>
+                      </div>
+                  </h4>
+                  <div class="choices"></div>
+              </div>
               <div class="form-group">
                 <label><div><span><%-lang['Stream Type']%></span></div>
                     <div><select class="form-control" detail="stream_type" selector="h_st">
+                        <option value="mp4"><%-lang['Poseidon']%></option>
                         <option value="b64" selected><%-lang['Base64 over Websocket']%></option>
                         <option value="jpeg"><%-lang['JPEG (Auto Enables JPEG API)']%></option>
                         <option value="mjpeg"><%-lang['MJPEG']%></option>
@@ -254,8 +271,8 @@
                     </select></div>
                 </label>
               </div>
-              <div class="form-group h_st_input h_st_flv">
-                <label><div><span><%-lang['FLV Stream Type']%></span></div>
+              <div class="form-group h_st_input h_st_flv h_st_mp4">
+                <label><div><span><%-lang['Connection Type']%></span></div>
                     <div><select class="form-control" detail="stream_flv_type" selector="h_st_lat">
                         <option value="http" selected><%-lang['HTTP']%></option>
                         <option value="ws"><%-lang['Websocket']%></option>
@@ -272,7 +289,7 @@
                     <div><input class="form-control" detail="stream_mjpeg_clients" placeholder="20"></div>
                 </label>
               </div>
-              <div class="h_st_input h_st_hls h_st_flv">
+              <div class="h_st_input h_st_hls h_st_flv h_st_mp4">
                   <div class="form-group">
                     <label><div><span><%-lang['HLS Video Encoder']%></span></div>
                         <div><select class="form-control" detail="stream_vcodec" selector="h_hls_v">
@@ -305,7 +322,7 @@
                     </label>
                   </div>
               </div>
-              <div class="h_st_input h_st_mjpeg h_st_b64 h_st_hls h_st_flv h_hls_v_input h_hls_v_libx264 h_hls_v_libx265 h_hls_v_h264_nvenc h_hls_v_hevc_nvenc h_hls_v_no">
+              <div class="h_st_input h_st_mjpeg h_st_b64 h_st_hls h_st_flv h_st_mp4 h_hls_v_input h_hls_v_libx264 h_hls_v_libx265 h_hls_v_h264_nvenc h_hls_v_hevc_nvenc h_hls_v_no">
                   <div class="h_st_input h_st_hls">
                       <div class="form-group">
                         <label><div><span><%-lang['HLS Segment Length']%></span></div>
@@ -318,7 +335,7 @@
                         </label>
                       </div>
                   </div>
-                  <div class="form-group h_st_input h_st_hls h_st_flv">
+                  <div class="form-group h_st_input h_st_hls h_st_flv h_st_mp4">
                     <label><div><span><%-lang['HLS Preset']%></span></div>
                         <div><input class="form-control" detail="preset_stream" placeholder="ultrafast"></div>
                     </label>
@@ -472,65 +489,17 @@
           </div>
           <div id="monSectionStreamChannels"></div>
 <!--     END of Stream     -->
-<!--     START of Stream to YouTube     -->
-<!--
-          <div class="form-group-group navy" section id="monSectionStreamtoYouTube">
-          <h4><%-lang['Stream to YouTube']%></h4>
-              <div class="form-group">
-                <label><div><span><%-lang['Enabled']%></span></div>
-                    <div><select class="form-control" detail="stream_server" selector="h_yt">
-                        <option value="0" selected><%-lang.No%></option>
-                        <option value="1"><%-lang.Yes%></option>
-                    </select></div>
-                </label>
-              </div>
-              <div class="h_yt_input h_yt_1" style="display:none">
-                  <div class="form-group">
-                    <label><div><span><%-lang['Reciever URL']%></span></div>
-                    <div><input class="form-control" detail="stream_server_url" placeholder="rtmp://a.rtmp.youtube.com/live2/..."></div>
-                    </label>
-                  </div>
-                  <div class="form-group">
-                    <label><div><span><%-lang['Frame Rate']%></span></div>
-                    <div><input class="form-control" detail="stream_server_fps" placeholder="1"></div>
-                    </label>
-                  </div>
-                  <div class="form-group">
-                    <label><div><span><%-lang['Image Width']%></span></div>
-                    <div><input class="form-control" detail="stream_server_scale_x" placeholder=""></div>
-                    </label>
-                  </div>
-                  <div class="form-group">
-                    <label><div><span><%-lang['Image Height']%></span></div>
-                    <div><input class="form-control" detail="stream_server_scale_y" placeholder=""></div>
-                    </label>
-                  </div>
-                  <div class="form-group">
-                    <label><div><span><%-lang['Quality']%></span></div>
-                    <div><input class="form-control" detail="stream_server_crf" placeholder=""></div>
-                    </label>
-                  </div>
-                  <div class="form-group">
-                    <label><div><span><%-lang['Preset']%></span></div>
-                        <div><input class="form-control" detail="stream_server_preset" placeholder="ultrafast"></div>
-                    </label>
-                  </div>
-                  <div class="form-group">
-                    <label><div><span><%-lang['Video Bitrate']%></span></div>
-                        <div><input class="form-control" detail="stream_server_vbr" placeholder="256k"></div>
-                    </label>
-                  </div>
-                  <div class="form-group">
-                    <label><div><span><%-lang['Video Filter']%></span></div>
-                    <div><input class="form-control" detail="stream_server_vf"></div>
-                    </label>
-                  </div>
-              </div>
-          </div>
--->
 <!--     START of JPEG     -->
           <div class="form-group-group forestgreen" section id="monSectionJPEGAPI">
           <h4><%-lang['JPEG API']%></h4>
+              <div class="form-group-group forestgreen" input-mapping="snap">
+                  <h4><%-lang['Input Feed']%>
+                      <div class="pull-right">
+                          <a class="btn btn-success btn-xs add_map_row"><i class="fa fa-plus-square-o"></i></a>
+                      </div>
+                  </h4>
+                  <div class="choices"></div>
+              </div>
               <div class="form-group">
                 <label><div><span><%-lang['Enabled']%></span></div>
                     <div><select class="form-control" detail="snap" selector="h_sn">
@@ -569,6 +538,14 @@
               <blockquote class="global_tip">
                 <%-lang.RecordingText%>
               </blockquote>
+              <div class="form-group-group forestgreen" input-mapping="record">
+                  <h4><%-lang['Input Feed']%>
+                      <div class="pull-right">
+                          <a class="btn btn-success btn-xs add_map_row"><i class="fa fa-plus-square-o"></i></a>
+                      </div>
+                  </h4>
+                  <div class="choices"></div>
+              </div>
               <div class="form-group">
                 <label><div><span><%-lang['Record File Type']%></span></div>
                     <div><select class="form-control" name="ext" selector="h_f">
@@ -787,6 +764,11 @@
                 <div><input class="form-control" detail="cust_snap"></div>
                 </label>
               </div>
+              <div class="form-group h_rtmp_input h_rtmp_1" style="display:none">
+                <label><div><span><%-lang['RTMP Stream Flags']%></span></div>
+                <div><input class="form-control" detail="cust_rtmp"></div>
+                </label>
+              </div>
               <div class="form-group h_rawh264_input h_rawh264_1" style="display:none">
                 <label><div><span><%-lang['Snapshot Flags']%></span></div>
                 <div><input class="form-control" detail="cust_rawh264"></div>
@@ -826,6 +808,14 @@
                 <%-lang.DetectorText%>
                 <p class="shinobi-detector-msg"></p>
               </blockquote>
+              <div class="form-group-group forestgreen" input-mapping="detector">
+                  <h4><%-lang['Input Feed']%>
+                      <div class="pull-right">
+                          <a class="btn btn-success btn-xs add_map_row"><i class="fa fa-plus-square-o"></i></a>
+                      </div>
+                  </h4>
+                  <div class="choices"></div>
+              </div>
               <div class="form-group">
                 <label><div><span><%-lang['Enabled']%></span></div>
                     <div><select class="form-control" detail="detector" selector="h_det">
@@ -1039,6 +1029,14 @@
           </div>
           <div class="form-group-group orange h_rec_mtd_input h_rec_mtd_sip" style="display:none" section id="monSectionDetectorBuffer">
           <h4><%-lang['Traditional Recording']%></h4>
+              <div class="form-group-group forestgreen" input-mapping="detector_sip_buffer">
+                  <h4><%-lang['Input Feed']%>
+                      <div class="pull-right">
+                          <a class="btn btn-success btn-xs add_map_row"><i class="fa fa-plus-square-o"></i></a>
+                      </div>
+                  </h4>
+                  <div class="choices"></div>
+              </div>
               <div class="form-group">
                 <label><div><span><%-lang['HLS Video Encoder']%></span></div>
                     <div><select class="form-control" detail="detector_buffer_vcodec" selector="h_buff">
@@ -1167,6 +1165,15 @@
                     </label>
                   </div>
                   <div class="form-group">
+                    <label><div><span><%-lang['Call Method']%></span></div>
+                        <div><select class="form-control" detail="control_url_method">
+                            <option value="GET">GET (<%-lang.Default%>)</option>  
+                            <option value="PUT">PUT</option>
+                            <option value="POST">POST</option>
+                        </select></div>
+                    </label>
+                  </div>
+                  <div class="form-group">
                     <label><div><span><%-lang['Stop URL']%></span></div>
                         <div><select class="form-control" detail="control_stop" selector="h_cs">
                             <option value="0"><%-lang.No%></option>  
@@ -1259,7 +1266,7 @@
           <div class="form-group-group purple" section id="monSectionGrouping">
           <h4><%-lang['Grouping']%></h4>
               <div>
-                  <ul class="mdl-list" id="monitor_group"></ul>
+                  <ul class="mdl-list" id="monitor_groups"></ul>
                   <input type="hidden" detail="groups">
               </div>
           </div>
@@ -1286,14 +1293,111 @@
                       </label>
                   </div>
               </div>
-              <div class="form-group" style="display:none">
-                  <input type="hidden" detail="detector_cascades">
-                  <input type="hidden" detail="stream_channels">
-                  <input class="form-control" name="details" value="{}">
-                  <input class="form-control" name="shto" value="[]">
-                  <input class="form-control" name="shfr" value="[]">
+          </div>
+          <div class="form-group-group orange" section id="monSectionCopying">
+          <h4><%-lang['Copy Settings']%></h4>
+              <div class="form-group">
+                  <label><div><span><%-lang['Copy to Settings']%></span></div>
+                    <div><select class="form-control" id="copy_settings" selector="h_copy_settings">
+                        <option value="0" selected><%-lang.No%></option>  
+                        <option value="1"><%-lang.Yes%></option>  
+                    </select></div>
+                  </label>
+              </div>
+              <div class="h_copy_settings_input h_copy_settings_1">
+                  <div class="form-group">
+                      <label><div><span><%-lang['Copy Connection Settings']%></span></div>
+                        <div><select class="form-control" copy="#monSectionConnection">
+                            <option value="0" selected><%-lang.No%></option>  
+                            <option value="1"><%-lang.Yes%></option>  
+                        </select></div>
+                      </label>
+                  </div>
+                  <div class="form-group">
+                      <label><div><span><%-lang['Copy Input Settings']%></span></div>
+                        <div><select class="form-control" copy="#monSectionInput">
+                            <option value="0" selected><%-lang.No%></option>  
+                            <option value="1"><%-lang.Yes%></option>  
+                        </select></div>
+                      </label>
+                  </div>
+                  <div class="form-group">
+                      <label><div><span><%-lang['Copy Stream Settings']%></span></div>
+                        <div><select class="form-control" copy="#monSectionStream,#monSectionStreamTimestamp,#monSectionStreamWatermark,#monSectionJPEGAPI">
+                            <option value="0" selected><%-lang.No%></option>  
+                            <option value="1"><%-lang.Yes%></option>  
+                        </select></div>
+                      </label>
+                  </div>
+    <!--
+                  <div class="form-group">
+                      <label><div><span><%-lang['Copy Stream Channel Settings']%></span></div>
+                        <div><select class="form-control" copy="stream_channel">
+                            <option value="0" selected><%-lang.No%></option>  
+                            <option value="1"><%-lang.Yes%></option>  
+                        </select></div>
+                      </label>
+                  </div>
+    -->
+                  <div class="form-group">
+                      <label><div><span><%-lang['Copy Recording Settings']%></span></div>
+                        <div><select class="form-control" copy="#monSectionRecording">
+                            <option value="0" selected><%-lang.No%></option>  
+                            <option value="1"><%-lang.Yes%></option>  
+                        </select></div>
+                      </label>
+                  </div>
+                  <div class="form-group">
+                      <label><div><span><%-lang['Copy Detector Settings']%></span></div>
+                        <div><select class="form-control" copy="#monSectionDetector,#monSectionDetectorBuffer,#monSectionLisencePlateDetector,#monSectionNoMotionDetector">
+                            <option value="0" selected><%-lang.No%></option>  
+                            <option value="1"><%-lang.Yes%></option>  
+                        </select></div>
+                      </label>
+                  </div>
+                  <div class="form-group">
+                      <label><div><span><%-lang['Copy Custom Settings']%></span></div>
+                        <div><select class="form-control" copy="#monSectionCustom">
+                            <option value="0" selected><%-lang.No%></option>  
+                            <option value="1"><%-lang.Yes%></option>  
+                        </select></div>
+                      </label>
+                  </div>
+                  <div class="form-group">
+                      <label><div><span><%-lang['Copy Group Settings']%></span></div>
+                        <div><select class="form-control" copy="#monSectionGrouping">
+                            <option value="0" selected><%-lang.No%></option>  
+                            <option value="1"><%-lang.Yes%></option>  
+                        </select></div>
+                      </label>
+                  </div>
+                  <div class="form-group">
+                      <label><div><span><%-lang['Copy Logging Settings']%></span></div>
+                        <div><select class="form-control" copy="#monSectionLogging">
+                            <option value="0" selected><%-lang.No%></option>  
+                            <option value="1"><%-lang.Yes%></option>  
+                        </select></div>
+                      </label>
+                  </div>
+                  <div class="form-group">
+                      <label><div><span><%-lang['Monitors to Copy to']%></span></div>
+                        <div><select class="form-control" style="min-height:100px" multiple id="copy_settings_monitors">
+                            <option value="$New"><%-lang['New Monitor']%></option>
+                            <optgroup label="<%-lang['Monitors']%>"></optgroup>
+                        </select></div>
+                      </label>
+                  </div>
               </div>
           </div>
+          </div>
+          <div class="form-group" style="display:none">
+              <input type="hidden" detail="detector_cascades">
+              <input type="hidden" detail="stream_channels">
+              <input type="hidden" detail="input_maps">
+              <input type="hidden" detail="input_map_choices" value="{}">
+              <input class="form-control" name="details" value="{}">
+              <input class="form-control" name="shto" value="[]">
+              <input class="form-control" name="shfr" value="[]">
           </div>
       </div>
       </div>
@@ -1307,6 +1411,7 @@
               <li class="mdl-menu__item save_config"><i class="fa fa-download"></i> <%-lang.Export%></li>
               <li class="mdl-menu__item import_config"><i class="fa fa-upload"></i> <%-lang.Import%></li>
               <li class="mdl-menu__item probe_config"><i class="fa fa-search"></i> <%-lang.FFprobe%></li>
+              <li class="mdl-menu__item add_map"><i class="fa fa-rss"></i> <%-lang['Add Input Feed']%></li>
               <li class="mdl-menu__item add_channel"><i class="fa fa-puzzle-piece"></i> <%-lang['Add Channel']%></li>
             </ul>
             <span class="h_det_input h_det_1"><button type="button" style="display:none" class="btn btn-warning shinobi-detector-opencv shinobi-detector-openalpr shinobi-detector-motion shinobi-detector_plug" monitor="region"><i class="fa fa-grav"></i> <%-lang['Region Editor']%></button></span>

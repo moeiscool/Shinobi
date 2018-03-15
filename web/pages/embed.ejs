@@ -12,6 +12,7 @@ if(data.addon.indexOf('relative')>-1){
 }
 %>
 <script src="<%=data.url%>/libs/js/socket.io.js"></script>
+<script src="<%=data.url%>/libs/js/poseidon.js"></script>
 <script src="<%=data.url%>/libs/js/hls.min.js"></script>
 <script src="<%=data.url%>/libs/js/flv.min.js"></script>
 <% if(data.addon){
@@ -80,10 +81,7 @@ $(document).ready(function(){
         case'jpeg':
             %><img class="stream-element"><%
         break;
-        case'flv':
-            %><video class="stream-element" autoplay></video><%
-        break;
-        case'hls':
+        case'flv':case'hls':case'mp4':
             %><video class="stream-element" autoplay></video><%
         break;
         case'mjpeg':
@@ -113,16 +111,72 @@ $(document).ready(function(){
             };
             $.shinobi.init=function(d){
                   switch($.shinobi.mon[d.id].details.stream_type){
-                   case'flv':
+                    case'mp4':
+                    var stream = $('#SHINOBI_'+d.ke+'_'+d.id+' .stream-element');
+                    if($.shinobi.mon[d.id].details.stream_flv_type==='ws'){
+                        if($.shinobi.mon[d.id].Poseidon){
+                            $.shinobi.mon[d.id].Poseidon.destroy()
+                        }
+                        var createPoseidon = function(){
+                            $.shinobi.mon[d.id].Poseidon = new Poseidon({
+                                video: stream[0],
+                                auth_token:'<%=data.auth%>',
+                                ke:d.ke,
+                                uid:'<%=data.uid%>',
+                                id:d.id,
+                                url: '<%=data.url%>'
+                            });
+                            $.shinobi.mon[d.id].Poseidon.start();
+                            $.shinobi.mon[d.id].Poseidon._socket.on('data',function(res){
+                                console.log(res)
+                            })
+                        }
+                        try{
+                            createPoseidon()
+                        }catch(err){
+                            console.log(err)
+                            setTimeout(function(){
+                                createPoseidon()
+                            },3000)
+                        }
+                    }else{
+                        stream.attr('src','<%=data.url%>/<%=data.auth%>/mp4/'+d.ke+'/'+d.id+'/s.mp4')
+                        setTimeout(function(){
+                            $.ccio.init('signal-check',{id:d.id,ke:d.ke})
+                        },3000)
+                    }
+                    break;
+                    case'flv':
                         if (flvjs.isSupported()) {
                             if($.shinobi.mon[d.id].flv){
                                 $.shinobi.mon[d.id].flv.destroy()
                             }
-                            $.shinobi.mon[d.id].flv = flvjs.createPlayer({
-                                type: 'flv',
-                                isLive: true,
-                                url: '<%=data.url%>/<%=data.auth%>/flv/'+d.ke+'/'+d.id+'/s.flv'
-                            });
+                            var options = {};
+//                            if($.shinobi.mon[d.id].details.stream_flv_type==='ws'){
+//                                if($.shinobi.mon[d.id].details.stream_flv_maxLatency&&$.shinobi.mon[d.id].details.stream_flv_maxLatency!==''){
+//                                    $.shinobi.mon[d.id].details.stream_flv_maxLatency = parseInt($.shinobi.mon[d.id].details.stream_flv_maxLatency)
+//                                }else{
+//                                    $.shinobi.mon[d.id].details.stream_flv_maxLatency = 20000;
+//                                }
+//                                options = {
+//                                    type: 'flv',
+//                                    isLive: true,
+//                                    auth_token:'<%=data.auth%>',
+//                                    ke:d.ke,
+//                                    uid:'<%=data.uid%>',
+//                                    id:d.id,
+//                                    maxLatency:$.shinobi.mon[d.id].details.stream_flv_maxLatency,
+//                                    hasAudio:false,
+//                                    url: '<%=data.url%>'
+//                                }
+//                            }else{
+                                options = {
+                                    type: 'flv',
+                                    isLive: true,
+                                    url: '<%=data.url%>/<%=data.auth%>/flv/'+d.ke+'/'+d.id+'/s.flv'
+                                }
+//                            }
+                            $.shinobi.mon[d.id].flv = flvjs.createPlayer(options);
                             $.shinobi.mon[d.id].flv.attachMediaElement($('#SHINOBI_'+d.ke+'_'+d.id+' .stream-element')[0]);
                             $.shinobi.mon[d.id].flv.on('error',function(err){
                                 console.log(err)
@@ -164,7 +218,7 @@ $(document).ready(function(){
                     }
                     break;
                     case'mjpeg':
-                        $('#SHINOBI_'+d.ke+'_'+d.id+' .stream-element').attr('src','<%=data.url%>/<%=data.auth%>/mjpeg/'+d.ke+'/'+d.id+'/full')
+                        $('#SHINOBI_'+d.ke+'_'+d.id+' .stream-element').attr('src','<%=data.url%>/<%=data.auth%>/mjpeg/'+d.ke+'/'+d.id+'?full=true')
                     break;
                 }
             }

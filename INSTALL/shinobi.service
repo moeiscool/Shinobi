@@ -1,0 +1,11 @@
+[Unit]
+Description=ShinobiCCTV
+
+[Service]
+WorkingDirectory=/home/Shinobi
+Type=forking
+ExecStart=/bin/bash INSTALL/start.sh
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
