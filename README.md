@@ -1,7 +1,8 @@
-You might be looking for [Shinobi Pro](https://github.com/ShinobiCCTV/Shinobi) which is free for personal use. Get Shinobi Pro for the latest code.
+# We moved to GitLab!
+## https://gitlab.com/Shinobi-Systems/ShinobiCE
 
 # Shinobi CE
-### GPLv3
+### GPLv3 + AGPLv3
 
 Shinobi is the Open Source CCTV Solution written in Node.JS. Designed with multiple account system, Streams by WebSocket, and Save to WebM. Shinobi can record IP Cameras and Local Cameras.
 
@@ -102,7 +103,7 @@ http://shinobi.video/why
 2. Download and run the installer.
 
 ```
-bash <(curl -s https://raw.githubusercontent.com/ShinobiCCTV/Shinobi-Installer/master/shinobi-install.sh)
+bash <(curl -s https://gitlab.com/Shinobi-Systems/Shinobi-Installer/raw/master/shinobi-install.sh)
 ```
 
 #### Elaborate Installs
