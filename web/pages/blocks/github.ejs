@@ -1,0 +1,37 @@
+<!--Help Window-->
+<div class="modal fade" id="github_window" tabindex="-1" role="dialog" aria-labelledby="github_windowLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="github_windowLabel"><i class="fa fa-question-circle"></i> &nbsp; <span>Oh No!</span></h4>
+      </div>
+      <div class="modal-body">
+          <p>Github is now owned by Microsoft. This means the official repositories are moving to Gitlab. The Github repositories will no longer be updated. Meaning that if you do <code>git pull</code> on the current repo you will not get new revisions of Shinobi.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger pull-left hideGitHub"><%-lang['Don\'t show this anymore']%></button>
+        <a target="_blank" href="https://shinobi.video/articles/2018-06-09-official-repositories-are-moving-to-gitlab" class="btn btn-primary">How to Switch Repositories</a>
+        <a target="_blank" href="https://gitlab.com/Shinobi-Systems/ShinobiCE" class="btn btn-success">View on CE GitLab</a>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+$(document).ready(function(){
+    $.github={hide:$('#github_window .hideGitHub'),e:$('#github_window')}
+    if($.ccio.op().hideGitHub!==1){
+        setTimeout(function(){
+            $.github.e.modal('show')
+        },1000*60*0.5)
+        $.github.hide.click(function(){
+            $.ccio.op('hideGitHub',1);
+            $.github.e.modal('hide');
+        })
+    }else{
+        $.github.hide.hide()
+    }
+})
+</script>
