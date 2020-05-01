@@ -367,7 +367,7 @@ s.MainEventController=function(d,cn,tx){
                     }
                     s.group[d.ke][d.id].buffer=null;
                 }
-            }catch(err){
+            catch(err){
                 if(err){
                     s.systemLog(err)
                     delete(s.group[d.ke][d.id].buffer)
